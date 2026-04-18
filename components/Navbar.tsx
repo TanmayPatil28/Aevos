@@ -13,6 +13,7 @@ import {
 import { useUniversity, UNI_PRESETS } from "@/components/providers/UniversityProvider";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { useSession, signOut } from "next-auth/react";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -64,6 +65,7 @@ export default function Navbar() {
   const uniRef = useRef<HTMLDivElement>(null);
 
   const { activePreset, setSelectedUniId } = useUniversity();
+  const { data: session } = useSession();
 
   const isAnyToolActive = ADVANCED_TOOLS.some(tool => pathname === tool.href);
 
@@ -339,16 +341,25 @@ export default function Navbar() {
             </AnimatePresence>
           </button>
 
-          <Link href="/calculator">
-            <motion.button
-              whileHover={{ scale: 1.05, y: -2, boxShadow: "0 15px 30px rgba(124,58,237,0.4)" }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-br from-[#4F8EF7] via-[#7C3AED] to-[#A855F7] text-white px-7 py-2.5 rounded-full text-[14px] font-black tracking-tight flex items-center gap-2 shadow-premium"
+          {session ? (
+            <button
+               onClick={() => signOut()}
+               className="bg-white/5 hover:bg-white/10 text-white px-5 py-2.5 rounded-full text-[14px] font-bold tracking-tight transition-all border border-white/10 shadow-inner"
             >
-              Get Started
-              <ArrowRight size={17} strokeWidth={3} />
-            </motion.button>
-          </Link>
+              Log Out
+            </button>
+          ) : (
+            <Link href="/login">
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2, boxShadow: "0 15px 30px rgba(124,58,237,0.4)" }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-br from-[#4F8EF7] via-[#7C3AED] to-[#A855F7] text-white px-7 py-2.5 rounded-full text-[14px] font-black tracking-tight flex items-center gap-2 shadow-premium"
+              >
+                Login
+                <ArrowRight size={17} strokeWidth={3} />
+              </motion.button>
+            </Link>
+          )}
         </div>
 
         {/* MOBILE TRIGGER */}
