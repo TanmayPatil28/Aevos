@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { UniversityProvider } from "@/components/providers/UniversityProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 import BackgroundEffects from "@/components/BackgroundEffects";
 
@@ -47,14 +48,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <BackgroundEffects />
-          <UniversityProvider>
-          <CustomCursor />
-          <Navbar />
-          <PageTransition>
-            {children}
-          </PageTransition>
-          <Footer />
-          </UniversityProvider>
+          <AuthProvider>
+            <UniversityProvider>
+            <CustomCursor />
+            <Navbar />
+            <PageTransition>
+              {children}
+            </PageTransition>
+            <Footer />
+            </UniversityProvider>
+          </AuthProvider>
           <Toaster 
             position="top-right"
             toastOptions={{
