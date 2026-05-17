@@ -21,7 +21,7 @@ This report outlines the state of GradeFlow following the infrastructure stabili
 
 - **Status:** Passing
 - The `npm run verify` check completes without errors.
-- The `next build` process executes successfully. A known Windows/OneDrive filesystem quirk (`EINVAL readlink`) is functionally mitigated via the `npm run clean` script prior to building.
+- The `next build` process executes successfully in the current environment. A known Windows/OneDrive filesystem quirk (`EINVAL readlink`) is functionally mitigated via the `npm run clean` script prior to building.
 - TypeScript compilation reports zero blocking errors.
 
 ### Security Notes
@@ -39,7 +39,7 @@ This report outlines the state of GradeFlow following the infrastructure stabili
 ### Technical Debt / Risks
 
 - The codebase contains instances of weak typing (e.g., `any`, `unknown`), which are currently surfaced as ESLint warnings.
-- Database migrations rely on the Prisma schema (`prisma/schema.prisma`); future transitions require strict migration management to avoid structural mismatches.
+- Database migrations rely on the Prisma schema (`prisma/schema.prisma`); future transitions require careful migration management to avoid schema drift.
 
 ### Deployment Readiness
 
