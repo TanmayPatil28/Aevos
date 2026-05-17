@@ -313,6 +313,8 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
                   setShowOcrModal(false);
                   setOcrResults(null);
                 }}
+                aria-label="Close modal"
+                title="Close modal"
                 className="absolute top-6 right-6 text-white/40 hover:text-white/80 transition-colors p-1"
               >
                 <X size={20} />
@@ -351,6 +353,8 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
                       onChange={handleFileUpload}
                       className="hidden"
                       accept="image/*,.pdf"
+                      title="Upload file"
+                      aria-label="Upload file"
                     />
                   </div>
                 )}
@@ -407,6 +411,8 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
                               type="text"
                               value={sub.name}
                               onChange={(e) => updateSubjectField(idx, 'name', e.target.value)}
+                              title="Subject Name"
+                              aria-label="Subject Name"
                               className="flex-1 bg-transparent border-none focus:outline-none text-white text-xs font-bold"
                             />
 
@@ -423,6 +429,8 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
                                   onChange={(e) =>
                                     updateSubjectField(idx, 'credits', Number(e.target.value))
                                   }
+                                  title="Credits"
+                                  aria-label="Credits"
                                   className="w-6 bg-transparent border-none text-center focus:outline-none text-white text-xs font-black"
                                 />
                               </div>
@@ -439,6 +447,8 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
                                   onChange={(e) =>
                                     updateSubjectField(idx, 'gradePoint', Number(e.target.value))
                                   }
+                                  title="Grade Point"
+                                  aria-label="Grade Point"
                                   className="w-6 bg-transparent border-none text-center focus:outline-none text-white text-xs font-black"
                                 />
                               </div>

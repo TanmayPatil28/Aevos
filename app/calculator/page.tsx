@@ -255,6 +255,8 @@ export default function CalculatorPage() {
                 <select
                   value={selectedSemesterNum}
                   onChange={(e) => setSelectedSemesterNum(Number(e.target.value))}
+                  aria-label="Select Semester"
+                  title="Select Semester"
                   className="bg-surface-container/50 border border-outline-variant/30 rounded-xl px-4 py-2 text-sm font-bold text-on-surface outline-none focus:border-primary/50 transition-all"
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
@@ -298,6 +300,8 @@ export default function CalculatorPage() {
                         <td className="py-2.5 px-2">
                           <input
                             type="text"
+                            aria-label={`Subject Name for row`}
+                            title="Subject Name"
                             value={subject.name}
                             onChange={(e) => handleChange(subject.id, 'name', e.target.value)}
                             className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && !subject.name.trim() ? 'border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5' : ''}`}
@@ -307,6 +311,8 @@ export default function CalculatorPage() {
                         <td className="py-2.5 px-2">
                           <input
                             type="number"
+                            aria-label={`Credits for ${subject.name || 'subject'}`}
+                            title="Credits"
                             value={subject.credits}
                             onChange={(e) => handleChange(subject.id, 'credits', e.target.value)}
                             className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && subject.error.includes('Credits') ? 'border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5' : ''}`}
@@ -318,6 +324,8 @@ export default function CalculatorPage() {
                         <td className="py-2.5 px-2">
                           <input
                             type="number"
+                            aria-label={`Score for ${subject.name || 'subject'}`}
+                            title="Score or Grade"
                             value={subject.score}
                             onChange={(e) => handleChange(subject.id, 'score', e.target.value)}
                             className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && (subject.error.includes('Score') || subject.error.includes('Marks') || subject.error.includes('Grade')) ? 'border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5' : ''}`}
@@ -328,6 +336,8 @@ export default function CalculatorPage() {
                           <div className="flex flex-col items-center gap-1">
                             <button
                               onClick={() => removeSubject(subject.id)}
+                              aria-label={`Remove subject ${subject.name || 'row'}`}
+                              title="Remove subject"
                               className="text-on-surface-variant/30 hover:text-error transition-all p-2 rounded-xl border border-transparent hover:border-error/20 hover:bg-error/10 hover:shadow-[0_0_10px_rgba(248,113,113,0.15)] flex items-center justify-center"
                             >
                               <span className="material-symbols-outlined text-[20px]">close</span>
@@ -355,8 +365,7 @@ export default function CalculatorPage() {
 
             <div className="flex bg-surface-container-highest p-1 rounded-full w-fit mb-8 relative border border-outline-variant/30">
               <div
-                className="absolute inset-y-1 bg-primary rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-0"
-                style={{ width: 'calc(50% - 4px)', left: usePercentage ? '4px' : 'calc(50%)' }}
+                className={`absolute inset-y-1 bg-primary rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-0 w-[calc(50%-4px)] ${usePercentage ? 'left-1' : 'left-1/2'}`}
               />
               <button
                 onClick={() => setUsePercentage(true)}

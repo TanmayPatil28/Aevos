@@ -235,12 +235,16 @@ export default function TrendChartSection({ data: fallbackData }: { data: any[] 
             <div className="bg-white/5 p-1 rounded-xl border border-white/10 flex items-center gap-1">
               <button
                 onClick={() => setView('bar')}
+                aria-label="Bar chart view"
+                title="Bar chart view"
                 className={`p-2 rounded-lg transition-all ${view === 'bar' ? 'bg-primary text-white' : 'text-white/50 hover:text-white'}`}
               >
                 <BarChart2 size={14} />
               </button>
               <button
                 onClick={() => setView('line')}
+                aria-label="Line chart view"
+                title="Line chart view"
                 className={`p-2 rounded-lg transition-all ${view === 'line' ? 'bg-primary text-white' : 'text-white/50 hover:text-white'}`}
               >
                 <LineChartIcon size={14} />
@@ -410,6 +414,8 @@ export default function TrendChartSection({ data: fallbackData }: { data: any[] 
                   step="0.05"
                   value={simSgpa}
                   onChange={(e) => setSimSgpa(Number(e.target.value))}
+                  title="Simulated SGPA"
+                  aria-label="Simulated SGPA"
                   className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-400"
                 />
               </div>
@@ -427,6 +433,8 @@ export default function TrendChartSection({ data: fallbackData }: { data: any[] 
                   step="1"
                   value={simCredits}
                   onChange={(e) => setSimCredits(Number(e.target.value))}
+                  title="Simulated Credits"
+                  aria-label="Simulated Credits"
                   className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-400"
                 />
               </div>
@@ -443,7 +451,9 @@ export default function TrendChartSection({ data: fallbackData }: { data: any[] 
                   min="0"
                   max="10"
                   step="0.01"
-                  placeholder="e.g. 9.0"
+                  placeholder="Target CGPA (e.g. 9.0)"
+                  title="Target CGPA Goal"
+                  aria-label="Target CGPA Goal"
                   value={targetCgpa}
                   onChange={(e) => {
                     const val = e.target.value;

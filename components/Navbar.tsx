@@ -433,6 +433,8 @@ export default function Navbar() {
         <div className="flex md:hidden items-center group">
           <button
             onClick={() => setIsMobileOpen(true)}
+            aria-label="Open mobile menu"
+            title="Open mobile menu"
             className="w-11 h-11 flex items-center justify-center rounded-full bg-white/[0.04] text-white active:scale-90 transition-all"
           >
             <Menu size={22} className="group-hover:text-[#4F8EF7] transition-colors" />
@@ -464,6 +466,8 @@ export default function Navbar() {
                 </span>
                 <button
                   onClick={() => setIsMobileOpen(false)}
+                  aria-label="Close mobile menu"
+                  title="Close mobile menu"
                   className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 text-white/60"
                 >
                   <X size={26} strokeWidth={3} />

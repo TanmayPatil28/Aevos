@@ -20,7 +20,7 @@ export function AttendanceSummary() {
     fetch('/api/attendance')
       .then((res) => res.json())
       .then((data) => {
-        setAttendance(data);
+        setAttendance(Array.isArray(data) ? data : data?.attendance || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -28,8 +28,9 @@ export function AttendanceSummary() {
 
   if (loading) return null;
 
-  const atRisk = attendance.filter((a) => (a.attended / a.totalClasses) * 100 < a.minThreshold);
-  if (attendance.length === 0) return null;
+  const safeAttendance = Array.isArray(attendance) ? attendance : [];
+  const atRisk = safeAttendance.filter((a) => (a.attended / a.totalClasses) * 100 < a.minThreshold);
+  if (safeAttendance.length === 0) return null;
 
   return (
     <motion.div
@@ -82,7 +83,7 @@ export function AttendanceSummary() {
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <p className="text-xs font-medium text-on-surface-variant/70">
-                Your attendance is safe across all {attendance.length} subjects.
+                Your attendance is safe across all {safeAttendance.length} subjects.
               </p>
             </div>
           </>
