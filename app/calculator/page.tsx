@@ -254,7 +254,7 @@ export default function CalculatorPage() {
 
             <div className="flex bg-surface-container-highest p-1 rounded-full w-fit mb-8 relative border border-outline-variant/30">
               <div
-                className="absolute inset-y-1 bg-primary rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-0"
+                className="absolute inset-y-1 bg-primary rounded-full transition-all duration-300 ease-premium-expo z-0"
                 style={{ width: 'calc(50% - 4px)', left: usePercentage ? '4px' : 'calc(50%)' }}
               />
               <button

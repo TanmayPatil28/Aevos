@@ -8,8 +8,8 @@
 
 :root {
   /* Common */
-  --font-headline: var(--font-headline);
-  --font-body: var(--font-body);
+  --font-headline: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Light Mode (Premium Soft Paper) */
   --background: #fdfdfd;
@@ -186,8 +186,19 @@
 
   html, body {
     background-color: var(--background);
-    cursor: none !important;
     scroll-behavior: smooth;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    html, body {
+      cursor: none !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html, body {
+      cursor: auto !important;
+    }
   }
 
   /* Grain Texture Overlay */

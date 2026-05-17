@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function RegisterPage() {
         const result = await response.json();
         toast.error(result.error || "Failed to register.");
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong.");
     } finally {
       setLoading(false);
@@ -56,35 +57,41 @@ export default function RegisterPage() {
 
         <form onSubmit={registerUser} className="space-y-4">
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1 block">Full Name</label>
+            <label htmlFor="register-name" className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1 block">Full Name</label>
             <input
+              id="register-name"
               type="text"
               className="w-full bg-surface-container-highest/50 border border-outline-variant focus:border-secondary px-4 py-3 rounded-xl outline-none text-white transition-colors"
               placeholder="John Doe"
               value={data.name}
               onChange={(e) => setData({ ...data, name: e.target.value })}
+              autoComplete="name"
               required
             />
           </div>
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1 block">Email</label>
+            <label htmlFor="register-email" className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1 block">Email</label>
             <input
+              id="register-email"
               type="email"
               className="w-full bg-surface-container-highest/50 border border-outline-variant focus:border-secondary px-4 py-3 rounded-xl outline-none text-white transition-colors"
               placeholder="student@university.edu"
               value={data.email}
               onChange={(e) => setData({ ...data, email: e.target.value })}
+              autoComplete="email"
               required
             />
           </div>
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1 block">Secure Password</label>
+            <label htmlFor="register-password" className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1 block">Secure Password</label>
             <input
+              id="register-password"
               type="password"
               className="w-full bg-surface-container-highest/50 border border-outline-variant focus:border-secondary px-4 py-3 rounded-xl outline-none text-white transition-colors"
               placeholder="••••••••"
               value={data.password}
               onChange={(e) => setData({ ...data, password: e.target.value })}
+              autoComplete="new-password"
               required
             />
           </div>
@@ -94,7 +101,7 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-secondary hover:bg-secondary/90 text-on-secondary font-bold py-3 px-4 rounded-xl transition-all hover:shadow-[0_0_20px_var(--secondary)] active:scale-[0.98] disabled:opacity-50 flex justify-center items-center mt-6"
           >
-            {loading ? <span className="material-symbols-outlined animate-spin">refresh</span> : "Launch Profile"}
+            {loading ? <Loader2 className="animate-spin" aria-hidden="true" /> : "Launch Profile"}
           </button>
         </form>
 

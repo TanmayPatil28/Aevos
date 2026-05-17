@@ -5,25 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Eye, Trash2, X, ClipboardCheck, ArrowRight, Sparkles } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { Calculation, Subject } from "@/types/calculation";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-interface Subject {
-  name: string;
-  credits: number;
-  score: number;
-}
-
-interface Calculation {
-  id: number;
-  date: string;
-  semester: string;
-  subjects: Subject[];
-  sgpa: number;
-  cgpa: number;
-  total_credits: number;
 }
 
 interface HistoryTableProps {
@@ -67,6 +52,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
             placeholder="Search semesters..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search calculation history by semester"
             className="w-full bg-white/[0.03] border border-white/[0.05] rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-[#4F8EF7]/50 focus:bg-white/[0.05] transition-all font-bold text-sm text-white placeholder:text-white/10"
           />
         </div>
@@ -122,6 +108,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                     <div className="flex items-center justify-end gap-3 opacity-0 group-hover/row:opacity-100 transition-opacity">
                       <button
                         onClick={() => setSelectedCalc(calc)}
+                        aria-label={`View details for ${calc.semester}`}
                         className="p-2.5 rounded-xl bg-white/[0.03] text-white hover:bg-white/10 hover:text-[#4F8EF7] transition-all border border-white/[0.05]"
                         title="Analyze Details"
                       >
@@ -129,6 +116,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                       </button>
                       <button
                         onClick={() => onDelete(calc.id)}
+                        aria-label={`Delete ${calc.semester}`}
                         className="p-2.5 rounded-xl bg-red-400/5 text-red-400/40 hover:bg-red-400 hover:text-white transition-all border border-red-400/10"
                         title="Purge Record"
                       >
@@ -199,10 +187,11 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                     <h4 className="text-3xl font-black font-headline tracking-tighter text-white">Observer Report</h4>
                     <p className="text-[10px] text-[#4F8EF7] font-black uppercase tracking-[0.2em]">Detailed Analytics Frame</p>
                   </div>
-                  <button
-                    onClick={() => setSelectedCalc(null)}
-                    className="p-3 rounded-2xl hover:bg-white/10 text-white/40 hover:text-white transition-all border border-transparent hover:border-white/10"
-                  >
+                   <button
+                     onClick={() => setSelectedCalc(null)}
+                     aria-label="Close calculation details"
+                     className="p-3 rounded-2xl hover:bg-white/10 text-white/40 hover:text-white transition-all border border-transparent hover:border-white/10"
+                   >
                     <X size={24} strokeWidth={3} />
                   </button>
                 </div>

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import {
   GraduationCap,
@@ -26,23 +24,7 @@ import SemesterComparison from "@/components/dashboard/SemesterComparison";
 import ActivityTimeline from "@/components/dashboard/ActivityTimeline";
 import InsightsPanel from "@/components/dashboard/InsightsPanel";
 import MotivationalBanner from "@/components/dashboard/MotivationalBanner";
-
-interface Subject {
-  name: string;
-  credits: number;
-  score: number;
-}
-
-interface Calculation {
-  id: number;
-  semester: string;
-  sgpa: number;
-  cgpa: number;
-  total_credits: number;
-  date: string;
-  created_at?: string;
-  subjects?: Subject[];
-}
+import type { Calculation } from "@/types/calculation";
 
 interface Plan {
   id: number | string;
@@ -65,6 +47,13 @@ interface Insight {
   color: string;
 }
 
+function normalizeCalculation(rawCalculation: Calculation): Calculation {
+  return {
+    ...rawCalculation,
+    subjects: Array.isArray(rawCalculation.subjects) ? rawCalculation.subjects : [],
+  };
+}
+
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -85,8 +74,8 @@ export default function DashboardPage() {
       ]);
 
       if (calcRes.ok) {
-        const calcData = await calcRes.json();
-        setCalculations(calcData);
+        const calcData: Calculation[] = await calcRes.json();
+        setCalculations(calcData.map(normalizeCalculation));
       }
       if (planRes.ok) {
         const planData = await planRes.json();
@@ -141,7 +130,8 @@ export default function DashboardPage() {
   };
 
   const handleExportPDF = async () => {
-    toast.success("PDF report generated successfully!");
+    window.print();
+    toast.success("Print dialog opened. Choose Save as PDF to export.");
   };
 
   if (!mounted) return null;
