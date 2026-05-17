@@ -37,7 +37,8 @@ export default function CustomCursor() {
 
   useEffect(() => {
     const isMobile = window.matchMedia("(max-width: 768px)").matches || "ontouchstart" in window;
-    if (isMobile) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isMobile || reduceMotion) return;
 
     setIsVisible(true);
 

@@ -174,6 +174,9 @@ export default function Navbar() {
             >
               <button
                 onClick={() => setIsToolsOpen(!isToolsOpen)}
+                aria-expanded={isToolsOpen}
+                aria-haspopup="menu"
+                aria-label="Toggle tools menu"
                 className={cn(
                   "flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-500 text-sm font-bold tracking-tight relative z-10",
                   isToolsOpen || isAnyToolActive ? "text-white" : "text-white/60 hover:text-white group"
@@ -259,6 +262,9 @@ export default function Navbar() {
           <div className="relative" ref={uniRef}>
             <button
               onClick={() => setIsUniOpen(!isUniOpen)}
+              aria-expanded={isUniOpen}
+              aria-haspopup="listbox"
+              aria-label="Select university"
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border transition-all duration-500 text-[13px] font-bold group shadow-inner",
                 isUniOpen
@@ -326,6 +332,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
             className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/[0.05] flex items-center justify-center transition-all duration-500 hover:bg-[#4F8EF7]/10 hover:border-[#4F8EF7]/20 text-white hover:text-[#4F8EF7] group shadow-inner"
           >
             <AnimatePresence mode="wait">
@@ -364,7 +371,7 @@ export default function Navbar() {
 
         {/* MOBILE TRIGGER */}
         <div className="flex md:hidden items-center group">
-          <button onClick={() => setIsMobileOpen(true)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white/[0.04] text-white active:scale-90 transition-all">
+          <button onClick={() => setIsMobileOpen(true)} aria-label="Open navigation menu" className="w-11 h-11 flex items-center justify-center rounded-full bg-white/[0.04] text-white active:scale-90 transition-all">
             <Menu size={22} className="group-hover:text-[#4F8EF7] transition-colors" />
           </button>
         </div>
@@ -383,7 +390,7 @@ export default function Navbar() {
             >
               <div className="flex items-center justify-between mb-8">
                 <span className="font-headline font-black text-2xl text-white tracking-widest">GF.OS</span>
-                <button onClick={() => setIsMobileOpen(false)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 text-white/60">
+                <button onClick={() => setIsMobileOpen(false)} aria-label="Close navigation menu" className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 text-white/60">
                   <X size={26} strokeWidth={3} />
                 </button>
               </div>
