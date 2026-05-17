@@ -1,15 +1,25 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState, useEffect, useMemo } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useTheme } from "next-themes";
-import { motion, AnimatePresence } from "framer-motion";
-import toast from "react-hot-toast";
-import { calculateRequiredGPA, getDifficultyLevel, gpaToPercentage } from "@/lib/calculations";
-import AnimatedCounter from "@/components/AnimatedCounter";
-import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
-import PremiumButton from "@/components/PremiumButton";
+import Link from 'next/link';
+import { useState, useEffect, useMemo } from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { useTheme } from 'next-themes';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { calculateRequiredGPA, getDifficultyLevel, gpaToPercentage } from '@/lib/calculations';
+import { useAcademicStore } from '@/lib/stores/academic-store';
+import { AcademicSimulator } from '@/lib/calculations/simulator';
+import AnimatedCounter from '@/components/AnimatedCounter';
+import StaggerContainer, { StaggerItem } from '@/components/StaggerContainer';
+import PremiumButton from '@/components/PremiumButton';
 
 interface ChartDataItem {
   semester: string;
@@ -39,25 +49,57 @@ interface PlannerResult {
 
 // Helper: get difficulty info for a specific GPA value (for per-row coloring)
 function getRowDifficulty(gpa: number) {
-  if (gpa > 9.5) return { barWidth: 100, barColor: "bg-red-500", tint: "bg-red-500/[0.03]", label: "Very Hard" };
-  if (gpa >= 8.5) return { barWidth: 75, barColor: "bg-orange-500", tint: "bg-yellow-500/[0.03]", label: "Challenging" };
-  if (gpa >= 7.5) return { barWidth: 50, barColor: "bg-blue-500", tint: "bg-blue-500/[0.03]", label: "Achievable" };
-  return { barWidth: 25, barColor: "bg-green-500", tint: "bg-green-500/[0.03]", label: "Easy" };
+  if (gpa > 9.5)
+    return { barWidth: 100, barColor: 'bg-red-500', tint: 'bg-red-500/[0.03]', label: 'Very Hard' };
+  if (gpa >= 8.5)
+    return {
+      barWidth: 75,
+      barColor: 'bg-orange-500',
+      tint: 'bg-yellow-500/[0.03]',
+      label: 'Challenging',
+    };
+  if (gpa >= 7.5)
+    return {
+      barWidth: 50,
+      barColor: 'bg-blue-500',
+      tint: 'bg-blue-500/[0.03]',
+      label: 'Achievable',
+    };
+  return { barWidth: 25, barColor: 'bg-green-500', tint: 'bg-green-500/[0.03]', label: 'Easy' };
 }
 
 export default function PlannerPage() {
-  const [currentCGPA, setCurrentCGPA] = useState("");
-  const [completedSemesters, setCompletedSemesters] = useState("");
-  const [totalCredits, setTotalCredits] = useState("");
-  const [targetCGPA, setTargetCGPA] = useState("");
-  const [remainingSemesters, setRemainingSemesters] = useState("");
-  const [creditsPerSemester, setCreditsPerSemester] = useState("20");
+  const { profile, semesters, syncFromDatabase } = useAcademicStore();
+
+  // Calculate current standing
+  const simulator = useMemo(() => new AcademicSimulator(semesters), [semesters]);
+  const currentCGPAFromStore = useMemo(() => simulator.calculateCgpa(), [simulator]);
+  const completedSemestersFromStore = useMemo(
+    () => semesters.filter((s) => s.isCompleted).length,
+    [semesters]
+  );
+  const totalCreditsFromStore = useMemo(() => {
+    let total = 0;
+    semesters.forEach((s) => s.subjects.forEach((sub) => (total += sub.credits)));
+    return total;
+  }, [semesters]);
+
+  const [currentCGPA, setCurrentCGPA] = useState(currentCGPAFromStore.toString());
+  const [completedSemesters, setCompletedSemesters] = useState(
+    completedSemestersFromStore.toString()
+  );
+  const [totalCredits, setTotalCredits] = useState(totalCreditsFromStore.toString());
+  const [targetCGPA, setTargetCGPA] = useState(profile?.targetCgpa?.toString() || '');
+
+  const [remainingSemesters, setRemainingSemesters] = useState('');
+  const [creditsPerSemester, setCreditsPerSemester] = useState('20');
 
   const [result, setResult] = useState<PlannerResult | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const { theme } = useTheme();
@@ -77,14 +119,27 @@ export default function PlannerPage() {
     const tc = parseInt(totalCredits);
 
     if (currentCGPA && !isNaN(c) && c >= 0 && c <= 10) v.currentCGPA = true;
-    if (completedSemesters && !isNaN(parseInt(completedSemesters)) && parseInt(completedSemesters) >= 1) v.completedSemesters = true;
+    if (
+      completedSemesters &&
+      !isNaN(parseInt(completedSemesters)) &&
+      parseInt(completedSemesters) >= 1
+    )
+      v.completedSemesters = true;
     if (totalCredits && !isNaN(tc) && tc >= 1) v.totalCredits = true;
-    if (targetCGPA && !isNaN(t) && t >= 0 && t <= 10 && (!currentCGPA || t > c)) v.targetCGPA = true;
+    if (targetCGPA && !isNaN(t) && t >= 0 && t <= 10 && (!currentCGPA || t > c))
+      v.targetCGPA = true;
     if (remainingSemesters && !isNaN(rs) && rs >= 1 && rs <= 8) v.remainingSemesters = true;
     if (creditsPerSemester && !isNaN(cps) && cps >= 1 && cps <= 30) v.creditsPerSemester = true;
 
     return v;
-  }, [currentCGPA, completedSemesters, totalCredits, targetCGPA, remainingSemesters, creditsPerSemester]);
+  }, [
+    currentCGPA,
+    completedSemesters,
+    totalCredits,
+    targetCGPA,
+    remainingSemesters,
+    creditsPerSemester,
+  ]);
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
@@ -94,36 +149,44 @@ export default function PlannerPage() {
     const cpsVal = parseInt(creditsPerSemester);
     const tcVal = parseInt(totalCredits);
 
-    if (!currentCGPA) e.currentCGPA = "Required";
-    else if (isNaN(cVal) || cVal < 0 || cVal > 10) e.currentCGPA = "Must be 0.0 – 10.0";
+    if (!currentCGPA) e.currentCGPA = 'Required';
+    else if (isNaN(cVal) || cVal < 0 || cVal > 10) e.currentCGPA = 'Must be 0.0 – 10.0';
 
-    if (!completedSemesters) e.completedSemesters = "Required";
-    else if (isNaN(parseInt(completedSemesters)) || parseInt(completedSemesters) < 1) e.completedSemesters = "Must be ≥ 1";
+    if (!completedSemesters) e.completedSemesters = 'Required';
+    else if (isNaN(parseInt(completedSemesters)) || parseInt(completedSemesters) < 1)
+      e.completedSemesters = 'Must be ≥ 1';
 
-    if (!totalCredits) e.totalCredits = "Required";
-    else if (isNaN(tcVal) || tcVal < 1) e.totalCredits = "Must be ≥ 1";
+    if (!totalCredits) e.totalCredits = 'Required';
+    else if (isNaN(tcVal) || tcVal < 1) e.totalCredits = 'Must be ≥ 1';
 
-    if (!targetCGPA) e.targetCGPA = "Required";
-    else if (isNaN(tVal) || tVal < 0 || tVal > 10) e.targetCGPA = "Must be 0.0 – 10.0";
-    else if (!isNaN(cVal) && tVal <= cVal) e.targetCGPA = "Must be > current CGPA";
+    if (!targetCGPA) e.targetCGPA = 'Required';
+    else if (isNaN(tVal) || tVal < 0 || tVal > 10) e.targetCGPA = 'Must be 0.0 – 10.0';
+    else if (!isNaN(cVal) && tVal <= cVal) e.targetCGPA = 'Must be > current CGPA';
 
-    if (!remainingSemesters) e.remainingSemesters = "Required";
-    else if (isNaN(rsVal) || rsVal < 1 || rsVal > 8) e.remainingSemesters = "Must be 1 – 8";
+    if (!remainingSemesters) e.remainingSemesters = 'Required';
+    else if (isNaN(rsVal) || rsVal < 1 || rsVal > 8) e.remainingSemesters = 'Must be 1 – 8';
 
-    if (!creditsPerSemester) e.creditsPerSemester = "Required";
-    else if (isNaN(cpsVal) || cpsVal < 1 || cpsVal > 30) e.creditsPerSemester = "Must be 1 – 30";
+    if (!creditsPerSemester) e.creditsPerSemester = 'Required';
+    else if (isNaN(cpsVal) || cpsVal < 1 || cpsVal > 30) e.creditsPerSemester = 'Must be 1 – 30';
 
     setErrors(e);
     // Mark all as touched
     const allTouched: Record<string, boolean> = {};
-    ["currentCGPA", "completedSemesters", "totalCredits", "targetCGPA", "remainingSemesters", "creditsPerSemester"].forEach(k => allTouched[k] = true);
+    [
+      'currentCGPA',
+      'completedSemesters',
+      'totalCredits',
+      'targetCGPA',
+      'remainingSemesters',
+      'creditsPerSemester',
+    ].forEach((k) => (allTouched[k] = true));
     setTouched(allTouched);
     return Object.keys(e).length === 0;
   };
 
   const handleGenerate = () => {
     if (!validate()) {
-      toast.error("Please fix the highlighted fields.");
+      toast.error('Please fix the highlighted fields.');
       return;
     }
     setIsGenerating(true);
@@ -140,7 +203,7 @@ export default function PlannerPage() {
       const isImpossible = requiredGPA > 10;
 
       if (isImpossible) {
-        toast.error("Target requires GPA above 10 — mathematically impossible!");
+        toast.error('Target requires GPA above 10 — mathematically impossible!');
       }
 
       // Build chart data — linear interpolation from current to target
@@ -152,7 +215,7 @@ export default function PlannerPage() {
       });
 
       for (let i = 1; i <= remSems; i++) {
-        const projectedCGPA = cCGPA + ((target - cCGPA) * (i / remSems));
+        const projectedCGPA = cCGPA + (target - cCGPA) * (i / remSems);
         chartData.push({
           semester: `Sem ${completedSemsVal + i}`,
           Target_Path: Number(projectedCGPA.toFixed(2)),
@@ -177,7 +240,7 @@ export default function PlannerPage() {
       });
 
       setIsGenerating(false);
-      if (!isImpossible) toast.success("Plan generated successfully!");
+      if (!isImpossible) toast.success('Plan generated successfully!');
     }, 1000);
   };
 
@@ -186,9 +249,9 @@ export default function PlannerPage() {
     setIsSaving(true);
     setSaveSuccess(false);
     try {
-      const res = await fetch("/api/plans", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/plans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           current_cgpa: currentCGPA,
           target_cgpa: targetCGPA,
@@ -199,50 +262,56 @@ export default function PlannerPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("API failed");
+      if (!res.ok) throw new Error('API failed');
+
+      // Refresh global state
+      await syncFromDatabase();
+
       setSaveSuccess(true);
-      toast.success("Plan saved to Dashboard!");
+      toast.success('Academic Goal established!');
       setTimeout(() => setSaveSuccess(false), 2000);
     } catch (err) {
       console.error(err);
-      toast.error("Error saving. Attempting local sync.");
-      setTimeout(() => {
-        setSaveSuccess(true);
-        setIsSaving(false);
-        toast.success("Saved to local cache!");
-      }, 1000);
+      toast.error('Sync error. Goal saved locally.');
+      setSaveSuccess(true);
     } finally {
-      if (!saveSuccess) setIsSaving(false);
+      setIsSaving(false);
     }
   };
 
   if (!mounted) return null;
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
 
   const getInputClass = (field: string) => {
     const hasError = errors[field] && touched[field];
     const isValid = fieldValid[field] && touched[field];
     return `w-full rounded-2xl p-4 pt-7 pb-2 text-on-surface placeholder-transparent outline-none transition-all duration-300 font-bold peer
-      ${hasError
-        ? "border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-500/5"
-        : isValid
-          ? "border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.2)] bg-green-500/5"
-          : "border-white/[0.08] bg-white/[0.04]"
+      ${
+        hasError
+          ? 'border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-500/5'
+          : isValid
+            ? 'border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.2)] bg-green-500/5'
+            : 'border-white/[0.08] bg-white/[0.04]'
       }
       border backdrop-blur-sm
       focus:border-[#4F8EF7]/50 focus:shadow-[0_0_20px_rgba(79,142,247,0.25)] focus:bg-white/[0.06]`;
   };
 
-  const labelClass = "absolute left-4 top-4 text-sm font-medium text-on-surface-variant transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#4F8EF7] pointer-events-none";
+  const labelClass =
+    'absolute left-4 top-4 text-sm font-medium text-on-surface-variant transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#4F8EF7] pointer-events-none';
 
   // Expert insight text
   const getExpertText = () => {
-    if (!result) return "";
-    if (result.isImpossible) return "Mathematically impossible target. Please adjust your target CGPA or increase remaining semesters.";
-    if (result.requiredGPA > 9.5) return `Your target requires maximum effort. Focus on high-credit core subjects first. Maintaining ${result.requiredGPA}+ GPA every semester is extremely demanding but achievable with disciplined study habits.`;
-    if (result.requiredGPA >= 8.0) return `Your target requires consistent focus. Scoring ${result.requiredGPA} each semester is achievable with regular study and good preparation. Avoid backlogs at all costs.`;
-    if (result.requiredGPA >= 7.0) return "Your target is well within reach. Maintain consistent performance and avoid any backlogs this semester.";
-    return "Your target is very comfortable. You are already on a strong path. Keep performing consistently.";
+    if (!result) return '';
+    if (result.isImpossible)
+      return 'Mathematically impossible target. Please adjust your target CGPA or increase remaining semesters.';
+    if (result.requiredGPA > 9.5)
+      return `Your target requires maximum effort. Focus on high-credit core subjects first. Maintaining ${result.requiredGPA}+ GPA every semester is extremely demanding but achievable with disciplined study habits.`;
+    if (result.requiredGPA >= 8.0)
+      return `Your target requires consistent focus. Scoring ${result.requiredGPA} each semester is achievable with regular study and good preparation. Avoid backlogs at all costs.`;
+    if (result.requiredGPA >= 7.0)
+      return 'Your target is well within reach. Maintain consistent performance and avoid any backlogs this semester.';
+    return 'Your target is very comfortable. You are already on a strong path. Keep performing consistently.';
   };
 
   return (
@@ -252,7 +321,6 @@ export default function PlannerPage() {
       <div className="fixed bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
 
       <main className="pt-32 pb-24 px-6 max-w-7xl mx-auto space-y-12 min-h-screen">
-
         {/* ━━━ PAGE HEADER ━━━ */}
         <StaggerContainer className="text-center space-y-4">
           <StaggerItem>
@@ -282,10 +350,10 @@ export default function PlannerPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="rounded-[2.5rem] p-10 border border-white/10"
           style={{
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            background: "rgba(255,255,255,0.05)",
-            boxShadow: "0 0 30px rgba(79,142,247,0.1), 0 4px 30px rgba(0,0,0,0.1)",
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            background: 'rgba(255,255,255,0.05)',
+            boxShadow: '0 0 30px rgba(79,142,247,0.1), 0 4px 30px rgba(0,0,0,0.1)',
           }}
         >
           <div className="grid md:grid-cols-2 gap-12 items-start mb-10">
@@ -300,27 +368,97 @@ export default function PlannerPage() {
               <div className="grid grid-cols-1 gap-6">
                 {/* Current CGPA */}
                 <div className="relative">
-                  <input type="number" step="0.01" min="0" max="10" value={currentCGPA}
-                    onChange={(e) => { setCurrentCGPA(e.target.value); setErrors({ ...errors, currentCGPA: "" }); setTouched({ ...touched, currentCGPA: true }); }}
-                    className={getInputClass("currentCGPA")} placeholder="." />
-                  <label className={labelClass + (currentCGPA ? " !top-1.5 !text-[10px]" : "")}>Current CGPA</label>
-                  <AnimatePresence>{errors.currentCGPA && touched.currentCGPA && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.currentCGPA}</motion.p>}</AnimatePresence>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="10"
+                    value={currentCGPA}
+                    onChange={(e) => {
+                      setCurrentCGPA(e.target.value);
+                      setErrors({ ...errors, currentCGPA: '' });
+                      setTouched({ ...touched, currentCGPA: true });
+                    }}
+                    className={getInputClass('currentCGPA')}
+                    placeholder="."
+                  />
+                  <label className={labelClass + (currentCGPA ? ' !top-1.5 !text-[10px]' : '')}>
+                    Current CGPA
+                  </label>
+                  <AnimatePresence>
+                    {errors.currentCGPA && touched.currentCGPA && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold"
+                      >
+                        {errors.currentCGPA}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
                 </div>
                 {/* Completed Sems + Credits */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="relative">
-                    <input type="number" min="1" value={completedSemesters}
-                      onChange={(e) => { setCompletedSemesters(e.target.value); setErrors({ ...errors, completedSemesters: "" }); setTouched({ ...touched, completedSemesters: true }); }}
-                      className={getInputClass("completedSemesters")} placeholder="." />
-                    <label className={labelClass + (completedSemesters ? " !top-1.5 !text-[10px]" : "")}>Completed Sems</label>
-                    <AnimatePresence>{errors.completedSemesters && touched.completedSemesters && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.completedSemesters}</motion.p>}</AnimatePresence>
+                    <input
+                      type="number"
+                      min="1"
+                      value={completedSemesters}
+                      onChange={(e) => {
+                        setCompletedSemesters(e.target.value);
+                        setErrors({ ...errors, completedSemesters: '' });
+                        setTouched({ ...touched, completedSemesters: true });
+                      }}
+                      className={getInputClass('completedSemesters')}
+                      placeholder="."
+                    />
+                    <label
+                      className={labelClass + (completedSemesters ? ' !top-1.5 !text-[10px]' : '')}
+                    >
+                      Completed Sems
+                    </label>
+                    <AnimatePresence>
+                      {errors.completedSemesters && touched.completedSemesters && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold"
+                        >
+                          {errors.completedSemesters}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                   </div>
                   <div className="relative">
-                    <input type="number" min="1" value={totalCredits}
-                      onChange={(e) => { setTotalCredits(e.target.value); setErrors({ ...errors, totalCredits: "" }); setTouched({ ...touched, totalCredits: true }); }}
-                      className={getInputClass("totalCredits")} placeholder="." />
-                    <label className={labelClass + (totalCredits ? " !top-1.5 !text-[10px]" : "")}>Credits Done</label>
-                    <AnimatePresence>{errors.totalCredits && touched.totalCredits && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.totalCredits}</motion.p>}</AnimatePresence>
+                    <input
+                      type="number"
+                      min="1"
+                      value={totalCredits}
+                      onChange={(e) => {
+                        setTotalCredits(e.target.value);
+                        setErrors({ ...errors, totalCredits: '' });
+                        setTouched({ ...touched, totalCredits: true });
+                      }}
+                      className={getInputClass('totalCredits')}
+                      placeholder="."
+                    />
+                    <label className={labelClass + (totalCredits ? ' !top-1.5 !text-[10px]' : '')}>
+                      Credits Done
+                    </label>
+                    <AnimatePresence>
+                      {errors.totalCredits && touched.totalCredits && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold"
+                        >
+                          {errors.totalCredits}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
@@ -337,27 +475,101 @@ export default function PlannerPage() {
               <div className="grid grid-cols-1 gap-6">
                 {/* Target CGPA */}
                 <div className="relative">
-                  <input type="number" step="0.01" min="0" max="10" value={targetCGPA}
-                    onChange={(e) => { setTargetCGPA(e.target.value); setErrors({ ...errors, targetCGPA: "" }); setTouched({ ...touched, targetCGPA: true }); }}
-                    className={getInputClass("targetCGPA")} placeholder="." />
-                  <label className={labelClass + (targetCGPA ? " !top-1.5 !text-[10px]" : "")}>Target CGPA</label>
-                  <AnimatePresence>{errors.targetCGPA && touched.targetCGPA && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.targetCGPA}</motion.p>}</AnimatePresence>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="10"
+                    value={targetCGPA}
+                    onChange={(e) => {
+                      setTargetCGPA(e.target.value);
+                      setErrors({ ...errors, targetCGPA: '' });
+                      setTouched({ ...touched, targetCGPA: true });
+                    }}
+                    className={getInputClass('targetCGPA')}
+                    placeholder="."
+                  />
+                  <label className={labelClass + (targetCGPA ? ' !top-1.5 !text-[10px]' : '')}>
+                    Target CGPA
+                  </label>
+                  <AnimatePresence>
+                    {errors.targetCGPA && touched.targetCGPA && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold"
+                      >
+                        {errors.targetCGPA}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
                 </div>
                 {/* Remaining Sems + Credits Per Sem */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="relative">
-                    <input type="number" min="1" max="8" value={remainingSemesters}
-                      onChange={(e) => { setRemainingSemesters(e.target.value); setErrors({ ...errors, remainingSemesters: "" }); setTouched({ ...touched, remainingSemesters: true }); }}
-                      className={getInputClass("remainingSemesters")} placeholder="." />
-                    <label className={labelClass + (remainingSemesters ? " !top-1.5 !text-[10px]" : "")}>Remaining Sems</label>
-                    <AnimatePresence>{errors.remainingSemesters && touched.remainingSemesters && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.remainingSemesters}</motion.p>}</AnimatePresence>
+                    <input
+                      type="number"
+                      min="1"
+                      max="8"
+                      value={remainingSemesters}
+                      onChange={(e) => {
+                        setRemainingSemesters(e.target.value);
+                        setErrors({ ...errors, remainingSemesters: '' });
+                        setTouched({ ...touched, remainingSemesters: true });
+                      }}
+                      className={getInputClass('remainingSemesters')}
+                      placeholder="."
+                    />
+                    <label
+                      className={labelClass + (remainingSemesters ? ' !top-1.5 !text-[10px]' : '')}
+                    >
+                      Remaining Sems
+                    </label>
+                    <AnimatePresence>
+                      {errors.remainingSemesters && touched.remainingSemesters && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold"
+                        >
+                          {errors.remainingSemesters}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                   </div>
                   <div className="relative">
-                    <input type="number" min="1" max="30" value={creditsPerSemester}
-                      onChange={(e) => { setCreditsPerSemester(e.target.value); setErrors({ ...errors, creditsPerSemester: "" }); setTouched({ ...touched, creditsPerSemester: true }); }}
-                      className={getInputClass("creditsPerSemester")} placeholder="." />
-                    <label className={labelClass + (creditsPerSemester ? " !top-1.5 !text-[10px]" : "")}>Credits Per Sem</label>
-                    <AnimatePresence>{errors.creditsPerSemester && touched.creditsPerSemester && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.creditsPerSemester}</motion.p>}</AnimatePresence>
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={creditsPerSemester}
+                      onChange={(e) => {
+                        setCreditsPerSemester(e.target.value);
+                        setErrors({ ...errors, creditsPerSemester: '' });
+                        setTouched({ ...touched, creditsPerSemester: true });
+                      }}
+                      className={getInputClass('creditsPerSemester')}
+                      placeholder="."
+                    />
+                    <label
+                      className={labelClass + (creditsPerSemester ? ' !top-1.5 !text-[10px]' : '')}
+                    >
+                      Credits Per Sem
+                    </label>
+                    <AnimatePresence>
+                      {errors.creditsPerSemester && touched.creditsPerSemester && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold"
+                        >
+                          {errors.creditsPerSemester}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
@@ -369,19 +581,30 @@ export default function PlannerPage() {
             <motion.button
               onClick={handleGenerate}
               disabled={isGenerating}
-              whileHover={{ scale: 1.02, boxShadow: "0 0 40px rgba(79,142,247,0.4)" }}
+              whileHover={{ scale: 1.02, boxShadow: '0 0 40px rgba(79,142,247,0.4)' }}
               whileTap={{ scale: 0.97 }}
               className="w-full max-w-md py-4 px-8 rounded-full font-bold text-white text-base flex items-center justify-center gap-3 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
-                background: "linear-gradient(135deg, #4F8EF7 0%, #7C3AED 100%)",
-                boxShadow: "0 0 25px rgba(79,142,247,0.3)",
+                background: 'linear-gradient(135deg, #4F8EF7 0%, #7C3AED 100%)',
+                boxShadow: '0 0 25px rgba(79,142,247,0.3)',
               }}
             >
               {isGenerating ? (
                 <>
                   <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
                   </svg>
                   Generating...
                 </>
@@ -402,7 +625,7 @@ export default function PlannerPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               className="space-y-12"
             >
               {/* Impossible Warning */}
@@ -412,39 +635,46 @@ export default function PlannerPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="rounded-[2rem] p-8 border border-red-500/40 text-center space-y-3"
                   style={{
-                    background: "rgba(239,68,68,0.08)",
-                    boxShadow: "0 0 30px rgba(239,68,68,0.2)",
-                    backdropFilter: "blur(20px)",
+                    background: 'rgba(239,68,68,0.08)',
+                    boxShadow: '0 0 30px rgba(239,68,68,0.2)',
+                    backdropFilter: 'blur(20px)',
                   }}
                 >
                   <span className="material-symbols-outlined text-red-400 text-4xl">warning</span>
                   <h3 className="text-xl font-bold text-red-400">Target Cannot Be Achieved</h3>
                   <p className="text-red-300/80 max-w-md mx-auto">
-                    This target cannot be achieved in the remaining semesters.
-                    Please adjust your target CGPA or increase the number of remaining semesters.
+                    This target cannot be achieved in the remaining semesters. Please adjust your
+                    target CGPA or increase the number of remaining semesters.
                   </p>
                 </motion.div>
               )}
 
               {/* ━━━ 3 RESULT CARDS ━━━ */}
-              <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <StaggerContainer
+                staggerDelay={0.15}
+                className="grid grid-cols-1 md:grid-cols-3 gap-8"
+              >
                 {/* Card 1 — CGPA Gap */}
                 <StaggerItem>
                   <div
                     className="rounded-[2rem] p-8 flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden border-t-[3px] border-[#4F8EF7]/60"
                     style={{
-                      background: "rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(20px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderTop: "3px solid rgba(79,142,247,0.6)",
-                      boxShadow: "0 0 20px rgba(79,142,247,0.1)",
+                      background: 'rgba(255,255,255,0.05)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderTop: '3px solid rgba(79,142,247,0.6)',
+                      boxShadow: '0 0 20px rgba(79,142,247,0.1)',
                     }}
                   >
-                    <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">CGPA Gap</span>
+                    <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">
+                      CGPA Gap
+                    </span>
                     <div className="text-5xl font-black font-headline bg-gradient-to-br from-[#4F8EF7] to-blue-400 bg-clip-text text-transparent tracking-tighter group-hover:scale-105 transition-transform">
                       +<AnimatedCounter target={result.gap > 0 ? result.gap : 0} decimals={2} />
                     </div>
-                    <span className="text-on-surface-variant/60 text-xs">Points needed to reach target</span>
+                    <span className="text-on-surface-variant/60 text-xs">
+                      Points needed to reach target
+                    </span>
                   </div>
                 </StaggerItem>
 
@@ -453,44 +683,55 @@ export default function PlannerPage() {
                   <div
                     className="rounded-[2rem] p-8 flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
                     style={{
-                      background: "rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(20px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderTop: "3px solid rgba(124,58,237,0.6)",
-                      boxShadow: "0 0 20px rgba(124,58,237,0.1)",
+                      background: 'rgba(255,255,255,0.05)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderTop: '3px solid rgba(124,58,237,0.6)',
+                      boxShadow: '0 0 20px rgba(124,58,237,0.1)',
                     }}
                   >
-                    <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">Required Each Semester</span>
+                    <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">
+                      Required Each Semester
+                    </span>
                     <div className="text-5xl font-black font-headline bg-gradient-to-br from-purple-400 to-purple-600 bg-clip-text text-transparent tracking-tighter group-hover:scale-105 transition-transform">
                       <AnimatedCounter target={result.requiredGPA} decimals={2} />
                     </div>
-                    <span className="text-on-surface-variant/60 text-xs">Average maintenance GPA</span>
+                    <span className="text-on-surface-variant/60 text-xs">
+                      Average maintenance GPA
+                    </span>
                   </div>
                 </StaggerItem>
 
                 {/* Card 3 — Difficulty */}
                 <StaggerItem>
                   <div
-                    className={`rounded-[2rem] p-8 flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden ${result.requiredGPA > 9.5 ? "animate-pulse" : ""}`}
+                    className={`rounded-[2rem] p-8 flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden ${result.requiredGPA > 9.5 ? 'animate-pulse' : ''}`}
                     style={{
-                      background: "rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(20px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderTop: `3px solid ${result.requiredGPA > 9.5 ? "rgba(239,68,68,0.6)" : result.requiredGPA >= 8.0 ? "rgba(234,179,8,0.6)" : result.requiredGPA >= 7.0 ? "rgba(59,130,246,0.6)" : "rgba(34,197,94,0.6)"}`,
-                      boxShadow: result.requiredGPA > 9.5
-                        ? "0 0 20px rgba(239,68,68,0.15)"
-                        : result.requiredGPA >= 8.0
-                          ? "0 0 20px rgba(234,179,8,0.15)"
-                          : result.requiredGPA >= 7.0
-                            ? "0 0 20px rgba(59,130,246,0.15)"
-                            : "0 0 20px rgba(34,197,94,0.15)",
+                      background: 'rgba(255,255,255,0.05)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderTop: `3px solid ${result.requiredGPA > 9.5 ? 'rgba(239,68,68,0.6)' : result.requiredGPA >= 8.0 ? 'rgba(234,179,8,0.6)' : result.requiredGPA >= 7.0 ? 'rgba(59,130,246,0.6)' : 'rgba(34,197,94,0.6)'}`,
+                      boxShadow:
+                        result.requiredGPA > 9.5
+                          ? '0 0 20px rgba(239,68,68,0.15)'
+                          : result.requiredGPA >= 8.0
+                            ? '0 0 20px rgba(234,179,8,0.15)'
+                            : result.requiredGPA >= 7.0
+                              ? '0 0 20px rgba(59,130,246,0.15)'
+                              : '0 0 20px rgba(34,197,94,0.15)',
                     }}
                   >
-                    <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">Difficulty Level</span>
-                    <div className={`text-4xl font-black font-headline ${result.difficulty.color} group-hover:scale-105 transition-transform leading-[1.1]`}>
+                    <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">
+                      Difficulty Level
+                    </span>
+                    <div
+                      className={`text-4xl font-black font-headline ${result.difficulty.color} group-hover:scale-105 transition-transform leading-[1.1]`}
+                    >
                       {result.difficulty.label}
                     </div>
-                    <span className="text-on-surface-variant/60 text-xs">{result.difficulty.subLabel}</span>
+                    <span className="text-on-surface-variant/60 text-xs">
+                      {result.difficulty.subLabel}
+                    </span>
                   </div>
                 </StaggerItem>
               </StaggerContainer>
@@ -504,19 +745,26 @@ export default function PlannerPage() {
                   transition={{ delay: 0.3 }}
                   className="rounded-[2.5rem] p-10 overflow-x-auto"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
+                    background: 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: '0 4px 30px rgba(0,0,0,0.1)',
                   }}
                 >
                   <div className="mb-8">
-                    <h3 className="font-headline text-2xl font-bold text-on-surface">Semester Plan Breakdown</h3>
-                    <p className="text-on-surface-variant/60 text-sm mt-1">Your required performance per semester</p>
+                    <h3 className="font-headline text-2xl font-bold text-on-surface">
+                      Semester Plan Breakdown
+                    </h3>
+                    <p className="text-on-surface-variant/60 text-sm mt-1">
+                      Your required performance per semester
+                    </p>
                   </div>
                   <table className="w-full text-left min-w-[700px]">
                     <thead>
-                      <tr className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em]" style={{ borderBottom: "1px solid rgba(79,142,247,0.3)" }}>
+                      <tr
+                        className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em]"
+                        style={{ borderBottom: '1px solid rgba(79,142,247,0.3)' }}
+                      >
                         <th className="pb-4 px-2">Semester</th>
                         <th className="pb-4 px-2">Credits</th>
                         <th className="pb-4 px-2">Required GPA</th>
@@ -533,19 +781,31 @@ export default function PlannerPage() {
                             key={i}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 + (i * 0.1) }}
+                            transition={{ delay: 0.4 + i * 0.1 }}
                             className={`border-b border-white/5 last:border-0 hover:bg-white/[0.04] transition-colors ${rowDiff.tint}`}
                           >
-                            <td className="py-5 px-2 font-bold text-on-surface">Semester {parseInt(completedSemesters) + i + 1}</td>
-                            <td className="py-5 px-2 text-on-surface-variant">{result.creditsPerSem}</td>
-                            <td className="py-5 px-2 font-bold text-purple-400">{result.requiredGPA}</td>
-                            <td className="py-5 px-2 text-on-surface-variant font-medium">{pct.toFixed(1)}%</td>
+                            <td className="py-5 px-2 font-bold text-on-surface">
+                              Semester {parseInt(completedSemesters) + i + 1}
+                            </td>
+                            <td className="py-5 px-2 text-on-surface-variant">
+                              {result.creditsPerSem}
+                            </td>
+                            <td className="py-5 px-2 font-bold text-purple-400">
+                              {result.requiredGPA}
+                            </td>
+                            <td className="py-5 px-2 text-on-surface-variant font-medium">
+                              {pct.toFixed(1)}%
+                            </td>
                             <td className="py-5 px-2">
                               <div className="h-2.5 w-full bg-white/[0.08] rounded-full overflow-hidden">
                                 <motion.div
                                   initial={{ width: 0 }}
                                   animate={{ width: `${rowDiff.barWidth}%` }}
-                                  transition={{ duration: 1, delay: 0.8 + (i * 0.1), ease: "easeOut" }}
+                                  transition={{
+                                    duration: 1,
+                                    delay: 0.8 + i * 0.1,
+                                    ease: 'easeOut',
+                                  }}
                                   className={`h-full rounded-full ${rowDiff.barColor}`}
                                 />
                               </div>
@@ -556,7 +816,13 @@ export default function PlannerPage() {
                       {/* Final row */}
                       <tr>
                         <td colSpan={5} className="py-0 px-0">
-                          <div className="mt-2 rounded-2xl py-5 px-4 text-center font-bold text-lg" style={{ background: "linear-gradient(135deg, rgba(79,142,247,0.1), rgba(124,58,237,0.1))" }}>
+                          <div
+                            className="mt-2 rounded-2xl py-5 px-4 text-center font-bold text-lg"
+                            style={{
+                              background:
+                                'linear-gradient(135deg, rgba(79,142,247,0.1), rgba(124,58,237,0.1))',
+                            }}
+                          >
                             <span className="bg-gradient-to-r from-[#4F8EF7] to-purple-400 bg-clip-text text-transparent">
                               Final Predicted CGPA: {targetCGPA} / 10
                             </span>
@@ -577,26 +843,37 @@ export default function PlannerPage() {
                   transition={{ delay: 0.4 }}
                   className="rounded-[2.5rem] p-10 space-y-8"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
+                    background: 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: '0 4px 30px rgba(0,0,0,0.1)',
                   }}
                 >
                   <div className="flex justify-between items-end">
                     <div className="space-y-1">
-                      <h3 className="font-headline text-2xl font-bold text-on-surface">CGPA Projection</h3>
-                      <p className="text-on-surface-variant text-sm">Visualization of your path from current to target status.</p>
+                      <h3 className="font-headline text-2xl font-bold text-on-surface">
+                        CGPA Projection
+                      </h3>
+                      <p className="text-on-surface-variant text-sm">
+                        Visualization of your path from current to target status.
+                      </p>
                     </div>
                   </div>
-                  <div className="w-full" style={{ minHeight: "300px", height: "400px" }}>
+                  <div className="w-full" style={{ minHeight: '300px', height: '400px' }}>
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={result.chartData} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                      <LineChart
+                        data={result.chartData}
+                        margin={{ top: 20, right: 30, left: -20, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="rgba(255,255,255,0.06)"
+                          vertical={false}
+                        />
                         <XAxis
                           dataKey="semester"
                           stroke="rgba(255,255,255,0.3)"
-                          tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
+                          tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
                           axisLine={false}
                           tickLine={false}
                           dy={10}
@@ -604,7 +881,7 @@ export default function PlannerPage() {
                         <YAxis
                           domain={[0, 10]}
                           stroke="rgba(255,255,255,0.3)"
-                          tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
+                          tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
                           axisLine={false}
                           tickLine={false}
                           dx={-10}
@@ -612,11 +889,11 @@ export default function PlannerPage() {
                         />
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: isDark ? "#12141C" : "#1a1a2e",
-                            borderRadius: "12px",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            color: "#fff",
-                            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                            backgroundColor: isDark ? '#12141C' : '#1a1a2e',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#fff',
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
                           }}
                         />
                         <Line
@@ -634,9 +911,9 @@ export default function PlannerPage() {
                           dataKey="Target_Path"
                           stroke="#4F8EF7"
                           strokeWidth={3}
-                          activeDot={{ r: 8, fill: "#4F8EF7", stroke: "#0a0a0f", strokeWidth: 3 }}
-                          dot={{ r: 5, fill: "#4F8EF7", stroke: "#0a0a0f", strokeWidth: 2 }}
-                          style={{ filter: "drop-shadow(0 0 6px #4F8EF7)" }}
+                          activeDot={{ r: 8, fill: '#4F8EF7', stroke: '#0a0a0f', strokeWidth: 3 }}
+                          dot={{ r: 5, fill: '#4F8EF7', stroke: '#0a0a0f', strokeWidth: 2 }}
+                          style={{ filter: 'drop-shadow(0 0 6px #4F8EF7)' }}
                           animationDuration={1500}
                           name="Target Path"
                         />
@@ -647,11 +924,15 @@ export default function PlannerPage() {
                   <div className="flex items-center justify-center gap-6">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/10">
                       <div className="w-6 h-0 border-t-2 border-dashed border-white/30" />
-                      <span className="text-xs text-on-surface-variant font-medium">Current Trend</span>
+                      <span className="text-xs text-on-surface-variant font-medium">
+                        Current Trend
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/10">
                       <div className="w-6 h-0.5 bg-[#4F8EF7] rounded-full shadow-[0_0_6px_#4F8EF7]" />
-                      <span className="text-xs text-on-surface-variant font-medium">Target Path</span>
+                      <span className="text-xs text-on-surface-variant font-medium">
+                        Target Path
+                      </span>
                     </div>
                   </div>
                 </motion.section>
@@ -667,15 +948,23 @@ export default function PlannerPage() {
                   transition={{ delay: 0.5 }}
                   className="rounded-[2.5rem] p-10 space-y-6 flex flex-col justify-between"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,193,7,0.4)",
-                    boxShadow: "0 0 20px rgba(255,193,7,0.15)",
+                    background: 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255,193,7,0.4)',
+                    boxShadow: '0 0 20px rgba(255,193,7,0.15)',
                   }}
                 >
                   <div className="space-y-5">
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(255,193,7,0.15)", border: "1px solid rgba(255,193,7,0.3)" }}>
-                      <span className="material-symbols-outlined text-yellow-400 text-2xl">lightbulb</span>
+                    <div
+                      className="w-14 h-14 rounded-full flex items-center justify-center"
+                      style={{
+                        background: 'rgba(255,193,7,0.15)',
+                        border: '1px solid rgba(255,193,7,0.3)',
+                      }}
+                    >
+                      <span className="material-symbols-outlined text-yellow-400 text-2xl">
+                        lightbulb
+                      </span>
                     </div>
                     <div className="space-y-3">
                       <h4 className="font-headline font-bold text-lg text-white">Expert Insight</h4>
@@ -699,37 +988,45 @@ export default function PlannerPage() {
                   transition={{ delay: 0.6 }}
                   className="rounded-[2.5rem] p-10 flex flex-col justify-center"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(79,142,247,0.3)",
-                    boxShadow: "0 0 20px rgba(79,142,247,0.1)",
+                    background: 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(79,142,247,0.3)',
+                    boxShadow: '0 0 20px rgba(79,142,247,0.1)',
                   }}
                 >
-                  <h4 className="font-headline font-bold text-xl text-white mb-8">Your CGPA Journey</h4>
+                  <h4 className="font-headline font-bold text-xl text-white mb-8">
+                    Your CGPA Journey
+                  </h4>
                   <div className="relative pt-10 pb-2">
                     {/* Current CGPA Marker */}
                     <motion.div
-                      initial={{ left: "0%" }}
+                      initial={{ left: '0%' }}
                       animate={{ left: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                      transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
+                      transition={{ duration: 1, delay: 0.8, ease: 'easeOut' }}
                       className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
                     >
-                      <span className="text-[11px] font-bold text-[#4F8EF7] whitespace-nowrap">Current: {parseFloat(currentCGPA).toFixed(1)}</span>
-                      <span className="material-symbols-outlined text-[#4F8EF7] text-sm">arrow_drop_down</span>
+                      <span className="text-[11px] font-bold text-[#4F8EF7] whitespace-nowrap">
+                        Current: {parseFloat(currentCGPA).toFixed(1)}
+                      </span>
+                      <span className="material-symbols-outlined text-[#4F8EF7] text-sm">
+                        arrow_drop_down
+                      </span>
                     </motion.div>
 
                     {/* Target CGPA Marker */}
                     <motion.div
-                      initial={{ left: "0%" }}
+                      initial={{ left: '0%' }}
                       animate={{ left: `${(parseFloat(targetCGPA) / 10) * 100}%` }}
-                      transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
+                      transition={{ duration: 1, delay: 1.2, ease: 'easeOut' }}
                       className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
                     >
                       <span className="text-[11px] font-bold text-purple-400 whitespace-nowrap flex items-center gap-0.5">
                         <span className="material-symbols-outlined text-[12px]">flag</span>
                         Target: {parseFloat(targetCGPA).toFixed(1)}
                       </span>
-                      <span className="material-symbols-outlined text-purple-400 text-sm">arrow_drop_down</span>
+                      <span className="material-symbols-outlined text-purple-400 text-sm">
+                        arrow_drop_down
+                      </span>
                     </motion.div>
 
                     {/* Progress Bar */}
@@ -737,35 +1034,39 @@ export default function PlannerPage() {
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                        transition={{ duration: 1, ease: "easeOut", delay: 0.8 }}
+                        transition={{ duration: 1, ease: 'easeOut', delay: 0.8 }}
                         className="absolute inset-y-0 left-0 rounded-md"
-                        style={{ background: "linear-gradient(90deg, #4F8EF7, #7C3AED)" }}
+                        style={{ background: 'linear-gradient(90deg, #4F8EF7, #7C3AED)' }}
                       />
                       {/* Current position dot */}
                       <motion.div
-                        initial={{ left: "0%" }}
+                        initial={{ left: '0%' }}
                         animate={{ left: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                        transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
+                        transition={{ duration: 1, delay: 0.8, ease: 'easeOut' }}
                         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#4F8EF7] border-2 border-black/50 z-10"
-                        style={{ boxShadow: "0 0 10px rgba(79,142,247,0.6)" }}
+                        style={{ boxShadow: '0 0 10px rgba(79,142,247,0.6)' }}
                       />
                       {/* Target position dot */}
                       <motion.div
-                        initial={{ left: "0%" }}
+                        initial={{ left: '0%' }}
                         animate={{ left: `${(parseFloat(targetCGPA) / 10) * 100}%` }}
-                        transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
+                        transition={{ duration: 1, delay: 1.2, ease: 'easeOut' }}
                         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-purple-500 border-2 border-black/50 z-10"
-                        style={{ boxShadow: "0 0 10px rgba(124,58,237,0.6)" }}
+                        style={{ boxShadow: '0 0 10px rgba(124,58,237,0.6)' }}
                       />
                     </div>
 
                     {/* Scale Labels */}
                     <div className="flex justify-between mt-2 text-[10px] text-on-surface-variant/50 font-bold tracking-widest">
-                      <span>0.0</span><span>5.0</span><span>10.0</span>
+                      <span>0.0</span>
+                      <span>5.0</span>
+                      <span>10.0</span>
                     </div>
                   </div>
                   <p className="text-on-surface-variant text-sm mt-6 text-center">
-                    You are <span className="text-[#4F8EF7] font-bold">{result.journeyPercent}%</span> of the way to your target.
+                    You are{' '}
+                    <span className="text-[#4F8EF7] font-bold">{result.journeyPercent}%</span> of
+                    the way to your target.
                   </p>
                 </motion.div>
               </div>
@@ -773,7 +1074,9 @@ export default function PlannerPage() {
               {/* ━━━ ACTION BUTTONS ━━━ */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
                 <button
-                  onClick={() => { setResult(null); }}
+                  onClick={() => {
+                    setResult(null);
+                  }}
                   className="w-full sm:w-64 px-8 py-4 rounded-full border border-white/20 text-on-surface font-bold hover:border-[#4F8EF7]/50 hover:shadow-[0_0_20px_rgba(79,142,247,0.15)] transition-all active:scale-95 text-center flex items-center justify-center gap-2"
                 >
                   <span className="material-symbols-outlined text-lg">refresh</span>
@@ -782,19 +1085,38 @@ export default function PlannerPage() {
                 <motion.button
                   onClick={handleSavePlan}
                   disabled={isSaving}
-                  whileHover={{ scale: 1.02, boxShadow: "0 0 35px rgba(79,142,247,0.4)" }}
+                  whileHover={{ scale: 1.02, boxShadow: '0 0 35px rgba(79,142,247,0.4)' }}
                   whileTap={{ scale: 0.97 }}
-                  className={`w-full sm:w-64 px-8 py-4 rounded-full font-bold text-white text-center flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 ${saveSuccess ? "!bg-green-500 !shadow-[0_0_25px_rgba(34,197,94,0.4)]" : ""}`}
-                  style={!saveSuccess ? {
-                    background: "linear-gradient(135deg, #4F8EF7 0%, #7C3AED 100%)",
-                    boxShadow: "0 0 20px rgba(79,142,247,0.3)",
-                  } : undefined}
+                  className={`w-full sm:w-64 px-8 py-4 rounded-full font-bold text-white text-center flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 ${saveSuccess ? '!bg-green-500 !shadow-[0_0_25px_rgba(34,197,94,0.4)]' : ''}`}
+                  style={
+                    !saveSuccess
+                      ? {
+                          background: 'linear-gradient(135deg, #4F8EF7 0%, #7C3AED 100%)',
+                          boxShadow: '0 0 20px rgba(79,142,247,0.3)',
+                        }
+                      : undefined
+                  }
                 >
                   {isSaving ? (
                     <>
-                      <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
                       </svg>
                       Saving...
                     </>
@@ -823,12 +1145,15 @@ export default function PlannerPage() {
             </PremiumButton>
           </Link>
           <Link href="/dashboard" className="w-full sm:w-auto">
-            <PremiumButton variant="primary" icon="arrow_forward" className="w-full justify-between">
+            <PremiumButton
+              variant="primary"
+              icon="arrow_forward"
+              className="w-full justify-between"
+            >
               View Dashboard
             </PremiumButton>
           </Link>
         </div>
-
       </main>
     </>
   );

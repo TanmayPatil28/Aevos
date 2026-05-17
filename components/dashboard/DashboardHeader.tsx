@@ -1,9 +1,10 @@
-import { useRef } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
-import { Download, FileText, Trash2, Sparkles, LucideIcon } from "lucide-react";
-import toast from "react-hot-toast";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { useRef } from 'react';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { Download, FileText, Trash2, Sparkles, LucideIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useUniversity } from '@/components/providers/UniversityProvider';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,12 +15,12 @@ function LiquidActionButton({
   onClick,
   icon: Icon,
   label,
-  variant = "primary"
+  variant = 'primary',
 }: {
-  onClick: () => void,
-  icon: LucideIcon,
-  label: string,
-  variant?: "primary" | "secondary" | "error"
+  onClick: () => void;
+  icon: LucideIcon;
+  label: string;
+  variant?: 'primary' | 'secondary' | 'error';
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const mouseX = useMotionValue(0);
@@ -41,9 +42,9 @@ function LiquidActionButton({
   };
 
   const variantStyles = {
-    primary: "border-[#4F8EF7]/30 text-[#4F8EF7] hover:bg-[#4F8EF7]/10",
-    secondary: "border-[#A855F7]/30 text-[#A855F7] hover:bg-[#A855F7]/10",
-    error: "border-red-400/30 text-red-400 hover:bg-red-400/10"
+    primary: 'border-[#4F8EF7]/30 text-[#4F8EF7] hover:bg-[#4F8EF7]/10',
+    secondary: 'border-[#A855F7]/30 text-[#A855F7] hover:bg-[#A855F7]/10',
+    error: 'border-red-400/30 text-red-400 hover:bg-red-400/10',
   };
 
   return (
@@ -54,13 +55,17 @@ function LiquidActionButton({
       style={{ x: springX, y: springY }}
       onClick={onClick}
       className={cn(
-        "relative px-6 py-2.5 rounded-full border bg-white/[0.02] backdrop-blur-xl transition-all duration-500",
-        "text-sm font-black tracking-tight flex items-center gap-2.5 group overflow-hidden shadow-2xl",
+        'relative px-6 py-2.5 rounded-full border bg-white/[0.02] backdrop-blur-xl transition-all duration-500',
+        'text-sm font-black tracking-tight flex items-center gap-2.5 group overflow-hidden shadow-2xl',
         variantStyles[variant]
       )}
     >
       <div className="absolute inset-x-0 top-0 h-full overflow-hidden pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-        <motion.div animate={{ x: ["-100%", "200%"] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -skew-x-[45deg] z-0 blur-xl" />
+        <motion.div
+          animate={{ x: ['-100%', '200%'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -skew-x-[45deg] z-0 blur-xl"
+        />
       </div>
       <Icon size={16} strokeWidth={2.5} className="relative z-10" />
       <span className="relative z-10">{label}</span>
@@ -79,8 +84,9 @@ export default function DashboardHeader({
   userName,
   onClearHistory,
   onExportCSV,
-  onExportPDF
+  onExportPDF,
 }: DashboardHeaderProps) {
+  const { activePreset } = useUniversity();
   return (
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-20 relative">
       <div className="space-y-6 relative z-10">
@@ -103,18 +109,31 @@ export default function DashboardHeader({
             <span className="bg-gradient-to-r from-[#4F8EF7] via-[#7C3AED] to-[#A855F7] bg-[length:200%_auto] animate-gradient bg-clip-text text-transparent italic">
               {userName}
             </span>
-            <motion.span animate={{ rotate: [0, 15, 0] }} transition={{ duration: 2, repeat: Infinity }} className="inline-block ml-4 drop-shadow-2xl">👋</motion.span>
+            <motion.span
+              animate={{ rotate: [0, 15, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="inline-block ml-4 drop-shadow-2xl"
+            >
+              👋
+            </motion.span>
           </h1>
           <p className="text-white/40 font-medium text-lg mt-4 max-w-xl leading-relaxed italic">
-            Visualizing your academic trajectory with <span className="text-white/60">sub-pixel precision</span>.
+            Visualizing your academic trajectory with{' '}
+            <span className="text-white/60">sub-pixel precision</span>.
           </p>
           <div className="flex items-center gap-6 mt-6">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping" />
-              <span className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em]">System Status: Nominal</span>
+              <span className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em]">
+                System Status: Nominal
+              </span>
             </div>
             <div className="w-[1px] h-3 bg-white/[0.05]" />
-            <span className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em]">Sync: Just Now</span>
+            <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+              <span className="text-[10px] text-[#4F8EF7] uppercase font-black tracking-[0.2em]">
+                Identity: {activePreset.shortName}
+              </span>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -124,7 +143,7 @@ export default function DashboardHeader({
           variant="primary"
           onClick={() => {
             onExportCSV();
-            toast.success("CSV stream established");
+            toast.success('CSV stream established');
           }}
           icon={Download}
           label="Export CSV"
@@ -134,7 +153,7 @@ export default function DashboardHeader({
           variant="secondary"
           onClick={() => {
             onExportPDF();
-            toast.success("PDF rendered successfully");
+            toast.success('PDF rendered successfully');
           }}
           icon={FileText}
           label="Export PDF Report"

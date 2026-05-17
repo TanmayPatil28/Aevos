@@ -1,9 +1,11 @@
 generator client {
   provider = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -37,18 +39,30 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  password      String?
-  university    String    @default("jspm")
-  accounts      Account[]
-  sessions      Session[]
-  calculations  Calculation[]
-  plans         Plan[]
-  createdAt     DateTime  @default(now())
+  id                String    @id @default(cuid())
+  name              String?
+  email             String?   @unique
+  emailVerified     DateTime? @map("email_verified")
+  image             String?
+  password          String?
+  university        String    @default("jspm")
+  
+  // Existing Relations
+  accounts          Account[]
+  sessions          Session[]
+  calculations      Calculation[]
+  plans             Plan[]
+
+  // New OS Relations
+  profile           UserProfile?
+  semesters         Semester[]
+  placementGoal     PlacementGoal?
+  attendanceRecords AttendanceRecord[]
+  assignments       Assignment[]
+  examSchedules     ExamSchedule[]
+  analytics         AnalyticsSnapshot[]
+
+  createdAt         DateTime  @default(now())
 
   @@map("users")
 }
@@ -93,4 +107,157 @@ model Plan {
   user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("plans")
+}
+
+// ── User Profile Extension ──
+model UserProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique @map("user_id")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  universityId     String?  
+  branch           String?           // "Computer Science", "IT", etc.
+  currentSemester  Int      @default(1)
+  totalSemesters   Int      @default(8)
+  admissionYear    Int?
+  targetCgpa       Float?
+  onboardingDone   Boolean  @default(false)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  @@map("user_profiles")
+}
+
+// ── Structured Semester Data ──
+model Semester {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  number       Int                 // 1-8
+  name         String?             // "Semester 3" or custom
+  sgpa         Float?
+  totalCredits Int      @default(0)
+  isCompleted  Boolean  @default(false)
+  
+  subjects     Subject[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@unique([userId, number])
+  @@map("semesters")
+}
+
+model Subject {
+  id           String   @id @default(cuid())
+  semesterId   String   @map("semester_id")
+  semester     Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  
+  name         String
+  credits      Int
+  gradePoint   Float?
+  percentage   Float?
+  grade        String?            // "O", "A+", "A", etc.
+  isBacklog    Boolean  @default(false)
+  subjectType  String   @default("theory") // theory, practical, elective
+  
+  attendanceRecords AttendanceRecord[]
+  createdAt    DateTime @default(now())
+  @@map("subjects")
+}
+
+// ── Placement Module ──
+model PlacementGoal {
+  id                 String   @id @default(cuid())
+  userId             String   @unique @map("user_id")
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  targetCgpa         Float?   @map("target_cgpa")
+  dreamCompanyId     String?  @map("dream_company_id")
+  dreamCompany       Company? @relation(fields: [dreamCompanyId], references: [id])
+  
+  preferredSectors   String[] @map("preferred_sectors")
+  targetPackage      Float?   @map("target_package")
+  willingToRelocate  Boolean  @default(true) @map("willing_to_relocate")
+  
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  @@map("placement_goals")
+}
+
+model Company {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  category         String   // "dream", "target", "safe"
+  minCgpa          Float    @map("min_cgpa")
+  avgPackage       Float    @map("avg_package")
+  sector           String
+  logoUrl          String?  @map("logo_url")
+  allowedBranches  String[] @map("allowed_branches")
+  backlogTolerance Int?     @map("backlog_tolerance")
+  
+  placementGoals   PlacementGoal[]
+  @@map("companies")
+}
+
+// ── Productivity Module ──
+model AttendanceRecord {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  subjectId    String?  @map("subject_id")
+  subject      Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  subjectName  String   // Fallback name if subject is not linked
+  
+  totalClasses Int      @default(0)
+  attended     Int      @default(0)
+  minThreshold Float    @default(75.0)
+  
+  lastUpdated  DateTime @default(now()) @updatedAt
+  
+  @@unique([userId, subjectName])
+  @@map("attendance_records")
+}
+
+model Assignment {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title       String
+  subject     String
+  dueDate     DateTime
+  status      String    @default("pending") // pending, submitted, graded
+  marks       Float?
+  maxMarks    Float?
+  
+  createdAt   DateTime  @default(now())
+  @@map("assignments")
+}
+
+model ExamSchedule {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  subject     String
+  examType    String   // "mid1", "mid2", "endsem", "practical"
+  date        DateTime
+  maxMarks    Float?
+  obtainedMarks Float?
+  
+  @@map("exam_schedules")
+}
+
+// ── AI Analytics ──
+model AnalyticsSnapshot {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      String   // "weekly", "semester_end", "milestone"
+  data      Json
+  createdAt DateTime @default(now())
+  @@map("analytics_snapshots")
 }
