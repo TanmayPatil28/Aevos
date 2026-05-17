@@ -1,0 +1,40 @@
+{
+  "id": "nsut",
+  "university": "Netaji Subhas University of Technology",
+  "shortName": "NSUT",
+  "state": "Delhi",
+  "type": "Public",
+  "pattern": "2023",
+  "gradingSystem": {
+    "type": "statistical",
+    "scale": [
+      { "grade": "A+", "points": 10 },
+      { "grade": "A", "points": 9 },
+      { "grade": "B+", "points": 8 },
+      { "grade": "B", "points": 7 },
+      { "grade": "C+", "points": 6 },
+      { "grade": "C", "points": 5 },
+      { "grade": "P", "points": 4 },
+      { "grade": "F", "points": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "creditType": "credits",
+    "isRelativeGrading": true,
+    "supportsStatisticalCurves": true,
+    "curveLogic": "Calculate M+1.5*SD and M-1.5*SD. Clamp OL to 95/85 and DL to 40/30. Divide by 6 for bands."
+  },
+  "semesters": 8,
+  "branches": [],
+  "capabilities": {
+    "supportsRelativeGrading": true,
+    "supportsCreditTransfer": false,
+    "supportsGradeReplacement": false,
+    "supportsAuditCourses": true,
+    "supportsUnitSystem": false,
+    "supportsDynamicPassCriteria": true
+  },
+  "metadata": {
+    "gradingComplexity": "statistical"
+  },
+  "lastUpdated": "2026-05-16"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "nit-council",
+  "university": "National Institutes of Technology",
+  "shortName": "NIT Council",
+  "state": "National",
+  "type": "Institute of National Importance",
+  "gradingSystem": {
+    "type": "absolute",
+    "scale": [
+      { "grade": "O", "points": 10 },
+      { "grade": "A+", "points": 9 },
+      { "grade": "A", "points": 8 },
+      { "grade": "B+", "points": 7 },
+      { "grade": "B", "points": 6 },
+      { "grade": "C", "points": 5 },
+      { "grade": "P", "points": 4 },
+      { "grade": "F", "points": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "percentageConversion": {
+      "cgpa": "CGPA * 9.5"
+    },
+    "passCriteria": {
+      "firstClassMinCgpa": 6.5,
+      "maxSemestersForFirstClass": 9
+    }
+  },
+  "semesters": 8,
+  "lastUpdated": "2026-05-16"
+}

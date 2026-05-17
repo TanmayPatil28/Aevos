@@ -1,0 +1,27 @@
+{
+  "id": "jntuh-r22",
+  "university": "Jawaharlal Nehru Technological University Hyderabad",
+  "shortName": "JNTUH",
+  "state": "Telangana",
+  "type": "Public",
+  "pattern": "R22",
+  "gradingSystem": {
+    "type": "absolute",
+    "scale": [
+      { "grade": "O", "points": 10 },
+      { "grade": "A+", "points": 9 },
+      { "grade": "A", "points": 8 },
+      { "grade": "B+", "points": 7 },
+      { "grade": "B", "points": 6 },
+      { "grade": "C", "points": 5 },
+      { "grade": "F", "points": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "passCriteria": {
+      "minGradePoint": 5,
+      "minSgpa": 5.0
+    }
+  },
+  "semesters": 8,
+  "lastUpdated": "2026-05-16"
+}

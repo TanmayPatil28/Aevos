@@ -1,0 +1,33 @@
+{
+  "id": "jspm-2023",
+  "university": "JSPM Rajarshi Shahu College of Engineering",
+  "shortName": "JSPM RSCOE",
+  "state": "Maharashtra",
+  "type": "Autonomous",
+  "pattern": "2023",
+  "gradingSystem": {
+    "type": "absolute",
+    "scale": [
+      { "grade": "O", "points": 10, "minPercentage": 90 },
+      { "grade": "A+", "points": 9, "minPercentage": 80 },
+      { "grade": "A", "points": 8, "minPercentage": 70 },
+      { "grade": "B+", "points": 7, "minPercentage": 60 },
+      { "grade": "B", "points": 6, "minPercentage": 50 },
+      { "grade": "C", "points": 5, "minPercentage": 45 },
+      { "grade": "P", "points": 4, "minPercentage": 40 },
+      { "grade": "F", "points": 0, "minPercentage": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "percentageConversion": {
+      "sgpa": "(SGPA - 0.75) * 10"
+    }
+  },
+  "semesters": 8,
+  "erp": {
+    "provider": "Digicampus",
+    "supportsAttendance": true,
+    "supportsResults": true,
+    "supportsInternals": true
+  },
+  "lastUpdated": "2026-05-16"
+}

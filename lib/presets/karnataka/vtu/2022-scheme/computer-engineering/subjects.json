@@ -1,0 +1,56 @@
+[
+  {
+    "semester": 1,
+    "subjects": [
+      {
+        "subjectCode": "22MATS11",
+        "subjectName": "Mathematics for Smart Systems - I",
+        "credits": 4,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "22PHYS12",
+        "subjectName": "Physics for Smart Systems",
+        "credits": 4,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "22ESC141",
+        "subjectName": "Introduction to Civil Engineering",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "22ETC151",
+        "subjectName": "Introduction to Electronics Engineering",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "22ESC145",
+        "subjectName": "Introduction to Python Programming",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "22PHYL16",
+        "subjectName": "Physics Lab",
+        "credits": 1,
+        "type": "practical"
+      },
+      {
+        "subjectCode": "22ENG19",
+        "subjectName": "Communicative English",
+        "credits": 1,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "22KSK17",
+        "subjectName": "Samskrutika Kannada",
+        "credits": 1,
+        "type": "audit",
+        "isAuditCourse": true
+      }
+    ]
+  }
+]

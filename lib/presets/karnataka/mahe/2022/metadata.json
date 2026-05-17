@@ -1,0 +1,31 @@
+{
+  "id": "mahe-2022",
+  "university": "Manipal Institute of Technology",
+  "shortName": "MIT Manipal",
+  "state": "Karnataka",
+  "type": "Private",
+  "pattern": "2022 Scheme",
+  "gradingSystem": {
+    "type": "relative",
+    "scale": [
+      { "grade": "O", "points": 10 },
+      { "grade": "A+", "points": 9 },
+      { "grade": "A", "points": 8 },
+      { "grade": "B", "points": 7 },
+      { "grade": "C", "points": 6 },
+      { "grade": "D", "points": 5 },
+      { "grade": "E", "points": 4 },
+      { "grade": "F", "points": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "isRelativeGrading": true,
+    "passCriteria": {
+      "minCgpaForGraduation": 5.0,
+      "creditsForGraduation": 160,
+      "creditsForCgpa": 148
+    }
+  },
+  "semesters": 8,
+  "specialNotes": "Open Electives and Human Values courses are excluded from CGPA calculation.",
+  "lastUpdated": "2026-05-16"
+}

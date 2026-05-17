@@ -1,0 +1,43 @@
+{
+  "id": "au-r2021",
+  "university": "Anna University",
+  "shortName": "AU",
+  "state": "Tamil Nadu",
+  "type": "Public",
+  "pattern": "Regulation 2021",
+  "gradingSystem": {
+    "type": "absolute",
+    "scale": [
+      { "grade": "O", "points": 10, "minPercentage": 90 },
+      { "grade": "A+", "points": 9, "minPercentage": 80 },
+      { "grade": "A", "points": 8, "minPercentage": 70 },
+      { "grade": "B+", "points": 7, "minPercentage": 60 },
+      { "grade": "B", "points": 6, "minPercentage": 50 },
+      { "grade": "C", "points": 5, "minPercentage": 45 },
+      { "grade": "F", "points": 0, "minPercentage": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "creditType": "credits",
+    "passCriteria": {
+      "minGradePoint": 5
+    }
+  },
+  "semesters": 8,
+  "branches": [],
+  "creditTransferRules": [
+    { "provider": "NPTEL", "durationWeeks": 12, "awardedCredits": 3 },
+    { "provider": "NPTEL", "durationWeeks": 8, "awardedCredits": 2 }
+  ],
+  "capabilities": {
+    "supportsRelativeGrading": false,
+    "supportsCreditTransfer": true,
+    "supportsGradeReplacement": false,
+    "supportsAuditCourses": true,
+    "supportsUnitSystem": false,
+    "supportsDynamicPassCriteria": true
+  },
+  "metadata": {
+    "gradingComplexity": "simple"
+  },
+  "lastUpdated": "2026-05-16"
+}

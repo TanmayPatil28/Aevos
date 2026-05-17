@@ -1,0 +1,27 @@
+{
+  "id": "vit-vellore",
+  "university": "Vellore Institute of Technology",
+  "shortName": "VIT Vellore",
+  "state": "Tamil Nadu",
+  "type": "Private",
+  "gradingSystem": {
+    "type": "relative",
+    "scale": [
+      { "grade": "S", "points": 10 },
+      { "grade": "A", "points": 9 },
+      { "grade": "B", "points": 8 },
+      { "grade": "C", "points": 7 },
+      { "grade": "D", "points": 6 },
+      { "grade": "E", "points": 5 },
+      { "grade": "F", "points": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "percentageConversion": {
+      "cgpa": "CGPA * 10"
+    },
+    "isRelativeGrading": true
+  },
+  "semesters": 8,
+  "creditSystem": "CALS",
+  "lastUpdated": "2026-05-16"
+}

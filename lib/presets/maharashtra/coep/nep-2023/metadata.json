@@ -1,0 +1,25 @@
+{
+  "id": "coep-nep-2023",
+  "university": "COEP Technological University",
+  "shortName": "COEP",
+  "state": "Maharashtra",
+  "type": "Public",
+  "pattern": "NEP 2023-24",
+  "gradingSystem": {
+    "type": "relative",
+    "scale": [
+      { "grade": "AA", "points": 10, "description": "Outstanding" },
+      { "grade": "AB", "points": 9, "description": "Excellent" },
+      { "grade": "BB", "points": 8, "description": "Very Good" },
+      { "grade": "BC", "points": 7, "description": "Good" },
+      { "grade": "CC", "points": 6, "description": "Above Average" },
+      { "grade": "CD", "points": 5, "description": "Average" },
+      { "grade": "DD", "points": 4, "description": "Pass" },
+      { "grade": "F", "points": 0, "description": "Fail", "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "isRelativeGrading": true
+  },
+  "semesters": 8,
+  "lastUpdated": "2026-05-16"
+}

@@ -1,0 +1,43 @@
+{
+  "id": "srm-2024",
+  "university": "SRM Institute of Science and Technology",
+  "shortName": "SRM IST",
+  "state": "Tamil Nadu",
+  "type": "Private",
+  "pattern": "2024 Regulations",
+  "gradingSystem": {
+    "type": "absolute",
+    "scale": [
+      { "grade": "O", "points": 10, "minMarks": 91 },
+      { "grade": "A+", "points": 9, "minMarks": 81 },
+      { "grade": "A", "points": 8, "minMarks": 71 },
+      { "grade": "B+", "points": 7, "minMarks": 61 },
+      { "grade": "B", "points": 6, "minMarks": 56 },
+      { "grade": "C", "points": 5, "minMarks": 50 },
+      { "grade": "F", "points": 0, "minMarks": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * GP) / SUM(C)",
+    "creditType": "credits",
+    "supportsGradeReplacement": true
+  },
+  "semesters": 8,
+  "branches": [],
+  "replacementPolicy": {
+    "replaceOnPass": true,
+    "preserveHistory": true,
+    "affectsCgpaRetroactively": true
+  },
+  "capabilities": {
+    "supportsRelativeGrading": false,
+    "supportsCreditTransfer": true,
+    "supportsGradeReplacement": true,
+    "supportsAuditCourses": true,
+    "supportsUnitSystem": false,
+    "supportsDynamicPassCriteria": false
+  },
+  "metadata": {
+    "gradingComplexity": "moderate",
+    "supportsERPImport": true
+  },
+  "lastUpdated": "2026-05-16"
+}

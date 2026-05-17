@@ -1,0 +1,27 @@
+{
+  "id": "mu-rev-2019",
+  "university": "Mumbai University",
+  "shortName": "MU",
+  "state": "Maharashtra",
+  "type": "Public",
+  "pattern": "REV-2019 C-Scheme",
+  "gradingSystem": {
+    "type": "absolute",
+    "scale": [
+      { "grade": "O", "points": 10, "minPercentage": 80 },
+      { "grade": "A", "points": 9, "minPercentage": 75 },
+      { "grade": "B", "points": 8, "minPercentage": 70 },
+      { "grade": "C", "points": 7, "minPercentage": 60 },
+      { "grade": "D", "points": 6, "minPercentage": 50 },
+      { "grade": "E", "points": 5, "minPercentage": 45 },
+      { "grade": "P", "points": 4, "minPercentage": 40 },
+      { "grade": "F", "points": 0, "minPercentage": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "percentageConversion": {
+      "cgpa": "PIECEWISE: IF(CGPI < 7, 7.1*CGPI + 12, 7.4*CGPI + 12) MU"
+    }
+  },
+  "semesters": 8,
+  "lastUpdated": "2026-05-16"
+}

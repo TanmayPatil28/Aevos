@@ -1,0 +1,114 @@
+[
+  {
+    "semester": 1,
+    "subjects": [
+      {
+        "subjectCode": "107001",
+        "subjectName": "Engineering Mathematics - I",
+        "credits": 4,
+        "type": "theory",
+        "assessments": [
+          { "type": "ISE", "maxMarks": 30 },
+          { "type": "ESE", "maxMarks": 70 }
+        ]
+      },
+      {
+        "subjectCode": "107002",
+        "subjectName": "Engineering Physics",
+        "credits": 4,
+        "type": "theory",
+        "assessments": [
+          { "type": "ISE", "maxMarks": 30 },
+          { "type": "ESE", "maxMarks": 70 }
+        ]
+      },
+      {
+        "subjectCode": "107003",
+        "subjectName": "Systems in Mechanical Engineering",
+        "credits": 3,
+        "type": "theory",
+        "assessments": [
+          { "type": "ISE", "maxMarks": 30 },
+          { "type": "ESE", "maxMarks": 70 }
+        ]
+      },
+      {
+        "subjectCode": "101011",
+        "subjectName": "Engineering Mechanics",
+        "credits": 3,
+        "type": "theory",
+        "assessments": [
+          { "type": "ISE", "maxMarks": 30 },
+          { "type": "ESE", "maxMarks": 70 }
+        ]
+      },
+      {
+        "subjectCode": "104012",
+        "subjectName": "Basic Electronics Engineering",
+        "credits": 3,
+        "type": "theory",
+        "assessments": [
+          { "type": "ISE", "maxMarks": 30 },
+          { "type": "ESE", "maxMarks": 70 }
+        ]
+      },
+      {
+        "subjectCode": "102006",
+        "subjectName": "Programming and Problem Solving",
+        "credits": 3,
+        "type": "theory",
+        "assessments": [
+          { "type": "ISE", "maxMarks": 30 },
+          { "type": "ESE", "maxMarks": 70 }
+        ]
+      },
+      {
+        "subjectCode": "110005",
+        "subjectName": "Workshop Practice",
+        "credits": 1,
+        "type": "practical"
+      }
+    ]
+  },
+  {
+    "semester": 2,
+    "subjects": [
+      {
+        "subjectCode": "107008",
+        "subjectName": "Engineering Mathematics - II",
+        "credits": 4,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "107009",
+        "subjectName": "Engineering Chemistry",
+        "credits": 4,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "102010",
+        "subjectName": "Basic Electrical Engineering",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "103004",
+        "subjectName": "Basic Civil and Environmental Engineering",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "101011",
+        "subjectName": "Engineering Graphics",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "111007",
+        "subjectName": "Project Based Learning",
+        "credits": 2,
+        "type": "project"
+      }
+    ]
+  }
+]

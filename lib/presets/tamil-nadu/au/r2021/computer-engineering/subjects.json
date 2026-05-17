@@ -1,0 +1,61 @@
+[
+  {
+    "semester": 1,
+    "subjects": [
+      {
+        "subjectCode": "IP3151",
+        "subjectName": "Induction Programme",
+        "credits": 0,
+        "type": "audit"
+      },
+      {
+        "subjectCode": "MA3151",
+        "subjectName": "Matrices and Calculus",
+        "credits": 4,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "PH3151",
+        "subjectName": "Engineering Physics",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "CY3151",
+        "subjectName": "Engineering Chemistry",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "GE3151",
+        "subjectName": "Problem Solving and Python Programming",
+        "credits": 3,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "GE3152",
+        "subjectName": "Tamils and Technology",
+        "credits": 1,
+        "type": "theory"
+      },
+      {
+        "subjectCode": "GE3171",
+        "subjectName": "Problem Solving and Python Programming Laboratory",
+        "credits": 2,
+        "type": "practical"
+      },
+      {
+        "subjectCode": "BS3171",
+        "subjectName": "Physics and Chemistry Laboratory",
+        "credits": 2,
+        "type": "practical"
+      },
+      {
+        "subjectCode": "GE3172",
+        "subjectName": "English Laboratory",
+        "credits": 1,
+        "type": "practical"
+      }
+    ]
+  }
+]

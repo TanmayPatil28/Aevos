@@ -1,0 +1,28 @@
+{
+  "id": "dtu-2024",
+  "university": "Delhi Technological University",
+  "shortName": "DTU",
+  "state": "Delhi",
+  "type": "Public",
+  "pattern": "2024 Revision",
+  "gradingSystem": {
+    "type": "relative",
+    "scale": [
+      { "grade": "O", "points": 10 },
+      { "grade": "A+", "points": 9 },
+      { "grade": "A", "points": 8 },
+      { "grade": "B+", "points": 7 },
+      { "grade": "B", "points": 6 },
+      { "grade": "C", "points": 5 },
+      { "grade": "P", "points": 4 },
+      { "grade": "F", "points": 0, "isPass": false }
+    ],
+    "sgpaFormula": "SUM(C * G) / SUM(C)",
+    "isRelativeGrading": true,
+    "passCriteria": {
+      "absoluteLowerCutoffPercentage": 35
+    }
+  },
+  "semesters": 8,
+  "lastUpdated": "2026-05-16"
+}
