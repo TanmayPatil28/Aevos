@@ -92,7 +92,7 @@ export default function PremiumButton({
         transition: { type: "spring", stiffness: 600, damping: 30 }
       }}
       onClick={onClick}
-      className={`group relative flex items-center justify-between pl-6 pr-2 py-2 border rounded-full cursor-pointer overflow-hidden transition-colors duration-300 ${bodyBg} ${className}`}
+      className={`group relative flex items-center justify-between pl-6 pr-2 py-2 border rounded-full cursor-pointer overflow-hidden transition-colors duration-300 premium-focus ${bodyBg} ${className}`}
       style={{
         boxShadow: "0 20px 40px -10px rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.05)"
       }}

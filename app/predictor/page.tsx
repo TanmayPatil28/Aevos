@@ -202,10 +202,10 @@ export default function PredictorPage() {
           <div className="lg:col-span-12">
             <div className="grid lg:grid-cols-12 gap-8">
               <div className="lg:col-span-5 space-y-6">
-                <div className="bg-[var(--surface-container-high)]/40 backdrop-blur-2xl border border-[var(--outline-variant)]/50 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
+                <div className="premium-card relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                   <div className="flex items-center justify-between mb-8 relative z-10">
-                    <h3 className="text-xl font-bold flex items-center gap-2">
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-white">
                       <Calculator className="w-5 h-5 text-primary" />
                       Performance Inputs
                     </h3>
@@ -293,11 +293,11 @@ export default function PredictorPage() {
               </div>
 
               <div className="lg:col-span-7 space-y-6">
-                <div className="bg-[var(--surface-container-highest)]/80 backdrop-blur-3xl border border-white/5 rounded-[2rem] p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative overflow-hidden z-20">
+                <div className="premium-card relative overflow-hidden z-20">
                   <div className="absolute top-[-50%] right-[-10%] w-[300px] h-[300px] bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
                     <div>
-                      <h2 className="text-2xl font-black tracking-tight mb-1 flex items-center gap-2">
+                      <h2 className="text-2xl font-black tracking-tight mb-1 flex items-center gap-2 text-white">
                         <Target className="w-6 h-6 text-primary" />
                         Target Predictor
                       </h2>
@@ -314,7 +314,7 @@ export default function PredictorPage() {
                       <select
                         value={targetGrade}
                         onChange={(e) => setTargetGrade(e.target.value)}
-                        className="bg-primary/20 text-primary font-black text-xl w-16 text-center py-1 rounded-xl appearance-none outline-none border border-primary/30 shadow-inner focus:ring-2 focus:ring-primary/50 cursor-pointer"
+                        className="bg-primary/20 text-primary font-black text-xl w-16 text-center py-1 rounded-xl appearance-none outline-none border border-primary/30 shadow-inner premium-focus cursor-pointer"
                       >
                         {GRADES.map(g => (
                           <option key={g.grade} value={g.grade}>{g.grade}</option>
@@ -349,7 +349,7 @@ export default function PredictorPage() {
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-container-highest)]/50 border border-[var(--outline-variant)] rounded-[2rem] p-6 grid md:grid-cols-2 gap-8 shadow-2xl relative overflow-hidden">
+                <div className="premium-card grid md:grid-cols-2 gap-8 relative overflow-hidden">
                   <div className="flex flex-col justify-center">
                     <h3 className="text-lg font-bold flex items-center gap-2 mb-2 text-white">
                        Score Distribution
@@ -461,13 +461,11 @@ function InputField({ label, value, setValue, max, icon, disabled, highlight }: 
       </div>
       <div className="relative group">
         <div className={clsx(
-          "absolute inset-0 rounded-2xl transition-opacity duration-300 pointer-events-none blur-md opacity-0",
-          highlight ? "bg-primary/20 group-focus-within:opacity-100" : "bg-white/5 group-focus-within:opacity-50"
-        )} />
-        <div className={clsx(
-          "relative flex items-center bg-[var(--surface-container-highest)] border px-4 py-3.5 rounded-2xl transition-colors",
-          disabled && "opacity-50 cursor-not-allowed",
-          highlight ? "border-primary/50 focus-within:border-primary shadow-inner" : "border-[var(--outline-variant)] focus-within:border-white/30"
+          "relative flex items-center bg-white/5 border px-4 py-3.5 rounded-2xl transition-all duration-300 outline-none",
+          disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-white/8 hover:border-white/20",
+          highlight 
+            ? "border-primary/50 focus-within:border-primary focus-within:bg-primary/5 focus-within:shadow-[0_0_20px_rgba(59,130,248,0.25)]" 
+            : "border-white/10 focus-within:border-primary focus-within:bg-primary/5 focus-within:shadow-[0_0_20px_rgba(59,130,248,0.25)]"
         )}>
           <span className="w-6 font-black text-on-surface-variant/40 mr-2">{icon}</span>
           <input
@@ -497,8 +495,10 @@ interface StatCardProps {
 function StatCard({ label, value, icon, highlight, colorClass }: StatCardProps) {
   return (
     <div className={clsx(
-      "p-5 rounded-3xl border transition-all hover:-translate-y-1 relative overflow-hidden",
-      highlight ? "bg-primary/10 border-primary/20 shadow-[0_8px_32px_rgba(80,143,248,0.1)]" : "bg-[var(--surface-container-highest)]/50 border-[var(--outline-variant)]"
+      "p-5 rounded-2xl border transition-all duration-300 hover:-translate-y-1 relative overflow-hidden",
+      highlight 
+        ? "bg-primary/10 border-primary/20 shadow-[0_8px_32px_rgba(59,130,248,0.1)]" 
+        : "bg-white/5 border-white/10"
     )}>
       <span className={clsx("material-symbols-outlined mb-3 block text-2xl opacity-60", highlight && "text-primary")}>
         {icon}

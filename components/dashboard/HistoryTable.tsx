@@ -48,10 +48,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
   };
 
   return (
-    <div className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col h-fit">
-      {/* 2. PRISMATIC EDGE PRISM: Refractive micro-shimmer */}
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-gradient-to-br from-[#4F8EF7]/30 via-transparent to-[#A855F7]/30 pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+    <div className="premium-card flex flex-col h-fit group">
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 relative z-10">
         <div className="space-y-1">
@@ -73,7 +70,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
       </div>
 
       <div className="overflow-x-auto relative z-10">
-        <table className="w-full text-left">
+        <table className="w-full text-left min-w-[600px]">
           <thead>
             <tr className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] border-b border-white/[0.05]">
               <th className="pb-4 px-4 whitespace-nowrap">Index</th>
@@ -260,7 +257,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                   </div>
                 </div>
 
-                <div className="p-8 rounded-[32px] bg-gradient-to-br from-[#4F8EF7]/10 to-transparent border border-[#4F8EF7]/20 relative overflow-hidden group">
+                <div className="premium-card bg-gradient-to-br from-[#4F8EF7]/10 to-transparent border-[#4F8EF7]/20 relative overflow-hidden group">
                    <div className="relative z-10">
                       <h5 className="text-lg font-black text-white tracking-tight mb-2">Insight Detected</h5>
                       <p className="text-sm text-white/40 leading-relaxed italic">

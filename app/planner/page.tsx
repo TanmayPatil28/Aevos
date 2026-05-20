@@ -254,15 +254,13 @@ export default function PlannerPage() {
   const getInputClass = (field: string) => {
     const hasError = errors[field] && touched[field];
     const isValid = fieldValid[field] && touched[field];
-    return `w-full rounded-2xl p-4 pt-7 pb-2 text-on-surface placeholder-transparent outline-none transition-all duration-300 font-bold peer
-      ${hasError
-        ? "border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-500/5"
+    return `premium-input premium-focus pt-7 pb-2 ${
+      hasError
+        ? "premium-input-error"
         : isValid
           ? "border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.2)] bg-green-500/5"
-          : "border-white/[0.08] bg-white/[0.04]"
-      }
-      border backdrop-blur-sm
-      focus:border-[#4F8EF7]/50 focus:shadow-[0_0_20px_rgba(79,142,247,0.25)] focus:bg-white/[0.06]`;
+          : ""
+    }`;
   };
 
   const labelClass = "absolute left-4 top-4 text-sm font-medium text-on-surface-variant transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#4F8EF7] pointer-events-none";
@@ -312,13 +310,7 @@ export default function PlannerPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="rounded-[2.5rem] p-10 border border-white/10"
-          style={{
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            background: "rgba(255,255,255,0.05)",
-            boxShadow: "0 0 30px rgba(79,142,247,0.1), 0 4px 30px rgba(0,0,0,0.1)",
-          }}
+          className="premium-card"
         >
           <div className="grid md:grid-cols-2 gap-12 items-start mb-10">
             {/* Left — Current Status */}
@@ -534,13 +526,7 @@ export default function PlannerPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 }}
-                  className="rounded-[2.5rem] p-10 overflow-x-auto"
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
-                  }}
+                  className="premium-card overflow-x-auto"
                 >
                   <div className="mb-8">
                     <h3 className="font-headline text-2xl font-bold text-on-surface">Semester Plan Breakdown</h3>
@@ -607,13 +593,7 @@ export default function PlannerPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.4 }}
-                  className="rounded-[2.5rem] p-10 space-y-8"
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
-                  }}
+                  className="premium-card space-y-8"
                 >
                   <div className="flex justify-between items-end">
                     <div className="space-y-1">
@@ -621,7 +601,7 @@ export default function PlannerPage() {
                       <p className="text-on-surface-variant text-sm">Visualization of your path from current to target status.</p>
                     </div>
                   </div>
-                  <div className="w-full" style={{ minHeight: "300px", height: "400px" }}>
+                  <div className="w-full h-[300px] sm:h-[400px]">
                     {mounted && (
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={result.chartData} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
@@ -699,13 +679,7 @@ export default function PlannerPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.5 }}
-                  className="rounded-[2.5rem] p-10 space-y-6 flex flex-col justify-between"
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,193,7,0.4)",
-                    boxShadow: "0 0 20px rgba(255,193,7,0.15)",
-                  }}
+                  className="premium-card space-y-6 flex flex-col justify-between border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
                 >
                   <div className="space-y-5">
                     <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(255,193,7,0.15)", border: "1px solid rgba(255,193,7,0.3)" }}>
@@ -731,13 +705,7 @@ export default function PlannerPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.6 }}
-                  className="rounded-[2.5rem] p-10 flex flex-col justify-center"
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(79,142,247,0.3)",
-                    boxShadow: "0 0 20px rgba(79,142,247,0.1)",
-                  }}
+                  className="premium-card flex flex-col justify-center border-primary/30 shadow-[0_0_20px_rgba(79,142,247,0.1)]"
                 >
                   <h4 className="font-headline font-bold text-xl text-white mb-8">Your CGPA Journey</h4>
                   <div className="relative pt-10 pb-2">

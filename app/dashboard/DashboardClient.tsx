@@ -51,6 +51,7 @@ interface DashboardClientProps {
   userName: string;
   initialCalculations: Calculation[];
   initialPlans: Plan[];
+  dbError?: boolean;
 }
 
 function normalizeCalculation(rawCalculation: Calculation): Calculation {
@@ -64,6 +65,7 @@ export default function DashboardClient({
   userName,
   initialCalculations,
   initialPlans,
+  dbError = false,
 }: DashboardClientProps) {
   const [mounted, setMounted] = useState(false);
   const [calculations, setCalculations] = useState<Calculation[]>(
@@ -219,6 +221,13 @@ export default function DashboardClient({
           onExportCSV={handleExportCSV}
           onExportPDF={handleExportPDF}
         />
+
+        {dbError && calculations.length === 0 && plans.length === 0 && (
+          <div className="p-4 rounded-[24px] bg-red-500/10 border border-red-500/20 text-red-200 text-sm font-semibold flex items-center gap-3 shadow-[0_10px_30px_rgba(239,68,68,0.05)]">
+            <AlertTriangle className="text-red-400 shrink-0" size={18} />
+            <span>Unable to load cloud data right now. Some services may be temporarily unavailable.</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard

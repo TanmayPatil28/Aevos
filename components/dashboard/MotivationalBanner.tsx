@@ -18,9 +18,8 @@ export default function MotivationalBanner({ currentCgpa, targetCgpa }: Motivati
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="relative group p-12 rounded-[40px] bg-[#0A0F1E]/60 backdrop-blur-[60px] border border-[#4F8EF7]/20 shadow-[0_50px_100px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden"
+      className="premium-card p-12 border-primary/20 overflow-hidden group"
     >
-      <div className="absolute inset-0 rounded-[40px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
       <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
         <div className="flex items-center gap-8 text-center md:text-left">
           <motion.div

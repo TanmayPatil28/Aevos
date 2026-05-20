@@ -20,9 +20,8 @@ export default function InsightsPanel({ insights }: { insights: Insight[] }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: i * 0.1 }}
-          className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden"
+          className="premium-card overflow-hidden group"
         >
-          <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
           <div className="flex items-center gap-4 mb-6 relative z-10">
             <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05]" style={{ color: insight.color }}>
               <insight.icon size={22} strokeWidth={2.5} />
