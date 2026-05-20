@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-
+import { calculationSchema } from "@/lib/validations";
+import { Prisma } from "@prisma/client";
 
 export async function GET() {
   try {
@@ -27,12 +28,22 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { semester, subjects, sgpa, cgpa, total_credits } = body;
+    const validation = calculationSchema.safeParse(body);
 
-    // Basic Validation
-    if (!semester || !subjects || sgpa === undefined || total_credits === undefined) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid request payload",
+          details: validation.error.issues.map((err) => ({
+            field: err.path.join("."),
+            message: err.message,
+          })),
+        },
+        { status: 400 }
+      );
     }
+
+    const { semester, subjects, sgpa, cgpa, total_credits } = validation.data;
 
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
@@ -44,7 +55,7 @@ export async function POST(req: NextRequest) {
     const calculation = await prisma.calculation.create({
       data: {
         semester,
-        subjects,
+        subjects: subjects as Prisma.InputJsonValue,
         sgpa: Number(sgpa),
         cgpa: Number(cgpa) || 0,
         total_credits: Number(total_credits),

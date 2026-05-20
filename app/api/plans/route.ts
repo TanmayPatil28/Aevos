@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-
+import { planSchema } from "@/lib/validations";
+import { Prisma } from "@prisma/client";
 
 export async function GET() {
   try {
@@ -27,18 +28,22 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { current_cgpa, target_cgpa, completed_semesters, remaining_semesters, required_gpa, plan_data } = body;
+    const validation = planSchema.safeParse(body);
 
-    if (
-      current_cgpa === undefined ||
-      target_cgpa === undefined ||
-      completed_semesters === undefined ||
-      remaining_semesters === undefined ||
-      required_gpa === undefined ||
-      !plan_data
-    ) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid request payload",
+          details: validation.error.issues.map((err) => ({
+            field: err.path.join("."),
+            message: err.message,
+          })),
+        },
+        { status: 400 }
+      );
     }
+
+    const { current_cgpa, target_cgpa, completed_semesters, remaining_semesters, required_gpa, plan_data } = validation.data;
 
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
@@ -54,7 +59,7 @@ export async function POST(req: NextRequest) {
         completed_semesters: Number(completed_semesters),
         remaining_semesters: Number(remaining_semesters),
         required_gpa: Number(required_gpa),
-        plan_data,
+        plan_data: plan_data as Prisma.InputJsonValue,
         userId,
       },
     });
