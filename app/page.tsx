@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useInView, useMotionValue, useSpring, useTransform, useMotionTemplate } from "framer-motion";
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, useState } from "react";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import ThreeDProgress from "@/components/ThreeDProgress";
@@ -11,6 +11,11 @@ import PremiumButton from "@/components/PremiumButton";
 
 // Floating Particles Component
 function FloatingParticles() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const particles = useMemo(() => Array.from({ length: 12 }, (_, i) => ({
     id: i,
     left: `${Math.random() * 100}%`,
@@ -19,6 +24,8 @@ function FloatingParticles() {
     size: `${1.5 + Math.random() * 2.5}px`,
     opacity: 0.1 + Math.random() * 0.2,
   })), []);
+
+  if (!mounted) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">

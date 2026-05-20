@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { Search, Eye, Trash2, X, ClipboardCheck, ArrowRight, Sparkles } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -97,7 +98,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                 >
                   <td className="py-6 px-4 font-black text-white/10 text-xs italic">#{(index + 1).toString().padStart(2, '0')}</td>
                   <td className="py-6 px-4">
-                    <p className="text-sm font-bold text-white/60">{new Date(calc.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    <p className="text-sm font-bold text-white/60">{new Date(calc.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</p>
                   </td>
                   <td className="py-6 px-4">
                     <div className="text-[10px] font-black text-[#4F8EF7] px-3 py-1 rounded-full bg-[#4F8EF7]/10 border border-[#4F8EF7]/20 w-fit uppercase tracking-widest leading-none">
@@ -154,13 +155,15 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                 Establish your first academic record to initialize the observatory.
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#4F8EF7] to-[#7C3AED] text-white text-sm font-black tracking-tight flex items-center gap-3 shadow-[0_20px_50px_rgba(79,142,247,0.3)]"
-            >
-              Initialize Calculation <ArrowRight size={18} strokeWidth={3} />
-            </motion.button>
+            <Link href="/calculator" passHref legacyBehavior>
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#4F8EF7] to-[#7C3AED] text-white text-sm font-black tracking-tight flex items-center gap-3 shadow-[0_20px_50px_rgba(79,142,247,0.3)] cursor-pointer"
+              >
+                Initialize Calculation <ArrowRight size={18} strokeWidth={3} />
+              </motion.a>
+            </Link>
           </div>
         )}
       </div>
@@ -219,7 +222,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                   </div>
                   <div className="relative p-6 rounded-[24px] bg-white/[0.02] border border-white/[0.05] overflow-hidden">
                     <p className="text-[10px] font-black uppercase text-white/20 tracking-widest mb-2">Telemetry Date</p>
-                    <p className="text-xl font-black text-white/60">{new Date(selectedCalc.date).toLocaleDateString()}</p>
+                    <p className="text-xl font-black text-white/60">{new Date(selectedCalc.date).toLocaleDateString('en-US', { timeZone: 'UTC' })}</p>
                   </div>
                   <div className="relative p-6 rounded-[24px] bg-[#4F8EF7]/5 border border-[#4F8EF7]/20 overflow-hidden">
                     <p className="text-[10px] font-black uppercase text-[#4F8EF7]/60 tracking-widest mb-2">SGPA SCORE</p>

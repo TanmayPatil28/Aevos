@@ -162,7 +162,7 @@ export default function DashboardClient({
     const prev = calculations[i + 1];
     return {
       semester: c.semester,
-      date: new Date(c.created_at || c.date).toLocaleDateString(),
+      date: new Date(c.created_at || c.date).toLocaleDateString('en-US', { timeZone: 'UTC' }),
       subjects: c.subjects?.length || 0,
       credits: c.total_credits,
       gpa: c.sgpa,
