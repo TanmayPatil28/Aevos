@@ -6,6 +6,7 @@ import AnimatedCounter from "../AnimatedCounter";
 import { LucideIcon, TrendingUp } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import Card from "../ui/Card";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -67,7 +68,7 @@ export default function StatCard({
       className="group relative"
       title={tooltip}
     >
-      <div className="premium-card relative overflow-hidden">
+      <Card className="relative overflow-hidden">
         {/* Dynamic Light Sweep */}
         <div className="absolute inset-x-0 top-0 h-full overflow-hidden pointer-events-none group-hover:opacity-100 opacity-30 transition-opacity duration-700">
           <motion.div 
@@ -108,7 +109,7 @@ export default function StatCard({
         
         {/* Deep Atmosphere Glow */}
         <div className="absolute -right-8 -top-8 w-32 h-32 blur-[60px] opacity-10 group-hover:opacity-20 transition-opacity rounded-full pointer-events-none" style={{ backgroundColor: glowColor }} />
-      </div>
+      </Card>
     </motion.div>
   );
 }

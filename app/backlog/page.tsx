@@ -17,6 +17,11 @@ import {
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
+import PageContainer from "@/components/layout/PageContainer";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
+
+const MotionCard = motion(Card);
 
 interface BacklogItem {
   id: string;
@@ -57,12 +62,7 @@ export default function BacklogPage() {
 
   const [mounted, setMounted] = useState(false);
 
-  const inputClass = (field: string) => clsx(
-    "premium-input premium-focus pt-8 pb-2",
-    errors[field] && "premium-input-error"
-  );
-
-  const labelClass = "absolute left-5 top-2 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/80 pointer-events-none transition-all group-focus-within/input:text-primary group-focus-within/input:opacity-100";
+  // Removed inputClass and labelClass helper to use componentized Input instead
 
   useEffect(() => {
     setMounted(true);
@@ -207,11 +207,9 @@ export default function BacklogPage() {
 
 
   return (
-    <>
+    <PageContainer className="relative z-10 space-y-12">
       <div className="fixed top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-primary/10 rounded-full blur-[140px] mix-blend-screen -z-10 pointer-events-none animate-pulse" />
       <div className="fixed bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-secondary/15 rounded-full blur-[140px] mix-blend-screen -z-10 pointer-events-none animate-pulse" />
-
-      <main className="pt-32 pb-24 px-6 max-w-7xl mx-auto space-y-12 min-h-screen relative z-10">
         <StaggerContainer className="text-center space-y-4">
           <StaggerItem>
             <h1 className="text-5xl md:text-7xl font-headline font-black tracking-tighter mb-6 text-white drop-shadow-2xl">
@@ -225,10 +223,11 @@ export default function BacklogPage() {
           </StaggerItem>
         </StaggerContainer>
 
-        <motion.section
+        <MotionCard
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="premium-card p-8 md:p-12 relative overflow-hidden group"
+          padding="xl"
+          className="relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-50" />
 
@@ -244,50 +243,42 @@ export default function BacklogPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-2 md:pl-16">
-                <div className="relative group/input">
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={currentCGPA}
-                    onChange={(e) => { setCurrentCGPA(e.target.value); setErrors({ ...errors, currentCGPA: "" }); }}
-                    className={inputClass("currentCGPA")}
-                    placeholder=" "
-                  />
-                  <label className={labelClass}>Current CGPA</label>
-                  <AnimatePresence>{errors.currentCGPA && <motion.p initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-6 left-1 text-red-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><AlertTriangle size={10} /> {errors.currentCGPA}</motion.p>}</AnimatePresence>
-                </div>
-                <div className="relative group/input">
-                  <input
-                    type="number"
-                    value={completedCredits}
-                    onChange={(e) => { setCompletedCredits(e.target.value); setErrors({ ...errors, completedCredits: "" }); }}
-                    className={inputClass("completedCredits")}
-                    placeholder=" "
-                  />
-                  <label className={labelClass}>Credits Earned</label>
-                  <AnimatePresence>{errors.completedCredits && <motion.p initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-6 left-1 text-red-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><AlertTriangle size={10} /> {errors.completedCredits}</motion.p>}</AnimatePresence>
-                </div>
-                <div className="relative group/input">
-                  <input
-                    type="number"
-                    value={semesterCredits}
-                    onChange={(e) => { setSemesterCredits(e.target.value); setErrors({ ...errors, semesterCredits: "" }); }}
-                    className={inputClass("semesterCredits")}
-                    placeholder=" "
-                  />
-                  <label className={labelClass}>Sem Credits</label>
-                </div>
-                <div className="relative group/input">
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={expectedGPA}
-                    onChange={(e) => { setExpectedGPA(e.target.value); setErrors({ ...errors, expectedGPA: "" }); }}
-                    className={inputClass("expectedGPA")}
-                    placeholder=" "
-                  />
-                  <label className={labelClass}>Target GPA</label>
-                </div>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={currentCGPA}
+                  onChange={(e) => { setCurrentCGPA(e.target.value); setErrors({ ...errors, currentCGPA: "" }); }}
+                  label="Current CGPA"
+                  floating
+                  error={errors.currentCGPA}
+                  placeholder=" "
+                />
+                <Input
+                  type="number"
+                  value={completedCredits}
+                  onChange={(e) => { setCompletedCredits(e.target.value); setErrors({ ...errors, completedCredits: "" }); }}
+                  label="Credits Earned"
+                  floating
+                  error={errors.completedCredits}
+                  placeholder=" "
+                />
+                <Input
+                  type="number"
+                  value={semesterCredits}
+                  onChange={(e) => { setSemesterCredits(e.target.value); setErrors({ ...errors, semesterCredits: "" }); }}
+                  label="Sem Credits"
+                  floating
+                  placeholder=" "
+                />
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={expectedGPA}
+                  onChange={(e) => { setExpectedGPA(e.target.value); setErrors({ ...errors, expectedGPA: "" }); }}
+                  label="Target GPA"
+                  floating
+                  placeholder=" "
+                />
               </div>
             </div>
 
@@ -320,35 +311,38 @@ export default function BacklogPage() {
                       exit={{ opacity: 0, x: -20, scale: 0.95 }}
                       className="grid grid-cols-12 gap-3 items-center group/row"
                     >
-                      <div className="col-span-5 relative group/input">
-                        <input
+                      <div className="col-span-5">
+                        <Input
                           type="text"
                           value={backlog.subjectName}
                           onChange={(e) => updateBacklog(backlog.id, "subjectName", e.target.value)}
-                          className={inputClass(`backlog_${index}_name`)}
+                          label="Subject"
+                          floating
+                          hasError={!!errors[`backlog_${index}_name`]}
                           placeholder=" "
                         />
-                        <label className={labelClass}>Subject</label>
                       </div>
-                      <div className="col-span-3 relative group/input">
-                        <input
+                      <div className="col-span-3">
+                        <Input
                           type="number"
                           value={backlog.credits}
                           onChange={(e) => updateBacklog(backlog.id, "credits", e.target.value)}
-                          className={inputClass(`backlog_${index}_credits`)}
+                          label="Credits"
+                          floating
+                          hasError={!!errors[`backlog_${index}_credits`]}
                           placeholder=" "
                         />
-                        <label className={labelClass}>Credits</label>
                       </div>
-                      <div className="col-span-3 relative group/input">
-                        <input
+                      <div className="col-span-3">
+                        <Input
                           type="number"
                           value={backlog.expectedGrade}
                           onChange={(e) => updateBacklog(backlog.id, "expectedGrade", e.target.value)}
-                          className={inputClass(`backlog_${index}_grade`)}
+                          label="F Grade"
+                          floating
+                          hasError={!!errors[`backlog_${index}_grade`]}
                           placeholder=" "
                         />
-                        <label className={labelClass}>F Grade</label>
                       </div>
                       <div className="col-span-1 flex justify-center">
                         <button
@@ -402,7 +396,7 @@ export default function BacklogPage() {
               </div>
             </button>
           </div>
-        </motion.section>
+        </MotionCard>
 
         <AnimatePresence mode="wait">
           {result && (
@@ -413,7 +407,7 @@ export default function BacklogPage() {
               className="space-y-12 pb-20"
             >
               <div className="grid lg:grid-cols-3 gap-8">
-                <div className="premium-card flex flex-col items-center justify-center relative h-full">
+                <Card className="flex flex-col items-center justify-center relative h-full">
                   <div className="relative w-full h-[250px] flex items-center justify-center">
                     {mounted && (
                       <ResponsiveContainer width="100%" height="100%">
@@ -438,10 +432,10 @@ export default function BacklogPage() {
                       {result.severityLabel} Severity
                     </div>
                   </div>
-                </div>
+                </Card>
 
                 <div className="lg:col-span-2 grid md:grid-cols-2 gap-8">
-                  <div className="premium-card border border-green-500/20 bg-green-500/5 relative h-full overflow-hidden">
+                  <Card className="border border-green-500/20 bg-green-500/5 relative h-full overflow-hidden">
                     <div className="relative z-10 flex flex-col justify-between h-full">
                       <div className="space-y-6">
                          <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center border border-green-500/20"><CheckCircle2 className="text-green-500" /></div>
@@ -452,9 +446,9 @@ export default function BacklogPage() {
                         <span className="text-green-500 font-black text-xs uppercase bg-green-500/10 px-3 py-1 rounded-full">Clear ✓</span>
                       </div>
                     </div>
-                  </div>
+                  </Card>
 
-                  <div className={clsx("premium-card border relative h-full overflow-hidden", result.borderGlow, result.drop > 0.5 ? "border-red-500/30 bg-red-500/5" : "border-orange-500/30 bg-orange-500/5")}>
+                  <Card className={clsx("border relative h-full overflow-hidden", result.borderGlow, result.drop > 0.5 ? "border-red-500/30 bg-red-500/5" : "border-orange-500/30 bg-orange-500/5")}>
                     <div className="relative z-10 flex flex-col justify-between h-full">
                        <div className="space-y-6">
                           <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center border", result.drop > 0.5 ? "bg-red-500/20 border-red-500/20" : "bg-orange-500/20 border-orange-500/20")}><TrendingDown className={result.textSeverityColor} /></div>
@@ -465,11 +459,11 @@ export default function BacklogPage() {
                          <span className={clsx("font-black text-xs uppercase px-3 py-1 rounded-full bg-current/10", result.textSeverityColor)}>-{result.drop} Drop</span>
                        </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
               </div>
 
-              <div className="premium-card md:p-14 relative overflow-hidden">
+              <Card className="md:p-14 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
                 <div className="relative z-10">
                   <h3 className="text-3xl font-headline font-black text-white mb-12">Impact Delta Analysis</h3>
@@ -489,9 +483,9 @@ export default function BacklogPage() {
                     )}
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              <div className="premium-card md:p-14 border border-amber-500/30 bg-amber-500/5 relative overflow-hidden">
+              <Card variant="warning" className="md:p-14 relative overflow-hidden">
                 <div className="relative z-10 space-y-12">
                    <div className="space-y-4">
                       <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center"><RefreshCw className="text-amber-500" /></div>
@@ -516,7 +510,7 @@ export default function BacklogPage() {
                       </div>
                    </div>
                 </div>
-              </div>
+              </Card>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-12">
                 <button
@@ -563,7 +557,6 @@ export default function BacklogPage() {
             <PremiumButton variant="primary" icon="calculate" className="w-full justify-between">GPA Calculator</PremiumButton>
           </Link>
         </div>
-      </main>
-    </>
+    </PageContainer>
   );
 }

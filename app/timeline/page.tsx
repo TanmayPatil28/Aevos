@@ -10,6 +10,10 @@ import {
 import Link from 'next/link';
 import clsx from 'clsx';
 import { useUniversity } from '@/components/providers/UniversityProvider';
+import PageContainer from '@/components/layout/PageContainer';
+import Card from '@/components/ui/Card';
+
+const MotionCard = motion(Card);
 
 // --- Types ---
 interface SemesterNode {
@@ -45,12 +49,12 @@ export default function AcademicTimeline() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen pt-24 pb-32 relative overflow-hidden bg-[#050810]">
+    <div className="min-h-screen relative overflow-hidden bg-[#050810]">
       {/* Background Ambience */}
       <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6 relative z-10">
+      <PageContainer className="pt-24 pb-32 max-w-[1200px] space-y-0 relative z-10">
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
@@ -154,12 +158,12 @@ export default function AcademicTimeline() {
           <div className="lg:col-span-7 sticky top-32">
             <AnimatePresence mode="wait">
               {selectedSem && (
-                <motion.div
+                <MotionCard
                   key={selectedSem}
                   initial={{ opacity: 0, scale: 0.95, filter: 'blur(20px)' }}
                   animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, scale: 0.95, filter: 'blur(20px)' }}
-                  className="premium-card relative overflow-hidden group"
+                  className="relative overflow-hidden group"
                 >
                   {/* Decorative Gradient Aura */}
                   <div className={clsx(
@@ -223,7 +227,7 @@ export default function AcademicTimeline() {
                       </Link>
                     </div>
                   </div>
-                </motion.div>
+                </MotionCard>
               )}
             </AnimatePresence>
             
@@ -246,7 +250,7 @@ export default function AcademicTimeline() {
           </div>
 
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }

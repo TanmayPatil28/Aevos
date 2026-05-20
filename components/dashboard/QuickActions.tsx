@@ -6,6 +6,9 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Card from "../ui/Card";
+
+const MotionCard = motion(Card);
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -96,11 +99,11 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
   };
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      className="premium-card flex flex-col h-fit group"
+      className="flex flex-col h-fit group"
     >
 
       <div className="flex items-center gap-3 mb-8 relative z-10">
@@ -133,6 +136,6 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
           variant="ghost"
         />
       </div>
-    </motion.div>
+    </MotionCard>
   );
 }

@@ -8,6 +8,10 @@ import { getGradePointFromPercentage, calculateSGPA } from "@/lib/calculations";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
+import PageContainer from "@/components/layout/PageContainer";
+import Grid from "@/components/layout/Grid";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
 
 interface Subject {
   id: string;
@@ -138,7 +142,7 @@ export default function CalculatorPage() {
   if (!mounted) return null;
 
   return (
-    <main className="pt-32 pb-20 px-6 max-w-7xl mx-auto min-h-screen relative overflow-hidden">
+    <PageContainer className="px-6 overflow-hidden">
       {/* Ambient Background Blur */}
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute top-[-10%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-primary/10 blur-[100px] opacity-60 mix-blend-screen" />
@@ -167,15 +171,15 @@ export default function CalculatorPage() {
       </StaggerContainer>
 
       {/* Main Content Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+      <Grid cols={3} className="mb-12">
         {/* Left: Add Your Subjects */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="lg:col-span-8"
+          className="lg:col-span-2"
         >
-          <div className="premium-card">
+          <Card>
 
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-headline font-bold text-on-surface tracking-tight">Add Your Subjects</h2>
@@ -211,30 +215,30 @@ export default function CalculatorPage() {
                         className="group"
                       >
                         <td className="py-2.5 px-2">
-                          <input
+                          <Input
                             type="text"
                             value={subject.name}
                             onChange={(e) => handleChange(subject.id, "name", e.target.value)}
-                            className={`premium-input premium-focus ${subject.error && !subject.name.trim() ? "premium-input-error" : ""}`}
+                            hasError={!!(subject.error && !subject.name.trim())}
                             placeholder="e.g. Data Structures"
                           />
                         </td>
                         <td className="py-2.5 px-2">
-                          <input
+                          <Input
                             type="number"
                             value={subject.credits}
                             onChange={(e) => handleChange(subject.id, "credits", e.target.value)}
-                            className={`premium-input premium-focus ${subject.error && subject.error.includes("Credits") ? "premium-input-error" : ""}`}
+                            hasError={!!(subject.error && subject.error.includes("Credits"))}
                             placeholder="4"
                             min="1" max="6"
                           />
                         </td>
                         <td className="py-2.5 px-2">
-                          <input
+                          <Input
                             type="number"
                             value={subject.score}
                             onChange={(e) => handleChange(subject.id, "score", e.target.value)}
-                            className={`premium-input premium-focus ${subject.error && (subject.error.includes("Score") || subject.error.includes("Marks") || subject.error.includes("Grade")) ? "premium-input-error" : ""}`}
+                            hasError={!!(subject.error && (subject.error.includes("Score") || subject.error.includes("Marks") || subject.error.includes("Grade")))}
                             placeholder={usePercentage ? "e.g., 85" : "e.g., 9"}
                           />
                         </td>
@@ -290,7 +294,7 @@ export default function CalculatorPage() {
                 {isCalculating ? "Calculating..." : "Calculate Results"}
               </PremiumButton>
             </div>
-          </div>
+          </Card>
         </motion.div>
 
         {/* Right: Grade Scale Reference */}
@@ -298,9 +302,9 @@ export default function CalculatorPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-4"
+          className="lg:col-span-1"
         >
-          <div className="premium-card sticky top-28">
+          <Card className="sticky top-28">
             <h2 className="text-xl font-headline font-bold mb-6 text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">analytics</span>
               Scale Reference
@@ -328,9 +332,9 @@ export default function CalculatorPage() {
                 ))}
               </div>
             </div>
-          </div>
+          </Card>
         </motion.div>
-      </div>
+      </Grid>
 
       {/* Result Section */}
       <AnimatePresence>
@@ -345,7 +349,7 @@ export default function CalculatorPage() {
             <h2 className="text-3xl font-headline font-black mb-8 text-on-surface">Semester Results</h2>
             <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               <StaggerItem>
-                <div className="premium-card border-t-4 border-primary hover:-translate-y-2 duration-500 group overflow-hidden">
+                <Card className="border-t-4 border-primary hover:-translate-y-2 duration-500 group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
                   <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Semester SGPA</p>
                   <h3 className="text-6xl font-black font-headline text-primary tracking-tighter group-hover:scale-105 transition-transform origin-left">
@@ -354,10 +358,10 @@ export default function CalculatorPage() {
                   <div className="mt-6 flex items-center gap-2 text-primary font-bold text-sm bg-primary/5 w-fit px-3 py-1 rounded-full">
                     <span className="material-symbols-outlined text-sm">trending_up</span> Top Tier
                   </div>
-                </div>
+                </Card>
               </StaggerItem>
               <StaggerItem>
-                <div className="premium-card border-t-4 border-secondary hover:-translate-y-2 duration-500 group overflow-hidden">
+                <Card className="border-t-4 border-secondary hover:-translate-y-2 duration-500 group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-secondary/10 transition-colors" />
                   <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Earned Credits</p>
                   <h3 className="text-6xl font-black font-headline text-secondary tracking-tighter group-hover:scale-105 transition-transform origin-left">
@@ -366,10 +370,10 @@ export default function CalculatorPage() {
                   <div className="mt-6 flex items-center gap-2 text-secondary font-bold text-sm bg-secondary/5 w-fit px-3 py-1 rounded-full">
                     <span className="material-symbols-outlined text-sm">verified</span> Academic Load
                   </div>
-                </div>
+                </Card>
               </StaggerItem>
               <StaggerItem>
-                <div className="premium-card border-t-4 border-success hover:-translate-y-2 duration-500 group overflow-hidden">
+                <Card className="border-t-4 border-success hover:-translate-y-2 duration-500 group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-success/10 transition-colors" />
                   <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Performance Indicator</p>
                   <motion.h3
@@ -383,39 +387,41 @@ export default function CalculatorPage() {
                   <div className="mt-6 flex items-center gap-2 text-success font-bold text-sm bg-success/5 w-fit px-3 py-1 rounded-full">
                     <span className="material-symbols-outlined text-sm">stars</span> Grade Status
                   </div>
-                </div>
+                </Card>
               </StaggerItem>
             </StaggerContainer>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="premium-card mb-8 overflow-x-auto">
-              <h3 className="text-xl font-headline font-bold mb-6 text-on-surface">Subject Breakdown</h3>
-              <table className="w-full text-left min-w-[500px]">
-                <thead>
-                  <tr className="text-on-surface-variant/60 text-xs font-bold uppercase tracking-widest border-b border-outline-variant/10">
-                    <th className="pb-4 px-2">Subject Name</th>
-                    <th className="pb-4 px-2">Credits</th>
-                    <th className="pb-4 px-2">Score</th>
-                    <th className="pb-4 px-2">Grade Point</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subjects.map(s => {
-                    const gradePoint = usePercentage ? getGradePointFromPercentage(parseFloat(s.score) || 0) : parseFloat(s.score) || 0;
-                    return (
-                      <tr key={s.id} className="border-b border-outline-variant/5 last:border-0 hover:bg-surface-container-low/50 transition-colors">
-                        <td className="py-4 px-2 font-medium text-on-surface">{s.name || "Unnamed"}</td>
-                        <td className="py-4 px-2 text-on-surface-variant">{s.credits}</td>
-                        <td className="py-4 px-2 text-on-surface-variant">{s.score}</td>
-                        <td className="py-4 px-2 font-bold text-primary">{gradePoint.toFixed(1)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-8">
+              <Card className="overflow-x-auto">
+                <h3 className="text-xl font-headline font-bold mb-6 text-on-surface">Subject Breakdown</h3>
+                <table className="w-full text-left min-w-[500px]">
+                  <thead>
+                    <tr className="text-on-surface-variant/60 text-xs font-bold uppercase tracking-widest border-b border-outline-variant/10">
+                      <th className="pb-4 px-2">Subject Name</th>
+                      <th className="pb-4 px-2">Credits</th>
+                      <th className="pb-4 px-2">Score</th>
+                      <th className="pb-4 px-2">Grade Point</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subjects.map(s => {
+                      const gradePoint = usePercentage ? getGradePointFromPercentage(parseFloat(s.score) || 0) : parseFloat(s.score) || 0;
+                      return (
+                        <tr key={s.id} className="border-b border-outline-variant/5 last:border-0 hover:bg-surface-container-low/50 transition-colors">
+                          <td className="py-4 px-2 font-medium text-on-surface">{s.name || "Unnamed"}</td>
+                          <td className="py-4 px-2 text-on-surface-variant">{s.credits}</td>
+                          <td className="py-4 px-2 text-on-surface-variant">{s.score}</td>
+                          <td className="py-4 px-2 font-bold text-primary">{gradePoint.toFixed(1)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </Card>
             </motion.div>
 
             {/* Save Section */}
-            <div className="premium-card flex flex-col md:flex-row items-center justify-between gap-8">
+            <Card className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div>
                 <h3 className="text-2xl font-headline font-black mb-2 text-on-surface">Secure These Results</h3>
                 <p className="text-on-surface-variant">Sync your GPA to your cloud dashboard to track semester-on-semester progress.</p>
@@ -436,7 +442,7 @@ export default function CalculatorPage() {
                   </PremiumButton>
                 </div>
               </div>
-            </div>
+            </Card>
           </motion.div>
         )}
       </AnimatePresence>
@@ -459,6 +465,6 @@ export default function CalculatorPage() {
           </PremiumButton>
         </Link>
       </motion.div>
-    </main>
+     </PageContainer>
   );
 }

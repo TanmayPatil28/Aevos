@@ -6,6 +6,9 @@ import {
   RadialBarChart, RadialBar
 } from "recharts";
 import { Award } from "lucide-react";
+import Card from "../ui/Card";
+
+const MotionCard = motion(Card);
 
 interface Subject {
   name: string;
@@ -41,11 +44,11 @@ export default function BreakdownCards({
   return (
     <div className="space-y-8">
       {/* Performance Donut */}
-      <motion.div
+      <MotionCard
         initial={{ opacity: 0, x: 20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
-        className="premium-card flex flex-col items-center group"
+        className="flex flex-col items-center group"
       >
         <h3 className="text-xl font-black font-headline tracking-tighter text-white self-start mb-8 relative z-10">Performance Breakdown</h3>
 
@@ -95,15 +98,15 @@ export default function BreakdownCards({
             </div>
           ))}
         </div>
-      </motion.div>
+      </MotionCard>
 
       {/* CGPA Gauge */}
-      <motion.div
+      <MotionCard
         initial={{ opacity: 0, x: 20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
-        className="premium-card flex flex-col items-center group"
+        className="flex flex-col items-center group"
       >
         <h3 className="text-xl font-black font-headline tracking-tighter text-white self-start mb-8 relative z-10">CGPA Progress Gauge</h3>
 
@@ -138,15 +141,15 @@ export default function BreakdownCards({
           <span className="text-primary">Target: {targetCgpa.toFixed(2)}</span>
           <span>10.0</span>
         </div>
-      </motion.div>
+      </MotionCard>
 
       {/* Top Subjects */}
-      <motion.div
+      <MotionCard
         initial={{ opacity: 0, x: 20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.2 }}
-        className="premium-card group"
+        className="group"
       >
         <h3 className="text-xl font-black font-headline tracking-tighter text-white mb-8 flex items-center gap-3 relative z-10">
           <Award size={24} strokeWidth={3} className="text-[#4F8EF7]" /> Top Performance
@@ -175,7 +178,7 @@ export default function BreakdownCards({
             <p className="text-sm text-on-surface-variant text-center py-4">Add more calculations to see full analysis</p>
           )}
         </div>
-      </motion.div>
+      </MotionCard>
     </div>
   );
 }
