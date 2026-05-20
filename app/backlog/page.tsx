@@ -204,7 +204,7 @@ export default function BacklogPage() {
     }, 1000);
   };
 
-  if (!mounted) return null;
+
 
   return (
     <>
@@ -415,15 +415,17 @@ export default function BacklogPage() {
               <div className="grid lg:grid-cols-3 gap-8">
                 <div className="glass-card rounded-[2.5rem] p-8 border border-white/10 flex flex-col items-center justify-center relative h-full">
                   <div className="relative w-full h-[250px] flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadialBarChart
-                        cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={20}
-                        data={result.gaugeData} startAngle={180} endAngle={0}
-                      >
-                        <PolarAngleAxis type="number" domain={[0, 10]} tick={false} />
-                        <RadialBar background dataKey="value" cornerRadius={10} fill={result.drop > 0.5 ? "#ef4444" : "#f59e0b"} />
-                      </RadialBarChart>
-                    </ResponsiveContainer>
+                    {mounted && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadialBarChart
+                          cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={20}
+                          data={result.gaugeData} startAngle={180} endAngle={0}
+                        >
+                          <PolarAngleAxis type="number" domain={[0, 10]} tick={false} />
+                          <RadialBar background dataKey="value" cornerRadius={10} fill={result.drop > 0.5 ? "#ef4444" : "#f59e0b"} />
+                        </RadialBarChart>
+                      </ResponsiveContainer>
+                    )}
                     <div className="absolute inset-x-0 bottom-10 flex flex-col items-center">
                       <span className="text-4xl md:text-5xl font-headline font-black text-white">
                         <AnimatedCounter target={result.cgpaFail} decimals={2} />
@@ -472,17 +474,19 @@ export default function BacklogPage() {
                 <div className="relative z-10">
                   <h3 className="text-3xl font-headline font-black text-white mb-12">Impact Delta Analysis</h3>
                   <div className="h-[400px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={result.chartData} barGap={0}>
-                         <defs>
-                           <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4} /></linearGradient>
-                           <linearGradient id="redGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#ef4444" stopOpacity={0.4} /></linearGradient>
-                         </defs>
-                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800 }} dy={15} />
-                         <YAxis hide domain={[0, 10]} />
-                         <Bar dataKey="CGPA" radius={[20, 20, 12, 12]} barSize={120} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {mounted && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={result.chartData} barGap={0}>
+                           <defs>
+                             <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4} /></linearGradient>
+                             <linearGradient id="redGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#ef4444" stopOpacity={0.4} /></linearGradient>
+                           </defs>
+                           <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800 }} dy={15} />
+                           <YAxis hide domain={[0, 10]} />
+                           <Bar dataKey="CGPA" radius={[20, 20, 12, 12]} barSize={120} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </div>
               </div>
@@ -517,10 +521,18 @@ export default function BacklogPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-12">
                 <button
                   onClick={() => {
+                    if (isSaving) return;
                     setIsSaving(true);
                     setTimeout(() => {
+                      let existing = [];
                       try {
-                        const existing = JSON.parse(localStorage.getItem("gradeflow_backlog_reports") || "[]");
+                        const saved = localStorage.getItem("gradeflow_backlog_reports");
+                        const parsed = saved ? JSON.parse(saved) : [];
+                        if (Array.isArray(parsed)) {
+                          existing = parsed;
+                        }
+                      } catch {}
+                      try {
                         existing.unshift({ ...result, saved_at: new Date().toISOString() });
                         localStorage.setItem("gradeflow_backlog_reports", JSON.stringify(existing.slice(0, 20)));
                         toast.success("Report saved locally.");

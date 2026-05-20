@@ -101,7 +101,7 @@ export default function CalculatorPage() {
   };
 
   const handleSave = async () => {
-    if (!result) return;
+    if (!result || isSaving) return;
     setIsSaving(true);
     setSaveSuccess(false);
 

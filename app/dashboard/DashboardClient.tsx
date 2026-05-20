@@ -81,10 +81,9 @@ export default function DashboardClient({
       const response = await fetch(`/api/calculations/${id}`, {
         method: "DELETE",
       });
-      if (response.ok) {
-        setCalculations((prev) => prev.filter((calc) => calc.id !== id));
-        toast.success("Record deleted");
-      }
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+      setCalculations((prev) => prev.filter((calc) => calc.id !== id));
+      toast.success("Record deleted");
     } catch (error) {
       console.error("Delete failed:", error);
       toast.error("Failed to delete record");
@@ -98,10 +97,9 @@ export default function DashboardClient({
       const response = await fetch("/api/calculations/clear", {
         method: "DELETE",
       });
-      if (response.ok) {
-        setCalculations([]);
-        toast.success("All records cleared");
-      }
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+      setCalculations([]);
+      toast.success("All records cleared");
     } catch (error) {
       console.error("Clear all failed:", error);
       toast.error("Failed to clear records");
