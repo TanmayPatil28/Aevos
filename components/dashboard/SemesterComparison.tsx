@@ -31,10 +31,8 @@ export default function SemesterComparison({ data }: { data: ComparisonData[] })
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col h-fit"
+      className="premium-card flex flex-col h-fit group"
     >
-      {/* 2. PRISMATIC EDGE PRISM: Refractive micro-shimmer */}
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
       
       <div className="mb-10 relative z-10">
         <h3 className="text-2xl font-black font-headline tracking-tighter text-white">Semester Comparison</h3>
@@ -42,7 +40,7 @@ export default function SemesterComparison({ data }: { data: ComparisonData[] })
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full text-left min-w-[600px]">
           <thead>
             <tr className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] border-b border-white/[0.05]">
               <th className="pb-4 px-4 whitespace-nowrap">Semester</th>

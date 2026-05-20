@@ -175,7 +175,7 @@ export default function CalculatorPage() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="lg:col-span-8"
         >
-          <div className="glass-card rounded-[2rem] p-8">
+          <div className="premium-card">
 
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-headline font-bold text-on-surface tracking-tight">Add Your Subjects</h2>
@@ -215,7 +215,7 @@ export default function CalculatorPage() {
                             type="text"
                             value={subject.name}
                             onChange={(e) => handleChange(subject.id, "name", e.target.value)}
-                            className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && !subject.name.trim() ? "border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5" : ""}`}
+                            className={`premium-input premium-focus ${subject.error && !subject.name.trim() ? "premium-input-error" : ""}`}
                             placeholder="e.g. Data Structures"
                           />
                         </td>
@@ -224,7 +224,7 @@ export default function CalculatorPage() {
                             type="number"
                             value={subject.credits}
                             onChange={(e) => handleChange(subject.id, "credits", e.target.value)}
-                            className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && subject.error.includes("Credits") ? "border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5" : ""}`}
+                            className={`premium-input premium-focus ${subject.error && subject.error.includes("Credits") ? "premium-input-error" : ""}`}
                             placeholder="4"
                             min="1" max="6"
                           />
@@ -234,7 +234,7 @@ export default function CalculatorPage() {
                             type="number"
                             value={subject.score}
                             onChange={(e) => handleChange(subject.id, "score", e.target.value)}
-                            className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && (subject.error.includes("Score") || subject.error.includes("Marks") || subject.error.includes("Grade")) ? "border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5" : ""}`}
+                            className={`premium-input premium-focus ${subject.error && (subject.error.includes("Score") || subject.error.includes("Marks") || subject.error.includes("Grade")) ? "premium-input-error" : ""}`}
                             placeholder={usePercentage ? "e.g., 85" : "e.g., 9"}
                           />
                         </td>
@@ -300,7 +300,7 @@ export default function CalculatorPage() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="lg:col-span-4"
         >
-          <div className="glass-card rounded-none p-8 sticky top-28 border border-outline-variant">
+          <div className="premium-card sticky top-28">
             <h2 className="text-xl font-headline font-bold mb-6 text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">analytics</span>
               Scale Reference
@@ -345,7 +345,7 @@ export default function CalculatorPage() {
             <h2 className="text-3xl font-headline font-black mb-8 text-on-surface">Semester Results</h2>
             <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               <StaggerItem>
-                <div className="glass-card rounded-[2.5rem] p-10 border-t-4 border-primary shadow-premium hover:-translate-y-2 transition-all duration-500 group overflow-hidden">
+                <div className="premium-card border-t-4 border-primary hover:-translate-y-2 duration-500 group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
                   <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Semester SGPA</p>
                   <h3 className="text-6xl font-black font-headline text-primary tracking-tighter group-hover:scale-105 transition-transform origin-left">
@@ -357,7 +357,7 @@ export default function CalculatorPage() {
                 </div>
               </StaggerItem>
               <StaggerItem>
-                <div className="glass-card rounded-[2.5rem] p-10 border-t-4 border-secondary shadow-premium hover:-translate-y-2 transition-all duration-500 group overflow-hidden">
+                <div className="premium-card border-t-4 border-secondary hover:-translate-y-2 duration-500 group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-secondary/10 transition-colors" />
                   <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Earned Credits</p>
                   <h3 className="text-6xl font-black font-headline text-secondary tracking-tighter group-hover:scale-105 transition-transform origin-left">
@@ -369,7 +369,7 @@ export default function CalculatorPage() {
                 </div>
               </StaggerItem>
               <StaggerItem>
-                <div className="glass-card rounded-[2.5rem] p-10 border-t-4 border-success shadow-premium hover:-translate-y-2 transition-all duration-500 group overflow-hidden">
+                <div className="premium-card border-t-4 border-success hover:-translate-y-2 duration-500 group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-success/10 transition-colors" />
                   <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Performance Indicator</p>
                   <motion.h3
@@ -387,7 +387,7 @@ export default function CalculatorPage() {
               </StaggerItem>
             </StaggerContainer>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card rounded-[2rem] p-8 mb-8 overflow-x-auto">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="premium-card mb-8 overflow-x-auto">
               <h3 className="text-xl font-headline font-bold mb-6 text-on-surface">Subject Breakdown</h3>
               <table className="w-full text-left min-w-[500px]">
                 <thead>
@@ -415,7 +415,7 @@ export default function CalculatorPage() {
             </motion.div>
 
             {/* Save Section */}
-            <div className="glass-card rounded-[2rem] p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="premium-card flex flex-col md:flex-row items-center justify-between gap-8">
               <div>
                 <h3 className="text-2xl font-headline font-black mb-2 text-on-surface">Secure These Results</h3>
                 <p className="text-on-surface-variant">Sync your GPA to your cloud dashboard to track semester-on-semester progress.</p>

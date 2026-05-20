@@ -58,8 +58,8 @@ export default function BacklogPage() {
   const [mounted, setMounted] = useState(false);
 
   const inputClass = (field: string) => clsx(
-    "w-full h-14 bg-white/5 border rounded-2xl px-5 pt-8 pb-2 text-white font-bold transition-all outline-none peer",
-    errors[field] ? "border-red-500 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.2)]" : "border-white/10 focus:border-primary focus:bg-primary/5 focus:shadow-[0_0_20px_rgba(80,143,248,0.25)]"
+    "premium-input premium-focus pt-8 pb-2",
+    errors[field] && "premium-input-error"
   );
 
   const labelClass = "absolute left-5 top-2 text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/80 pointer-events-none transition-all group-focus-within/input:text-primary group-focus-within/input:opacity-100";
@@ -228,7 +228,7 @@ export default function BacklogPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-[2.5rem] p-8 md:p-12 shadow-premium border border-white/10 relative overflow-hidden group"
+          className="premium-card p-8 md:p-12 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-50" />
 
@@ -413,7 +413,7 @@ export default function BacklogPage() {
               className="space-y-12 pb-20"
             >
               <div className="grid lg:grid-cols-3 gap-8">
-                <div className="glass-card rounded-[2.5rem] p-8 border border-white/10 flex flex-col items-center justify-center relative h-full">
+                <div className="premium-card flex flex-col items-center justify-center relative h-full">
                   <div className="relative w-full h-[250px] flex items-center justify-center">
                     {mounted && (
                       <ResponsiveContainer width="100%" height="100%">
@@ -441,7 +441,7 @@ export default function BacklogPage() {
                 </div>
 
                 <div className="lg:col-span-2 grid md:grid-cols-2 gap-8">
-                  <div className="glass-card rounded-[2.5rem] p-10 border border-green-500/20 bg-green-500/5 relative h-full overflow-hidden">
+                  <div className="premium-card border border-green-500/20 bg-green-500/5 relative h-full overflow-hidden">
                     <div className="relative z-10 flex flex-col justify-between h-full">
                       <div className="space-y-6">
                          <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center border border-green-500/20"><CheckCircle2 className="text-green-500" /></div>
@@ -454,7 +454,7 @@ export default function BacklogPage() {
                     </div>
                   </div>
 
-                  <div className={clsx("glass-card rounded-[2.5rem] p-10 border relative h-full overflow-hidden", result.borderGlow, result.drop > 0.5 ? "border-red-500/30 bg-red-500/5" : "border-orange-500/30 bg-orange-500/5")}>
+                  <div className={clsx("premium-card border relative h-full overflow-hidden", result.borderGlow, result.drop > 0.5 ? "border-red-500/30 bg-red-500/5" : "border-orange-500/30 bg-orange-500/5")}>
                     <div className="relative z-10 flex flex-col justify-between h-full">
                        <div className="space-y-6">
                           <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center border", result.drop > 0.5 ? "bg-red-500/20 border-red-500/20" : "bg-orange-500/20 border-orange-500/20")}><TrendingDown className={result.textSeverityColor} /></div>
@@ -469,7 +469,7 @@ export default function BacklogPage() {
                 </div>
               </div>
 
-              <div className="glass-card rounded-[3rem] p-10 md:p-14 border border-white/10 relative overflow-hidden">
+              <div className="premium-card md:p-14 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
                 <div className="relative z-10">
                   <h3 className="text-3xl font-headline font-black text-white mb-12">Impact Delta Analysis</h3>
@@ -491,7 +491,7 @@ export default function BacklogPage() {
                 </div>
               </div>
 
-              <div className="glass-card rounded-[3rem] p-10 md:p-14 border border-amber-500/30 bg-amber-500/5 relative overflow-hidden">
+              <div className="premium-card md:p-14 border border-amber-500/30 bg-amber-500/5 relative overflow-hidden">
                 <div className="relative z-10 space-y-12">
                    <div className="space-y-4">
                       <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center"><RefreshCw className="text-amber-500" /></div>

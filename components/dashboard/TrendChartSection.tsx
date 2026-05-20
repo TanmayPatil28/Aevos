@@ -62,11 +62,8 @@ export default function TrendChartSection({ data }: TrendChartSectionProps) {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] h-[520px] flex flex-col"
+      className="premium-card h-[520px] flex flex-col group"
     >
-      {/* 2. PRISMATIC EDGE PRISM: Refractive micro-shimmer */}
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-gradient-to-br from-[#4F8EF7]/30 via-transparent to-[#A855F7]/30 pointer-events-none z-10" />
 
       {/* Dynamic Light Sweep */}
       <div className="absolute inset-x-0 top-0 h-full overflow-hidden pointer-events-none opacity-20 transition-opacity duration-700">

@@ -27,9 +27,8 @@ export default function ActivityTimeline({ activities }: { activities: Activity[
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden"
+      className="premium-card overflow-hidden group"
     >
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
       <h3 className="text-xl font-black font-headline tracking-tighter text-white mb-8 relative z-10">Neural Timeline</h3>
       
       <div className="relative relative z-10">

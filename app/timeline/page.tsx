@@ -110,8 +110,8 @@ export default function AcademicTimeline() {
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => setSelectedSem(sem.id)}
                   className={clsx(
-                    "w-full flex items-center gap-8 p-4 rounded-3xl transition-all duration-500 group relative",
-                    selectedSem === sem.id ? "bg-white/5 border border-white/10 shadow-2xl" : "hover:bg-white/[0.02]"
+                    "w-full flex items-center gap-4 sm:gap-8 p-4 rounded-2xl transition-all duration-500 group relative",
+                    selectedSem === sem.id ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/[0.02]"
                   )}
                 >
                   {/* Node Icon */}
@@ -159,7 +159,7 @@ export default function AcademicTimeline() {
                   initial={{ opacity: 0, scale: 0.95, filter: 'blur(20px)' }}
                   animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, scale: 0.95, filter: 'blur(20px)' }}
-                  className="bg-[#0A0F1E]/60 backdrop-blur-3xl border border-white/10 rounded-[40px] p-10 shadow-premium relative overflow-hidden group"
+                  className="premium-card relative overflow-hidden group"
                 >
                   {/* Decorative Gradient Aura */}
                   <div className={clsx(
@@ -179,7 +179,7 @@ export default function AcademicTimeline() {
                           {SEMESTERS.find(s => s.id === selectedSem)?.title}
                         </h2>
                       </div>
-                      <div className="bg-white/5 px-6 py-4 rounded-3xl border border-white/5 text-center">
+                      <div className="bg-white/5 px-6 py-4 rounded-2xl border border-white/10 text-center">
                         <span className="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">GPA</span>
                         <span className="text-3xl font-black text-white">{SEMESTERS.find(s => s.id === selectedSem)?.sgpa || "—"}</span>
                       </div>
@@ -232,7 +232,7 @@ export default function AcademicTimeline() {
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
                transition={{ delay: 0.5 }}
-               className="mt-8 p-6 bg-blue-500/5 border border-blue-500/10 rounded-3xl"
+               className="mt-8 p-6 bg-blue-500/5 border border-blue-500/10 rounded-2xl"
             >
               <div className="flex gap-4">
                 <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
