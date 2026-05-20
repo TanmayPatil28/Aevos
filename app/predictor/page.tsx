@@ -10,6 +10,8 @@ import clsx from 'clsx';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { useUniversity } from '@/components/providers/UniversityProvider';
+import PageContainer from '@/components/layout/PageContainer';
+import Card from '@/components/ui/Card';
 
 const GRADES = [
   { grade: "O", gpa: 10, minPercent: 90, color: "text-emerald-400" },
@@ -152,12 +154,10 @@ export default function PredictorPage() {
   const maxEndSem = type === 'theory100' ? 100 : type === 'theory50' ? 50 : 0;
 
   return (
-    <div className="min-h-screen pt-24 pb-20 relative overflow-hidden">
+    <PageContainer className="overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6 relative z-10 space-y-8">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -202,7 +202,7 @@ export default function PredictorPage() {
           <div className="lg:col-span-12">
             <div className="grid lg:grid-cols-12 gap-8">
               <div className="lg:col-span-5 space-y-6">
-                <div className="premium-card relative overflow-hidden group">
+                <Card className="relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                   <div className="flex items-center justify-between mb-8 relative z-10">
                     <h3 className="text-xl font-bold flex items-center gap-2 text-white">
@@ -270,7 +270,7 @@ export default function PredictorPage() {
                       />
                     </div>
                   </div>
-                </div>
+                </Card>
 
                 <div className="bg-primary/5 border border-primary/20 rounded-3xl p-6 relative overflow-hidden backdrop-blur-xl">
                   <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
@@ -293,7 +293,7 @@ export default function PredictorPage() {
               </div>
 
               <div className="lg:col-span-7 space-y-6">
-                <div className="premium-card relative overflow-hidden z-20">
+                <Card className="relative overflow-hidden z-20">
                   <div className="absolute top-[-50%] right-[-10%] w-[300px] h-[300px] bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
                     <div>
@@ -314,7 +314,7 @@ export default function PredictorPage() {
                       <select
                         value={targetGrade}
                         onChange={(e) => setTargetGrade(e.target.value)}
-                        className="bg-primary/20 text-primary font-black text-xl w-16 text-center py-1 rounded-xl appearance-none outline-none border border-primary/30 shadow-inner premium-focus cursor-pointer"
+                        className="bg-primary/20 text-primary font-black text-xl w-16 text-center py-1 rounded-xl appearance-none outline-none border border-primary/30 shadow-inner focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface cursor-pointer"
                       >
                         {GRADES.map(g => (
                           <option key={g.grade} value={g.grade}>{g.grade}</option>
@@ -347,9 +347,9 @@ export default function PredictorPage() {
                       </motion.div>
                     )}
                   </div>
-                </div>
+                </Card>
 
-                <div className="premium-card grid md:grid-cols-2 gap-8 relative overflow-hidden">
+                <Card className="grid md:grid-cols-2 gap-8 relative overflow-hidden">
                   <div className="flex flex-col justify-center">
                     <h3 className="text-lg font-bold flex items-center gap-2 mb-2 text-white">
                        Score Distribution
@@ -391,7 +391,7 @@ export default function PredictorPage() {
                       <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Of Max</span>
                     </div>
                   </div>
-                </div>
+                </Card>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
                   <StatCard label="Internal Base" value={`${stats.scoredBase.toFixed(1)}/${stats.maxBase}`} icon="box" />
@@ -415,12 +415,11 @@ export default function PredictorPage() {
                     {isSaving ? "Saving..." : "Save Scenario"}
                   </button>
                 </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

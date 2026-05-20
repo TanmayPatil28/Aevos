@@ -7,6 +7,19 @@
    ═══════════════════════════════════════════ */
 
 :root {
+  /* Semantic SaaS Tokens */
+  --color-bg: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-variant);
+  --color-border: var(--outline);
+  --color-text-primary: var(--on-surface);
+  --color-text-secondary: var(--on-surface-variant);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-fixed-dim);
+  --color-danger: var(--error);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
   /* Common */
   --font-headline: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;

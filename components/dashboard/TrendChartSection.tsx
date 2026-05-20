@@ -7,6 +7,9 @@ import {
   Tooltip, ResponsiveContainer, ReferenceLine 
 } from "recharts";
 import { TrendingUp, BarChart2, LineChart as LineChartIcon } from "lucide-react";
+import Card from "@/components/ui/Card";
+
+const MotionCard = motion(Card);
 
 interface TrendData {
   name: string;
@@ -58,11 +61,11 @@ export default function TrendChartSection({ data }: TrendChartSectionProps) {
   const avgCgpa = data.length > 0 ? data.reduce((acc, curr) => acc + curr.cgpa, 0) / data.length : 0;
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="premium-card h-[520px] flex flex-col group"
+      className="h-[520px] flex flex-col group"
     >
 
       {/* Dynamic Light Sweep */}
@@ -199,6 +202,6 @@ export default function TrendChartSection({ data }: TrendChartSectionProps) {
            Trend Detection: Improved trajectory over the last cycle.
         </p>
       </div>
-    </motion.div>
+    </MotionCard>
   );
 }

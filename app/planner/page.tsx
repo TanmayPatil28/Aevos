@@ -10,6 +10,11 @@ import { calculateRequiredGPA, getDifficultyLevel, gpaToPercentage } from "@/lib
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
+import PageContainer from "@/components/layout/PageContainer";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
+
+const MotionCard = motion(Card);
 
 interface ChartDataItem {
   semester: string;
@@ -251,19 +256,7 @@ export default function PlannerPage() {
 
   const isDark = theme === "dark";
 
-  const getInputClass = (field: string) => {
-    const hasError = errors[field] && touched[field];
-    const isValid = fieldValid[field] && touched[field];
-    return `premium-input premium-focus pt-7 pb-2 ${
-      hasError
-        ? "premium-input-error"
-        : isValid
-          ? "border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.2)] bg-green-500/5"
-          : ""
-    }`;
-  };
-
-  const labelClass = "absolute left-4 top-4 text-sm font-medium text-on-surface-variant transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#4F8EF7] pointer-events-none";
+  // Removed getInputClass and labelClass helper to use componentized Input instead
 
   // Expert insight text
   const getExpertText = () => {
@@ -276,12 +269,10 @@ export default function PlannerPage() {
   };
 
   return (
-    <>
+    <PageContainer className="relative z-10 space-y-12">
       {/* Glowing Orbs */}
       <div className="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-[#4F8EF7]/10 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
       <div className="fixed bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
-
-      <main className="pt-32 pb-24 px-6 max-w-7xl mx-auto space-y-12 min-h-screen">
 
         {/* ━━━ PAGE HEADER ━━━ */}
         <StaggerContainer className="text-center space-y-4">
@@ -306,11 +297,10 @@ export default function PlannerPage() {
         </StaggerContainer>
 
         {/* ━━━ INPUT CARD ━━━ */}
-        <motion.section
+        <MotionCard
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="premium-card"
         >
           <div className="grid md:grid-cols-2 gap-12 items-start mb-10">
             {/* Left — Current Status */}
@@ -323,29 +313,43 @@ export default function PlannerPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6">
                 {/* Current CGPA */}
-                <div className="relative">
-                  <input type="number" step="0.01" min="0" max="10" value={currentCGPA}
-                    onChange={(e) => { setCurrentCGPA(e.target.value); setErrors({ ...errors, currentCGPA: "" }); setTouched({ ...touched, currentCGPA: true }); }}
-                    className={getInputClass("currentCGPA")} placeholder="." />
-                  <label className={labelClass + (currentCGPA ? " !top-1.5 !text-[10px]" : "")}>Current CGPA</label>
-                  <AnimatePresence>{errors.currentCGPA && touched.currentCGPA && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.currentCGPA}</motion.p>}</AnimatePresence>
-                </div>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="10"
+                  value={currentCGPA}
+                  onChange={(e) => { setCurrentCGPA(e.target.value); setErrors({ ...errors, currentCGPA: "" }); setTouched({ ...touched, currentCGPA: true }); }}
+                  label="Current CGPA"
+                  floating
+                  error={touched.currentCGPA ? errors.currentCGPA : undefined}
+                  isValid={fieldValid.currentCGPA && touched.currentCGPA}
+                  placeholder="."
+                />
                 {/* Completed Sems + Credits */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <input type="number" min="1" value={completedSemesters}
-                      onChange={(e) => { setCompletedSemesters(e.target.value); setErrors({ ...errors, completedSemesters: "" }); setTouched({ ...touched, completedSemesters: true }); }}
-                      className={getInputClass("completedSemesters")} placeholder="." />
-                    <label className={labelClass + (completedSemesters ? " !top-1.5 !text-[10px]" : "")}>Completed Sems</label>
-                    <AnimatePresence>{errors.completedSemesters && touched.completedSemesters && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.completedSemesters}</motion.p>}</AnimatePresence>
-                  </div>
-                  <div className="relative">
-                    <input type="number" min="1" value={totalCredits}
-                      onChange={(e) => { setTotalCredits(e.target.value); setErrors({ ...errors, totalCredits: "" }); setTouched({ ...touched, totalCredits: true }); }}
-                      className={getInputClass("totalCredits")} placeholder="." />
-                    <label className={labelClass + (totalCredits ? " !top-1.5 !text-[10px]" : "")}>Credits Done</label>
-                    <AnimatePresence>{errors.totalCredits && touched.totalCredits && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.totalCredits}</motion.p>}</AnimatePresence>
-                  </div>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={completedSemesters}
+                    onChange={(e) => { setCompletedSemesters(e.target.value); setErrors({ ...errors, completedSemesters: "" }); setTouched({ ...touched, completedSemesters: true }); }}
+                    label="Completed Sems"
+                    floating
+                    error={touched.completedSemesters ? errors.completedSemesters : undefined}
+                    isValid={fieldValid.completedSemesters && touched.completedSemesters}
+                    placeholder="."
+                  />
+                  <Input
+                    type="number"
+                    min="1"
+                    value={totalCredits}
+                    onChange={(e) => { setTotalCredits(e.target.value); setErrors({ ...errors, totalCredits: "" }); setTouched({ ...touched, totalCredits: true }); }}
+                    label="Credits Done"
+                    floating
+                    error={touched.totalCredits ? errors.totalCredits : undefined}
+                    isValid={fieldValid.totalCredits && touched.totalCredits}
+                    placeholder="."
+                  />
                 </div>
               </div>
             </div>
@@ -360,29 +364,45 @@ export default function PlannerPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6">
                 {/* Target CGPA */}
-                <div className="relative">
-                  <input type="number" step="0.01" min="0" max="10" value={targetCGPA}
-                    onChange={(e) => { setTargetCGPA(e.target.value); setErrors({ ...errors, targetCGPA: "" }); setTouched({ ...touched, targetCGPA: true }); }}
-                    className={getInputClass("targetCGPA")} placeholder="." />
-                  <label className={labelClass + (targetCGPA ? " !top-1.5 !text-[10px]" : "")}>Target CGPA</label>
-                  <AnimatePresence>{errors.targetCGPA && touched.targetCGPA && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.targetCGPA}</motion.p>}</AnimatePresence>
-                </div>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="10"
+                  value={targetCGPA}
+                  onChange={(e) => { setTargetCGPA(e.target.value); setErrors({ ...errors, targetCGPA: "" }); setTouched({ ...touched, targetCGPA: true }); }}
+                  label="Target CGPA"
+                  floating
+                  error={touched.targetCGPA ? errors.targetCGPA : undefined}
+                  isValid={fieldValid.targetCGPA && touched.targetCGPA}
+                  placeholder="."
+                />
                 {/* Remaining Sems + Credits Per Sem */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <input type="number" min="1" max="8" value={remainingSemesters}
-                      onChange={(e) => { setRemainingSemesters(e.target.value); setErrors({ ...errors, remainingSemesters: "" }); setTouched({ ...touched, remainingSemesters: true }); }}
-                      className={getInputClass("remainingSemesters")} placeholder="." />
-                    <label className={labelClass + (remainingSemesters ? " !top-1.5 !text-[10px]" : "")}>Remaining Sems</label>
-                    <AnimatePresence>{errors.remainingSemesters && touched.remainingSemesters && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.remainingSemesters}</motion.p>}</AnimatePresence>
-                  </div>
-                  <div className="relative">
-                    <input type="number" min="1" max="30" value={creditsPerSemester}
-                      onChange={(e) => { setCreditsPerSemester(e.target.value); setErrors({ ...errors, creditsPerSemester: "" }); setTouched({ ...touched, creditsPerSemester: true }); }}
-                      className={getInputClass("creditsPerSemester")} placeholder="." />
-                    <label className={labelClass + (creditsPerSemester ? " !top-1.5 !text-[10px]" : "")}>Credits Per Sem</label>
-                    <AnimatePresence>{errors.creditsPerSemester && touched.creditsPerSemester && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute -bottom-5 left-1 text-red-400 text-[10px] font-bold">{errors.creditsPerSemester}</motion.p>}</AnimatePresence>
-                  </div>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="8"
+                    value={remainingSemesters}
+                    onChange={(e) => { setRemainingSemesters(e.target.value); setErrors({ ...errors, remainingSemesters: "" }); setTouched({ ...touched, remainingSemesters: true }); }}
+                    label="Remaining Sems"
+                    floating
+                    error={touched.remainingSemesters ? errors.remainingSemesters : undefined}
+                    isValid={fieldValid.remainingSemesters && touched.remainingSemesters}
+                    placeholder="."
+                  />
+                  <Input
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={creditsPerSemester}
+                    onChange={(e) => { setCreditsPerSemester(e.target.value); setErrors({ ...errors, creditsPerSemester: "" }); setTouched({ ...touched, creditsPerSemester: true }); }}
+                    label="Credits Per Sem"
+                    floating
+                    error={touched.creditsPerSemester ? errors.creditsPerSemester : undefined}
+                    isValid={fieldValid.creditsPerSemester && touched.creditsPerSemester}
+                    placeholder="."
+                  />
                 </div>
               </div>
             </div>
@@ -417,7 +437,7 @@ export default function PlannerPage() {
               )}
             </motion.button>
           </div>
-        </motion.section>
+        </MotionCard>
 
         {/* ━━━ RESULTS ━━━ */}
         <AnimatePresence>
@@ -454,52 +474,36 @@ export default function PlannerPage() {
               <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Card 1 — CGPA Gap */}
                 <StaggerItem>
-                  <div
-                    className="rounded-[2rem] p-8 flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden border-t-[3px] border-[#4F8EF7]/60"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(20px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderTop: "3px solid rgba(79,142,247,0.6)",
-                      boxShadow: "0 0 20px rgba(79,142,247,0.1)",
-                    }}
+                  <Card
+                    variant="accent"
+                    className="flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden border-t-[3px] border-[#4F8EF7]/60"
                   >
                     <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">CGPA Gap</span>
                     <div className="text-5xl font-black font-headline bg-gradient-to-br from-[#4F8EF7] to-blue-400 bg-clip-text text-transparent tracking-tighter group-hover:scale-105 transition-transform">
                       +<AnimatedCounter target={result.gap > 0 ? result.gap : 0} decimals={2} />
                     </div>
                     <span className="text-on-surface-variant/60 text-xs">Points needed to reach target</span>
-                  </div>
+                  </Card>
                 </StaggerItem>
 
                 {/* Card 2 — Required GPA */}
                 <StaggerItem>
-                  <div
-                    className="rounded-[2rem] p-8 flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(20px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderTop: "3px solid rgba(124,58,237,0.6)",
-                      boxShadow: "0 0 20px rgba(124,58,237,0.1)",
-                    }}
+                  <Card
+                    className="flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden border-t-[3px] border-purple-500/60 shadow-[0_0_20px_rgba(168,85,247,0.1)]"
                   >
                     <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">Required Each Semester</span>
                     <div className="text-5xl font-black font-headline bg-gradient-to-br from-purple-400 to-purple-600 bg-clip-text text-transparent tracking-tighter group-hover:scale-105 transition-transform">
                       <AnimatedCounter target={result.requiredGPA} decimals={2} />
                     </div>
                     <span className="text-on-surface-variant/60 text-xs">Average maintenance GPA</span>
-                  </div>
+                  </Card>
                 </StaggerItem>
 
                 {/* Card 3 — Difficulty */}
                 <StaggerItem>
-                  <div
-                    className={`rounded-[2rem] p-8 flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden ${result.requiredGPA > 9.5 ? "animate-pulse" : ""}`}
+                  <Card
+                    className={`flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden ${result.requiredGPA > 9.5 ? "animate-pulse" : ""}`}
                     style={{
-                      background: "rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(20px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
                       borderTop: `3px solid ${result.requiredGPA > 9.5 ? "rgba(239,68,68,0.6)" : result.requiredGPA >= 8.0 ? "rgba(234,179,8,0.6)" : result.requiredGPA >= 7.0 ? "rgba(59,130,246,0.6)" : "rgba(34,197,94,0.6)"}`,
                       boxShadow: result.requiredGPA > 9.5
                         ? "0 0 20px rgba(239,68,68,0.15)"
@@ -515,18 +519,18 @@ export default function PlannerPage() {
                       {result.difficulty.label}
                     </div>
                     <span className="text-on-surface-variant/60 text-xs">{result.difficulty.subLabel}</span>
-                  </div>
+                  </Card>
                 </StaggerItem>
               </StaggerContainer>
 
               {/* ━━━ SEMESTER TABLE ━━━ */}
               {!result.isImpossible && (
-                <motion.section
+                <MotionCard
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 }}
-                  className="premium-card overflow-x-auto"
+                  className="overflow-x-auto"
                 >
                   <div className="mb-8">
                     <h3 className="font-headline text-2xl font-bold text-on-surface">Semester Plan Breakdown</h3>
@@ -583,17 +587,17 @@ export default function PlannerPage() {
                       </tr>
                     </tbody>
                   </table>
-                </motion.section>
+                </MotionCard>
               )}
 
               {/* ━━━ CGPA PROJECTION CHART ━━━ */}
               {!result.isImpossible && (
-                <motion.section
+                <MotionCard
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.4 }}
-                  className="premium-card space-y-8"
+                  className="space-y-8"
                 >
                   <div className="flex justify-between items-end">
                     <div className="space-y-1">
@@ -668,108 +672,109 @@ export default function PlannerPage() {
                       <span className="text-xs text-on-surface-variant font-medium">Target Path</span>
                     </div>
                   </div>
-                </motion.section>
+                </MotionCard>
               )}
 
               {/* ━━━ EXPERT INSIGHT + CGPA JOURNEY ━━━ */}
               <div className="grid md:grid-cols-2 gap-8">
                 {/* Expert Insight */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 }}
-                  className="premium-card space-y-6 flex flex-col justify-between border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
-                >
-                  <div className="space-y-5">
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(255,193,7,0.15)", border: "1px solid rgba(255,193,7,0.3)" }}>
-                      <span className="material-symbols-outlined text-yellow-400 text-2xl">lightbulb</span>
-                    </div>
-                    <div className="space-y-3">
-                      <h4 className="font-headline font-bold text-lg text-white">Expert Insight</h4>
-                      <p className="text-on-surface-variant leading-relaxed text-base">
-                        {getExpertText()}
-                      </p>
-                    </div>
-                  </div>
-                  <Link href="/dashboard">
-                    <button className="mt-4 px-5 py-2.5 rounded-full border border-[#4F8EF7]/40 text-[#4F8EF7] text-sm font-bold hover:bg-[#4F8EF7]/10 hover:border-[#4F8EF7]/60 transition-all">
-                      View Full Breakdown →
-                    </button>
-                  </Link>
-                </motion.div>
+                 <MotionCard
+                   initial={{ opacity: 0, y: 20 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ delay: 0.5 }}
+                   variant="warning"
+                   className="space-y-6 flex flex-col justify-between"
+                 >
+                   <div className="space-y-5">
+                     <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(255,193,7,0.15)", border: "1px solid rgba(255,193,7,0.3)" }}>
+                       <span className="material-symbols-outlined text-yellow-400 text-2xl">lightbulb</span>
+                     </div>
+                     <div className="space-y-3">
+                       <h4 className="font-headline font-bold text-lg text-white">Expert Insight</h4>
+                       <p className="text-on-surface-variant leading-relaxed text-base">
+                         {getExpertText()}
+                       </p>
+                     </div>
+                   </div>
+                   <Link href="/dashboard">
+                     <button className="mt-4 px-5 py-2.5 rounded-full border border-[#4F8EF7]/40 text-[#4F8EF7] text-sm font-bold hover:bg-[#4F8EF7]/10 hover:border-[#4F8EF7]/60 transition-all">
+                       View Full Breakdown →
+                     </button>
+                   </Link>
+                 </MotionCard>
 
-                {/* CGPA Journey */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.6 }}
-                  className="premium-card flex flex-col justify-center border-primary/30 shadow-[0_0_20px_rgba(79,142,247,0.1)]"
-                >
-                  <h4 className="font-headline font-bold text-xl text-white mb-8">Your CGPA Journey</h4>
-                  <div className="relative pt-10 pb-2">
-                    {/* Current CGPA Marker */}
-                    <motion.div
-                      initial={{ left: "0%" }}
-                      animate={{ left: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                      transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
-                      className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
-                    >
-                      <span className="text-[11px] font-bold text-[#4F8EF7] whitespace-nowrap">Current: {parseFloat(currentCGPA).toFixed(1)}</span>
-                      <span className="material-symbols-outlined text-[#4F8EF7] text-sm">arrow_drop_down</span>
-                    </motion.div>
-
-                    {/* Target CGPA Marker */}
-                    <motion.div
-                      initial={{ left: "0%" }}
-                      animate={{ left: `${(parseFloat(targetCGPA) / 10) * 100}%` }}
-                      transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
-                      className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
-                    >
-                      <span className="text-[11px] font-bold text-purple-400 whitespace-nowrap flex items-center gap-0.5">
-                        <span className="material-symbols-outlined text-[12px]">flag</span>
-                        Target: {parseFloat(targetCGPA).toFixed(1)}
-                      </span>
-                      <span className="material-symbols-outlined text-purple-400 text-sm">arrow_drop_down</span>
-                    </motion.div>
-
-                    {/* Progress Bar */}
-                    <div className="h-3 bg-white/[0.08] rounded-md w-full relative overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                        transition={{ duration: 1, ease: "easeOut", delay: 0.8 }}
-                        className="absolute inset-y-0 left-0 rounded-md"
-                        style={{ background: "linear-gradient(90deg, #4F8EF7, #7C3AED)" }}
-                      />
-                      {/* Current position dot */}
-                      <motion.div
-                        initial={{ left: "0%" }}
-                        animate={{ left: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                        transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
-                        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#4F8EF7] border-2 border-black/50 z-10"
-                        style={{ boxShadow: "0 0 10px rgba(79,142,247,0.6)" }}
-                      />
-                      {/* Target position dot */}
-                      <motion.div
-                        initial={{ left: "0%" }}
-                        animate={{ left: `${(parseFloat(targetCGPA) / 10) * 100}%` }}
-                        transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
-                        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-purple-500 border-2 border-black/50 z-10"
-                        style={{ boxShadow: "0 0 10px rgba(124,58,237,0.6)" }}
-                      />
-                    </div>
-
-                    {/* Scale Labels */}
-                    <div className="flex justify-between mt-2 text-[10px] text-on-surface-variant/50 font-bold tracking-widest">
-                      <span>0.0</span><span>5.0</span><span>10.0</span>
-                    </div>
-                  </div>
-                  <p className="text-on-surface-variant text-sm mt-6 text-center">
-                    You are <span className="text-[#4F8EF7] font-bold">{result.journeyPercent}%</span> of the way to your target.
-                  </p>
-                </motion.div>
+                 <MotionCard
+                   initial={{ opacity: 0, y: 20 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ delay: 0.6 }}
+                   variant="accent"
+                   className="flex flex-col justify-center"
+                 >
+                   <h4 className="font-headline font-bold text-xl text-white mb-8">Your CGPA Journey</h4>
+                   <div className="relative pt-10 pb-2">
+                     {/* Current CGPA Marker */}
+                     <motion.div
+                       initial={{ left: "0%" }}
+                       animate={{ left: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
+                       transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
+                       className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
+                     >
+                       <span className="text-[11px] font-bold text-[#4F8EF7] whitespace-nowrap">Current: {parseFloat(currentCGPA).toFixed(1)}</span>
+                       <span className="material-symbols-outlined text-[#4F8EF7] text-sm">arrow_drop_down</span>
+                     </motion.div>
+ 
+                     {/* Target CGPA Marker */}
+                     <motion.div
+                       initial={{ left: "0%" }}
+                       animate={{ left: `${(parseFloat(targetCGPA) / 10) * 100}%` }}
+                       transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
+                       className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
+                     >
+                       <span className="text-[11px] font-bold text-purple-400 whitespace-nowrap flex items-center gap-0.5">
+                         <span className="material-symbols-outlined text-[12px]">flag</span>
+                         Target: {parseFloat(targetCGPA).toFixed(1)}
+                       </span>
+                       <span className="material-symbols-outlined text-purple-400 text-sm">arrow_drop_down</span>
+                     </motion.div>
+ 
+                     {/* Progress Bar */}
+                     <div className="h-3 bg-white/[0.08] rounded-md w-full relative overflow-hidden">
+                       <motion.div
+                         initial={{ width: 0 }}
+                         animate={{ width: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
+                         transition={{ duration: 1, ease: "easeOut", delay: 0.8 }}
+                         className="absolute inset-y-0 left-0 rounded-md"
+                         style={{ background: "linear-gradient(90deg, #4F8EF7, #7C3AED)" }}
+                       />
+                       {/* Current position dot */}
+                       <motion.div
+                         initial={{ left: "0%" }}
+                         animate={{ left: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
+                         transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
+                         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#4F8EF7] border-2 border-black/50 z-10"
+                         style={{ boxShadow: "0 0 10px rgba(79,142,247,0.6)" }}
+                       />
+                       {/* Target position dot */}
+                       <motion.div
+                         initial={{ left: "0%" }}
+                         animate={{ left: `${(parseFloat(targetCGPA) / 10) * 100}%` }}
+                         transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
+                         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-purple-500 border-2 border-black/50 z-10"
+                         style={{ boxShadow: "0 0 10px rgba(124,58,237,0.6)" }}
+                       />
+                     </div>
+ 
+                     {/* Scale Labels */}
+                     <div className="flex justify-between mt-2 text-[10px] text-on-surface-variant/50 font-bold tracking-widest">
+                       <span>0.0</span><span>5.0</span><span>10.0</span>
+                     </div>
+                   </div>
+                   <p className="text-on-surface-variant text-sm mt-6 text-center">
+                     You are <span className="text-[#4F8EF7] font-bold">{result.journeyPercent}%</span> of the way to your target.
+                   </p>
+                 </MotionCard>
               </div>
 
               {/* ━━━ ACTION BUTTONS ━━━ */}
@@ -830,8 +835,6 @@ export default function PlannerPage() {
             </PremiumButton>
           </Link>
         </div>
-
-      </main>
-    </>
+    </PageContainer>
   );
 }

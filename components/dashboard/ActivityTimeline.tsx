@@ -2,6 +2,9 @@
 
 import { motion } from "framer-motion";
 import { PlusCircle, Calendar, Target, Award, Trash2, CheckCircle } from "lucide-react";
+import Card from "../ui/Card";
+
+const MotionCard = motion(Card);
 
 interface Activity {
   id: string | number;
@@ -23,11 +26,11 @@ const getActivityIcon = (type: Activity["type"]) => {
 
 export default function ActivityTimeline({ activities }: { activities: Activity[] }) {
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      className="premium-card overflow-hidden group"
+      className="overflow-hidden group"
     >
       <h3 className="text-xl font-black font-headline tracking-tighter text-white mb-8 relative z-10">Neural Timeline</h3>
       
@@ -75,6 +78,6 @@ export default function ActivityTimeline({ activities }: { activities: Activity[
           )}
         </div>
       </div>
-    </motion.div>
+    </MotionCard>
   );
 }

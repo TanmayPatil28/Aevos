@@ -2,6 +2,9 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import Card from "../ui/Card";
+
+const MotionCard = motion(Card);
 
 interface ComparisonData {
   semester: string;
@@ -27,11 +30,11 @@ export default function SemesterComparison({ data }: { data: ComparisonData[] })
   const avgGpa = data.length > 0 ? (data.reduce((acc, curr) => acc + curr.gpa, 0) / data.length).toFixed(2) : "0.00";
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="premium-card flex flex-col h-fit group"
+      className="flex flex-col h-fit group"
     >
       
       <div className="mb-10 relative z-10">
@@ -105,6 +108,6 @@ export default function SemesterComparison({ data }: { data: ComparisonData[] })
           </tfoot>
         </table>
       </div>
-    </motion.div>
+    </MotionCard>
   );
 }

@@ -7,6 +7,7 @@ import { Search, Eye, Trash2, X, ClipboardCheck, ArrowRight, Sparkles } from "lu
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { Calculation, Subject } from "@/types/calculation";
+import Card from "@/components/ui/Card";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -48,7 +49,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
   };
 
   return (
-    <div className="premium-card flex flex-col h-fit group">
+    <Card className="flex flex-col h-fit group">
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 relative z-10">
         <div className="space-y-1">
@@ -257,20 +258,20 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                   </div>
                 </div>
 
-                <div className="premium-card bg-gradient-to-br from-[#4F8EF7]/10 to-transparent border-[#4F8EF7]/20 relative overflow-hidden group">
-                   <div className="relative z-10">
-                      <h5 className="text-lg font-black text-white tracking-tight mb-2">Insight Detected</h5>
-                      <p className="text-sm text-white/40 leading-relaxed italic">
-                        {selectedCalc.sgpa >= 9 ? "Exceptional performance. You are currently in the 99th percentile of academic trajectory." : "Consistency is key. Improving your credit weighting in core subjects is recommended."}
-                      </p>
-                   </div>
-                   <Sparkles className="absolute -right-4 -bottom-4 text-[#4F8EF7]/10 group-hover:scale-150 transition-transform duration-1000" size={120} />
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
+                 <Card className="bg-gradient-to-br from-[#4F8EF7]/10 to-transparent border-[#4F8EF7]/20 relative overflow-hidden group">
+                    <div className="relative z-10">
+                       <h5 className="text-lg font-black text-white tracking-tight mb-2">Insight Detected</h5>
+                       <p className="text-sm text-white/40 leading-relaxed italic">
+                         {selectedCalc.sgpa >= 9 ? "Exceptional performance. You are currently in the 99th percentile of academic trajectory." : "Consistency is key. Improving your credit weighting in core subjects is recommended."}
+                       </p>
+                    </div>
+                    <Sparkles className="absolute -right-4 -bottom-4 text-[#4F8EF7]/10 group-hover:scale-150 transition-transform duration-1000" size={120} />
+                 </Card>
+               </div>
+             </motion.div>
+           </>
+         )}
+       </AnimatePresence>
+     </Card>
   );
 }

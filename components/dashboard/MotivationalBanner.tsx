@@ -3,6 +3,9 @@
 import { motion } from "framer-motion";
 import { Rocket, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Card from "../ui/Card";
+
+const MotionCard = motion(Card);
 
 interface MotivationalBannerProps {
   currentCgpa: number;
@@ -14,11 +17,11 @@ export default function MotivationalBanner({ currentCgpa, targetCgpa }: Motivati
   const isAbove = currentCgpa >= targetCgpa;
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="premium-card p-12 border-primary/20 overflow-hidden group"
+      className="p-12 border-primary/20 overflow-hidden group"
     >
       <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
         <div className="flex items-center gap-8 text-center md:text-left">
@@ -64,6 +67,6 @@ export default function MotivationalBanner({ currentCgpa, targetCgpa }: Motivati
       {/* Decorative Orbs */}
       <div className="absolute top-[-10%] right-[-5%] w-[30%] h-[150%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[120%] bg-secondary/5 rounded-full blur-[120px] pointer-events-none" />
-    </motion.div>
+    </MotionCard>
   );
 }
