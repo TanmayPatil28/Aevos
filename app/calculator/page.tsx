@@ -118,6 +118,11 @@ export default function CalculatorPage() {
         }),
       });
 
+      if (res.status === 401) {
+        toast.error("Please log in to save results to your Dashboard.");
+        setIsSaving(false);
+        return;
+      }
       if (!res.ok) throw new Error("Failed to save");
       setSaveSuccess(true);
       toast.success("Result saved to Dashboard!");
