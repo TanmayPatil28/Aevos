@@ -113,7 +113,20 @@ export default function PredictorPage() {
   }, [type, t1, t2, assig, endSem, labExam, useBestOf, targetGrade]);
 
   const handleSave = () => {
-    toast.success("Prediction saved to Dashboard");
+    try {
+      const existing = JSON.parse(localStorage.getItem("gradeflow_predictor_scenarios") || "[]");
+      existing.unshift({
+        type,
+        percentage: stats.percentage,
+        currentGrade: stats.currentGrade.grade,
+        neededInEndSem: stats.neededInEndSem,
+        saved_at: new Date().toISOString(),
+      });
+      localStorage.setItem("gradeflow_predictor_scenarios", JSON.stringify(existing.slice(0, 20)));
+      toast.success("Scenario saved locally.");
+    } catch {
+      toast.error("Failed to save scenario.");
+    }
   };
 
   const isLab = type === 'lab';

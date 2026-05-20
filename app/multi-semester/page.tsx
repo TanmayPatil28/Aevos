@@ -222,6 +222,12 @@ export default function MultiSemesterPage() {
         }),
       });
 
+      if (res.status === 401) {
+        toast.error("Please log in to secure this timeline to your Dashboard.");
+        setIsSaving(false);
+        return;
+      }
+
       if (!res.ok) throw new Error("Failed to save");
       setSaveSuccess(true);
       toast.success("Timeline secured in database!");

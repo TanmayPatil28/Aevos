@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Eye, Trash2, X, ClipboardCheck, ArrowRight, Sparkles } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
@@ -19,6 +19,19 @@ interface HistoryTableProps {
 export default function HistoryTable({ calculations, onDelete }: HistoryTableProps) {
   const [search, setSearch] = useState("");
   const [selectedCalc, setSelectedCalc] = useState<Calculation | null>(null);
+
+  useEffect(() => {
+    if (!selectedCalc) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedCalc(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedCalc]);
 
   const filteredCalculations = useMemo(() => {
     return calculations.filter((calc) =>
@@ -172,6 +185,9 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
               className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
             />
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="drawer-title"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -184,7 +200,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
               <div className="p-10 space-y-12">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <h4 className="text-3xl font-black font-headline tracking-tighter text-white">Observer Report</h4>
+                    <h4 id="drawer-title" className="text-3xl font-black font-headline tracking-tighter text-white">Observer Report</h4>
                     <p className="text-[10px] text-[#4F8EF7] font-black uppercase tracking-[0.2em]">Detailed Analytics Frame</p>
                   </div>
                    <button

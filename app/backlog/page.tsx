@@ -516,7 +516,20 @@ export default function BacklogPage() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-12">
                 <button
-                  onClick={() => { setIsSaving(true); setTimeout(() => { setIsSaving(false); toast.success("Saved."); }, 1000); }}
+                  onClick={() => {
+                    setIsSaving(true);
+                    setTimeout(() => {
+                      try {
+                        const existing = JSON.parse(localStorage.getItem("gradeflow_backlog_reports") || "[]");
+                        existing.unshift({ ...result, saved_at: new Date().toISOString() });
+                        localStorage.setItem("gradeflow_backlog_reports", JSON.stringify(existing.slice(0, 20)));
+                        toast.success("Report saved locally.");
+                      } catch {
+                        toast.error("Failed to save report.");
+                      }
+                      setIsSaving(false);
+                    }, 500);
+                  }}
                   className="px-10 h-14 rounded-full bg-primary text-white font-black uppercase text-xs flex items-center gap-3 disabled:opacity-50"
                   disabled={isSaving}
                 >
