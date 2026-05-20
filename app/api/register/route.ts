@@ -43,15 +43,12 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    const safeUser = { ...user };
-    delete (safeUser as { password?: string | null }).password;
-
     const userResponse = {
-      id: safeUser.id,
-      name: safeUser.name,
-      email: safeUser.email,
-      emailVerified: safeUser.emailVerified,
-      image: safeUser.image,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified,
+      image: user.image,
     };
 
     return NextResponse.json(userResponse);
