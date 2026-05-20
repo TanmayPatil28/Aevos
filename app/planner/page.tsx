@@ -182,7 +182,7 @@ export default function PlannerPage() {
   };
 
   const handleSavePlan = async () => {
-    if (!result) return;
+    if (!result || isSaving) return;
     setIsSaving(true);
     setSaveSuccess(false);
     try {
@@ -212,16 +212,43 @@ export default function PlannerPage() {
       console.error(err);
       toast.error("Error saving. Attempting local sync.");
       setTimeout(() => {
-        setSaveSuccess(true);
-        setIsSaving(false);
-        toast.success("Saved to local cache!");
+        try {
+          let existing = [];
+          try {
+            const saved = localStorage.getItem("gradeflow_offline_plans");
+            const parsed = saved ? JSON.parse(saved) : [];
+            if (Array.isArray(parsed)) {
+              existing = parsed;
+            }
+          } catch {}
+          existing.unshift({
+            current_cgpa: currentCGPA,
+            target_cgpa: targetCGPA,
+            completed_semesters: completedSemesters,
+            remaining_semesters: remainingSemesters,
+            required_gpa: result.requiredGPA,
+            plan_data: result.chartData,
+            saved_at: new Date().toISOString(),
+          });
+          try {
+            localStorage.setItem("gradeflow_offline_plans", JSON.stringify(existing.slice(0, 20)));
+            setSaveSuccess(true);
+            toast.success("Saved to local cache!");
+          } catch {
+            toast.error("Failed to save to local cache.");
+          }
+          setIsSaving(false);
+        } catch {
+          toast.error("Failed to save to local cache.");
+          setIsSaving(false);
+        }
       }, 1000);
     } finally {
       if (!saveSuccess) setIsSaving(false);
     }
   };
 
-  if (!mounted) return null;
+
   const isDark = theme === "dark";
 
   const getInputClass = (field: string) => {
@@ -595,58 +622,60 @@ export default function PlannerPage() {
                     </div>
                   </div>
                   <div className="w-full" style={{ minHeight: "300px", height: "400px" }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={result.chartData} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                        <XAxis
-                          dataKey="semester"
-                          stroke="rgba(255,255,255,0.3)"
-                          tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                          axisLine={false}
-                          tickLine={false}
-                          dy={10}
-                        />
-                        <YAxis
-                          domain={[0, 10]}
-                          stroke="rgba(255,255,255,0.3)"
-                          tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                          axisLine={false}
-                          tickLine={false}
-                          dx={-10}
-                          ticks={[0, 2, 4, 6, 8, 10]}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: isDark ? "#12141C" : "#1a1a2e",
-                            borderRadius: "12px",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            color: "#fff",
-                            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="Current_Trend"
-                          stroke="rgba(255,255,255,0.3)"
-                          strokeWidth={2}
-                          strokeDasharray="6 6"
-                          dot={false}
-                          animationDuration={1500}
-                          name="Current Trend"
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="Target_Path"
-                          stroke="#4F8EF7"
-                          strokeWidth={3}
-                          activeDot={{ r: 8, fill: "#4F8EF7", stroke: "#0a0a0f", strokeWidth: 3 }}
-                          dot={{ r: 5, fill: "#4F8EF7", stroke: "#0a0a0f", strokeWidth: 2 }}
-                          style={{ filter: "drop-shadow(0 0 6px #4F8EF7)" }}
-                          animationDuration={1500}
-                          name="Target Path"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    {mounted && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={result.chartData} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                          <XAxis
+                            dataKey="semester"
+                            stroke="rgba(255,255,255,0.3)"
+                            tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
+                            axisLine={false}
+                            tickLine={false}
+                            dy={10}
+                          />
+                          <YAxis
+                            domain={[0, 10]}
+                            stroke="rgba(255,255,255,0.3)"
+                            tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
+                            axisLine={false}
+                            tickLine={false}
+                            dx={-10}
+                            ticks={[0, 2, 4, 6, 8, 10]}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: isDark ? "#12141C" : "#1a1a2e",
+                              borderRadius: "12px",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              color: "#fff",
+                              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="Current_Trend"
+                            stroke="rgba(255,255,255,0.3)"
+                            strokeWidth={2}
+                            strokeDasharray="6 6"
+                            dot={false}
+                            animationDuration={1500}
+                            name="Current Trend"
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="Target_Path"
+                            stroke="#4F8EF7"
+                            strokeWidth={3}
+                            activeDot={{ r: 8, fill: "#4F8EF7", stroke: "#0a0a0f", strokeWidth: 3 }}
+                            dot={{ r: 5, fill: "#4F8EF7", stroke: "#0a0a0f", strokeWidth: 2 }}
+                            style={{ filter: "drop-shadow(0 0 6px #4F8EF7)" }}
+                            animationDuration={1500}
+                            name="Target Path"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                   {/* Legend */}
                   <div className="flex items-center justify-center gap-6">

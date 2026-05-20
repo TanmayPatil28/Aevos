@@ -63,7 +63,11 @@ export function UniversityProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem("gradeflow_global_uni", selectedUniId);
+      try {
+        localStorage.setItem("gradeflow_global_uni", selectedUniId);
+      } catch (e) {
+        console.error(e);
+      }
     }
   }, [selectedUniId, mounted]);
 

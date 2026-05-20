@@ -63,7 +63,11 @@ export default function MultiSemesterPage() {
   // Save to local storage on change
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem("gradeflow_multi_sem", JSON.stringify(semesters));
+      try {
+        localStorage.setItem("gradeflow_multi_sem", JSON.stringify(semesters));
+      } catch (e) {
+        console.error("Local storage save error:", e);
+      }
     }
   }, [semesters, mounted]);
 
@@ -202,6 +206,7 @@ export default function MultiSemesterPage() {
   };
 
   const handleSave = async () => {
+    if (!result || isSaving) return;
     if (!result) {
       toast.error("Finish filling out your semester history accurately to secure it.");
       return;
@@ -234,9 +239,34 @@ export default function MultiSemesterPage() {
       setTimeout(() => setSaveSuccess(false), 2000);
     } catch {
       // Offline fallback
-      setSaveSuccess(true);
-      toast.success("Locally cached and secured!");
-      setTimeout(() => setSaveSuccess(false), 2000);
+      try {
+        let existing = [];
+        try {
+          const saved = localStorage.getItem("gradeflow_multi_sem_offline");
+          const parsed = saved ? JSON.parse(saved) : [];
+          if (Array.isArray(parsed)) {
+            existing = parsed;
+          }
+        } catch {}
+        existing.unshift({
+          semester: `Multi-Sem Timeline (${scaleMode} Scale)`,
+          subjects: semesters,
+          sgpa: result.finalActual,
+          cgpa: result.finalActual,
+          total_credits: result.totalCredits,
+          saved_at: new Date().toISOString(),
+        });
+        try {
+          localStorage.setItem("gradeflow_multi_sem_offline", JSON.stringify(existing.slice(0, 20)));
+          setSaveSuccess(true);
+          toast.success("Locally cached and secured!");
+          setTimeout(() => setSaveSuccess(false), 2000);
+        } catch {
+          toast.error("Failed to locally cache timeline.");
+        }
+      } catch {
+        toast.error("Failed to locally cache timeline.");
+      }
     } finally {
       setIsSaving(false);
     }

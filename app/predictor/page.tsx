@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Target, Calculator, BrainCircuit,
@@ -38,6 +38,11 @@ export default function PredictorPage() {
   // Settings
   const [useBestOf, setUseBestOf] = useState(false);
   const [targetGrade, setTargetGrade] = useState<string>('O');
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Calculations
   const stats = useMemo(() => {
@@ -112,9 +117,21 @@ export default function PredictorPage() {
     };
   }, [type, t1, t2, assig, endSem, labExam, useBestOf, targetGrade]);
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleSave = () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    let existing = [];
     try {
-      const existing = JSON.parse(localStorage.getItem("gradeflow_predictor_scenarios") || "[]");
+      const saved = localStorage.getItem("gradeflow_predictor_scenarios");
+      const parsed = saved ? JSON.parse(saved) : [];
+      if (Array.isArray(parsed)) {
+        existing = parsed;
+      }
+    } catch {}
+
+    try {
       existing.unshift({
         type,
         percentage: stats.percentage,
@@ -126,6 +143,8 @@ export default function PredictorPage() {
       toast.success("Scenario saved locally.");
     } catch {
       toast.error("Failed to save scenario.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -342,29 +361,31 @@ export default function PredictorPage() {
                     </div>
                   </div>
                   <div className="h-[200px] w-full flex items-center justify-center relative">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={[
-                            { name: 'Scored', value: stats.totalScored },
-                            { name: 'Lost', value: (stats.maxBase - stats.scoredBase) + (parseFloat(endSem) > 0 || parseFloat(labExam) > 0 ? (isLab ? 50 - parseFloat(labExam) : (type === 'theory100' ? 100 : 50) - parseFloat(endSem)) : 0) },
-                            { name: 'Remaining', value: (!parseFloat(endSem) && !parseFloat(labExam)) ? (isLab ? 50 : (type === 'theory100' ? 100 : 50)) : 0 }
-                          ].filter(d => d.value > 0)}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={80}
-                          paddingAngle={5}
-                          dataKey="value"
-                          stroke="none"
-                        >
-                          <Cell fill="#3b82f6" />
-                          <Cell fill="#ef4444" />
-                          <Cell fill="#cbd5e1" opacity={0.3} />
-                        </Pie>
-                        <RechartsTooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {mounted && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Scored', value: stats.totalScored },
+                              { name: 'Lost', value: (stats.maxBase - stats.scoredBase) + (parseFloat(endSem) > 0 || parseFloat(labExam) > 0 ? (isLab ? 50 - parseFloat(labExam) : (type === 'theory100' ? 100 : 50) - parseFloat(endSem)) : 0) },
+                              { name: 'Remaining', value: (!parseFloat(endSem) && !parseFloat(labExam)) ? (isLab ? 50 : (type === 'theory100' ? 100 : 50)) : 0 }
+                            ].filter(d => d.value > 0)}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            stroke="none"
+                          >
+                            <Cell fill="#3b82f6" />
+                            <Cell fill="#ef4444" />
+                            <Cell fill="#cbd5e1" opacity={0.3} />
+                          </Pie>
+                          <RechartsTooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                       <span className="text-3xl font-black text-white">{stats.percentage.toFixed(0)}%</span>
                       <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Of Max</span>
@@ -382,10 +403,16 @@ export default function PredictorPage() {
                 <div className="flex justify-end pt-4">
                   <button
                     onClick={handleSave}
-                    className="bg-white/5 hover:bg-white/10 text-on-surface border border-white/10 px-6 py-3 rounded-full flex items-center gap-3 transition-all active:scale-95 text-sm font-bold tracking-wide"
+                    disabled={isSaving}
+                    className="bg-white/5 hover:bg-white/10 text-on-surface border border-white/10 px-6 py-3 rounded-full flex items-center gap-3 transition-all active:scale-95 text-sm font-bold tracking-wide disabled:opacity-50"
                   >
-                    <Save className="w-4 h-4" />
-                    Save Scenario
+                    {isSaving ? (
+                      <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : <Save className="w-4 h-4" />}
+                    {isSaving ? "Saving..." : "Save Scenario"}
                   </button>
                 </div>
               </div>
