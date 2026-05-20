@@ -199,6 +199,11 @@ export default function PlannerPage() {
         }),
       });
 
+      if (res.status === 401) {
+        toast.error("Please log in to save plans to your Dashboard.");
+        setIsSaving(false);
+        return;
+      }
       if (!res.ok) throw new Error("API failed");
       setSaveSuccess(true);
       toast.success("Plan saved to Dashboard!");
