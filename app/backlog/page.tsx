@@ -20,6 +20,8 @@ import PremiumButton from "@/components/PremiumButton";
 import PageContainer from "@/components/layout/PageContainer";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
+import PresetInfoCard from "@/components/PresetInfoCard";
+import { useUniversity } from "@/components/providers/UniversityProvider";
 
 const MotionCard = motion(Card);
 
@@ -47,6 +49,7 @@ interface BacklogResult {
 }
 
 export default function BacklogPage() {
+  const { maxGradePoint } = useUniversity();
   const [currentCGPA, setCurrentCGPA] = useState("");
   const [completedCredits, setCompletedCredits] = useState("");
   const [semesterCredits, setSemesterCredits] = useState("20");
@@ -92,7 +95,7 @@ export default function BacklogPage() {
     const eGPA = parseFloat(expectedGPA);
 
     if (!currentCGPA) e.currentCGPA = "Required";
-    else if (cCGPA < 0 || cCGPA > 10) e.currentCGPA = "0-10 format";
+    else if (cCGPA < 0 || cCGPA > maxGradePoint) e.currentCGPA = `0-${maxGradePoint} format`;
 
     if (!completedCredits) e.completedCredits = "Required";
     else if (cCredits <= 0) e.completedCredits = "> 0";
@@ -101,7 +104,7 @@ export default function BacklogPage() {
     else if (sCredits <= 0) e.semesterCredits = "> 0";
 
     if (!expectedGPA) e.expectedGPA = "Required";
-    else if (eGPA < 0 || eGPA > 10) e.expectedGPA = "0-10 format";
+    else if (eGPA < 0 || eGPA > maxGradePoint) e.expectedGPA = `0-${maxGradePoint} format`;
 
     backlogs.forEach((b, i) => {
       if (!b.subjectName) e[`backlog_${i}_name`] = "Required";
@@ -220,6 +223,11 @@ export default function BacklogPage() {
             <p className="text-on-surface-variant max-w-2xl mx-auto text-lg leading-relaxed font-medium">
                Quantify the precision damage of academic setbacks.
             </p>
+          </StaggerItem>
+          <StaggerItem>
+            <div className="mt-4">
+              <PresetInfoCard compact />
+            </div>
           </StaggerItem>
         </StaggerContainer>
 

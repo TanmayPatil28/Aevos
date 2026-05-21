@@ -1,508 +1,1425 @@
-# Foundational Infrastructure Research for India’s Academic Intelligence Platform
+# Universal University-Driven Academic Simulation Engine: Architectural Specifications and Institutional Rule Data
 
-## Architectural Context for the Academic Operating System
-The Indian higher education sector is currently executing a massive structural transition, heavily influenced by the mandates of the National Education Policy (NEP) 2020 and the widespread adoption of the Choice Based Credit System (CBCS). For an Academic Operating System like GradeFlow, designed to automate academic presets, construct intelligent semester planners, and power predictive analytics, the foundational software architecture must possess the capability to abstract highly divergent institutional regulations into a singular, normalized data schema.
+The following architectural specifications detail the granular academic parameters, grading methodologies, evaluation models, and progression rules for twenty-three target institutional systems. This verified dataset provides the foundational logic layer required to power a scalable academic simulation engine, facilitating dynamic Grade Point Average (GPA) calculations, backlog tracking, and university-specific academic predictions.
 
-This research report presents a production-grade, exhaustive analysis of university presets, grading algorithms, semester structures, and subject-credit mappings across key Indian universities and autonomous engineering colleges. The dataset encompasses state-affiliated universities, deemed-to-be universities, unitary public universities, and autonomous institutes. By analyzing their nuanced credit systems, non-linear grade point average (GPA) conversion formulas, and bifurcated internal/external assessment distributions, this document constructs the data models required to engineer an immensely scalable Academic Intelligence Platform.
+By mapping the highly heterogeneous landscape of university assessment protocols, this research establishes an implementation-ready abstraction layer for each institution. The analysis captures localized anomalies, piecewise conversion equations, hybrid relative-absolute grading constraints, and statistical normalizations required to ensure the simulation engine operates with high accuracy across varying academic jurisdictions.
 
-## Standardized Grading System Abstraction Layer
-A fundamental engineering challenge in developing a unified academic operating system is the extreme variance in grading paradigms across the subcontinent. Indian institutions employ a combination of absolute grading, relative grading (statistical curve-based), and piecewise mathematical conversions for cumulative performance indices. To support scalable future expansion, the database architecture must completely decouple raw marks from the grading logic through a dynamic abstraction layer.
+---
 
-### Absolute versus Relative Grading Paradigms
-The abstraction layer must account for two primary mathematical paradigms:
-- **Absolute Grading**: The vast majority of traditional state universities (e.g., Savitribai Phule Pune University, Visvesvaraya Technological University, Anna University) employ absolute grading scales mapped directly to static percentage bands.
-- **Relative Grading**: Institutions of National Importance and premier deemed universities (e.g., BITS Pilani, Delhi Technological University, Manipal Institute of Technology, COEP Technological University) utilize relative grading engines. In these ecosystems, grade thresholds are calculated dynamically based on the cohort's statistical distribution, specifically utilizing the mean and standard deviation of the class scores.
+## 1. Maharashtra Academic Systems
 
-### Grade Point and Letter Abstractions
-The abstraction layer must support diverse grading points. While the University Grants Commission (UGC) mandates a standard 10-point scale (O, A+, A, B+, B, C, P, F), the research reveals critical deviations that a rigid database schema would fail to parse:
-- **7-Point Scales**: Utilized historically by Mumbai University and currently observed in specific programs at DY Patil University, mapping grades from O to F on a 7 to 1 numerical scale.
-- **Alphanumeric Granularity**: BITS Pilani utilizes a 10-point scale but applies a unique letter mapping (A, A-, B, B-, C, C-, D, E), where non-letter grades like NC (Not Cleared) and RRA (Required to Register Again) do not compute into the cumulative metrics.
-- **Double Letter Systems**: COEP Technological University uses AA (10), AB (9), BB (8), BC (7), CC (6), CD (5), DD (4), and FF (0).
+### 1.1 Savitribai Phule Pune University (SPPU) & Sinhgad College of Engineering
 
-### Cumulative Evaluation Formulas
-The Semester Grade Point Average (SGPA) and Cumulative Grade Point Average (CGPA) engines must be highly parameterized. The universal baseline formula for SGPA calculation across nearly all analyzed institutions is:
-`SGPA = Σ(C_i × G_i) / ΣC_i`
-Where C_i represents the credits (or units) of the i-th course, and G_i represents the grade points earned. However, CGPA to percentage conversions are non-linear, institution-specific, and sometimes piecewise.
+Savitribai Phule Pune University (SPPU) operates a Choice-Based Credit System (CBCS) heavily reliant on a 10-point absolute grading scale. Sinhgad College of Engineering, acting as an affiliated institution, inherits this precise academic configuration without deviation. The simulation engine must account for a grading architecture that evaluates students based on absolute marks mapped mathematically to a 10-point scale.
 
-## Recommended Preset Architecture & Database Schema
-To support the exhaustive variance uncovered, the system cannot utilize a rigid, flat-table schema. The backend must be fully relational, utilizing a modular Entity-Relationship design built upon highly normalized PostgreSQL tables or flexible NoSQL document structures.
+For backward compatibility and professional transcript generation, the engine must execute a specific CGPA-to-Percentage conversion equation: $Percentage = (CGPA - 0.75) \times 10$. This linear offset implies that a perfect 10 CGPA translates to 92.5%, penalizing the absolute ceiling but providing a normalized baseline for corporate recruitment. Progression logic—governed by Allowed To Keep Terms (ATKT) rules—mandates that students must earn a minimum of 50% of the total credits from the preceding academic year to progress to the next year. A critical architectural edge case for the simulation engine involves re-examinations; if a student clears a backlog in a subsequent attempt, the system must invoke a grade penalty, capping the maximum achievable grade one full level below the regular exam equivalent.
 
-**Suggested Core Entities:**
-- **Institution**: Stores root metadata (id, name, type, erp_integration_urls).
-- **RegulationPattern**: Linked to Institution. Stores pattern_year (e.g., "2019", "2023"), credit_system_type ("CBCS", "Units").
-- **GradingPolicy**: Linked to RegulationPattern. Contains scale_type ("10-point", "7-point"), is_relative (Boolean), cgpa_formula (String evaluated safely via expression parser), and pass_criteria.
-- **Course**: Stores subject_code, subject_name, course_type ("Theory", "Laboratory", "Project", "Audit"), and total_credits.
-- **AssessmentScheme**: A critical abstraction allowing a one-to-many relationship with courses. Stores component_name (e.g., "FA1", "MSE", "TW"), max_marks, and min_passing_marks.
+#### SPPU Grading Scale
 
-## Structured University-by-University Breakdowns: Maharashtra Priority
-The state of Maharashtra presents a complex matrix of traditional state universities, rapidly evolving autonomous colleges, and private deemed universities, requiring distinct JSON configurations for each.
+| Marks Range | Grade Description | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: | :---: |
+| 80–100 | Outstanding | O | 10 | Pass |
+| 70–79 | Excellent | A+ | 9 | Pass |
+| 60–69 | Very Good | A | 8 | Pass |
+| 55–59 | Good | B+ | 7 | Pass |
+| 50–54 | Above Average | B | 6 | Pass |
+| 45–49 | Average | C | 5 | Pass |
+| 40–44 | Pass | P | 4 | Pass |
+| 0–39 | Fail | F | 0 | Fail |
 
-### 1. Savitribai Phule Pune University (SPPU)
-SPPU operates on a 10-point CBCS grading system. The 2019 Engineering Pattern is the current standard for B.E./B.Tech programs. The SPPU 2019 engineering curriculum spans 8 semesters, heavily integrating modern paradigms for branches like Artificial Intelligence and Data Science (AI&DS). Theory courses hold 3 to 4 credits, evaluated via a 30-mark In-Semester Assessment and a 70-mark End-Semester Examination. The official SPPU SGPA to Percentage conversion involves a deduction factor: `(SGPA - 0.75) × 10`, while the CGPA multiplier is `CGPA × 8.9`.
+#### SPPU Preset Definition
 
 ```json
 {
-  "university": "Savitribai Phule Pune University",
-  "shortName": "SPPU",
-  "state": "Maharashtra",
-  "type": "State Public University",
-  "pattern": "2019",
+  "id": "sppu_sinhgad",
+  "name": "Savitribai Phule Pune University",
   "gradingSystem": "10-point CBCS",
-  "sgpaFormula": "SUM(C * G) / SUM(C)",
-  "sgpaToPercentage": "(SGPA - 0.75) * 10",
-  "cgpaToPercentage": "CGPA * 8.9",
-  "semesters": 8,
-  "branches": [],
-  "gradingRules": [
-    {"grade": "O", "points": 10, "minMarks": 80, "description": "Outstanding"},
-    {"grade": "A+", "points": 9, "minMarks": 70, "description": "Excellent"},
-    {"grade": "F", "points": 0, "minMarks": 0, "description": "Fail", "isPass": false}
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 80, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 70, "max": 79, "grade": "A+", "points": 9, "pass": true},
+    {"min": 60, "max": 69, "grade": "A", "points": 8, "pass": true},
+    {"min": 55, "max": 59, "grade": "B+", "points": 7, "pass": true},
+    {"min": 50, "max": 54, "grade": "B", "points": 6, "pass": true},
+    {"min": 45, "max": 49, "grade": "C", "points": 5, "pass": true},
+    {"min": 40, "max": 44, "grade": "P", "points": 4, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
   ],
-  "subjects": [
-    {
-      "semester": 3,
-      "subjectName": "Data Structures Laboratory",
-      "subjectCode": "210256",
-      "credits": 2,
-      "type": "Practical",
-      "assessments": []
-    }
-  ]
-}
-```
-
-### 2. JSPM Ecosystem (University, RSCOE, Wagholi)
-The Jayawant Shikshan Prasarak Mandal (JSPM) network encompasses multiple frameworks. JSPM Rajarshi Shahu College of Engineering (RSCOE) operates as an autonomous institute affiliated with SPPU, implementing a unique 2023 Pattern designed alongside Tata Consultancy Services (TCS). The curriculum is Outcome Based Education (OBE) utilizing a 160-credit framework. Assessment is uniquely trifurcated into Mid Semester Evaluation (MSE), In Semester Evaluation (ISE), and End Semester Evaluation (ESE). JSPM prominently utilizes the Digicampus platform, enforcing a strong "Student E-Portfolio" architecture with choice-based course registration.
-
-```json
-{
-  "university": "JSPM Rajarshi Shahu College of Engineering",
-  "shortName": "JSPM RSCOE",
-  "state": "Maharashtra",
-  "type": "Autonomous Affiliated",
-  "pattern": "2023",
-  "gradingSystem": "10-point CBCS OBE",
-  "erpIntegration": "Digicampus",
-  "semesters": 8,
-  "exitOptions": [],
-  "branches": [],
-  "subjects": []
-}
-```
-
-### 3. Mumbai University (MU)
-Mumbai University's engineering programs follow the Credit Based Grading System (CBGS), specifically the REV-2019 'C' Scheme. The 'C' Scheme reduced total engineering credits to 170 to promote extracurricular engagement. MU utilizes a 10-point scale where passing requires a minimum of 40% in internal and external assessments separately. The Cumulative Grade Performance Index (CGPI) formula for MU is non-linear and piecewise: if CGPI < 7, the percentage equals `7.1 × CGPI + 12`; if CGPI >= 7, the percentage equals `7.4 × CGPI + 12`. MU calculates backlogs such that a cleared course fully supersedes the old 'F' grade in the CGPI calculation.
-
-```json
-{
-  "university": "Mumbai University",
-  "shortName": "MU",
-  "state": "Maharashtra",
-  "type": "State Public University",
-  "pattern": "REV-2019 C-Scheme",
-  "gradingSystem": "10-point CBGS",
-  "cgpaFormula": "PIECEWISE: IF(CGPI < 7, 7.1*CGPI + 12, 7.4*CGPI + 12)",
-  "semesters": 8,
-  "branches": [],
-  "gradingRules": [
-    {"grade": "O", "points": 10, "minMarks": 80, "description": "Outstanding"},
-    {"grade": "P", "points": 4, "minMarks": 40, "description": "Pass"},
-    {"grade": "F", "points": 0, "minMarks": 0, "description": "Fail", "isPass": false}
-  ],
-  "subjects": []
-}
-```
-
-### 4. COEP Technological University
-COEP operates as a Unitary Public University with an NEP-compliant 2023-24 structure. Courses are evaluated via In-Semester-Evaluation (ISE)—comprising Teachers' Assessment (TA) and a Mid-Semester-Examination (MSE)—and an End-Semester-Examination (ESE). COEP relies entirely on relative grading algorithms. The mapping of double-letter grades (AA to FF) depends strictly on the class median. A lower bound (LB) for passing is dynamically calculated based on whether the class median is below 30, between 30 and 40, or above 40.
-
-```json
-{
-  "university": "COEP Technological University",
-  "shortName": "COEP",
-  "state": "Maharashtra",
-  "type": "Unitary Public University",
-  "pattern": "NEP 2023-24",
-  "gradingSystem": "Relative Double-Letter",
-  "isRelativeGrading": true,
-  "semesters": 8,
-  "branches": [],
-  "gradingRules": [],
-  "subjects": []
-}
-```
-
-### 5. Pimpri Chinchwad College of Engineering (PCCOE)
-PCCOE's autonomous Regulations 2023 dictate a 160-credit B.Tech program. The assessment heads are deeply fragmented: Formative Assessment 1 (FA1), Formative Assessment 2 (FA2), Summative Assessment (SA), Term Work (TW), Practical (PR), and Oral (OR). Credits are categorized strictly into Basic Science Courses (BSC), Engineering Science Courses (ESC), Programme Core Courses (PCC), Multidisciplinary Minors (MDM), and Experiential Learning Courses (ELC).
-
-```json
-{
-  "university": "Pimpri Chinchwad College of Engineering",
-  "shortName": "PCCOE",
-  "state": "Maharashtra",
-  "type": "Autonomous Affiliated",
-  "pattern": "2023 Regulations",
-  "gradingSystem": "10-point CBCS",
-  "semesters": 8,
-  "branches": [],
-  "subjects": [
-    {
-      "semester": 3,
-      "subjectName": "Data Structures Laboratory",
-      "subjectCode": "BCE23PC02",
-      "credits": 2,
-      "type": "Practical",
-      "assessments": []
-    }
-  ]
-}
-```
-
-### 6. Vishwakarma Institute of Technology (VIT Pune)
-VIT Pune, an autonomous institute under SPPU, emphasizes continuous class-based learning. Assessments are uniquely structured around practical applications, including Presentations, Group Discussions, and Home Assignments, which make up a significant portion of the internal marks. The institute operates on a 10-point scale, utilizing both absolute and relative grading mechanisms depending on the specific cohort and course type.
-
-```json
-{
-  "university": "Vishwakarma Institute of Technology",
-  "shortName": "VIT Pune",
-  "state": "Maharashtra",
-  "type": "Autonomous Affiliated",
-  "pattern": "A-24",
-  "gradingSystem": "10-point Hybrid (Absolute/Relative)",
-  "semesters": 8,
-  "branches": [],
-  "subjects": []
-}
-```
-
-### 7. MIT World Peace University (MIT-WPU)
-MIT-WPU enforces rigid promotion criteria. To progress, a student must secure a CGPA >= 5 AND earn 50% of the total credits for the academic year. Securing less than a 5 CGPA but earning 50% of credits results in an ATKT (Allowed to Keep Terms) status. The conversion standard is `(SGPA - 0.75) × 10`, and degrees are awarded with distinctions such as "First Class with Distinction" for a CGPA >= 7.75.
-
-```json
-{
-  "university": "MIT World Peace University",
-  "shortName": "MIT-WPU",
-  "state": "Maharashtra",
-  "type": "Private University",
-  "gradingSystem": "10-point",
-  "cgpaFormula": "SUM(C * G) / SUM(C)",
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
   "sgpaToPercentage": "(SGPA - 0.75) * 10",
-  "passCriteria": {
-    "minCgpaForPromotion": 5.0,
-    "minCreditsPercentageForPromotion": 50,
-    "atktCondition": "CGPA < 5 AND Credits >= 50%"
-  },
-  "semesters": 8,
-  "branches": ["Computer Engineering", "Electronics"]
-}
-```
-
-### 8. DY Patil University / Institutes
-DY Patil institutions historically utilized a 7-point scale (O=7, A+=6, A=5, B+=4, B=3, C+=2, C=1) mapped to specific percentage thresholds. However, recent records from DY Patil International University (DYPIU) show a transition to a standard 10-point CGPA system where the percentage conversion is simply `CGPA × 10`. The autonomous engineering colleges (like Akurdi) utilize standard CBCS definitions for SGPA and CGPA.
-
-```json
-{
-  "university": "DY Patil International University",
-  "shortName": "DYPIU",
-  "state": "Maharashtra",
-  "type": "Private University",
-  "gradingSystem": "10-point CBCS",
-  "cgpaToPercentage": "CGPA * 10",
-  "semesters": 8,
-  "branches": [],
-  "subjects": []
-}
-```
-
-### 9. Bharati Vidyapeeth
-Operating under CBCS 2021, Bharati Vidyapeeth maintains a straightforward credit mapping: 1 hour of theory equals 1 credit, while 2 hours of practical class equals 1 credit. University Examinations (UE) account for 60 marks, while Internal Assessments (IA) account for 40 marks. The laboratory assessment is divided into Term work (TW), Practical (P), and Oral (O), typically evaluated out of 50 marks.
-
-```json
-{
-  "university": "Bharati Vidyapeeth",
-  "shortName": "BVDU",
-  "state": "Maharashtra",
-  "type": "Deemed to be University",
-  "pattern": "CBCS 2021",
-  "gradingSystem": "10-point",
-  "semesters": 8,
-  "branches": [],
-  "subjects": []
-}
-```
-
-### 10. Sinhgad Institutes
-Sinhgad Institutes operate primarily as affiliated colleges under Savitribai Phule Pune University, adhering strictly to the SPPU 2019 pattern. However, specific departments, such as Biotechnology at SCOE Vadgaon, operate as semi-autonomous entities. For the majority of their engineering ecosystem, the SPPU JSON structure serves as the exact replica for Sinhgad presets.
-
-```json
-{
-  "university": "Sinhgad College of Engineering",
-  "shortName": "SCOE",
-  "state": "Maharashtra",
-  "type": "Affiliated (SPPU)",
-  "pattern": "SPPU 2019",
-  "gradingSystem": "10-point CBCS",
-  "sgpaToPercentage": "(SGPA - 0.75) * 10",
-  "semesters": 8,
-  "branches": []
-}
-```
-
-## Structured University-by-University Breakdowns: National Engineering Ecosystem
-To engineer a globally scalable system, the Academic OS must accommodate the architectural paradigms of national technological giants across India.
-
-### 11. Visvesvaraya Technological University (VTU)
-VTU represents a massive network of affiliated engineering colleges in Karnataka. Under its 2022 Scheme, the university mandates an absolute grading system. Grades range from O (Outstanding) to F (Fail). The conversion to percentage is executed via `(CGPA - 0.75) × 10`. VTU explicitly notes that activities like practical training, study tours, and guest lectures do not carry credits but are mandatory for degree completion. The database must therefore support 0-credit mandatory audit courses.
-
-```json
-{
-  "university": "Visvesvaraya Technological University",
-  "shortName": "VTU",
-  "state": "Karnataka",
-  "type": "State Public University",
-  "pattern": "2022 Scheme",
-  "gradingSystem": "10-point Absolute",
-  "sgpaFormula": "SUM(C * G) / SUM(C)",
   "cgpaToPercentage": "(CGPA - 0.75) * 10",
-  "semesters": 8,
-  "branches": [],
-  "gradingRules": [
-    {"grade": "O", "points": 10, "description": "Outstanding"},
-    {"grade": "A+", "points": 9, "description": "Excellent"},
-    {"grade": "F", "points": 0, "description": "Fail", "isPass": false}
+  "creditStructure": {
+    "totalCreditsRequired": 170,
+    "auditCourses": "Zero-credit mandatory courses graded as PP (Pass) or NP (Not Pass)",
+    "excludedCredits": "Audit course credits do not factor into CGPA denominator"
+  },
+  "passRules": {
+    "minInternalMarks": "Course-dependent, typically 40%",
+    "minExternalMarks": "Course-dependent, typically 40%",
+    "minOverallMarks": 40,
+    "minSGPA": 4.0
+  },
+  "backlogPolicy": {
+    "atktRules": "Minimum 50% credits must be cleared for year progression",
+    "retakePenalty": "Grade downgraded by one level in re-examination",
+    "replacementPolicy": "New passing grade overwrites F grade point value but retains transcript marker"
+  },
+  "assessmentScheme": {
+    "components": ["In-Semester Evaluation (ISE)", "End-Semester Evaluation (ESE)"],
+    "split": "30/70 internal/external split for standard theory courses",
+    "theoryPracticalSeparation": true
+  },
+  "metadata": {
+    "type": "State University",
+    "academicRegulationYear": "2019 Pattern",
+    "affiliatedAuthority": "UGC/AICTE"
+  },
+  "specialFeatures": [
+    "Linear offset CGPA-to-Percentage conversion equation",
+    "Grade penalty on re-examinations",
+    "Audit courses excluded from CGPA calculation"
+  ]
+}
+```
+
+---
+
+### 1.2 Mumbai University (MU)
+
+Mumbai University (MU) enforces a 10-point Choice-Based Credit and Grading System (CBCGS) for engineering programs. A critical computational anomaly that the simulation engine must handle natively is MU’s piecewise conversion formula for calculating percentages from the CGPA. Unlike standard linear conversions, MU's algorithm changes the multiplier based on the performance tier.
+
+The simulation engine must execute the following conditional logic:
+
+*   If $CGPA < 7.0$, the conversion formula is $Percentage = 7.1 \times CGPA + 12$.
+*   If $CGPA \ge 7.0$, the conversion formula is $Percentage = 7.4 \times CGPA + 12$.
+
+*(Note: Older non-engineering syllabus iterations utilized alternate formulas such as $7.1 \times CGPA + 11$ or $7.25 \times CGPA + 11$, which the legacy preset registry must retain for historical transcript simulations).*
+
+Progression relies on a strict ATKT limit, restricting students to a maximum of four backlogs (Keep Term subjects) across an academic year to secure promotion to the next year. Furthermore, minimum passing thresholds are enforced independently on Internal Assessment (IA) and Semester-End Examination (SEE); a student must achieve at least 40% in each isolated component to pass the overarching course. Failure to clear a component results in an isolated retake requirement rather than a full course repetition.
+
+#### MU Grading Scale
+
+| Marks Range | Grade Description | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: | :---: |
+| 80–100 | Outstanding | O | 10 | Pass |
+| 75–79 | Excellent | A | 9 | Pass |
+| 70–74 | Very Good | B | 8 | Pass |
+| 60–69 | Good | C | 7 | Pass |
+| 50–59 | Fair | D | 6 | Pass |
+| 45–49 | Average | E | 5 | Pass |
+| 40–44 | Pass | P | 4 | Pass |
+| 0–39 | Fail | F | 0 | Fail |
+
+#### MU Preset Definition
+
+```json
+{
+  "id": "mu_engineering",
+  "name": "Mumbai University",
+  "gradingSystem": "10-point CBCGS",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 80, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 75, "max": 79, "grade": "A", "points": 9, "pass": true},
+    {"min": 70, "max": 74, "grade": "B", "points": 8, "pass": true},
+    {"min": 60, "max": 69, "grade": "C", "points": 7, "pass": true},
+    {"min": 50, "max": 59, "grade": "D", "points": 6, "pass": true},
+    {"min": 45, "max": 49, "grade": "E", "points": 5, "pass": true},
+    {"min": 40, "max": 44, "grade": "P", "points": 4, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
   ],
-  "subjects": []
-}
-```
-
-### 12. Anna University
-Anna University's Regulation 2021 governs affiliated non-autonomous colleges in Tamil Nadu. A vital infrastructural detail is the shift from Regulation 2017 to Regulation 2021. Under R2017, the minimum passing grade was B (6 points). Under R2021, the minimum passing grade is C (5 points, >= 50% marks). Furthermore, Anna University explicitly outlines mappings for NPTEL (online) course credits: a 12-week NPTEL course transfers as 3 credits, while an 8-week course transfers as 2 credits. GradeFlow’s architecture must feature a dedicated CreditTransfer module.
-
-```json
-{
-  "university": "Anna University",
-  "shortName": "AU",
-  "state": "Tamil Nadu",
-  "type": "State Public University",
-  "pattern": "Regulation 2021",
-  "gradingSystem": "10-point Absolute",
-  "semesters": 8,
-  "branches": [],
-  "gradingRules": []
-}
-```
-
-### 13. JNTU Hyderabad
-JNTU Hyderabad operates under the R22 Regulations. A student is declared successful in a semester if they secure a Grade Point >= 5 ('C' grade or above) in every subject, resulting in an SGPA >= 5.0. The curriculum structure assigns 3 or 4 credits to core subjects like Programming for Problem Solving and Engineering Chemistry.
-
-```json
-{
-  "university": "Jawaharlal Nehru Technological University Hyderabad",
-  "shortName": "JNTUH",
-  "state": "Telangana",
-  "type": "State Public University",
-  "pattern": "R22",
-  "gradingSystem": "10-point",
-  "passCriteria": {
-    "minGradePoint": 5,
-    "minSgpa": 5.0
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "IF(SGPA < 7, 7.1*SGPA + 12, 7.4*SGPA + 12)",
+  "cgpaToPercentage": "IF(CGPA < 7, 7.1*CGPA + 12, 7.4*CGPA + 12)",
+  "creditStructure": {
+    "totalCreditsRequired": 160,
+    "semesterWiseCredits": "Typically 20-24 credits per semester"
   },
-  "semesters": 8,
-  "branches": [],
-  "subjects": []
-}
-```
-
-### 14. SRM Institute of Science and Technology
-Under the 2021 and 2024 regulations, SRM IST employs a weighted GPA formula: `Σ(Grade Points × Credits) / Σ(Credits)`. The grading scale is absolute, mapping 'O' to 91-100 marks (10 points), down to 'C' for 50-55 marks (5 points), and 'F' for anything below 50. The university uniquely allows a failed ('F') grade to be deleted from the final grade card once the course is successfully completed in a subsequent attempt.
-
-```json
-{
-  "university": "SRM Institute of Science and Technology",
-  "shortName": "SRM IST",
-  "state": "Tamil Nadu",
-  "type": "Deemed to be University",
-  "pattern": "2024 Regulations",
-  "gradingSystem": "10-point Absolute",
-  "sgpaFormula": "SUM(C * GP) / SUM(C)",
-  "semesters": 8,
-  "branches": [],
-  "gradingRules": [
-    {"grade": "O", "points": 10, "minMarks": 91},
-    {"grade": "A+", "points": 9, "minMarks": 81},
-    {"grade": "C", "points": 5, "minMarks": 50},
-    {"grade": "F", "points": 0, "maxMarks": 49, "isPass": false}
+  "passRules": {
+    "minInternalMarks": 40,
+    "minExternalMarks": 40,
+    "minOverallMarks": 40,
+    "independentPassing": true
+  },
+  "backlogPolicy": {
+    "atktRules": "Failure in >4 subjects results in year detention (year drop)",
+    "carryForwardRules": "Internal marks can be carried forward if only external exam is failed",
+    "maxAttempts": "Subject to syllabus validity period"
+  },
+  "assessmentScheme": {
+    "components": ["Internal Assessment (IA)", "Semester-End Examination (SEE)"],
+    "split": "40/60 for theory components",
+    "theoryPracticalSeparation": true
+  },
+  "metadata": {
+    "type": "State University",
+    "erpSystem": "MU Digital Portal",
+    "academicRegulationYear": "2016-17 onward (Choice Based)"
+  },
+  "specialFeatures": [
+    "Piecewise conversion formula for percentage",
+    "Independent heads of passing for IA and SEE",
+    "Arrears limit of 4 backlogs per year"
   ]
 }
 ```
 
-### 15. Vellore Institute of Technology (VIT Vellore)
-VIT Vellore utilizes the CALS credit system alongside a complex relative grading formula. Letter grades (S, A, B, C, D, E, F) are awarded based on statistical distributions. For example, an 'A' grade might require a total mark between `Mean + 0.5σ` and `Mean + 1.5σ`. The official CGPA to percentage conversion is a straightforward multiplier: `Percentage = CGPA × 10`.
+---
+
+### 1.3 COEP Technological University
+
+COEP implements a highly rigorous, statistics-based relative grading system, operating as a unitary public university. The academic engine must be programmed to calculate cohort statistics—specifically the mean ($\mu$), median ($M$), and standard deviation ($\sigma$)—to generate dynamic grade thresholds rather than relying on static mark bins.
+
+Crucially, COEP injects an absolute Lower Bound (LB) protection mechanism against severe statistical outliers to ensure academic rigor is not compromised by a cohort's collective poor performance. The simulation engine must implement the following algorithmic constraints to calculate the passing floor:
+
+*   If the class $Median \le 30$, the absolute floor is clamped at $LB = 30$.
+*   If $30 < Median/2 \le 40$, the floor is calculated as $LB = Median/2$.
+*   If $Median/2 > 40$, the floor is capped at $LB = 40$.
+
+The conversion to a notional percentage follows $Percentage = (CGPA - 0.5) \times 10$, supplanting an older legacy multiplier of $CGPA \times 9.55$. Degree progression relies on a minimum CGPA of 5.0 to be awarded the graduation certificate; students falling below this index face a mandatory CGPA improvement scheme allowing them to retake three courses.
+
+#### COEP Grading Scale
+
+| Relative Cutoff Condition | Grade Description | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: | :---: |
+| Dynamic Top Tier | Outstanding | O | 10 | Pass |
+| Dynamic 2nd Tier | Excellent | A+ | 9 | Pass |
+| Dynamic 3rd Tier | Very Good | A | 8 | Pass |
+| Dynamic 4th Tier | Good | B+ | 7 | Pass |
+| Dynamic 5th Tier | Above Average | B | 6 | Pass |
+| Dynamic 6th Tier | Average | C | 5 | Pass |
+| Marks $\ge$ LB | Pass | P | 4 | Pass |
+| Marks $<$ LB | Fail | F | 0 | Fail |
+
+#### COEP Preset Definition
 
 ```json
 {
-  "university": "Vellore Institute of Technology",
-  "shortName": "VIT Vellore",
-  "state": "Tamil Nadu",
-  "type": "Deemed to be University",
+  "id": "coep",
+  "name": "COEP Technological University",
   "gradingSystem": "10-point Relative",
-  "isRelativeGrading": true,
+  "evaluationModel": "statistical_relative_hybrid",
+  "gradeScale": [
+    {"grade": "O", "points": 10, "pass": true, "description": "Outstanding"},
+    {"grade": "A+", "points": 9, "pass": true, "description": "Excellent"},
+    {"grade": "A", "points": 8, "pass": true, "description": "Very Good"},
+    {"grade": "B+", "points": 7, "pass": true, "description": "Good"},
+    {"grade": "B", "points": 6, "pass": true, "description": "Above Average"},
+    {"grade": "C", "points": 5, "pass": true, "description": "Average"},
+    {"grade": "P", "points": 4, "pass": true, "description": "Pass"},
+    {"grade": "F", "points": 0, "pass": false, "description": "Fail"}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "(SGPA - 0.5) * 10",
+  "cgpaToPercentage": "(CGPA - 0.5) * 10",
+  "creditStructure": {
+    "minSemesterCredits": 16,
+    "maxSemesterCredits": 28,
+    "totalCreditsRequired": 166,
+    "liberalLearning": "Mandatory integration of Humanities and Social Sciences"
+  },
+  "passRules": {
+    "minDegreeCGPA": 5.0,
+    "minPassingFloor": "Dynamic based on Median logic (LB=30, Median/2, or 40)",
+    "probationRules": "CGPA improvement scheme triggered if final CGPA < 5.0"
+  },
+  "backlogPolicy": {
+    "courseDrop": "Allowed mid-semester without Grade Card mention subject to 16-credit minimum",
+    "retakeRules": "Supplementary Semesters available during summer",
+    "replacementPolicy": "Best-of policy applied during improvement attempts"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Evaluation (T1/T2)", "Mid-Semester Examination", "End-Semester Examination"],
+    "split": "Continuous evaluation format",
+    "vivaWeightage": "Integrated into specific liberal learning and lab modules"
+  },
+  "metadata": {
+    "type": "Unitary Public University",
+    "erpSystem": "MIS",
+    "academicRegulationYear": "2022 Curriculum Revision"
+  },
+  "specialFeatures": [
+    "Statistics-based relative grading system",
+    "Dynamic Lower Bound passing floor protection",
+    "CGPA improvement scheme allows retaking courses"
+  ]
+}
+```
+
+---
+
+### 1.4 Pimpri Chinchwad College of Engineering (PCCOE)
+
+Operating as an autonomous institute under the broader SPPU umbrella, PCCOE diverges slightly in its grade classifications and academic rigidities while retaining a foundational 10-point absolute grading scale. For prediction modules and placement analytics, the engine must statefully track graduation classification brackets distinctly.
+
+PCCOE assigns degree honors based strictly on absolute CGPA thresholds:
+
+*   **First Class with Distinction** is awarded for $CGPA \ge 7.75$.
+*   **First Class** for $6.75 \le CGPA < 7.75$.
+*   **Higher Second Class** for $6.25 \le CGPA < 6.75$.
+*   **Second Class** for $5.50 \le CGPA < 6.25$.
+*   A base **Pass Class** requires $CGPA \ge 4.0$.
+
+This requires the abstraction layer to output string classifications appended to the numeric GPA generation.
+
+#### PCCOE Grading Scale
+
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 80–100 | O | 10 | Pass |
+| 70–79 | A+ | 9 | Pass |
+| 60–69 | A | 8 | Pass |
+| 55–59 | B+ | 7 | Pass |
+| 50–54 | B | 6 | Pass |
+| 45–49 | C | 5 | Pass |
+| 40–44 | P | 4 | Pass |
+| 0–39 | F | 0 | Fail |
+
+#### PCCOE Preset Definition
+
+```json
+{
+  "id": "pccoe",
+  "name": "Pimpri Chinchwad College of Engineering",
+  "gradingSystem": "10-point Autonomous",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 80, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 70, "max": 79, "grade": "A+", "points": 9, "pass": true},
+    {"min": 60, "max": 69, "grade": "A", "points": 8, "pass": true},
+    {"min": 55, "max": 59, "grade": "B+", "points": 7, "pass": true},
+    {"min": 50, "max": 54, "grade": "B", "points": 6, "pass": true},
+    {"min": 45, "max": 49, "grade": "C", "points": 5, "pass": true},
+    {"min": 40, "max": 44, "grade": "P", "points": 4, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "(SGPA - 0.75) * 10",
+  "cgpaToPercentage": "(CGPA - 0.75) * 10",
+  "creditStructure": {
+    "totalCreditsRequired": "Dynamic per NEP-2020 alignments",
+    "workingProfessionalCredits": "Special reduced load structures for B.Tech WP programs"
+  },
+  "passRules": {
+    "minGraduationCGPA": 4.0,
+    "distinctionClassification": "CGPA >= 7.75",
+    "firstClassClassification": "6.75 <= CGPA < 7.75"
+  },
+  "backlogPolicy": {
+    "atktRules": "Standard SPPU ATKT norms apply for year-to-year progression"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Internal Evaluation (CIE)", "End Semester Examination (ESE)"],
+    "split": "Defined per course type (Theory vs Practical)",
+    "theoryPracticalSeparation": true
+  },
+  "metadata": {
+    "type": "Autonomous (Affiliated to SPPU)",
+    "academicRegulationYear": "V2.3 / NEP-2020 Compliant"
+  },
+  "specialFeatures": [
+    "Graduation honors classification brackets",
+    "Special reduced credit load for working professionals",
+    "Autonomous absolute scale under SPPU umbrella"
+  ]
+}
+```
+
+---
+
+### 1.5 Vishwakarma Institute of Technology (VIT Pune)
+
+VIT Pune utilizes a distinctive double-letter grade system to format its performance indices (Semester Performance Index - SPI, and Cumulative Performance Index - CPI). The grades follow a descending paired format: AA (10), AB (9), BB (8), BC (7), CC (6), CD (5), DD (4), and FF (0). This unique lexicographical format requires the preset engine to override standard single-letter visual abstractions.
+
+The academic progression model includes a Summer Term explicitly conducted for First-Year and Final-Year students carrying FF (Fail), XX (Detained due to attendance), or II (Incomplete) grades to rapidly clear backlogs without disrupting the subsequent academic calendar. The assessment logic is heavily decentralized, utilizing an "exam on demand" mechanism and rapid evaluation turnaround guaranteeing results within 15 days.
+
+#### VIT Pune Grading Scale
+
+| Grade Letter | Description | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| AA | Excellent | 10 | Pass |
+| AB | Very Good | 9 | Pass |
+| BB | Good | 8 | Pass |
+| BC | Fair | 7 | Pass |
+| CC | Above Average | 6 | Pass |
+| CD | Average | 5 | Pass |
+| DD | Marginal Pass | 4 | Pass |
+| FF | Fail | 0 | Fail |
+| XX | Detained | 0 | Fail |
+
+#### VIT Pune Preset Definition
+
+```json
+{
+  "id": "vit_pune",
+  "name": "Vishwakarma Institute of Technology Pune",
+  "gradingSystem": "Double-Letter 10-point",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"grade": "AA", "points": 10, "pass": true, "description": "Excellent"},
+    {"grade": "AB", "points": 9, "pass": true, "description": "Very Good"},
+    {"grade": "BB", "points": 8, "pass": true, "description": "Good"},
+    {"grade": "BC", "points": 7, "pass": true, "description": "Fair"},
+    {"grade": "CC", "points": 6, "pass": true, "description": "Above Average"},
+    {"grade": "CD", "points": 5, "pass": true, "description": "Average"},
+    {"grade": "DD", "points": 4, "pass": true, "description": "Marginal Pass"},
+    {"grade": "FF", "points": 0, "pass": false, "description": "Fail"},
+    {"grade": "XX", "points": 0, "pass": false, "description": "Detained"}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "varies_by_admission_year",
+  "cgpaToPercentage": "varies_by_admission_year",
+  "creditStructure": {
+    "auditCourses": "General Proficiency Courses required for holistic development",
+    "internshipCredits": "Mandatory industry internship integration"
+  },
+  "passRules": {
+    "attendance": 75,
+    "minOverallMarks": 40
+  },
+  "backlogPolicy": {
+    "summerTerm": "Conducted specifically for FY/Final year students with FF/XX/II grades",
+    "reRegistration": "Allowed for backlog clearing with fee penalty"
+  },
+  "assessmentScheme": {
+    "components": ["In-Semester Assessment", "Mid-Semester Assessment", "End-Semester Assessment"],
+    "split": "Varies dynamically based on course instructor parameters"
+  },
+  "metadata": {
+    "type": "Autonomous (Affiliated to SPPU)",
+    "erpSystem": "VIERP"
+  },
+  "specialFeatures": [
+    "Double-letter grading scale notation",
+    "Summer Term conducted for backlog clearing",
+    "Decentralized exam-on-demand mechanism with rapid results"
+  ]
+}
+```
+
+---
+
+### 1.6 MIT World Peace University (MIT-WPU)
+
+MIT-WPU operates as a private university and actively deviates from the standard SPPU absolute scale by adjusting its mark mapping to increase top-tier rigor. Specifically, achieving an 'O' (Outstanding) grade requires scoring between 90–100 marks (unlike SPPU's forgiving 80-100 bracket), while an 'A+' maps to the 70-89 range.
+
+The ATKT logic implemented by MIT-WPU relies on a strict dual-condition pivot: a student must earn a CGPA $\ge 5$ OR successfully complete 50% of their total credits to secure admission to the next academic year. Failure to meet either condition results in a "Year Down" status. The internal passing requirement demands a minimum of 40% in internal continuous assessments and 40% in the Term End Examination independently, disabling aggregate passing.
+
+#### MIT-WPU Grading Scale
+
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 90–100 | O | 10 | Pass |
+| 70–89 | A+ | 9 | Pass |
+| 60–69 | A | 8 | Pass |
+| 55–59 | B+ | 7 | Pass |
+| 50–54 | B | 6 | Pass |
+| 45–49 | C | 5 | Pass |
+| 40–44 | P | 4 | Pass |
+| 0–39 | F | 0 | Fail |
+
+#### MIT-WPU Preset Definition
+
+```json
+{
+  "id": "mit_wpu",
+  "name": "MIT World Peace University",
+  "gradingSystem": "10-point CBCS Custom",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 90, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 70, "max": 89, "grade": "A+", "points": 9, "pass": true},
+    {"min": 60, "max": 69, "grade": "A", "points": 8, "pass": true},
+    {"min": 55, "max": 59, "grade": "B+", "points": 7, "pass": true},
+    {"min": 50, "max": 54, "grade": "B", "points": 6, "pass": true},
+    {"min": 45, "max": 49, "grade": "C", "points": 5, "pass": true},
+    {"min": 40, "max": 44, "grade": "P", "points": 4, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "(SGPA - 0.75) * 10",
+  "cgpaToPercentage": "(CGPA - 0.75) * 10",
+  "creditStructure": {
+    "totalCreditsRequired": "Per specific B.Tech/BBA curriculum",
+    "peaceStudies": "Mandatory credit integration for Peace Studies and Yoga"
+  },
+  "passRules": {
+    "minInternalMarks": 40,
+    "minExternalMarks": 40,
+    "attendance": 75,
+    "independentPassing": true
+  },
+  "backlogPolicy": {
+    "atktRules": "CGPA >= 5 OR 50% credits cleared",
+    "detention": "Year down if ATKT conditions are strictly unmet"
+  },
+  "assessmentScheme": {
+    "components": ["Formative Assessment (FAT)", "Mid-Term Examination", "Summative Term End Examination"],
+    "split": "15% FAT / 30% Mid-Term / 55% Summative"
+  },
+  "metadata": {
+    "type": "Private University",
+    "academicRegulationYear": "2025-26 Manual"
+  },
+  "specialFeatures": [
+    "Custom O grade starting floor at 90 marks",
+    "Dual-condition year-down progression policy",
+    "Mandatory credit integration for Peace Studies and Yoga"
+  ]
+}
+```
+
+---
+
+### 1.7 D Y Patil International University (DYPIU)
+
+DYPIU utilizes a 0-to-10 point absolute grading scheme deeply integrated with concurrent internal evaluations. A severe exam-barring mechanism is active within the engine logic: students must secure a 40% minimum in concurrent internal evaluation and practical assessments independently just to become eligible to sit for the End Term Theory Examination.
+
+The academic warning and detention algorithms are particularly steep; scoring below a 4.5 CGPA immediately results in a semester-back condition, enforcing a high survival baseline for the institution. Conversion metrics are directly proportional, mapped as $Percentage = CGPA \times 10$.
+
+#### DYPIU Grading Scale
+
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 90–100 | O | 10 | Pass |
+| 80–89 | A+ | 9 | Pass |
+| 70–79 | A | 8 | Pass |
+| 60–69 | B+ | 7 | Pass |
+| 50–59 | B | 6 | Pass |
+| 45–49 | C | 5 | Pass |
+| 40–44 | P | 4 | Pass |
+| 0–39 | F | 0 | Fail |
+
+#### DYPIU Preset Definition
+
+```json
+{
+  "id": "dypiu",
+  "name": "D Y Patil International University",
+  "gradingSystem": "10-point Scheme",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 90, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 80, "max": 89, "grade": "A+", "points": 9, "pass": true},
+    {"min": 70, "max": 79, "grade": "A", "points": 8, "pass": true},
+    {"min": 60, "max": 69, "grade": "B+", "points": 7, "pass": true},
+    {"min": 50, "max": 59, "grade": "B", "points": 6, "pass": true},
+    {"min": 45, "max": 49, "grade": "C", "points": 5, "pass": true},
+    {"min": 40, "max": 44, "grade": "P", "points": 4, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "SGPA * 10",
   "cgpaToPercentage": "CGPA * 10",
-  "semesters": 8,
-  "branches": [],
-  "gradingRules": []
-}
-```
-
-### 16. Manipal Academy of Higher Education (MAHE / MIT)
-Manipal Institute of Technology (2022 Scheme) enforces a highly analytical relative grading system utilizing Z-scores. Theory subjects lack fixed pass marks, with grade thresholds computed dynamically. A total of 160 credits are required for a B.Tech, but only 148 credits are utilized for CGPA computation, as Open Electives and Human Values courses are excluded. The minimum CGPA required to graduate is 5.0.
-
-```json
-{
-  "university": "Manipal Institute of Technology",
-  "shortName": "MIT Manipal",
-  "state": "Karnataka",
-  "type": "Deemed to be University",
-  "pattern": "2022 Scheme",
-  "gradingSystem": "10-point Relative (Z-Score)",
-  "isRelativeGrading": true,
-  "passCriteria": {
-    "minCgpaForGraduation": 5.0,
-    "creditsForGraduation": 160,
-    "creditsForCgpa": 148
+  "creditStructure": {
+    "totalCreditsRequired": "Varies by branch (CSE, Bioengineering, etc.)"
   },
-  "semesters": 8,
-  "branches": []
-}
-```
-
-### 17. BITS Pilani
-BITS Pilani fundamentally challenges traditional academic databases by eschewing "credits" for "units". An Integrated First Degree student must accumulate 141 units. Grades are A (10), A- (9), B (8), B- (7), C (6), C- (5), D (4), and E (2). The minimum requirement for graduation is a CGPA of 4.50, and a student may not hold more than one 'E' grade per semester.
-
-```json
-{
-  "university": "Birla Institute of Technology and Science",
-  "shortName": "BITS Pilani",
-  "state": "Rajasthan",
-  "type": "Deemed to be University",
-  "gradingSystem": "Alphanumeric Unit-Based",
-  "creditType": "Units",
-  "cgpaFormula": "SUM(U * G) / SUM(U)",
-  "passCriteria": {
-    "minCgpaForGraduation": 4.50,
-    "maxEGradesPerSemester": 1
+  "passRules": {
+    "minConcurrentEval": 40,
+    "minPracticalEval": 40,
+    "minCGPAForProgression": 4.5,
+    "attendance": 75,
+    "examEligibility": "Must pass concurrent evaluation to sit for End Term"
   },
-  "semesters": 8,
-  "branches": [],
-  "gradingRules": [
-    {"grade": "A", "points": 10},
-    {"grade": "A-", "points": 9},
-    {"grade": "E", "points": 2}
+  "backlogPolicy": {
+    "detention": "Semester drop if CGPA falls below 4.5"
+  },
+  "assessmentScheme": {
+    "components": ["Concurrent Evaluation", "Practical Assessment", "End Term Theory Examination"],
+    "split": "Continuous formative evaluation"
+  },
+  "metadata": {
+    "type": "Private University"
+  },
+  "specialFeatures": [
+    "Severe internal evaluation minimum threshold required to be eligible for End Term exam",
+    "Immediate semester drop if CGPA falls below 4.5"
   ]
 }
 ```
 
-### 18. Delhi Technological University (DTU)
-DTU utilizes stringent statistical models for grading. In the 2024 revision, the absolute lower cutoff for passing was firmly fixed at 35%. Evaluation combines Mid-Term Exams, End-Term Exams, Continuous Work Assessment, and Practical classes.
+---
+
+### 1.8 Bharati Vidyapeeth Deemed University (BVDU)
+
+BVDU adopts a 10-point absolute grading model defined by dynamic mathematical generation for specific grade point layers. An exceptional feature that the abstraction layer must execute is the algorithmic calculation of grade points within intermediate brackets: for marks falling between 55 and 79, the formula $Grade Point = Truncate(Marks / 10) + 2$ is utilized. For example, a score of 68 yields $Truncate(6.8) + 2 = 6 + 2 = 8$ grade points.
+
+Furthermore, an independent head-of-passing logic ensures that if a student fails Internal Assessment (IA) but passes the University Examination (UE), they only repeat the IA segment, maintaining the passed UE score. However, an absolute minimum of 25% is required in IA alongside a minimum aggregate GPA of 6.0 in the specific course to pass the class overall.
+
+#### BVDU Grading Scale
+
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 80–100 | O | 10 | Pass |
+| 70–79 | A+ | 9 | Pass |
+| 60–69 | A | 8 | Pass |
+| 55–59 | B+ | 7 | Pass |
+| 50–54 | B | 6 | Pass |
+| 40–49 | C | 5 | Pass |
+| 0–39 | D | 0 | Fail |
+
+#### BVDU Preset Definition
 
 ```json
 {
-  "university": "Delhi Technological University",
-  "shortName": "DTU",
-  "state": "Delhi",
-  "type": "State Public University",
-  "pattern": "2024 Revision",
-  "gradingSystem": "10-point Relative",
-  "isRelativeGrading": true,
-  "passCriteria": {
-    "absoluteLowerCutoffMarks": 35
-  },
-  "semesters": 8,
-  "branches": []
-}
-```
-
-### 19. Netaji Subhas University of Technology (NSUT)
-At NSUT, a relative grading curve utilizes an upper limit (OL) and lower limit (DL) which are clamped to prevent outlier skewing. The difference is divided into 6 discrete bands (`d = (OL - DL) / 6`) to allocate grades from A+ to B+. GradeFlow’s SGPA engine requires a dedicated statistical microservice to parse raw class data arrays into grade arrays for this specific institution.
-
-```json
-{
-  "university": "Netaji Subhas University of Technology",
-  "shortName": "NSUT",
-  "state": "Delhi",
-  "type": "State Public University",
-  "gradingSystem": "10-point Relative Clamped",
-  "isRelativeGrading": true,
-  "curveLogic": "Calculate M+1.5*SD and M-1.5*SD. Clamp OL to 95/85 and DL to 40/30. Divide by 6 for bands.",
-  "semesters": 8,
-  "branches": []
-}
-```
-
-### 20. National Institutes of Technology (NITs)
-NITs follow MHRD/NIT Council guidelines for a harmonized 10-point scale. The standard conversion formula utilized for placement records across most NITs is `Percentage = CGPA × 9.5`. At NIT Trichy, First Class requires a CGPA >= 6.5, completed within 9 semesters.
-
-```json
-{
-  "university": "National Institutes of Technology",
-  "shortName": "NIT Council",
-  "state": "National",
-  "type": "Institute of National Importance",
+  "id": "bvdu",
+  "name": "Bharati Vidyapeeth Deemed University",
   "gradingSystem": "10-point CBCS",
-  "cgpaToPercentage": "CGPA * 9.5",
-  "semesters": 8,
-  "branches": [],
-  "passCriteria": {
-    "firstClassMinCgpa": 6.5,
-    "maxSemestersForFirstClass": 9
-  }
+  "evaluationModel": "absolute_with_formulaic_points",
+  "gradeScale": [
+    {"min": 80, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 70, "max": 79, "grade": "A+", "points": 9, "pass": true},
+    {"min": 60, "max": 69, "grade": "A", "points": 8, "pass": true},
+    {"min": 55, "max": 59, "grade": "B+", "points": 7, "pass": true},
+    {"min": 50, "max": 54, "grade": "B", "points": 6, "pass": true},
+    {"min": 40, "max": 49, "grade": "C", "points": 5, "pass": true},
+    {"min": 0, "max": 39, "grade": "D", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "varies_by_program_regulations",
+  "cgpaToPercentage": "varies_by_program_regulations",
+  "creditStructure": {
+    "totalCreditsRequired": "Varies by specific B.Tech/MBA program"
+  },
+  "passRules": {
+    "minInternalMarks": 25,
+    "minCourseGPA": 6.0,
+    "independentPassingHeads": true
+  },
+  "backlogPolicy": {
+    "isolatedClearing": "Can clear failed IA or UE independently without retaking the passed counterpart"
+  },
+  "assessmentScheme": {
+    "components": ["Internal Assessment (IA)", "University Examination (UE)"],
+    "split": "Program dependent (often 40/60)"
+  },
+  "metadata": {
+    "type": "Deemed-to-be University"
+  },
+  "specialFeatures": [
+    "Mathematical formulaic grade points generation for 55-79 marks range",
+    "Independent passing heads with isolated clearing segments"
+  ]
 }
 ```
 
-## Semester Preset Data & Subject-Credit Structures
-To pre-populate the Academic OS, a library of semester presets is required. Based on the deep analysis of the SPPU 2019 pattern, PCCOE 2023 regulations, and Mumbai University C-Scheme for branches like Computer Engineering, IT, and AI/ML, the following structural constants have been synthesized to inform the database seed files:
+---
 
-| Semester Level | Typical Focus | Subject Examples | Theory Credits | Practical Credits | Typical Assessment Ratio (Int:Ext) |
-| --- | --- | --- | --- | --- | --- |
-| Semester III | Core Fundamentals | Data Structures, Discrete Mathematics, Digital Electronics, DBMS | 3-4 | 1-2 | 30:70 or 40:60 |
-| Semester IV | Advanced Core & OS | Operating Systems, Computer Networks, Theory of Computation, Adv. Data Structures | 3-4 | 1-2 | 30:70 or 40:60 |
-| Semester V | AI & Emerging Tech | Artificial Intelligence, Machine Learning, Web Technologies | 3-4 | 2 | 20:80 |
-| Semester VI | Data & Security | Data Science, Big Data Analytics, Cyber Security, Cloud Computing | 3-4 | 2 | 20:80 |
-| Semester VII/VIII | Application & Projects | Deep Learning, Electives, Major Internship, Community Engagement Project | 3 | 4-10 | 100% Internal for Projects |
+### 1.9 JSPM Rajarshi Shahu College of Engineering (RSCOE)
 
-*Data synthesized from multi-university comparative analysis.*
+JSPM RSCOE utilizes an autonomous absolute grading system characterized by a three-tier assessment structure. The 'O' grade floor is positioned stringently at 90 marks. Evaluation integrates In-Semester Evaluation (ISE), Mid-Semester Evaluation (MSE), and End-Semester Evaluation (ESE).
 
-## Import, Parsing Strategy, and ERP Integration
-To ensure the GradeFlow platform optimizes for scalability, automation potential, and future AI parsing, the strategy for data ingestion must be highly robust, moving beyond manual data entry.
+ATKT rules broadly adhere to SPPU baseline guidelines. To handle attendance algorithms, the simulation engine must account for a 25% exemption buffer in the 100% attendance mandate for medical or approved co-curricular events (leaving a hard 75% floor). When a student clears a backlog, the replacement policy explicitly allows the new grade to overwrite the old one in the cumulative CGPA calculation.
 
-### Ingestion and PDF Parsing
-Academic regulations are predominantly published as unstructured or semi-structured PDF documents, often featuring complex merged tables. GradeFlow should implement an OCR and NLP pipeline (utilizing tools like AWS Textract or custom fine-tuned transformer models) designed specifically to identify tabular structures. The parser must isolate syllabus tables, extracting standard headers (Teaching Scheme, Examination Scheme, Credits, L/T/P). Regular expressions (Regex) can isolate course codes (e.g., matching standard patterns like `[A-Z]{2,3}\d{3,4}` such as BCE23PC01 for PCCOE).
+#### JSPM RSCOE Grading Scale
 
-### Ecosystem ERP Interoperability
-As observed in the research, systems like Samarth ERP and Digicampus dominate the administrative backend of these institutions.
-- **Samarth ERP**: Deployed extensively across Central and State universities, Samarth handles the "Academics & Student Lifecycle" through highly modular packages. It tracks Evaluation & Grading, Student Feedback, and Alumni portals. Samarth supports "Content Federation System and Website APIs", allowing external applications to pull organizational structures and course arrays securely. GradeFlow must engineer OData or RESTful API bridges to synchronize with Samarth’s master student records.
-- **Digicampus**: Extensively used by the JSPM ecosystem, Digicampus focuses on a "Student E-Portfolio" approach. It tracks real-time academic performance, OBE (Outcome Based Education) metrics, and attendance.
-- **Browser-Extension Integration**: Where institutional bureaucracy delays API token issuance, integration opportunities exist through browser-extensions. A GradeFlow browser extension could inject a script on the Digicampus/Samarth student portal, scraping the DOM for loaded elements containing marks and attendance data, seamlessly syncing it to the GradeFlow mobile application without requiring official server-to-server API handshakes.
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 90–100 | O | 10 | Pass |
+| 80–89 | A+ | 9 | Pass |
+| 70–79 | A | 8 | Pass |
+| 60–69 | B+ | 7 | Pass |
+| 55–59 | B | 6 | Pass |
+| 45–49 | C | 5 | Pass |
+| 40–44 | P | 4 | Pass |
+| 0–39 | F | 0 | Fail |
 
-## Predictive Academic Analytics Engine
-A premier feature of an Academic Operating System is predictive analytics. Using the normalized dataset of university grading rules and credit structures, GradeFlow can implement machine learning models to forecast student trajectories and prevent academic failure (ATKT/Year Down).
+#### JSPM RSCOE Preset Definition
 
-Recent academic data mining studies on university cohorts demonstrate that grade prediction requires multivariate modeling.
-- **Feature Engineering**: The models utilize input variables ranging from fundamental academic records (first-year GPA, accumulated credits) to behavioral metrics (LMS engagement, attendance data extracted via the ERP bridges).
-- **Algorithm Selection**: Research comparing predictive methodologies on university datasets proves that traditional algorithms like Random Forest Regressors are highly effective for baseline modeling, achieving a Mean Absolute Percentage Error (MAPE) of approximately 11.13% in predicting SGPA.
-- **Advanced Sequential Modeling**: For multi-semester time-series analysis, Long Short-Term Memory (LSTM) deep learning models dramatically outperform traditional models. An LSTM model trained on an 8-year student dataset optimized with an Adam optimizer achieved a MAPE of 9.54% and an R² score of 99% in predicting term GPAs.
+```json
+{
+  "id": "jspm_rscoe",
+  "name": "JSPM Rajarshi Shahu College of Engineering",
+  "gradingSystem": "10-point Autonomous",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 90, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 80, "max": 89, "grade": "A+", "points": 9, "pass": true},
+    {"min": 70, "max": 79, "grade": "A", "points": 8, "pass": true},
+    {"min": 60, "max": 69, "grade": "B+", "points": 7, "pass": true},
+    {"min": 55, "max": 59, "grade": "B", "points": 6, "pass": true},
+    {"min": 45, "max": 49, "grade": "C", "points": 5, "pass": true},
+    {"min": 40, "max": 44, "grade": "P", "points": 4, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "varies_by_sppu_norms",
+  "cgpaToPercentage": "varies_by_sppu_norms",
+  "creditStructure": {
+    "auditCourses": "Graded exclusively as PP (Pass) or NP (Not Pass)",
+    "totalCreditsRequired": "Per specific branch curriculum"
+  },
+  "passRules": {
+    "attendance": 75,
+    "exemptionAllowance": "Up to 25% for medical/co-curricular"
+  },
+  "backlogPolicy": {
+    "replacementPolicy": "New grade permanently replaces old in CGPA calculation upon retake"
+  },
+  "assessmentScheme": {
+    "components": ["In-Semester Evaluation (ISE)", "Mid-Semester Evaluation (MSE)", "End-Semester Evaluation (ESE)"],
+    "split": "Continuous tripartite split"
+  },
+  "metadata": {
+    "type": "Autonomous (Affiliated to SPPU)"
+  },
+  "specialFeatures": [
+    "Tripartite continuous assessment structure",
+    "Attendance exemption allowance up to 25%",
+    "Permanent replacement of old grade on successful retake"
+  ]
+}
+```
 
-GradeFlow’s intelligence planner should leverage these architectures. By inputting the student’s current internal marks (e.g., MSE and FA1 scores) and cross-referencing them with the rigorous passing criteria stored in the GradingPolicy schema (e.g., COEP's dynamic passing curve), GradeFlow can render a predictive "Risk Assessment Dashboard," alerting students precisely what score is required in the upcoming End-Semester Examination to secure a target CGPA.
+---
 
-## Strategic Recommendations for Scalable Expansion
-To solidify GradeFlow as foundational infrastructure, the following strategic expansion protocols must be adopted into the software architecture:
+## 2. National / Institutional Systems
 
-- **Rule-Engine Architecture for Edge Cases**: Academic institutions feature numerous edge cases, including Grace Marks, ATKT limits, and improvement exams. For instance, Mumbai University recalculates the entire CGPI when a student clears a previously failed course. GradeFlow's backend must utilize an event-driven architecture; an UpdateGrade payload must trigger a background worker that recalculates the entire historical SGPA/CGPA tree based on the specific institution's versioned mathematical formulas.
-- **Versioning of Academic Regulations**: Universities update their syllabi roughly every four years (e.g., SPPU 2015, 2019, 2024 patterns). The database must strictly version its RegulationPattern objects. A student entity must be permanently bound to the pattern active during their year of admission, ensuring that subsequent university syllabus updates do not corrupt the grade calculations of senior cohorts.
-- **Support for NEP 2020 Modularity**: The National Education Policy 2020 introduces multiple exit points (e.g., UG Certificate after Year 1, UG Diploma after Year 2). The schema must support degree branching and dynamic credit thresholds. For example, JSPM RSCOE requires 44 credits for a UG Certificate and 88 for a Diploma. GradeFlow must implement an "Audit & Progression" microservice that continuously checks earned credits against these dynamic NEP exit-point thresholds.
-- **Handling Zero-Credit Blockers**: As seen in VTU and SPPU audit courses, certain subjects carry zero credits but block graduation if not completed. The SGPA engine must be programmed to parse 0-credit courses and flag them as boolean dependencies rather than attempting mathematical division, which would result in fatal divide-by-zero errors.
+### 2.1 Visvesvaraya Technological University (VTU)
 
-## Synthesis and Architectural Implications
-The Indian higher education ecosystem is characterized by deep fragmentation across regulatory frameworks, grading paradigms, and administrative systems. Transforming this complexity into a streamlined, automated user experience requires more than simple data scraping; it requires a highly normalized, relational architecture capable of evaluating dynamic algebraic formulas, statistical curves, and versioned curriculum matrices.
+VTU operates across Karnataka commanding a standard 10-point absolute scale. A crucial architectural constraint for the simulation engine is VTU's rigid cap on credit registration; students are barred from registering for more than 24 credits per semester, ensuring a normalized load of 18-24 credits. Percentage extraction requires the standard $(CGPA - 0.75) \times 10$ equation, universally recognized for the 2015, 2017, and 2018 schemes.
 
-By implementing the decoupled schema proposed in this report—where the mathematical abstraction of a 10-point CBCS grading system is physically separated from the hierarchical metadata of the university—GradeFlow can seamlessly scale from state-affiliated networks like SPPU to highly autonomous ecosystems like BITS Pilani and COEP. The integration of robust predictive analytics, trained on historical academic data and informed by precise internal evaluation structures, will elevate GradeFlow from a passive tracker into an active, intelligent Academic Operating System.
+#### VTU Grading Scale
+
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 90–100 | O | 10 | Pass |
+| 80–89 | A+ | 9 | Pass |
+| 70–79 | A | 8 | Pass |
+| 60–69 | B+ | 7 | Pass |
+| 55–59 | B | 6 | Pass |
+| 50–54 | C | 5 | Pass |
+| 40–44 | P | 4 | Pass |
+| 0–39 | F | 0 | Fail |
+
+#### VTU Preset Definition
+
+```json
+{
+  "id": "vtu",
+  "name": "Visvesvaraya Technological University",
+  "gradingSystem": "10-point CBCS",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 90, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 80, "max": 89, "grade": "A+", "points": 9, "pass": true},
+    {"min": 70, "max": 79, "grade": "A", "points": 8, "pass": true},
+    {"min": 60, "max": 69, "grade": "B+", "points": 7, "pass": true},
+    {"min": 55, "max": 59, "grade": "B", "points": 6, "pass": true},
+    {"min": 50, "max": 54, "grade": "C", "points": 5, "pass": true},
+    {"min": 40, "max": 44, "grade": "P", "points": 4, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "(SGPA - 0.75) * 10",
+  "cgpaToPercentage": "(CGPA - 0.75) * 10",
+  "creditStructure": {
+    "maxSemesterCredits": 24,
+    "avgSemesterCredits": 18,
+    "mandatoryNonCredit": "2 to 3 units per semester"
+  },
+  "passRules": {
+    "progression": "ATKT limits strictly enforced based on active scheme"
+  },
+  "backlogPolicy": {
+    "atktRules": "Varies by scheme iteration (2015 vs 2018 vs 2022)"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Internal Evaluation (CIE)", "Semester End Examination (SEE)"],
+    "split": "50/50"
+  },
+  "metadata": {
+    "type": "State Technological University"
+  },
+  "specialFeatures": ["Hard cap on semester credit registration at 24"]
+}
+```
+
+---
+
+### 2.2 Anna University
+
+Anna University relies on a multiplier-based conversion logic distinct from the minus-offset standards seen in Maharashtra and Karnataka. The engine calculates equivalent percentages purely via $Percentage = CGPA \times 10$. The arrears (backlog) policy limits students to carrying a restricted number of failed subjects (historically 3-5 depending on the specific semester and syllabus iteration) before progression is halted, commonly referred to as a "year drop" condition.
+
+#### Anna University Grading Scale
+
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 90–100 | O | 10 | Pass |
+| 80–89 | A+ | 9 | Pass |
+| 70–79 | A | 8 | Pass |
+| 60–69 | B+ | 7 | Pass |
+| 55–59 | B | 6 | Pass |
+| 50–54 | C | 5 | Pass |
+| 0–49 | F | 0 | Fail |
+
+#### Anna University Preset Definition
+
+```json
+{
+  "id": "anna_university",
+  "name": "Anna University",
+  "gradingSystem": "10-point CBCS",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 90, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 80, "max": 89, "grade": "A+", "points": 9, "pass": true},
+    {"min": 70, "max": 79, "grade": "A", "points": 8, "pass": true},
+    {"min": 60, "max": 69, "grade": "B+", "points": 7, "pass": true},
+    {"min": 55, "max": 59, "grade": "B", "points": 6, "pass": true},
+    {"min": 50, "max": 54, "grade": "C", "points": 5, "pass": true},
+    {"min": 0, "max": 49, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "SGPA * 10",
+  "cgpaToPercentage": "CGPA * 10",
+  "creditStructure": {
+    "totalCreditsRequired": "Per specific curriculum iteration"
+  },
+  "passRules": {
+    "minMarks": 50
+  },
+  "backlogPolicy": {
+    "maxArrears": "Regulated strictly per semester progression (typically 3-5 active arrears maximum)"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Assessment (CA)", "End Semester Examination (ESE)"],
+    "split": "50/50"
+  },
+  "metadata": {
+    "type": "State University"
+  },
+  "specialFeatures": [
+    "Standard multiplier-based percentage conversion (CGPA * 10)",
+    "Strict restriction on active arrears limit before progression halt"
+  ]
+}
+```
+
+---
+
+### 2.3 Jawaharlal Nehru Technological University, Hyderabad (JNTUH)
+
+JNTUH adopts an intermediate conversion formula representing a mathematical center-point between standard evaluation systems. The simulation must apply $Percentage = (CGPA - 0.5) \times 10$, uniformly codified in their R16, R18, and R22 academic regulations.
+
+#### JNTUH Grading Scale
+
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 90–100 | O | 10 | Pass |
+| 80–89 | A+ | 9 | Pass |
+| 70–79 | A | 8 | Pass |
+| 60–69 | B+ | 7 | Pass |
+| 50–59 | B | 6 | Pass |
+| 40–49 | C | 5 | Pass |
+| 0–39 | F | 0 | Fail |
+
+#### JNTUH Preset Definition
+
+```json
+{
+  "id": "jntuh",
+  "name": "Jawaharlal Nehru Technological University, Hyderabad",
+  "gradingSystem": "10-point Scale",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 90, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 80, "max": 89, "grade": "A+", "points": 9, "pass": true},
+    {"min": 70, "max": 79, "grade": "A", "points": 8, "pass": true},
+    {"min": 60, "max": 69, "grade": "B+", "points": 7, "pass": true},
+    {"min": 50, "max": 59, "grade": "B", "points": 6, "pass": true},
+    {"min": 40, "max": 49, "grade": "C", "points": 5, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "(SGPA - 0.5) * 10",
+  "cgpaToPercentage": "(CGPA - 0.5) * 10",
+  "creditStructure": {
+    "totalCreditsRequired": "Per respective R-scheme curriculum"
+  },
+  "passRules": {
+    "minMarks": 40
+  },
+  "backlogPolicy": {
+    "atktRules": "Regulated credit progression limits"
+  },
+  "assessmentScheme": {
+    "components": ["Internal Evaluation", "External Examination"],
+    "split": "30/70"
+  },
+  "metadata": {
+    "type": "State Technological University"
+  },
+  "specialFeatures": ["Unique minus 0.5 conversion offset"]
+}
+```
+
+---
+
+### 2.4 SRM Institute of Science and Technology (SRM IST)
+
+SRM IST utilizes a fractional conversion algorithm, rendering percentage as $Percentage = CGPA \times 9.5$. The 10-point scale translates grades from 'O' to 'F' as absolute markers of success. The engine must enforce a rigorous floor; to clear a course, a student requires greater than 50% overall. Both 'F' (Fail) and 'Ab' (Absent) grades severely impact the GPA denominator, yielding 0 grade points.
+
+#### SRM IST Grading Scale
+
+| Marks Range | Grade Letter | Grade Points | Status |
+| :---: | :---: | :---: | :---: |
+| 91–100 | O | 10 | Pass |
+| 81–90 | A+ | 9 | Pass |
+| 71–80 | A | 8 | Pass |
+| 61–70 | B+ | 7 | Pass |
+| 56–60 | B | 6 | Pass |
+| 50–55 | C | 5 | Pass |
+| < 50 | F | 0 | Fail |
+
+#### SRM IST Preset Definition
+
+```json
+{
+  "id": "srm_ist",
+  "name": "SRM Institute of Science and Technology",
+  "gradingSystem": "10-point Scale",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 91, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 81, "max": 90, "grade": "A+", "points": 9, "pass": true},
+    {"min": 71, "max": 80, "grade": "A", "points": 8, "pass": true},
+    {"min": 61, "max": 70, "grade": "B+", "points": 7, "pass": true},
+    {"min": 56, "max": 60, "grade": "B", "points": 6, "pass": true},
+    {"min": 50, "max": 55, "grade": "C", "points": 5, "pass": true},
+    {"min": 0, "max": 49, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "SGPA * 9.5",
+  "cgpaToPercentage": "CGPA * 9.5",
+  "creditStructure": {
+    "totalCreditsRequired": "Varies by specific B.Tech branch"
+  },
+  "passRules": {
+    "minOverallMarks": 50
+  },
+  "backlogPolicy": {
+    "retakeRules": "Arrears examinations available in subsequent semesters"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Internal Evaluation (CIE)", "Semester End Examination (SEE)"],
+    "split": "50/50"
+  },
+  "metadata": {
+    "type": "Deemed-to-be University"
+  },
+  "specialFeatures": [
+    "SRM unique fractional multiplier percentage conversion (CGPA * 9.5)",
+    "Fail (F) and Absent (Ab) grades yield 0 grade points and affect denominator"
+  ]
+}
+```
+
+---
+
+### 2.5 VIT Vellore
+
+VIT Vellore operates a sophisticated class-wise Relative Grading System triggered explicitly when a course's registration strength exceeds 10 students; below this threshold, the engine must automatically revert to absolute grading pathways.
+
+The relative grading algorithm computes the Mean ($\mu$) and Standard Deviation ($\sigma$) of the cohort. The highest achievable grade ('S') possesses a dual-condition mathematical floor ensuring base competency is met alongside relative superiority: the score must be $> \mu + 1.5\sigma$ AND $\ge 90\%$ of total marks. Furthermore, if a student fails the embedded laboratory component (requiring a 50% average), they are penalized with an 'N' grade for the entire course, marking it as "not completed" regardless of theory performance.
+
+#### VIT Vellore Grading Scale
+
+| Relative Condition | Grade Letter | Grade Points |
+| :---: | :---: | :---: |
+| $> (\mu + 1.5\sigma)$ AND $\ge 90\%$ | S | 10 |
+| $> (\mu + 0.5\sigma)$ to $\le (\mu + 1.5\sigma)$ | A | 9 |
+| $> (\mu - 0.5\sigma)$ to $\le (\mu + 0.5\sigma)$ | B | 8 |
+| $> (\mu - 1.0\sigma)$ to $\le (\mu - 0.5\sigma)$ | C | 7 |
+| $> (\mu - 1.5\sigma)$ to $\le (\mu - 1.0\sigma)$ | D | 6 |
+| $> (\mu - 2.0\sigma)$ to $\le (\mu - 1.5\sigma)$ | E | 5 |
+| $\le (\mu - 2.0\sigma)$ | F | 0 |
+
+#### VIT Vellore Preset Definition
+
+```json
+{
+  "id": "vit_vellore",
+  "name": "VIT Vellore",
+  "gradingSystem": "10-point Relative",
+  "evaluationModel": "conditional_relative",
+  "gradeScale": [
+    {"grade": "S", "points": 10, "pass": true, "description": "Outstanding"},
+    {"grade": "A", "points": 9, "pass": true, "description": "Excellent"},
+    {"grade": "B", "points": 8, "pass": true, "description": "Very Good"},
+    {"grade": "C", "points": 7, "pass": true, "description": "Good"},
+    {"grade": "D", "points": 6, "pass": true, "description": "Above Average"},
+    {"grade": "E", "points": 5, "pass": true, "description": "Pass"},
+    {"grade": "F", "points": 0, "pass": false, "description": "Fail"}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "varies_by_transcript_request",
+  "cgpaToPercentage": "varies_by_transcript_request",
+  "creditStructure": {
+    "totalCreditsRequired": "Dynamic via Fully Flexible Credit System (FFCS)"
+  },
+  "passRules": {
+    "minLabMarks": 50,
+    "minClassStrengthForRelative": 10
+  },
+  "backlogPolicy": {
+    "labFailPenalty": "Failure in lab fails entire embedded course ('N' grade)"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Assessment (CAT)", "Laboratory Evaluations", "Term End Examinations (TEE)"],
+    "split": "Varies by course type (Project Based Learning vs Research Based Learning)"
+  },
+  "metadata": {
+    "type": "Deemed-to-be University"
+  },
+  "specialFeatures": [
+    "Fully Flexible Credit System (FFCS)",
+    "Relative grading triggered conditionally on class size (strength > 10)",
+    "Lab failure results in automatic fail of the entire embedded course"
+  ]
+}
+```
+
+---
+
+### 2.6 MIT Manipal
+
+MIT Manipal follows a strictly regulated relative grading system where letter grades map to binomial distribution fittings surrounding the standard deviation. 'A+' typically correlates to $\mu + 2\sigma$ or $\mu + 1.5\sigma$, tracking downward.
+
+The simulation engine must track a severe academic penalty regarding backlogs: students who fail (receive an F grade) and subsequently re-register for the course are subjected to a hard ceiling, with the maximum achievable grade on the repeated attempt capped at a 'C', regardless of their absolute or relative score. Percentage conversion is fixed mathematically at $Percentage = CGPA \times 10$.
+
+#### MIT Manipal Preset Definition
+
+```json
+{
+  "id": "mit_manipal",
+  "name": "MIT Manipal",
+  "gradingSystem": "10-point Relative",
+  "evaluationModel": "relative",
+  "gradeScale": [
+    {"grade": "A+", "points": 10, "pass": true, "description": "Outstanding"},
+    {"grade": "A", "points": 9, "pass": true, "description": "Excellent"},
+    {"grade": "B", "points": 8, "pass": true, "description": "Very Good"},
+    {"grade": "C", "points": 7, "pass": true, "description": "Good"},
+    {"grade": "D", "points": 6, "pass": true, "description": "Above Average"},
+    {"grade": "E", "points": 5, "pass": true, "description": "Pass"},
+    {"grade": "F", "points": 0, "pass": false, "description": "Fail"}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "SGPA * 10",
+  "cgpaToPercentage": "CGPA * 10",
+  "creditStructure": {
+    "totalCreditsRequired": "Varies by specific engineering program"
+  },
+  "passRules": {
+    "progression": "Standard prerequisite clearance required"
+  },
+  "backlogPolicy": {
+    "retakePenalty": "Maximum attainable grade capped permanently at 'C' upon re-registration after an 'F'"
+  },
+  "assessmentScheme": {
+    "components": ["In-Semester Assessment", "End-Semester Examination"],
+    "split": "Continuous format"
+  },
+  "metadata": {
+    "type": "Deemed-to-be University"
+  },
+  "specialFeatures": [
+    "Relative Z-score grading system with binomial distribution fitting",
+    "Severe backlog penalty: retake attempts capped permanently at 'C' grade"
+  ]
+}
+```
+
+---
+
+### 2.7 BITS Pilani
+
+BITS Pilani requires a highly custom preset due to its histogram-based continuous relative grading framework and unit-based credit system. Instead of rigidly forcing grades into a bell curve, instructors plot marks in descending order to identify natural performance clusters (gaps in the score distribution), which dictate the dividing lines between letter grades.
+
+A highly unique algorithmic requirement for the simulation engine is the non-linear grade point scale. While standard 10-point systems descend by a factor of 1, BITS utilizes A(10), A-(9), B(8), B-(7), C(6), C-(5), D(4), and subsequently drops directly to E(2) for marginal performance. A strict academic survival floor is enforced: students require a minimum CGPA of 4.50 to clear the B.Tech program. Failure yields a Not Cleared (NC) or Required to Register Again (RRA) marker.
+
+#### BITS Pilani Grading Scale
+
+| Grade Letter | Grade Points |
+| :---: | :---: |
+| A | 10 |
+| A- | 9 |
+| B | 8 |
+| B- | 7 |
+| C | 6 |
+| C- | 5 |
+| D | 4 |
+| E | 2 |
+| NC | 0 |
+
+#### BITS Pilani Preset Definition
+
+```json
+{
+  "id": "bits_pilani",
+  "name": "BITS Pilani",
+  "gradingSystem": "10-point Relative (Unit-based)",
+  "evaluationModel": "histogram_clustering",
+  "gradeScale": [
+    {"grade": "A", "points": 10, "pass": true, "description": "Excellent"},
+    {"grade": "A-", "points": 9, "pass": true, "description": "Very Good"},
+    {"grade": "B", "points": 8, "pass": true, "description": "Good"},
+    {"grade": "B-", "points": 7, "pass": true, "description": "Above Average"},
+    {"grade": "C", "points": 6, "pass": true, "description": "Average"},
+    {"grade": "C-", "points": 5, "pass": true, "description": "Below Average"},
+    {"grade": "D", "points": 4, "pass": true, "description": "Pass"},
+    {"grade": "E", "points": 2, "pass": true, "description": "Marginal Pass"},
+    {"grade": "NC", "points": 0, "pass": false, "description": "Not Cleared"}
+  ],
+  "sgpaFormula": "SUM(CourseUnits * GradePoints) / SUM(CourseUnits)",
+  "cgpaFormula": "SUM(TotalUnitsPoints) / SUM(TotalUnitsEarned)",
+  "sgpaToPercentage": "SGPA * 10",
+  "cgpaToPercentage": "CGPA * 10",
+  "creditStructure": {
+    "unitSystem": "Operates on 'Units' rather than 'Credits'",
+    "thesisUnits": "9-25 units dynamically split across semesters"
+  },
+  "passRules": {
+    "minGraduationCGPA": 4.5,
+    "probationRules": "Academic Monitoring Board (AMB) intervention if requirements are unmet"
+  },
+  "backlogPolicy": {
+    "ncRule": "Not Cleared (NC) mandates course repetition without grade card erasure"
+  },
+  "assessmentScheme": {
+    "components": ["Test-1", "Test-2", "Quizzes/Assignments", "Comprehensive Examination"],
+    "split": "Continuous and highly customizable by the Instructor-in-Charge"
+  },
+  "metadata": {
+    "type": "Deemed-to-be University (INI equivalent)"
+  },
+  "specialFeatures": [
+    "Operates on a unit-based credit system rather than credits",
+    "Histogram-based continuous relative clustering without rigid curves",
+    "Non-linear grade point scale skipping grade point 3 entirely"
+  ]
+}
+```
+
+---
+
+### 2.8 Delhi Technological University (DTU)
+
+DTU’s relative grading logic is engineered with rigid boundary conditions overlaying the statistical model, designed to curb extreme grade inflation or deflation. The engine must enforce a "Whichever is lower" algorithm: the cutoff for a given grade is either the statistical relative computation or an absolute percentage floor, taking the lesser of the two.
+
+For instance, the cutoff for 'O' (Outstanding) is calculated as $Marks \ge \mu + 1.5\sigma$ OR $91\%$. The 'A+' cutoff is $Marks \ge \mu + 1.0\sigma$ OR $82\%$. Conversion is mathematically mapped directly as $Percentage = CGPA \times 10$.
+
+#### DTU Preset Definition
+
+```json
+{
+  "id": "dtu",
+  "name": "Delhi Technological University",
+  "gradingSystem": "10-point Relative",
+  "evaluationModel": "relative_with_absolute_caps",
+  "gradeScale": [
+    {"grade": "O", "points": 10, "pass": true, "description": "Outstanding"},
+    {"grade": "A+", "points": 9, "pass": true, "description": "Excellent"},
+    {"grade": "A", "points": 8, "pass": true, "description": "Very Good"},
+    {"grade": "B+", "points": 7, "pass": true, "description": "Good"},
+    {"grade": "B", "points": 6, "pass": true, "description": "Above Average"},
+    {"grade": "C", "points": 5, "pass": true, "description": "Average"},
+    {"grade": "P", "points": 4, "pass": true, "description": "Pass"},
+    {"grade": "F", "points": 0, "pass": false, "description": "Fail"}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "SGPA * 10",
+  "cgpaToPercentage": "CGPA * 10",
+  "creditStructure": {
+    "minSemesterCredits": 16,
+    "maxSemesterCredits": 32,
+    "totalCreditsRequired": "Varies by specific B.Tech program"
+  },
+  "passRules": {
+    "minPassingFloor": "Mean - 1.5 sigma OR 37% (whichever is lower)"
+  },
+  "backlogPolicy": {
+    "retakeRules": "Subject to semester offering and credit limits"
+  },
+  "assessmentScheme": {
+    "components": ["Mid-Term Examination (MTE)", "Class Work Assessment (CWS)", "End-Term Examination (ETE)"],
+    "split": "Heavily defined by course structure (e.g., 25% MTE / 25% CWS / 50% ETE)"
+  },
+  "metadata": {
+    "type": "State University"
+  },
+  "specialFeatures": [
+    "Relative grading with absolute percentage caps",
+    "Whichever-is-lower boundary algorithm checks statistical vs absolute cutoffs"
+  ]
+}
+```
+
+---
+
+### 2.9 Netaji Subhas University of Technology (NSUT)
+
+NSUT utilizes a highly specific piecewise relative formula dividing the statistical curve into six distinct computational bandwidths via a generated factor $d$. The abstraction layer must execute a multi-step calculation. First, it calculates an Upper Limit ($OL$) and Lower Limit ($DL$) based on $\mu + 1.5\sigma$ and $\mu - 1.5\sigma$, constrained by hard absolute boundaries: $OL$ is capped at 95 (or floored at 84.99), and $DL$ is capped at 40 (or floored at 29.99).
+
+The bandwidth delta is then calculated as $d = (OL - DL) / 6$. Grades are subsequently layered in intervals of $d$ (e.g., the 'C' grade boundary corresponds to $(DL + d) < marks \le (DL + 2d)$). Like DTU, the overall percentage translates via $Percentage = CGPA \times 10$.
+
+#### NSUT Preset Definition
+
+```json
+{
+  "id": "nsut",
+  "name": "Netaji Subhas University of Technology",
+  "gradingSystem": "10-point Relative",
+  "evaluationModel": "banded_relative",
+  "gradeScale": [
+    {"grade": "O", "points": 10, "pass": true, "description": "Outstanding"},
+    {"grade": "A+", "points": 9, "pass": true, "description": "Excellent"},
+    {"grade": "A", "points": 8, "pass": true, "description": "Very Good"},
+    {"grade": "B+", "points": 7, "pass": true, "description": "Good"},
+    {"grade": "B", "points": 6, "pass": true, "description": "Above Average"},
+    {"grade": "C", "points": 5, "pass": true, "description": "Average"},
+    {"grade": "P", "points": 4, "pass": true, "description": "Pass"},
+    {"grade": "F", "points": 0, "pass": false, "description": "Fail"}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "SGPA * 10",
+  "cgpaToPercentage": "CGPA * 10",
+  "creditStructure": {
+    "totalCreditsRequired": "Per specific branch curriculum"
+  },
+  "passRules": {
+    "minPassingLogic": "Marks > DL (Dynamic lower limit calculated via SD boundaries)"
+  },
+  "backlogPolicy": {
+    "retakeRules": "Standard relative rules re-applied to repeaters in subsequent cohorts"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Evaluation", "Mid-Semester Examination", "End-Semester Examination"],
+    "split": "Continuous evaluation"
+  },
+  "metadata": {
+    "type": "State University",
+    "academicRegulationYear": "2019-20 onward"
+  },
+  "specialFeatures": [
+    "Piecewise relative formula dividing statistical curve into 6 discrete bands",
+    "Capped upper and lower dynamic limits with strict absolute boundaries"
+  ]
+}
+```
+
+---
+
+### 2.10 NIT Council / NIT System
+
+While exact parameters vary minutely across the 31 individual National Institutes of Technology (NITs), the overarching framework codified by the NIT Council frequently employs a 10-point scale mapped against a 7-grade system, creating a hybrid absolute/relative evaluation layer. For instance, models such as NIT Warangal employ grades descending from S (10 points) down to U (3 points, denoting failure). The standard absolute mappings equate to 90-100 (S), 80-89 (A), 70-79 (B), 60-69 (C), 50-59 (D), 40-49 (P), and 0-39 (U).
+
+To achieve a First Division classification at graduation, students require a minimum CGPA of 6.50. A 10-point standard mapping ($Percentage = CGPA \times 10$) is universally leveraged for translation. Re-evaluations (REX) cap the maximum attainable grade severely, often at the lowest passing tier (E or P).
+
+#### NIT Council Preset Definition
+
+```json
+{
+  "id": "nit_system_generic",
+  "name": "NIT Council Model",
+  "gradingSystem": "7-point/10-point System",
+  "evaluationModel": "absolute_relative_hybrid",
+  "gradeScale": [
+    {"min": 90, "max": 100, "grade": "S", "points": 10, "pass": true, "description": "Outstanding"},
+    {"min": 80, "max": 89, "grade": "A", "points": 9, "pass": true, "description": "Excellent"},
+    {"min": 70, "max": 79, "grade": "B", "points": 8, "pass": true, "description": "Very Good"},
+    {"min": 60, "max": 69, "grade": "C", "points": 7, "pass": true, "description": "Good"},
+    {"min": 50, "max": 59, "grade": "D", "points": 6, "pass": true, "description": "Above Average"},
+    {"min": 40, "max": 49, "grade": "P", "points": 5, "pass": true, "description": "Pass"},
+    {"min": 0, "max": 39, "grade": "U", "points": 0, "pass": false, "description": "Fail"}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "SGPA * 10",
+  "cgpaToPercentage": "CGPA * 10",
+  "creditStructure": {
+    "totalCreditsRequired": "Varies by respective NIT, generally 160-180"
+  },
+  "passRules": {
+    "minOverallMarks": 40,
+    "firstDivisionCGPA": 6.5
+  },
+  "backlogPolicy": {
+    "reExamination": "REX maximum grade strictly capped at E (or base pass limit)"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Assessment", "Mid-term Examination", "End-term Examination"],
+    "split": "Typically 20/30/50"
+  },
+  "metadata": {
+    "type": "Institute of National Importance"
+  },
+  "specialFeatures": [
+    "Hybrid absolute-relative evaluation layers",
+    "Re-evaluation grade capped at base passing tier (E or P)"
+  ]
+}
+```
+
+---
+
+## 3. Custom / Legacy Systems
+
+For universal backward compatibility and international transcript normalization, the simulation engine incorporates custom baseline schemas designed to act as fallbacks or comparative layers.
+
+### 3.1 US / Global 4-Point GPA System
+
+The 4.0 scale represents the foundational architecture for North American academic evaluation and global credentialing. The engine computes this without an SGPA multiplier, deriving percentage by mapping the 4.0 ceiling directly to 100%.
+
+#### Global 4-Point Preset Definition
+
+```json
+{
+  "id": "global_4pt",
+  "name": "US Global 4-Point System",
+  "gradingSystem": "4-point scale",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 90, "max": 100, "grade": "A", "points": 4.0, "pass": true, "description": "Excellent"},
+    {"min": 80, "max": 89, "grade": "B", "points": 3.0, "pass": true, "description": "Good"},
+    {"min": 70, "max": 79, "grade": "C", "points": 2.0, "pass": true, "description": "Satisfactory"},
+    {"min": 60, "max": 69, "grade": "D", "points": 1.0, "pass": true, "description": "Poor"},
+    {"min": 0, "max": 59, "grade": "F", "points": 0.0, "pass": false, "description": "Fail"}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "(SGPA / 4.0) * 100",
+  "cgpaToPercentage": "(CGPA / 4.0) * 100",
+  "creditStructure": {
+    "totalCreditsRequired": "120 for standard Bachelor's degree"
+  },
+  "passRules": {
+    "minGraduationGPA": 2.0
+  },
+  "backlogPolicy": {
+    "retakeRules": "Grade replacement varies by institution, commonly replacing the prior grade but leaving a transcript 'W' or fail marker"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Evaluation", "Final Examination"],
+    "split": "Varies by instructor syllabus"
+  },
+  "metadata": {
+    "type": "Global Standard"
+  },
+  "specialFeatures": [
+    "Foundational architecture for North American academic evaluation",
+    "4.0 ceiling directly mapped to percentage conversion"
+  ]
+}
+```
+
+---
+
+### 3.2 Generic Custom 10-Point System
+
+This schema operates as the programmatic fallback for unmapped modern Indian institutions utilizing AICTE or UGC standard norms without complex anomaly injections (such as the MU piecewise formula or COEP LB logic). It assumes a linear $CGPA \times 9.5$ conversion.
+
+#### Generic Custom 10-Point Preset Definition
+
+```json
+{
+  "id": "generic_10pt",
+  "name": "Generic 10-Point System",
+  "gradingSystem": "10-point scale",
+  "evaluationModel": "absolute",
+  "gradeScale": [
+    {"min": 80, "max": 100, "grade": "O", "points": 10, "pass": true},
+    {"min": 70, "max": 79, "grade": "A+", "points": 9, "pass": true},
+    {"min": 60, "max": 69, "grade": "A", "points": 8, "pass": true},
+    {"min": 55, "max": 59, "grade": "B+", "points": 7, "pass": true},
+    {"min": 50, "max": 54, "grade": "B", "points": 6, "pass": true},
+    {"min": 45, "max": 49, "grade": "C", "points": 5, "pass": true},
+    {"min": 40, "max": 44, "grade": "P", "points": 4, "pass": true},
+    {"min": 0, "max": 39, "grade": "F", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  "cgpaFormula": "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  "sgpaToPercentage": "SGPA * 9.5",
+  "cgpaToPercentage": "CGPA * 9.5",
+  "creditStructure": {
+    "totalCreditsRequired": "Configurable variable"
+  },
+  "passRules": {
+    "minOverallMarks": 40
+  },
+  "backlogPolicy": {
+    "atktRules": "Configurable variable"
+  },
+  "assessmentScheme": {
+    "components": ["Continuous Assessments", "Final Examination"],
+    "split": "50/50 baseline assumption"
+  },
+  "metadata": {
+    "type": "Generic Base"
+  },
+  "specialFeatures": ["Acts as architectural fallback for dynamic simulation components"]
+}
+```
+
+---
+
+### 3.3 Generic Percentage-Based System
+
+Designed strictly for processing legacy credentials preceding the widespread adoption of the Choice-Based Credit System (CBCS), this configuration abandons grade points entirely. It operates exclusively on aggregate marks, mapping performance directly to class thresholds (e.g., Distinction, First Class).
+
+#### Generic Percentage-Based Preset Definition
+
+```json
+{
+  "id": "generic_percentage",
+  "name": "Generic Percentage-Based System",
+  "gradingSystem": "Percentage scale",
+  "evaluationModel": "absolute_percentage",
+  "gradeScale": [
+    {"min": 40, "max": 100, "grade": "Pass", "points": 100, "pass": true},
+    {"min": 0, "max": 39, "grade": "Fail", "points": 0, "pass": false}
+  ],
+  "sgpaFormula": "NULL",
+  "cgpaFormula": "NULL",
+  "sgpaToPercentage": "Direct Map",
+  "cgpaToPercentage": "Direct Map",
+  "creditStructure": {
+    "totalCreditsRequired": "Marks-based, credits largely informational/administrative"
+  },
+  "passRules": {
+    "minOverallMarks": 40
+  },
+  "backlogPolicy": {
+    "atktRules": "Raw marks carry-forward mechanism"
+  },
+  "assessmentScheme": {
+    "components": ["Monolithic Annual/Semester Examination"],
+    "split": "100% monolithic evaluation"
+  },
+  "metadata": {
+    "type": "Legacy System"
+  },
+  "specialFeatures": [
+    "Designed for legacy marks-based credential processing",
+    "Aggregate percentage maps directly to class divisions"
+  ]
+}
+```

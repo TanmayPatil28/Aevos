@@ -8,12 +8,12 @@ import { useTheme } from "next-themes";
 import {
   GraduationCap, Home, Calculator, CalendarDays,
   LayoutDashboard, Grip, ChevronDown, AlertTriangle,
-  TrendingUp, Target, Moon, Sun, Menu, X, ArrowRight, School, Check
+  TrendingUp, Target, Moon, Sun, Menu, X, ArrowRight
 } from "lucide-react";
-import { useUniversity, UNI_PRESETS } from "@/components/providers/UniversityProvider";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSession, signOut } from "next-auth/react";
+import UniversitySelector from "@/components/UniversitySelector";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -58,13 +58,10 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
-  const [isUniOpen, setIsUniOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
-  const uniRef = useRef<HTMLDivElement>(null);
 
-  const { activePreset, setSelectedUniId } = useUniversity();
   const { data: session } = useSession();
 
   const isAnyToolActive = ADVANCED_TOOLS.some(tool => pathname === tool.href);
@@ -82,15 +79,11 @@ export default function Navbar() {
     const handleEvents = (e: MouseEvent | globalThis.KeyboardEvent) => {
       if (e instanceof KeyboardEvent && e.key === "Escape") {
         setIsToolsOpen(false);
-        setIsUniOpen(false);
         setIsMobileOpen(false);
       }
       if (e instanceof MouseEvent) {
         if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) {
           setIsToolsOpen(false);
-        }
-        if (uniRef.current && !uniRef.current.contains(e.target as Node)) {
-          setIsUniOpen(false);
         }
       }
     };
@@ -105,7 +98,6 @@ export default function Navbar() {
   // Close dropdown on page change
   useEffect(() => {
     setIsToolsOpen(false);
-    setIsUniOpen(false);
     setIsMobileOpen(false);
   }, [pathname]);
 
@@ -114,7 +106,7 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-[1000] transition-all duration-700 flex justify-center px-4 md:px-8 antialiased font-body",
+        "fixed top-0 left-0 right-0 z-[9999] transition-all duration-700 flex justify-center px-4 md:px-8 antialiased font-body",
         isScrolled
           ? "h-14 mt-0 bg-[#0A0F1E]/95 backdrop-blur-[45px] shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8),0_0_80px_-20px_rgba(79,142,247,0.15)]"
           : "h-16 mt-0 bg-transparent"
@@ -131,7 +123,7 @@ export default function Navbar() {
         />
       </div>
 
-      <div className="w-full max-w-7xl flex items-center justify-between relative z-10 border-b border-white/[0.03]">
+      <div className="w-full max-w-7xl flex items-center justify-between relative z-[9999] border-b border-white/[0.03]">
 
         {/* LEFT: AUTHORITATIVE LOGO */}
         <Link href="/" className="flex items-center gap-2 group outline-none">
@@ -167,7 +159,7 @@ export default function Navbar() {
 
             {/* Tools Refraction HUD */}
             <div
-              className="relative"
+              className="relative z-[9999]"
               ref={toolsRef}
               onMouseEnter={() => setHoveredPath("tools")}
               onMouseLeave={() => setHoveredPath(null)}
@@ -221,7 +213,7 @@ export default function Navbar() {
                       backgroundColor: "#000000",
                       backdropFilter: "blur(10px)"
                     }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 w-[260px] bg-[#0A0F1E]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-2 z-[1001] origin-top"
+                    className="absolute top-full left-1/2 -translate-x-1/2 w-[260px] bg-[#0A0F1E]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-2 z-[99999] origin-top"
                   >
                     <div className="absolute inset-0 rounded-[24px] border-[0.5px] border-gradient-to-br from-[#4F8EF7]/30 via-transparent to-[#A855F7]/30 pointer-events-none" />
                     <div className="px-4 pt-3 pb-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#4F8EF7]/50">
@@ -259,76 +251,7 @@ export default function Navbar() {
 
         {/* RIGHT: ACTION SUITE */}
         <div className="hidden md:flex items-center gap-4">
-          <div className="relative" ref={uniRef}>
-            <button
-              onClick={() => setIsUniOpen(!isUniOpen)}
-              aria-expanded={isUniOpen}
-              aria-haspopup="listbox"
-              aria-label="Select university"
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border transition-all duration-500 text-[13px] font-bold group shadow-inner",
-                isUniOpen
-                  ? "border-[#4F8EF7] bg-[#4F8EF7]/10 text-white"
-                  : "border-white/[0.05] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-[#4F8EF7]/30"
-              )}
-            >
-              <School size={16} className={cn("transition-transform group-hover:scale-110", isUniOpen ? "text-white" : "text-[#4F8EF7]")} />
-              <span>{activePreset.shortName || "Select Identity"}</span>
-              <motion.div animate={{ rotate: isUniOpen ? 180 : 0 }} transition={{ duration: 0.5 }}>
-                <ChevronDown size={14} className="opacity-30" />
-              </motion.div>
-            </button>
-
-            {/* University Selection Dropdown */}
-            <AnimatePresence>
-              {isUniOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 15, filter: "blur(20px)" }}
-                  animate={{ opacity: 1, scale: 1, y: 12, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, scale: 0.9, y: 15, filter: "blur(20px)" }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  className="absolute top-full right-0 w-[240px] bg-[#0A0F1E]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-2 z-[1001] origin-top-right"
-                >
-                  <div className="px-4 pt-3 pb-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#4F8EF7]/50">
-                    Select Identity
-                  </div>
-                  <div className="space-y-0.5 mt-1">
-                    {UNI_PRESETS.map((uni) => (
-                      <button
-                        key={uni.id}
-                        onClick={() => {
-                          setSelectedUniId(uni.id);
-                          setIsUniOpen(false);
-                        }}
-                        className={cn(
-                          "w-full flex items-center justify-between p-3 rounded-[16px] transition-all duration-300 group",
-                          activePreset.id === uni.id ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-black",
-                            activePreset.id === uni.id ? "bg-[#4F8EF7] text-white" : "bg-white/5 text-white/40 group-hover:bg-white/10 group-hover:text-white/60"
-                          )}>
-                            {uni.shortName[0]}
-                          </div>
-                          <span className={cn(
-                            "text-[13px] font-bold tracking-tight",
-                            activePreset.id === uni.id ? "text-white" : "text-white/50 group-hover:text-white"
-                          )}>
-                            {uni.name}
-                          </span>
-                        </div>
-                        {activePreset.id === uni.id && (
-                          <Check size={14} className="text-[#4F8EF7]" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <UniversitySelector variant="navbar" />
 
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -382,11 +305,11 @@ export default function Navbar() {
       <AnimatePresence>
         {isMobileOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-[#000]/80 backdrop-blur-[15px] z-[1002]" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-[#000]/80 backdrop-blur-[15px] z-[100000]" />
             <motion.div
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 w-[300px] h-full bg-[#0A0F1E]/98 backdrop-blur-[50px] border-l border-white/[0.05] z-[1003] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
+              className="fixed top-0 right-0 w-[300px] h-full bg-[#0A0F1E]/98 backdrop-blur-[50px] border-l border-white/[0.05] z-[100001] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
             >
               <div className="flex items-center justify-between mb-8">
                 <span className="font-headline font-black text-2xl text-white tracking-widest">GF.OS</span>
@@ -396,25 +319,7 @@ export default function Navbar() {
               </div>
 
               {/* Mobile University Selector */}
-              <div className="mb-8 p-1 bg-white/[0.02] border border-white/[0.05] rounded-[24px]">
-                <div className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/20">Active Institution</div>
-                <div className="flex flex-wrap gap-1 p-1">
-                  {UNI_PRESETS.map((uni) => (
-                    <button
-                      key={uni.id}
-                      onClick={() => setSelectedUniId(uni.id)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-full text-[12px] font-bold transition-all",
-                        activePreset.id === uni.id
-                          ? "bg-[#4F8EF7] text-white shadow-[0_0_15px_rgba(79,142,247,0.3)]"
-                          : "text-white/30 hover:text-white/60"
-                      )}
-                    >
-                      {uni.shortName}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <UniversitySelector variant="mobile" />
 
               <div className="flex flex-col gap-2 flex-1">
                 {MAIN_LINKS.map((link, i) => (

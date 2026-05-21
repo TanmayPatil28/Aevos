@@ -4,7 +4,14 @@ import Link from "next/link";
 import { useState, useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { getGradePointFromPercentage, calculateSGPA } from "@/lib/calculations";
+import { useUniversity } from "@/components/providers/UniversityProvider";
+import { 
+  convertMarksToGradePoint,
+  convertLetterGradeToGradePoint,
+  calculateSGPA as presetCalculateSGPA, 
+  getGradeScale,
+  GradeScaleEntry
+} from "@/lib/presets";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
@@ -12,6 +19,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import Grid from "@/components/layout/Grid";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
+import PresetInfoCard from "@/components/PresetInfoCard";
 
 interface Subject {
   id: string;
@@ -22,6 +30,7 @@ interface Subject {
 }
 
 export default function CalculatorPage() {
+  const { activePreset, creditLabel, maxGradePoint } = useUniversity();
   const [usePercentage, setUsePercentage] = useState(false);
   const [subjects, setSubjects] = useState<Subject[]>([
     { id: "1", name: "Mathematics", credits: "", score: "" },
@@ -38,6 +47,30 @@ export default function CalculatorPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Reactively load preset parameters when activePreset changes
+  useEffect(() => {
+    if (activePreset) {
+      const isPercent = activePreset.gradingSystem.toLowerCase().includes("percentage");
+      setUsePercentage(isPercent);
+      
+      // Auto-populate default credits/units for standard subjects if they are empty or set to previous default
+      setSubjects((prev) =>
+        prev.map((sub) => {
+          if (!sub.credits || sub.credits === "" || sub.credits === "3" || sub.credits === "4") {
+            return {
+              ...sub,
+              credits: activePreset.creditType === "units" ? "3" : "4"
+            };
+          }
+          return sub;
+        })
+      );
+
+      // Clear any stale calculations from a previous preset
+      setResult(null);
+    }
+  }, [activePreset]);
 
   const addSubject = () => {
     setSubjects([...subjects, { id: Math.random().toString(), name: "", credits: "", score: "" }]);
@@ -58,16 +91,35 @@ export default function CalculatorPage() {
   const validateInputs = useCallback((): boolean => {
     let valid = true;
 
+    const maxGP = maxGradePoint;
+    const validGrades = activePreset.gradeScale.map((e) => e.grade.toUpperCase());
+
     const updated = subjects.map((sub) => {
       const credits = parseFloat(sub.credits);
-      const score = parseFloat(sub.score);
       let error = "";
 
-      if (!sub.name.trim()) error = "Name required";
-      else if (isNaN(credits) || credits < 1 || credits > 6) error = "Credits: 1-6";
-      else if (isNaN(score)) error = "Score required";
-      else if (usePercentage && (score < 0 || score > 100)) error = "Marks: 0-100";
-      else if (!usePercentage && (score < 0 || score > 10)) error = "Grade: 0-10";
+      if (!sub.name.trim()) {
+        error = "Name required";
+      } else if (isNaN(credits) || credits < 1 || credits > 6) {
+        error = creditLabel + ": 1-6";
+      } else if (!sub.score.trim()) {
+        error = "Score required";
+      } else if (usePercentage) {
+        const scoreNum = parseFloat(sub.score);
+        if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
+          error = "Marks: 0-100";
+        }
+      } else {
+        // Alphanumeric grade or direct grade point lookup
+        const cleanScore = sub.score.trim().toUpperCase();
+        const isLetter = validGrades.includes(cleanScore);
+        const scoreNum = parseFloat(sub.score);
+        const isNumber = !isNaN(scoreNum) && scoreNum >= 0 && scoreNum <= maxGP;
+
+        if (!isLetter && !isNumber) {
+          error = `Enter valid Grade (e.g., ${validGrades.slice(0, 3).join(", ")}) or Points (0-${maxGP})`;
+        }
+      }
 
       if (error) valid = false;
       return { ...sub, error };
@@ -75,7 +127,7 @@ export default function CalculatorPage() {
 
     setSubjects(updated);
     return valid;
-  }, [subjects, usePercentage]);
+  }, [subjects, usePercentage, activePreset, creditLabel, maxGradePoint]);
 
   const handleCalculate = () => {
     if (!validateInputs()) {
@@ -89,15 +141,20 @@ export default function CalculatorPage() {
     setTimeout(() => {
       const parsedSubjects = subjects.map((sub) => {
         const credits = parseFloat(sub.credits);
-        const score = parseFloat(sub.score);
-        const gradePoint = usePercentage ? getGradePointFromPercentage(score) : score;
+        let gradePoint = 0;
+        if (usePercentage) {
+          const scoreNum = parseFloat(sub.score);
+          gradePoint = convertMarksToGradePoint(scoreNum, activePreset);
+        } else {
+          gradePoint = convertLetterGradeToGradePoint(sub.score, activePreset);
+        }
         return { credits, gradePoint };
       });
 
       let totalCredits = 0;
       parsedSubjects.forEach((s) => (totalCredits += s.credits));
 
-      const sgpa = calculateSGPA(parsedSubjects);
+      const sgpa = presetCalculateSGPA(parsedSubjects);
       setResult({ sgpa, totalCredits });
       setIsCalculating(false);
       toast.success("Calculation complete!");
@@ -151,7 +208,7 @@ export default function CalculatorPage() {
       </div>
 
       {/* Hero Header */}
-      <StaggerContainer className="text-center mb-16 flex flex-col items-center">
+      <StaggerContainer className="text-center mb-12 flex flex-col items-center">
         <StaggerItem>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/20 text-primary text-sm font-semibold mb-6">
             <span className="material-symbols-outlined text-sm">calculate</span>
@@ -167,6 +224,11 @@ export default function CalculatorPage() {
           <p className="text-on-surface-variant max-w-2xl text-lg leading-relaxed">
             Enter your subjects, credits, and marks. Get your CGPA in one click.
           </p>
+        </StaggerItem>
+        <StaggerItem>
+          <div className="mt-6 w-full max-w-xl">
+            <PresetInfoCard compact />
+          </div>
         </StaggerItem>
       </StaggerContainer>
 
@@ -192,12 +254,46 @@ export default function CalculatorPage() {
               </button>
             </div>
 
+            {activePreset.evaluationModel === "relative" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-6"
+              >
+                <Card variant="warning" padding="sm" className="flex items-start gap-3 border-amber-500/20 bg-amber-500/5">
+                  <span className="material-symbols-outlined text-amber-500 mt-0.5">info</span>
+                  <div className="text-xs text-amber-200/90 leading-relaxed">
+                    <strong className="text-amber-400 font-bold block mb-1">Relative Grading Active</strong>
+                    {activePreset.name} uses cohort-based relative grading ({activePreset.gradingSystem}). Enter your expected letter grades (e.g., {activePreset.gradeScale.slice(0, 3).map(e => e.grade).join(", ")}) or expected grade points directly. Marks-to-points mapping is determined by the class bell curve.
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+
+            {activePreset.evaluationModel === "hybrid" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-6"
+              >
+                <Card variant="accent" padding="sm" className="flex items-start gap-3 border-[#4F8EF7]/20 bg-[#4F8EF7]/5">
+                  <span className="material-symbols-outlined text-[#4F8EF7] mt-0.5">info</span>
+                  <div className="text-xs text-blue-200/90 leading-relaxed">
+                    <strong className="text-[#4F8EF7] font-bold block mb-1">Hybrid Grading Active</strong>
+                    {activePreset.name} uses hybrid grading. Standard absolute scaling serves as a baseline, but relative bell curve scaling is dynamically applied for larger cohorts.
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+
             <div className="overflow-x-auto mb-8">
               <table className="w-full text-left min-w-[500px]">
                 <thead>
                   <tr className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-[0.2em] border-b border-outline-variant/10">
                     <th className="pb-4 px-2 w-[40%]">Subject Name</th>
-                    <th className="pb-4 px-2 w-[20%]">Credits</th>
+                    <th className="pb-4 px-2 w-[20%]">{creditLabel}</th>
                     <th className="pb-4 px-2 w-[25%]">Grade/Marks</th>
                     <th className="pb-4 px-2 text-center w-[15%]">Action</th>
                   </tr>
@@ -228,18 +324,18 @@ export default function CalculatorPage() {
                             type="number"
                             value={subject.credits}
                             onChange={(e) => handleChange(subject.id, "credits", e.target.value)}
-                            hasError={!!(subject.error && subject.error.includes("Credits"))}
-                            placeholder="4"
+                            hasError={!!(subject.error && (subject.error.includes("Credits") || subject.error.includes("Units")))}
+                            placeholder={activePreset.creditType === "units" ? "3" : "4"}
                             min="1" max="6"
                           />
                         </td>
                         <td className="py-2.5 px-2">
                           <Input
-                            type="number"
+                            type="text"
                             value={subject.score}
                             onChange={(e) => handleChange(subject.id, "score", e.target.value)}
                             hasError={!!(subject.error && (subject.error.includes("Score") || subject.error.includes("Marks") || subject.error.includes("Grade")))}
-                            placeholder={usePercentage ? "e.g., 85" : "e.g., 9"}
+                            placeholder={usePercentage ? "e.g., 85" : activePreset.specialFeatures?.hasLetterGrades ? "e.g., A+ or 9" : "e.g., 9"}
                           />
                         </td>
                         <td className="py-2 px-2 text-center">
@@ -314,22 +410,50 @@ export default function CalculatorPage() {
                 <span>Range</span><span>Grade</span><span>Pts</span>
               </div>
               <div className="space-y-2.5">
-                {[
-                  { range: "90 - 100", grade: "O", points: "10", color: "bg-success/10 text-success" },
-                  { range: "80 - 89", grade: "A+", points: "9", color: "bg-success/10 text-success" },
-                  { range: "70 - 79", grade: "A", points: "8", color: "bg-primary/10 text-primary" },
-                  { range: "60 - 69", grade: "B+", points: "7", color: "bg-primary/10 text-primary" },
-                  { range: "50 - 59", grade: "B", points: "6", color: "bg-secondary/10 text-secondary" },
-                  { range: "45 - 49", grade: "C", points: "5", color: "bg-secondary/10 text-secondary" },
-                  { range: "40 - 44", grade: "D", points: "4", color: "bg-error/10 text-error" },
-                  { range: "Below 40", grade: "F", points: "0", color: "bg-error/20 text-error font-black" },
-                ].map((row, i) => (
-                  <div key={i} className="flex justify-between items-center bg-surface-container/40 px-5 py-3.5 rounded-none border border-outline-variant/30 hover:bg-surface-container-high hover:border-primary/40 hover:shadow-sm transition-all group">
-                    <span className="text-on-surface-variant group-hover:text-on-surface font-medium text-xs w-20">{row.range}</span>
-                    <span className={`px-2.5 py-0.5 rounded-none text-xs ${row.color} font-bold w-auto border border-transparent group-hover:border-current transition-colors`}>{row.grade}</span>
-                    <span className={`font-black tracking-tight ${row.color.includes('text-error') ? 'text-error' : 'text-on-surface'} w-6 text-right`}>{row.points}</span>
-                  </div>
-                ))}
+                {(() => {
+                  const sortedScale = [...getGradeScale(activePreset)].sort((a, b) => b.points - a.points);
+                  
+                  const getGradeColor = (points: number, isPass: boolean = true) => {
+                    if (!isPass || points === 0) return "bg-error/20 text-error font-black";
+                    if (points >= 9) return "bg-success/10 text-success";
+                    if (points >= 7) return "bg-primary/10 text-primary";
+                    if (points >= 5) return "bg-secondary/10 text-secondary";
+                    return "bg-error/10 text-error";
+                  };
+
+                  const getRangeText = (entry: GradeScaleEntry, index: number, allEntries: GradeScaleEntry[]) => {
+                    if (activePreset.evaluationModel === "relative") {
+                      return entry.description || "Relative Grade";
+                    }
+                    
+                    const min = entry.minMarks ?? 0;
+                    if (entry.points === 0 || entry.isPass === false) {
+                      const passEntries = allEntries.filter(e => e.isPass !== false && e.points > 0);
+                      const minPass = passEntries.length > 0 ? Math.min(...passEntries.map(e => e.minMarks ?? 0)) : 40;
+                      return `Below ${minPass}`;
+                    }
+                    
+                    const higherEntries = allEntries.filter(e => (e.minMarks ?? 0) > min);
+                    if (higherEntries.length === 0) {
+                      return `${min} - 100`;
+                    }
+                    
+                    const nextMin = Math.min(...higherEntries.map(e => e.minMarks ?? 0));
+                    return `${min} - ${nextMin - 1}`;
+                  };
+
+                  return sortedScale.map((row, i) => {
+                    const color = getGradeColor(row.points, row.isPass);
+                    const range = getRangeText(row, i, sortedScale);
+                    return (
+                      <div key={i} className="flex justify-between items-center bg-surface-container/40 px-5 py-3.5 rounded-none border border-outline-variant/30 hover:bg-surface-container-high hover:border-primary/40 hover:shadow-sm transition-all group">
+                        <span className="text-on-surface-variant group-hover:text-on-surface font-medium text-xs w-20">{range}</span>
+                        <span className={`px-2.5 py-0.5 rounded-none text-xs ${color} font-bold w-auto border border-transparent group-hover:border-current transition-colors`}>{row.grade}</span>
+                        <span className={`font-black tracking-tight ${color.includes('text-error') ? 'text-error' : 'text-on-surface'} w-6 text-right`}>{row.points}</span>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </Card>
@@ -363,7 +487,7 @@ export default function CalculatorPage() {
               <StaggerItem>
                 <Card className="border-t-4 border-secondary hover:-translate-y-2 duration-500 group overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-secondary/10 transition-colors" />
-                  <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Earned Credits</p>
+                  <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Earned {creditLabel}</p>
                   <h3 className="text-6xl font-black font-headline text-secondary tracking-tighter group-hover:scale-105 transition-transform origin-left">
                     <AnimatedCounter target={result.totalCredits} />
                   </h3>
@@ -398,14 +522,14 @@ export default function CalculatorPage() {
                   <thead>
                     <tr className="text-on-surface-variant/60 text-xs font-bold uppercase tracking-widest border-b border-outline-variant/10">
                       <th className="pb-4 px-2">Subject Name</th>
-                      <th className="pb-4 px-2">Credits</th>
+                      <th className="pb-4 px-2">{creditLabel}</th>
                       <th className="pb-4 px-2">Score</th>
                       <th className="pb-4 px-2">Grade Point</th>
                     </tr>
                   </thead>
                   <tbody>
                     {subjects.map(s => {
-                      const gradePoint = usePercentage ? getGradePointFromPercentage(parseFloat(s.score) || 0) : parseFloat(s.score) || 0;
+                      const gradePoint = usePercentage ? convertMarksToGradePoint(parseFloat(s.score) || 0, activePreset) : convertLetterGradeToGradePoint(s.score, activePreset);
                       return (
                         <tr key={s.id} className="border-b border-outline-variant/5 last:border-0 hover:bg-surface-container-low/50 transition-colors">
                           <td className="py-4 px-2 font-medium text-on-surface">{s.name || "Unnamed"}</td>
