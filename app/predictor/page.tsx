@@ -10,19 +10,20 @@ import clsx from 'clsx';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { useUniversity } from '@/components/providers/UniversityProvider';
+import { convertPercentageToGrade } from '@/lib/presets';
 import PageContainer from '@/components/layout/PageContainer';
 import Card from '@/components/ui/Card';
+import PresetInfoCard from '@/components/PresetInfoCard';
 
-const GRADES = [
-  { grade: "O", gpa: 10, minPercent: 90, color: "text-emerald-400" },
-  { grade: "A+", gpa: 9, minPercent: 80, color: "text-emerald-400/80" },
-  { grade: "A", gpa: 8, minPercent: 70, color: "text-green-400" },
-  { grade: "B+", gpa: 7, minPercent: 60, color: "text-yellow-300" },
-  { grade: "B", gpa: 6, minPercent: 55, color: "text-yellow-400" },
-  { grade: "C", gpa: 5, minPercent: 50, color: "text-orange-400" },
-  { grade: "P", gpa: 4, minPercent: 40, color: "text-red-400" },
-  { grade: "F", gpa: 0, minPercent: 0, color: "text-red-600" },
-];
+function getGradeColorClass(points: number, isPass: boolean = true) {
+  if (!isPass || points === 0) return "text-red-600";
+  if (points >= 9) return "text-emerald-400";
+  if (points >= 8) return "text-green-400";
+  if (points >= 7) return "text-yellow-300";
+  if (points >= 6) return "text-yellow-400";
+  if (points >= 5) return "text-orange-400";
+  return "text-red-400";
+}
 
 type SubjectType = 'theory100' | 'theory50' | 'lab';
 
@@ -45,6 +46,18 @@ export default function PredictorPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // When active preset changes, verify target grade is valid for this preset, otherwise fallback to highest grade
+  useEffect(() => {
+    if (activePreset?.gradeScale) {
+      const validGrades = activePreset.gradeScale.filter(g => g.points > 0 && g.isPass !== false);
+      const isValid = validGrades.some(g => g.grade === targetGrade);
+      if (!isValid && validGrades.length > 0) {
+        const sorted = [...validGrades].sort((a, b) => b.points - a.points);
+        setTargetGrade(sorted[0].grade);
+      }
+    }
+  }, [activePreset, targetGrade]);
 
   // Calculations
   const stats = useMemo(() => {
@@ -87,11 +100,12 @@ export default function PredictorPage() {
     }
 
     const percentage = totalMax > 0 ? (totalScored / totalMax) * 100 : 0;
-    const currentGrade = GRADES.find(g => percentage >= g.minPercent) || GRADES[GRADES.length - 1];
+    const currentGrade = convertPercentageToGrade(percentage, activePreset);
 
     // Predictor Logic
-    const target = GRADES.find(g => g.grade === targetGrade) || GRADES[0];
-    const requiredTotalMarks = (target.minPercent / 100) * totalMax;
+    const target = activePreset.gradeScale.find(g => g.grade === targetGrade) || activePreset.gradeScale[0];
+    const targetMinMarks = target.minMarks ?? 0;
+    const requiredTotalMarks = (targetMinMarks / 100) * totalMax;
     const neededInEndSem = requiredTotalMarks - scoredBase;
 
     const achievable = neededInEndSem <= (isLab ? maxLabExam : maxEndSem);
@@ -117,7 +131,7 @@ export default function PredictorPage() {
       nEndSem,
       nLabExam
     };
-  }, [type, t1, t2, assig, endSem, labExam, useBestOf, targetGrade]);
+  }, [type, t1, t2, assig, endSem, labExam, useBestOf, targetGrade, activePreset]);
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -172,6 +186,9 @@ export default function PredictorPage() {
             <p className="text-on-surface-variant font-medium text-lg max-w-xl leading-relaxed">
                Predict exact End Semester marks needed to achieve your target grade.
             </p>
+            <div className="mt-4">
+              <PresetInfoCard compact />
+            </div>
           </div>
 
           <div className="flex bg-[var(--surface-container-highest)]/50 backdrop-blur-md p-1.5 rounded-[1.25rem] border border-[var(--outline-variant)] w-full md:w-auto">
@@ -302,12 +319,6 @@ export default function PredictorPage() {
                         Target Predictor
                       </h2>
                       <p className="text-sm font-medium text-on-surface-variant">Select desired grade to calculate required marks.</p>
-                      {activePreset?.id !== 'jspm' && activePreset?.id !== 'sppu' && (
-                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-widest rounded-lg">
-                          <AlertTriangle className="w-3 h-3" />
-                          Math standardized.
-                        </div>
-                      )}
                     </div>
                     <div className="flex items-center gap-3 bg-black/40 p-2 rounded-2xl border border-white/5 backdrop-blur-md">
                       <span className="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant px-2">Target Grade</span>
@@ -316,9 +327,11 @@ export default function PredictorPage() {
                         onChange={(e) => setTargetGrade(e.target.value)}
                         className="bg-primary/20 text-primary font-black text-xl w-16 text-center py-1 rounded-xl appearance-none outline-none border border-primary/30 shadow-inner focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface cursor-pointer"
                       >
-                        {GRADES.map(g => (
-                          <option key={g.grade} value={g.grade}>{g.grade}</option>
-                        ))}
+                        {activePreset.gradeScale
+                          .filter(g => g.points > 0 && g.isPass !== false)
+                          .map(g => (
+                            <option key={g.grade} value={g.grade}>{g.grade}</option>
+                          ))}
                       </select>
                     </div>
                   </div>
@@ -397,7 +410,7 @@ export default function PredictorPage() {
                   <StatCard label="Internal Base" value={`${stats.scoredBase.toFixed(1)}/${stats.maxBase}`} icon="box" />
                   <StatCard label="Total Scored" value={`${stats.totalScored.toFixed(1)}/${stats.totalMax}`} icon="functions" highlight />
                   <StatCard label="Running %" value={`${stats.percentage.toFixed(1)}%`} icon="percent" />
-                  <StatCard label="Current Grade" value={stats.currentGrade.grade} icon="star" colorClass={stats.currentGrade.color} />
+                  <StatCard label="Current Grade" value={stats.currentGrade.grade} icon="star" colorClass={getGradeColorClass(stats.currentGrade.points, stats.currentGrade.isPass)} />
                 </div>
 
                 <div className="flex justify-end pt-4">

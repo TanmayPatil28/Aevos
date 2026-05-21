@@ -6,7 +6,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { calculateRequiredGPA, getDifficultyLevel, gpaToPercentage } from "@/lib/calculations";
+import { calculateRequiredGPA, getDifficultyLevel, sgpaToPercentage as calcSgpaToPercentage } from "@/lib/presets";
+import { useUniversity } from "@/components/providers/UniversityProvider";
+import PresetInfoCard from "@/components/PresetInfoCard";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
@@ -51,6 +53,7 @@ function getRowDifficulty(gpa: number) {
 }
 
 export default function PlannerPage() {
+  const { activePreset, maxGradePoint } = useUniversity();
   const [currentCGPA, setCurrentCGPA] = useState("");
   const [completedSemesters, setCompletedSemesters] = useState("");
   const [totalCredits, setTotalCredits] = useState("");
@@ -81,15 +84,15 @@ export default function PlannerPage() {
     const cps = parseInt(creditsPerSemester);
     const tc = parseInt(totalCredits);
 
-    if (currentCGPA && !isNaN(c) && c >= 0 && c <= 10) v.currentCGPA = true;
+    if (currentCGPA && !isNaN(c) && c >= 0 && c <= maxGradePoint) v.currentCGPA = true;
     if (completedSemesters && !isNaN(parseInt(completedSemesters)) && parseInt(completedSemesters) >= 1) v.completedSemesters = true;
     if (totalCredits && !isNaN(tc) && tc >= 1) v.totalCredits = true;
-    if (targetCGPA && !isNaN(t) && t >= 0 && t <= 10 && (!currentCGPA || t > c)) v.targetCGPA = true;
+    if (targetCGPA && !isNaN(t) && t >= 0 && t <= maxGradePoint && (!currentCGPA || t > c)) v.targetCGPA = true;
     if (remainingSemesters && !isNaN(rs) && rs >= 1 && rs <= 8) v.remainingSemesters = true;
     if (creditsPerSemester && !isNaN(cps) && cps >= 1 && cps <= 30) v.creditsPerSemester = true;
 
     return v;
-  }, [currentCGPA, completedSemesters, totalCredits, targetCGPA, remainingSemesters, creditsPerSemester]);
+  }, [currentCGPA, completedSemesters, totalCredits, targetCGPA, remainingSemesters, creditsPerSemester, maxGradePoint]);
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
@@ -100,7 +103,7 @@ export default function PlannerPage() {
     const tcVal = parseInt(totalCredits);
 
     if (!currentCGPA) e.currentCGPA = "Required";
-    else if (isNaN(cVal) || cVal < 0 || cVal > 10) e.currentCGPA = "Must be 0.0 – 10.0";
+    else if (isNaN(cVal) || cVal < 0 || cVal > maxGradePoint) e.currentCGPA = `Must be 0.0 – ${maxGradePoint}`;
 
     if (!completedSemesters) e.completedSemesters = "Required";
     else if (isNaN(parseInt(completedSemesters)) || parseInt(completedSemesters) < 1) e.completedSemesters = "Must be ≥ 1";
@@ -109,7 +112,7 @@ export default function PlannerPage() {
     else if (isNaN(tcVal) || tcVal < 1) e.totalCredits = "Must be ≥ 1";
 
     if (!targetCGPA) e.targetCGPA = "Required";
-    else if (isNaN(tVal) || tVal < 0 || tVal > 10) e.targetCGPA = "Must be 0.0 – 10.0";
+    else if (isNaN(tVal) || tVal < 0 || tVal > maxGradePoint) e.targetCGPA = `Must be 0.0 – ${maxGradePoint}`;
     else if (!isNaN(cVal) && tVal <= cVal) e.targetCGPA = "Must be > current CGPA";
 
     if (!remainingSemesters) e.remainingSemesters = "Required";
@@ -142,10 +145,10 @@ export default function PlannerPage() {
 
       const remainingCredits = remSems * credPerSem;
       const requiredGPA = calculateRequiredGPA(target, cCGPA, currentCredits, remainingCredits);
-      const isImpossible = requiredGPA > 10;
+      const isImpossible = requiredGPA > maxGradePoint;
 
       if (isImpossible) {
-        toast.error("Target requires GPA above 10 — mathematically impossible!");
+        toast.error(`Target requires GPA above ${maxGradePoint} — mathematically impossible!`);
       }
 
       // Build chart data — linear interpolation from current to target
@@ -166,14 +169,14 @@ export default function PlannerPage() {
       }
 
       const gap = Number((target - cCGPA).toFixed(2));
-      const percentageNeeded = Number(gpaToPercentage(requiredGPA).toFixed(1));
+      const percentageNeeded = Number(calcSgpaToPercentage(requiredGPA, activePreset).toFixed(1));
       const journeyPercent = Number(((cCGPA / target) * 100).toFixed(1));
 
       setResult({
         requiredGPA: Number(requiredGPA.toFixed(2)),
         chartData,
         gap,
-        difficulty: getDifficultyLevel(requiredGPA),
+        difficulty: getDifficultyLevel(requiredGPA, activePreset),
         remainingSems: remSems,
         creditsPerSem: credPerSem,
         isImpossible,
@@ -293,6 +296,11 @@ export default function PlannerPage() {
               <br />
               GradeFlow maps your exact path to success.
             </p>
+          </StaggerItem>
+          <StaggerItem>
+            <div className="mt-4 flex justify-center">
+              <PresetInfoCard compact />
+            </div>
           </StaggerItem>
         </StaggerContainer>
 
@@ -549,7 +557,7 @@ export default function PlannerPage() {
                     <tbody>
                       {Array.from({ length: result.remainingSems }).map((_, i) => {
                         const rowDiff = getRowDifficulty(result.requiredGPA);
-                        const pct = gpaToPercentage(result.requiredGPA);
+                        const pct = calcSgpaToPercentage(result.requiredGPA, activePreset);
                         return (
                           <motion.tr
                             key={i}
