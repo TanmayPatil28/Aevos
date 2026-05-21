@@ -13,8 +13,26 @@ import {
   cgpaToPercentage, 
   convertLetterGradeToGradePoint,
   calculateSGPA,
-  calculateCGPA
+  calculateCGPA,
+  validatePreset
 } from "../lib/presets/index";
+
+import {
+  calculateMean,
+  calculateStdDev,
+  calculateSkewness,
+  applyBoxCoxTransform,
+  findOptimalLambda,
+  calculateMeanStdDevBands,
+  calculateClusterGapBands,
+  calculateBoxCoxBands,
+  convertPercentageToWES,
+  convertToECTS,
+  advisePercentageBoundary,
+  checkCIESafety,
+  solveATKTProgression,
+  forecastRelativeGradeMarks
+} from "../lib/academic-intelligence/index";
 
 // CLI Colors
 const colors = {
@@ -54,9 +72,9 @@ function runTests() {
   // Verify all presets are loaded and verified
   const allPresets = getAllPresets();
   assert(
-    "All 23 presets successfully loaded and verified in registry",
-    allPresets.length === 23,
-    `Expected 23, found ${allPresets.length}`
+    "All 25 presets successfully loaded and verified in registry",
+    allPresets.length === 25,
+    `Expected 25, found ${allPresets.length}`
   );
 
   // ─── 1. MUMBAI UNIVERSITY PIECEWISE EQUATIONS ───────────────────────────────
@@ -261,6 +279,317 @@ function runTests() {
     Math.abs(computedCgpa - expectedCgpa) < 0.001,
     `Computed: ${computedCgpa}, Expected: ${expectedCgpa}`
   );
+
+  // Rounding Precision and Edge Limits
+  section("Rounding and Floating Point Precision Checks");
+  const roundingCourses = [
+    { credits: 3, gradePoint: 10 },
+    { credits: 3, gradePoint: 10 },
+    { credits: 3, gradePoint: 9.999 }
+  ];
+  const roundedSgpa = calculateSGPA(roundingCourses);
+  assert(
+    "calculateSGPA preserves high floating-point precision on recurring or micro-decimals without premature truncating",
+    Math.abs(roundedSgpa - 9.9996666) < 0.0001,
+    `Computed: ${roundedSgpa}`
+  );
+
+  const edgeRoundingCgpa = 9.999;
+  const roundedValueStr = edgeRoundingCgpa.toFixed(2);
+  assert(
+    "Standard rendering/rounding format translates 9.999 correctly to '10.00' if formatted or maintains 9.999 for raw math",
+    roundedValueStr === "10.00",
+    `Got: ${roundedValueStr}`
+  );
+
+  // ─── 9. ADVERSARIAL VALIDATOR TESTS ─────────────────────────────────────────
+  section("Adversarial Validator Hardening & Safety Checks");
+
+  const baseValidPreset = {
+    id: "test_base",
+    name: "Base Valid Test University",
+    shortName: "Base Valid",
+    state: "Maharashtra",
+    type: "State Public University",
+    gradingSystem: "10-point CBCS",
+    evaluationModel: "absolute",
+    canonicalInstitutionId: "test_base",
+    version: "1.0.0",
+    regulationYear: 2020,
+    status: "active",
+    country: "IN",
+    nepAligned: false,
+    gradeScale: [
+      { grade: "O", minMarks: 80, points: 10, description: "Outstanding" },
+      { grade: "A", minMarks: 60, points: 8, description: "Very Good" },
+      { grade: "P", minMarks: 40, points: 4, description: "Pass" },
+      { grade: "F", minMarks: 0, points: 0, description: "Fail", isPass: false }
+    ],
+    creditType: "credits",
+    totalProgramCredits: 160,
+    sgpaFormula: "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+    cgpaFormula: "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+    sgpaToPercentage: "SGPA * 9.5",
+    cgpaToPercentage: "CGPA * 9.5",
+    passRules: {
+      minOverall: 40,
+      minGradePoint: 4.0
+    },
+    trust: {
+      verificationLevel: "official",
+      confidenceScore: 95,
+      lastVerifiedAt: "2026-05-21",
+      verifiedSources: ["Official Academic Guidelines"]
+    }
+  } as any;
+
+  // Happy Path baseline check
+  const happyRes = validatePreset(baseValidPreset);
+  assert("Baseline mock preset passes validation cleanly", happyRes.success, happyRes.errors.join(", "));
+
+  // Test Case A: Overlapping degree classifications
+  const overlappingClassPreset = {
+    ...baseValidPreset,
+    id: "test_overlap",
+    degreeClassification: [
+      { label: "Class A", minCGPA: 6.0 },
+      { label: "Class B", minCGPA: 6.0 } // Overlap / Duplicate minCGPA threshold
+    ]
+  };
+  const overlapRes = validatePreset(overlappingClassPreset);
+  assert(
+    "Validator rejects overlapping/duplicate degree classification thresholds",
+    !overlapRes.success && overlapRes.errors.some(e => e.includes("duplicate/overlapping minCGPA")),
+    `Got success=${overlapRes.success}`
+  );
+
+  // Test Case B: Incorrectly ordered classifications
+  const unorderedClassPreset = {
+    ...baseValidPreset,
+    id: "test_unordered",
+    degreeClassification: [
+      { label: "Distinction", minCGPA: 8.0 },
+      { label: "First Class", minCGPA: 6.0 } // Distinction has higher minCGPA but appears first (should be sorted ascending by minCGPA)
+    ]
+  };
+  const unorderedRes = validatePreset(unorderedClassPreset);
+  assert(
+    "Validator rejects out-of-order degree classifications",
+    !unorderedRes.success && unorderedRes.errors.some(e => e.includes("must be strictly ordered")),
+    `Got success=${unorderedRes.success}`
+  );
+
+  // Test Case C: Invalid percentage formula yielding > 100%
+  const overflowPercentagePreset = {
+    ...baseValidPreset,
+    id: "test_overflow",
+    sgpaToPercentage: "(SGPA + 1) * 10", // at max SGPA=10 yields 110%
+    cgpaToPercentage: "(CGPA + 1) * 10"  // at max CGPA=10 yields 110%
+  };
+  const overflowRes = validatePreset(overflowPercentagePreset);
+  assert(
+    "Validator rejects percentage formula yielding overflow (>100% at max GP)",
+    !overflowRes.success && overflowRes.errors.some(e => e.includes("Percentage Formula Overflow")),
+    `Got success=${overflowRes.success}`
+  );
+
+  // Test Case D: Trust Level Mismatches (Official with low confidence score)
+  const fakeOfficialPreset = {
+    ...baseValidPreset,
+    id: "test_fake_official",
+    trust: {
+      verificationLevel: "official",
+      confidenceScore: 80, // official requires >= 90
+      lastVerifiedAt: "2026-05-21",
+      verifiedSources: ["Mock Source"]
+    }
+  };
+  const fakeOfficialRes = validatePreset(fakeOfficialPreset);
+  assert(
+    "Validator rejects official presets claiming confidenceScore < 90",
+    !fakeOfficialRes.success && fakeOfficialRes.errors.some(e => e.includes("requires confidenceScore >= 90")),
+    `Got success=${fakeOfficialRes.success}`
+  );
+
+  // Test Case E: Trust Level Mismatches (Experimental claiming verified features)
+  const fakeExperimentalPreset = {
+    ...baseValidPreset,
+    id: "test_fake_experimental",
+    specialFeatures: {
+      isVerified: true // experimental cannot set specialFeatures.isVerified = true
+    },
+    trust: {
+      verificationLevel: "experimental",
+      confidenceScore: 70,
+      lastVerifiedAt: "2026-05-21",
+      verifiedSources: ["Mock Source"]
+    }
+  };
+  const fakeExperimentalRes = validatePreset(fakeExperimentalPreset);
+  assert(
+    "Validator rejects experimental presets claiming isVerified special feature",
+    !fakeExperimentalRes.success && fakeExperimentalRes.errors.some(e => e.includes("cannot set specialFeatures.isVerified to true")),
+    `Got success=${fakeExperimentalRes.success}`
+  );
+
+  // Test Case F: Impossible pass rules mismatch
+  const mismatchedPassRulePreset = {
+    ...baseValidPreset,
+    id: "test_mismatch_pass",
+    passRules: {
+      ...baseValidPreset.passRules,
+      minGradePoint: 5.0 // Lowest passing grade point in scale is P (4.0 pts), so this is a mismatch
+    }
+  };
+  const mismatchedPassRes = validatePreset(mismatchedPassRulePreset);
+  assert(
+    "Validator rejects passRules.minGradePoint that doesn't align with lowest passing grade points in scale",
+    !mismatchedPassRes.success && mismatchedPassRes.errors.some(e => e.includes("does not align with the lowest passing grade point")),
+    `Got success=${mismatchedPassRes.success}`
+  );
+
+  // Test Case G: Broken relative grading structure (evaluationModel = relative but minMarks defined)
+  const relativeMarksPreset = {
+    ...baseValidPreset,
+    id: "test_relative_marks",
+    evaluationModel: "relative",
+    relativeGrading: {
+      model: "statistical_relative_hybrid",
+      curveDescription: "Mean/Median distribution model"
+    },
+    gradeScale: [
+      { grade: "A", minMarks: 80, points: 10 }, // Relative model cannot define minMarks absolute boundaries
+      { grade: "F", minMarks: 0, points: 0, isPass: false }
+    ]
+  };
+  const relativeMarksRes = validatePreset(relativeMarksPreset);
+  assert(
+    "Validator rejects relative evaluation presets that expose absolute marks boundaries in scale",
+    !relativeMarksRes.success && relativeMarksRes.errors.some(e => e.includes("must NOT define absolute 'minMarks' bounds")),
+    `Got success=${relativeMarksRes.success}`
+  );
+
+  // Test Case H: Missing relativeGrading configuration when evaluationModel = relative
+  const missingRelativeGradingPreset = {
+    ...baseValidPreset,
+    id: "test_missing_rg",
+    evaluationModel: "relative",
+    // relativeGrading config missing
+  };
+  const missingRelativeRes = validatePreset(missingRelativeGradingPreset);
+  assert(
+    "Validator rejects relative evaluation presets that lack relativeGrading configuration",
+    !missingRelativeRes.success && missingRelativeRes.errors.some(e => e.includes("requires a complete 'relativeGrading' configuration")),
+    `Got success=${missingRelativeRes.success}`
+  );
+
+  // ─── 10. ACADEMIC INTELLIGENCE ENGINE & STATISTICAL TRANSFORMATIONS ───
+  section("Academic Intelligence Engine & Statistical Transformations");
+
+  // A. Box-Cox Normalization Engine (Deterministic Mock Cohort)
+  const skewedCohort = [45, 47, 48, 50, 52, 53, 55, 58, 60, 62, 65, 70, 72, 75, 78, 80, 82, 85, 88, 90, 92, 95];
+  const optimalLambda = findOptimalLambda(skewedCohort);
+  assert(
+    "Optimal lambda calculation is mathematically deterministic and resolves successfully",
+    typeof optimalLambda === "number" && !isNaN(optimalLambda)
+  );
+
+  const bcTrace = calculateBoxCoxBands(skewedCohort);
+  assert("Box-Cox trace contains output boundaries for O, A+, A, B+, B, C, F", bcTrace.boundaries.length === 7);
+  
+  const oGrade = bcTrace.boundaries.find(b => b.grade === "O");
+  const aPlusGrade = bcTrace.boundaries.find(b => b.grade === "A+");
+  assert(
+    "Box-Cox Grade O threshold is higher than Grade A+ threshold",
+    oGrade !== undefined && aPlusGrade !== undefined && oGrade.minMarks > aPlusGrade.minMarks,
+    `O: ${oGrade?.minMarks}, A+: ${aPlusGrade?.minMarks}`
+  );
+
+  // B. Mean & Standard Deviation Partitioning (VIT Vellore)
+  const cohortScores = [60, 65, 70, 72, 75, 78, 80, 82, 85, 88, 90, 92, 95];
+  const mean = calculateMean(cohortScores);
+  const stdDev = calculateStdDev(cohortScores, mean);
+  const sdTrace = calculateMeanStdDevBands(cohortScores, 90);
+  
+  assert("Mean matches expected mathematical value", Math.abs(mean - 79.38) < 0.01, `Calculated Mean: ${mean}`);
+  assert("Standard Deviation matches expected mathematical value", Math.abs(stdDev - 10.71) < 0.05, `Calculated StdDev: ${stdDev}`);
+  
+  const sSDBoundary = sdTrace.boundaries.find(b => b.grade === "S");
+  assert(
+    "Mean & SD grading scale respects absolute floor check of 90% for S grade",
+    sSDBoundary !== undefined && sSDBoundary.minMarks === 95.44,
+    `S MinMarks: ${sSDBoundary?.minMarks}`
+  );
+
+  // C. BITS Pilani Cluster Gap Histogram Engine
+  const bitsScores = [98, 96, 95, 88, 87, 85, 80, 78, 76, 68, 66, 64, 55, 52, 50, 42, 40];
+  const bitsBands = calculateClusterGapBands(bitsScores, 8);
+  assert("BITS Pilani cluster gap engine outputs exactly 8 bands", bitsBands.length === 8);
+  
+  const aGradeBits = bitsBands.find(b => b.grade === "A");
+  const eGradeBits = bitsBands.find(b => b.grade === "E");
+  assert(
+    "BITS Pilani Grade A minMarks is greater than Grade E minMarks",
+    aGradeBits !== undefined && eGradeBits !== undefined && aGradeBits.minMarks > eGradeBits.minMarks,
+    `A: ${aGradeBits?.minMarks}, E: ${eGradeBits?.minMarks}`
+  );
+
+  // ─── 11. ADVERSARIAL RULES & PROGRESSION LOGIC GATES ────────────────────────
+  section("Adversarial Rules & Progression Logic Gates");
+
+  // A. JNTUH CIE Safety Guard / Void Interceptor
+  const unsafeCIE = checkCIESafety(15, 40, 16);
+  assert("JNTUH CIE < 16/40 triggers void gate and returns unsafe", !unsafeCIE.isSafe);
+  assert("JNTUH CIE void gate contains strict warning details", unsafeCIE.warningMessage !== undefined && unsafeCIE.warningMessage.includes("CIE Void Gate triggered"));
+  
+  const safeCIE = checkCIESafety(22, 40, 16);
+  assert("JNTUH CIE >= 16/40 passes void guard successfully", safeCIE.isSafe && safeCIE.warningMessage === undefined);
+
+  // B. MIT-WPU Progression Solver (CGPA >= 5.0 OR earned credits >= 50%)
+  const doublePass = solveATKTProgression(5.2, 40, 24); // CGPA Pass (5.2 >= 5.0), Credits Pass (24/40 = 60% >= 50%)
+  assert("MIT-WPU Progression passes with status 'Pass' when both criteria are met", doublePass.status === "Pass" && doublePass.riskCategory === "Low");
+
+  const cgpaPassCreditsFail = solveATKTProgression(5.2, 40, 16); // CGPA Pass (5.2 >= 5.0), Credits Fail (16/40 = 40% < 50%)
+  assert("MIT-WPU Progression triggers 'ATKT' when CGPA passes but credits fail", cgpaPassCreditsFail.status === "ATKT" && cgpaPassCreditsFail.riskCategory === "Medium");
+
+  const cgpaFailCreditsPass = solveATKTProgression(4.5, 40, 24); // CGPA Fail (4.5 < 5.0), Credits Pass (24/40 = 60% >= 50%)
+  assert("MIT-WPU Progression triggers 'ATKT' when CGPA fails but credits pass", cgpaFailCreditsPass.status === "ATKT" && cgpaFailCreditsPass.riskCategory === "High");
+
+  const doubleFail = solveATKTProgression(4.5, 40, 16); // CGPA Fail (4.5 < 5.0), Credits Fail (16/40 = 40% < 50%)
+  assert("MIT-WPU Progression triggers 'Fail/Year-Down' when both criteria fail", doubleFail.status === "Fail/Year-Down" && doubleFail.riskCategory === "Critical");
+
+  // ─── 12. GLOBAL GPA TRANSLATION MAPPINGS ──────────────────────────────────
+  section("Global GPA Translation Mappings");
+
+  // A. WES US 4.0 GPA Converter (Percentage Marks -> US GPA)
+  const wesA = convertPercentageToWES(82);
+  assert("WES maps 82% to 4.0 GPA", Math.abs(wesA.gpa - 4.0) < 0.01 && wesA.letterGrade === "A" && wesA.descriptor === "Excellent");
+  assert("WES output includes estimated equivalency disclaimer", wesA.disclaimer.includes("ESTIMATED EQUIVALENCY ONLY"));
+
+  const wesB = convertPercentageToWES(68);
+  assert("WES maps 68% to 3.0 GPA", Math.abs(wesB.gpa - 3.0) < 0.01 && wesB.letterGrade === "B" && wesB.descriptor === "Very Good");
+
+  const wesPass = convertPercentageToWES(42);
+  assert("WES maps 42% to 1.0 GPA (Pass)", Math.abs(wesPass.gpa - 1.0) < 0.01 && wesPass.letterGrade === "D" && wesPass.descriptor === "Pass");
+
+  // B. ECTS Percentile Cohort Curve mappings
+  const mockCohort = [40, 50, 60, 70, 80, 90, 92, 94, 96, 98]; // size 10
+  // Index of 98 is 9, 9/10 = 90th percentile -> 100 - 90 = 10% standing. So top 10% -> ECTS A
+  const ectsTop = convertToECTS(98, mockCohort);
+  assert("ECTS maps student at 90th percentile to Grade A", ectsTop.ectsGrade === "A" && ectsTop.percentileRank === 90.0);
+  assert("ECTS output includes estimated relative disclaimer", ectsTop.disclaimer.includes("ESTIMATED EQUIVALENCY ONLY"));
+
+  const ectsMid = convertToECTS(70, mockCohort); // Index of 70 is 3, 3/10 = 30th percentile -> 70% standing. Between 65% and 90% is ECTS D
+  assert("ECTS maps student at 30th percentile to Grade D", ectsMid.ectsGrade === "D" && ectsMid.percentileRank === 30.0);
+
+  // ─── 13. PRESET REGISTRY INTEGRATION ──────────────────────────────────────
+  section("Preset Registry Regulation Integration");
+  if (sppuPreset) {
+    const sppuCgpa8 = cgpaToPercentage(8.0, sppuPreset);
+    assert("Preset engine correctly routes SPPU conversion through new academic intelligence mapper", Math.abs(sppuCgpa8 - 72.5) < 0.001);
+  } else {
+    assert("Preset engine correctly routes SPPU conversion through new academic intelligence mapper", false, "SPPU preset not found in registry");
+  }
 
   // ─── RESULTS SUMMARY ────────────────────────────────────────────────────────
   console.log(`\n----------------------------------------------------------------`);

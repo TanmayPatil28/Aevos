@@ -7,12 +7,13 @@ import {
   GradingScale,
   getScaleMode,
   PRESETS,
+  getAllPresets,
   getMaxGradePoint,
   getPassingGradePoint,
 } from "@/lib/presets";
 
 export type { UniversityPreset, GradingScale };
-export const UNI_PRESETS = PRESETS;
+export const UNI_PRESETS = getAllPresets();
 
 interface UniversityContextType {
   selectedUniId: string;
@@ -26,6 +27,11 @@ interface UniversityContextType {
   isRelativeGrading: boolean;    // true for relative/hybrid evaluation models
   maxGradePoint: number;         // e.g., 10 or 4
   passingGradePoint: number;     // lowest passing grade point in the scale
+
+  // Isolation telemetry & fallback state
+  isIsolatedFallback: boolean;
+  isolatedPresetId: string | null;
+  isolatedPresetName: string | null;
 }
 
 const UniversityContext = createContext<UniversityContextType | undefined>(undefined);
@@ -33,12 +39,34 @@ const UniversityContext = createContext<UniversityContextType | undefined>(undef
 export function UniversityProvider({ children }: { children: ReactNode }) {
   const [selectedUniId, setSelectedUniId] = useState<string>("jspm");
   const [mounted, setMounted] = useState(false);
+  const [isIsolatedFallback, setIsIsolatedFallback] = useState<boolean>(false);
+  const [isolatedPresetId, setIsolatedPresetId] = useState<string | null>(null);
+  const [isolatedPresetName, setIsolatedPresetName] = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("gradeflow_global_uni");
-      if (saved && UNI_PRESETS.find(u => u.id === saved)) {
-        setSelectedUniId(saved);
+      if (saved) {
+        const verifiedList = getAllPresets();
+        const isVerified = verifiedList.some(u => u.id === saved);
+        if (isVerified) {
+          setSelectedUniId(saved);
+          setIsIsolatedFallback(false);
+          setIsolatedPresetId(null);
+          setIsolatedPresetName(null);
+        } else {
+          // If it exists in raw PRESETS, but not in VERIFIED_PRESETS
+          const rawPreset = PRESETS.find(u => u.id === saved);
+          if (rawPreset) {
+            setIsIsolatedFallback(true);
+            setIsolatedPresetId(rawPreset.id);
+            setIsolatedPresetName(rawPreset.name);
+            setSelectedUniId("custom_10");
+            console.error(`[GradeFlow Trust Telemetry] Isolated preset loaded as fallback: ${rawPreset.id}`);
+          } else {
+            setSelectedUniId("jspm");
+          }
+        }
       }
     } catch (e) {
       console.error(e);
@@ -56,7 +84,29 @@ export function UniversityProvider({ children }: { children: ReactNode }) {
     }
   }, [selectedUniId, mounted]);
 
-  const activePreset = UNI_PRESETS.find((u) => u.id === selectedUniId) || UNI_PRESETS[0];
+  const activePreset = useMemo(() => {
+    return getAllPresets().find((u) => u.id === selectedUniId) || getAllPresets()[0];
+  }, [selectedUniId]);
+
+  const handleSelectUni = (id: string) => {
+    const verifiedList = getAllPresets();
+    const isVerified = verifiedList.some(u => u.id === id);
+    if (isVerified) {
+      setSelectedUniId(id);
+      setIsIsolatedFallback(false);
+      setIsolatedPresetId(null);
+      setIsolatedPresetName(null);
+    } else {
+      const rawPreset = PRESETS.find(u => u.id === id);
+      if (rawPreset) {
+        setIsIsolatedFallback(true);
+        setIsolatedPresetId(rawPreset.id);
+        setIsolatedPresetName(rawPreset.name);
+        setSelectedUniId("custom_10");
+        console.error(`[GradeFlow Trust Telemetry] Isolated preset loaded as fallback: ${rawPreset.id}`);
+      }
+    }
+  };
 
   // Derived values computed from activePreset — avoids manual branching in feature modules
   const derived = useMemo(() => ({
@@ -70,9 +120,12 @@ export function UniversityProvider({ children }: { children: ReactNode }) {
     <UniversityContext.Provider
       value={{
         selectedUniId,
-        setSelectedUniId,
+        setSelectedUniId: handleSelectUni,
         activePreset,
         scaleMode: getScaleMode(activePreset),
+        isIsolatedFallback,
+        isolatedPresetId,
+        isolatedPresetName,
         ...derived,
       }}
     >

@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { calculateRequiredGPA, getDifficultyLevel, sgpaToPercentage as calcSgpaToPercentage } from "@/lib/presets";
 import { useUniversity } from "@/components/providers/UniversityProvider";
 import PresetInfoCard from "@/components/PresetInfoCard";
+import CalculationBreakdown from "@/components/CalculationBreakdown";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
@@ -596,6 +597,25 @@ export default function PlannerPage() {
                     </tbody>
                   </table>
                 </MotionCard>
+              )}
+
+              {!result.isImpossible && (
+                <CalculationBreakdown
+                  preset={activePreset}
+                  semesters={[
+                    {
+                      semesterName: "Completed Semesters (Cumulative)",
+                      credits: parseFloat(totalCredits) || 0,
+                      sgpa: parseFloat(currentCGPA) || 0
+                    },
+                    ...Array.from({ length: result.remainingSems }).map((_, i) => ({
+                      semesterName: `Semester ${parseInt(completedSemesters || "0") + i + 1} (Planned)`,
+                      credits: result.creditsPerSem,
+                      sgpa: result.requiredGPA
+                    }))
+                  ]}
+                  type="cgpa"
+                />
               )}
 
               {/* ━━━ CGPA PROJECTION CHART ━━━ */}

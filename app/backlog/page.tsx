@@ -21,6 +21,7 @@ import PageContainer from "@/components/layout/PageContainer";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import PresetInfoCard from "@/components/PresetInfoCard";
+import CalculationBreakdown from "@/components/CalculationBreakdown";
 import { useUniversity } from "@/components/providers/UniversityProvider";
 
 const MotionCard = motion(Card);
@@ -49,7 +50,7 @@ interface BacklogResult {
 }
 
 export default function BacklogPage() {
-  const { maxGradePoint } = useUniversity();
+  const { maxGradePoint, activePreset } = useUniversity();
   const [currentCGPA, setCurrentCGPA] = useState("");
   const [completedCredits, setCompletedCredits] = useState("");
   const [semesterCredits, setSemesterCredits] = useState("20");
@@ -492,6 +493,25 @@ export default function BacklogPage() {
                   </div>
                 </div>
               </Card>
+
+              <CalculationBreakdown
+                preset={activePreset}
+                semesters={[
+                  { 
+                    semesterName: "Previous Semesters (Cumulative)", 
+                    credits: parseFloat(completedCredits) || 0, 
+                    sgpa: parseFloat(currentCGPA) || 0 
+                  },
+                  { 
+                    semesterName: "Current Semester (Impacted)", 
+                    credits: parseFloat(semesterCredits) || 0, 
+                    sgpa: parseFloat(semesterCredits) > 0 
+                      ? (((parseFloat(semesterCredits) - result.totalBacklogCredits) * (parseFloat(expectedGPA) || 0)) / parseFloat(semesterCredits)) 
+                      : 0 
+                  }
+                ]}
+                type="cgpa"
+              />
 
               <Card variant="warning" className="md:p-14 relative overflow-hidden">
                 <div className="relative z-10 space-y-12">
