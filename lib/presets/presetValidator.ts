@@ -95,8 +95,10 @@ export function validatePreset(preset: UniversityPreset): ValidationResult {
       }
     });
 
-    // Check descending consistency based on points
-    const sortedByPoints = [...scale].sort((a, b) => b.points - a.points);
+    // Check descending consistency based on points (excluding zero-point fail/audit entries)
+    const sortedByPoints = [...scale]
+      .filter(e => e.points > 0)
+      .sort((a, b) => b.points - a.points);
     
     // Validate marks alignment for absolute/hybrid presets
     if (preset.evaluationModel === "absolute" || preset.evaluationModel === "hybrid") {
@@ -160,6 +162,10 @@ export function validatePreset(preset: UniversityPreset): ValidationResult {
       if (isNaN(testVal) || testVal < 0 || testVal > 100) {
         errors.push(`${prefix} Dry-run of sgpaToPercentage at SGPA=${testValGp} yielded invalid value: ${testVal}%.`);
       }
+      const testMax = sgpaToPercentage(maxPt, preset);
+      if (testMax > 100) {
+        errors.push(`${prefix} Percentage Formula Overflow: sgpaToPercentage at max SGPA=${maxPt} yielded value ${testMax}% exceeding 100%.`);
+      }
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : String(e);
       errors.push(`${prefix} Dry-run of sgpaToPercentage at SGPA=${testValGp} crashed: ${errMsg}`);
@@ -173,6 +179,10 @@ export function validatePreset(preset: UniversityPreset): ValidationResult {
       const testVal = cgpaToPercentage(testValGp, preset);
       if (isNaN(testVal) || testVal < 0 || testVal > 100) {
         errors.push(`${prefix} Dry-run of cgpaToPercentage at CGPA=${testValGp} yielded invalid value: ${testVal}%.`);
+      }
+      const testMax = cgpaToPercentage(maxPt, preset);
+      if (testMax > 100) {
+        errors.push(`${prefix} Percentage Formula Overflow: cgpaToPercentage at max CGPA=${maxPt} yielded value ${testMax}% exceeding 100%.`);
       }
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : String(e);
@@ -203,8 +213,17 @@ export function validatePreset(preset: UniversityPreset): ValidationResult {
     if (r.minCgpa !== undefined && (r.minCgpa < 0 || r.minCgpa > 10)) {
       errors.push(`${prefix} passRules.minCgpa (${r.minCgpa}) must be between 0 and 10.`);
     }
-    if (r.minGradePoint !== undefined && (r.minGradePoint < 0 || r.minGradePoint > 10)) {
-      errors.push(`${prefix} passRules.minGradePoint (${r.minGradePoint}) must be between 0 and 10.`);
+    if (r.minGradePoint !== undefined) {
+      if (r.minGradePoint < 0 || r.minGradePoint > 10) {
+        errors.push(`${prefix} passRules.minGradePoint (${r.minGradePoint}) must be between 0 and 10.`);
+      }
+      if (scale && Array.isArray(scale) && scale.length > 0) {
+        const passingGrades = scale.filter(g => g.isPass !== false && g.points > 0);
+        const lowestPassingPoint = passingGrades.length > 0 ? Math.min(...passingGrades.map(g => g.points)) : undefined;
+        if (lowestPassingPoint !== undefined && r.minGradePoint !== lowestPassingPoint) {
+          errors.push(`${prefix} Pass rule mismatch: passRules.minGradePoint (${r.minGradePoint}) does not align with the lowest passing grade point in the grade scale (${lowestPassingPoint} pts).`);
+        }
+      }
     }
   }
 
@@ -246,12 +265,78 @@ export function validatePreset(preset: UniversityPreset): ValidationResult {
       }
     });
 
-    // Check sorted ascending/descending alignment to prevent threshold overlapping
+    const cgpas = dc.map(c => c.minCGPA);
+    const uniqueCgpas = new Set(cgpas);
+    if (uniqueCgpas.size !== cgpas.length) {
+      errors.push(`${prefix} degreeClassification has duplicate/overlapping minCGPA thresholds.`);
+    }
+
     for (let i = 0; i < dc.length - 1; i++) {
-      for (let j = i + 1; j < dc.length; j++) {
-        if (dc[i].minCGPA === dc[j].minCGPA) {
-          errors.push(`${prefix} degreeClassification has duplicate minCGPA thresholds for '${dc[i].label}' and '${dc[j].label}'.`);
-        }
+      if (dc[i].minCGPA >= dc[i + 1].minCGPA) {
+        errors.push(`${prefix} degreeClassification must be strictly ordered by minCGPA ascending (found '${dc[i].label}' at ${dc[i].minCGPA} >= '${dc[i+1].label}' at ${dc[i+1].minCGPA}).`);
+      }
+    }
+  }
+
+  // ─── 9. TRUST METADATA CHECKS ────────────────────────────────────────────────
+  if (!preset.trust) {
+    errors.push(`${prefix} Missing 'trust' metadata configuration.`);
+  } else {
+    const t = preset.trust;
+    if (!t.verificationLevel || !["official", "community", "experimental"].includes(t.verificationLevel)) {
+      errors.push(`${prefix} Invalid trust.verificationLevel: must be 'official', 'community', or 'experimental'.`);
+    }
+    if (t.confidenceScore === undefined || isNaN(t.confidenceScore) || t.confidenceScore < 0 || t.confidenceScore > 100) {
+      errors.push(`${prefix} Invalid trust.confidenceScore: must be a number between 0 and 100.`);
+    }
+    if (!t.lastVerifiedAt || !/^\d{4}-\d{2}-\d{2}$/.test(t.lastVerifiedAt)) {
+      errors.push(`${prefix} Invalid trust.lastVerifiedAt: must be in ISO date format (YYYY-MM-DD).`);
+    }
+    if (!t.verifiedSources || !Array.isArray(t.verifiedSources) || t.verifiedSources.length === 0) {
+      errors.push(`${prefix} trust.verifiedSources must be a non-empty array of strings.`);
+    }
+
+    if (t.verificationLevel === "official") {
+      if (t.confidenceScore < 90) {
+        errors.push(`${prefix} Trust conflict: official verification level requires confidenceScore >= 90 (found ${t.confidenceScore}%).`);
+      }
+      if (!t.verifiedSources || t.verifiedSources.length === 0) {
+        errors.push(`${prefix} Trust conflict: official verification level requires at least one verified source.`);
+      }
+    }
+    if (t.verificationLevel === "experimental") {
+      if (t.confidenceScore > 85) {
+        errors.push(`${prefix} Trust conflict: experimental verification level requires confidenceScore <= 85 (found ${t.confidenceScore}%).`);
+      }
+      if (preset.specialFeatures?.isVerified === true) {
+        errors.push(`${prefix} Trust conflict: experimental preset cannot set specialFeatures.isVerified to true.`);
+      }
+    }
+  }
+
+  // ─── 10. NEP ALIGNMENT CONSISTENCY ────────────────────────────────────────────
+  if (preset.nepAligned === true && preset.regulationYear !== undefined && preset.regulationYear >= 2020) {
+    if (!preset.totalProgramCredits || preset.totalProgramCredits <= 0) {
+      errors.push(`${prefix} NEP regulation consistency error: totalProgramCredits must be defined and positive.`);
+    }
+    const hasDefaultCredits = preset.defaultCreditsPerSem !== undefined || preset.specialFeatures?.defaultCreditsPerSem !== undefined;
+    if (!hasDefaultCredits) {
+      errors.push(`${prefix} NEP regulation consistency error: defaultCreditsPerSem or specialFeatures.defaultCreditsPerSem must be defined.`);
+    }
+    const metaStr = JSON.stringify(preset.metadata || {}).toLowerCase();
+    const hasNEPDescription = metaStr.includes("nep") || metaStr.includes("multidisciplinary") || metaStr.includes("flexible") || metaStr.includes("cbcs");
+    if (!hasNEPDescription) {
+      errors.push(`${prefix} NEP regulation consistency error: metadata must contain details indicating choice-based/NEP/multidisciplinary structures.`);
+    }
+    const hasZeroCreditParams = preset.specialFeatures?.hasZeroCreditBlockers !== undefined;
+    if (!hasZeroCreditParams) {
+      errors.push(`${prefix} NEP regulation consistency error: specialFeatures must specify zero-credit / audit-course blockers or exclusions.`);
+    }
+    if (scale && Array.isArray(scale)) {
+      const hasZeroPassing = scale.some(e => e.points === 0 && e.isPass === true);
+      const hasZeroFailing = scale.some(e => e.points === 0 && e.isPass === false);
+      if (!hasZeroPassing || !hasZeroFailing) {
+        errors.push(`${prefix} NEP regulation consistency error: gradeScale must explicitly define passing audit courses (points: 0, isPass: true) and failing courses (points: 0, isPass: false).`);
       }
     }
   }

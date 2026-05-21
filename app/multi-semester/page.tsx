@@ -9,6 +9,7 @@ import { useUniversity } from "@/components/providers/UniversityProvider";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
+import CalculationBreakdown from "@/components/CalculationBreakdown";
 
 interface SemesterData {
   id: string;
@@ -595,6 +596,16 @@ export default function MultiSemesterPage() {
                     </ResponsiveContainer>
                   </div>
                 </div>
+
+                <CalculationBreakdown
+                  preset={activePreset}
+                  semesters={semesters.map(s => ({
+                    semesterName: s.name || "Unnamed Semester",
+                    credits: parseFloat(s.credits) || 0,
+                    sgpa: parseFloat(whatIfMode ? (s.whatIfSgpa || s.sgpa) : s.sgpa) || 0
+                  }))}
+                  type="cgpa"
+                />
 
                 {/* Save Section */}
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="flex w-full">

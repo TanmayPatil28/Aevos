@@ -14,6 +14,7 @@ import { convertPercentageToGrade } from '@/lib/presets';
 import PageContainer from '@/components/layout/PageContainer';
 import Card from '@/components/ui/Card';
 import PresetInfoCard from '@/components/PresetInfoCard';
+import CalculationBreakdown from '@/components/CalculationBreakdown';
 
 function getGradeColorClass(points: number, isPass: boolean = true) {
   if (!isPass || points === 0) return "text-red-600";
@@ -411,6 +412,20 @@ export default function PredictorPage() {
                   <StatCard label="Total Scored" value={`${stats.totalScored.toFixed(1)}/${stats.totalMax}`} icon="functions" highlight />
                   <StatCard label="Running %" value={`${stats.percentage.toFixed(1)}%`} icon="percent" />
                   <StatCard label="Current Grade" value={stats.currentGrade.grade} icon="star" colorClass={getGradeColorClass(stats.currentGrade.points, stats.currentGrade.isPass)} />
+                </div>
+
+                <div className="mt-6">
+                  <CalculationBreakdown
+                    preset={activePreset}
+                    subjects={[
+                      {
+                        name: isLab ? "Lab Subject (Predicted)" : "Theory Subject (Predicted)",
+                        credits: isLab ? 2 : 4,
+                        grade: stats.currentGrade.grade
+                      }
+                    ]}
+                    type="sgpa"
+                  />
                 </div>
 
                 <div className="flex justify-end pt-4">

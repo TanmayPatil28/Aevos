@@ -87,6 +87,18 @@ export type InstitutionType =
   | "Institute of National Importance"
   | "Custom";
 
+// ─── Trust Configuration ───────────────────────────────────────────────────────
+
+export interface TrustConfig {
+  verificationLevel: "official" | "community" | "experimental";
+  confidenceScore: number;         // E.g., 98 for official, 70 for experimental
+  lastVerifiedAt: string;          // ISO Date, e.g., "2026-05-21"
+  verifiedSources: string[];       // ["Ordinance 15(4)", "UG Circular 43/2019"]
+  regulationBasis?: string;        // E.g., "Choice Based Credit System Curriculum"
+  circularRef?: string;            // E.g., "No. Exam/CoE/2019/84"
+  academicReasoning?: string;      // "Why is this percentage formula offset by 0.75?"
+}
+
 // ─── Core Preset Interface ─────────────────────────────────────────────────────
 
 export interface UniversityPreset {
@@ -101,6 +113,9 @@ export interface UniversityPreset {
   gradingSystem: string;     // "10-point CBCS", "Double-Letter 10-point", "4-point", etc.
   evaluationModel: "absolute" | "relative" | "hybrid";
   gradeScale: GradeScaleEntry[];
+
+  // Trust Layer
+  trust: TrustConfig;
 
   // Credit System
   creditType?: "credits" | "units";   // BITS uses "units"; everything else uses "credits"

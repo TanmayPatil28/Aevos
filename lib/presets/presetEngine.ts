@@ -11,6 +11,8 @@
  */
 
 import { UniversityPreset, GradeScaleEntry } from "./types/universityPreset";
+import { REGULATIONS_MAP } from "../academic-intelligence/index";
+
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SAFE FORMULA EVALUATION
@@ -266,6 +268,10 @@ export function calculateCGPA(
  * Converts SGPA to percentage using the preset-specific formula string.
  */
 export function sgpaToPercentage(sgpa: number, preset: UniversityPreset): number {
+  const reg = REGULATIONS_MAP.get(preset.id);
+  if (reg && reg.percentageFormula && reg.percentageFormula.sgpaToPercentage) {
+    return reg.percentageFormula.sgpaToPercentage(sgpa);
+  }
   return evaluateFormula(preset.sgpaToPercentage || "", sgpa);
 }
 
@@ -273,6 +279,10 @@ export function sgpaToPercentage(sgpa: number, preset: UniversityPreset): number
  * Converts CGPA to percentage using the preset-specific formula string.
  */
 export function cgpaToPercentage(cgpa: number, preset: UniversityPreset): number {
+  const reg = REGULATIONS_MAP.get(preset.id);
+  if (reg && reg.percentageFormula && reg.percentageFormula.cgpaToPercentage) {
+    return reg.percentageFormula.cgpaToPercentage(cgpa);
+  }
   return evaluateFormula(preset.cgpaToPercentage || "", cgpa);
 }
 
@@ -406,4 +416,214 @@ export function getDifficultyLevel(
       subLabel: "Well within your reach",
     };
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACADEMIC TRACING & ANOMALY DETECTION — Statutory Proof & Trust
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CourseTrace {
+  name: string;
+  credits: number;
+  grade: string;
+  points: number;
+  weightedPoints: number;
+}
+
+export interface SGPATrace {
+  formula: string;
+  courses: CourseTrace[];
+  totalCredits: number;
+  totalWeightedPoints: number;
+  sgpa: number;
+  percentageFormula: string;
+  percentage: number;
+  classification: string | null;
+}
+
+export interface SemesterTrace {
+  semesterName: string;
+  credits: number;
+  sgpa: number;
+  weightedPoints: number;
+}
+
+export interface CGPATrace {
+  formula: string;
+  semesters: SemesterTrace[];
+  totalCredits: number;
+  totalWeightedPoints: number;
+  cgpa: number;
+  percentageFormula: string;
+  percentage: number;
+  classification: string | null;
+}
+
+/**
+ * Generates a high-fidelity detailed mathematical trace of SGPA computation.
+ */
+export function explainSGPA(
+  subjects: { name: string; credits: number; grade: string }[],
+  preset: UniversityPreset
+): SGPATrace {
+  const courses: CourseTrace[] = subjects.map((sub) => {
+    const points = convertLetterGradeToGradePoint(sub.grade, preset);
+    const weightedPoints = Number(sub.credits) * points;
+    return {
+      name: sub.name || "Unnamed Course",
+      credits: sub.credits,
+      grade: sub.grade,
+      points,
+      weightedPoints,
+    };
+  });
+
+  const activeCourses = courses.filter((c) => c.credits > 0);
+  const totalCredits = activeCourses.reduce((sum, c) => sum + c.credits, 0);
+  const totalWeightedPoints = activeCourses.reduce((sum, c) => sum + c.weightedPoints, 0);
+  const sgpa = totalCredits > 0 ? totalWeightedPoints / totalCredits : 0;
+  
+  const percentageFormula = preset.sgpaToPercentage || "(SGPA - 0.75) * 10";
+  const percentage = sgpaToPercentage(sgpa, preset);
+  const classification = getDegreeClassification(sgpa, preset);
+
+  return {
+    formula: preset.sgpaFormula || "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+    courses,
+    totalCredits,
+    totalWeightedPoints,
+    sgpa,
+    percentageFormula,
+    percentage,
+    classification,
+  };
+}
+
+/**
+ * Generates a high-fidelity detailed mathematical trace of CGPA computation.
+ */
+export function explainCGPA(
+  semesters: { semesterName: string; credits: number; sgpa: number }[],
+  preset: UniversityPreset
+): CGPATrace {
+  const semTraces: SemesterTrace[] = semesters.map((sem) => {
+    const weightedPoints = Number(sem.credits) * Number(sem.sgpa);
+    return {
+      semesterName: sem.semesterName,
+      credits: sem.credits,
+      sgpa: sem.sgpa,
+      weightedPoints,
+    };
+  });
+
+  const activeSems = semTraces.filter((s) => s.credits > 0);
+  const totalCredits = activeSems.reduce((sum, s) => sum + s.credits, 0);
+  const totalWeightedPoints = activeSems.reduce((sum, s) => sum + s.weightedPoints, 0);
+  const cgpa = totalCredits > 0 ? totalWeightedPoints / totalCredits : 0;
+
+  const percentageFormula = preset.cgpaToPercentage || "(CGPA - 0.75) * 10";
+  const percentage = cgpaToPercentage(cgpa, preset);
+  const classification = getDegreeClassification(cgpa, preset);
+
+  return {
+    formula: preset.cgpaFormula || "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+    semesters: semTraces,
+    totalCredits,
+    totalWeightedPoints,
+    cgpa,
+    percentageFormula,
+    percentage,
+    classification,
+  };
+}
+
+/**
+ * Checks for calculation inconsistencies, impossible GPA pursuit, or out-of-bound ranges.
+ */
+export function detectCalculationAnomalies(
+  inputs: {
+    subjects?: { name: string; credits: number; grade: string }[];
+    semesters?: { semesterName: string; credits: number; sgpa: number }[];
+    targetCGPA?: number;
+    currentCGPA?: number;
+    completedCredits?: number;
+    remainingCredits?: number;
+  },
+  preset: UniversityPreset
+): string[] {
+  const warnings: string[] = [];
+  const maxGP = getMaxGradePoint(preset);
+  const passingGP = getPassingGradePoint(preset);
+
+  // 1. Target GPA / CGPA Check
+  if (inputs.targetCGPA !== undefined && inputs.targetCGPA > 0) {
+    if (inputs.targetCGPA > maxGP) {
+      warnings.push(`Target CGPA (${inputs.targetCGPA}) exceeds the maximum achievable grade point (${maxGP}) under the active ${preset.shortName} regulation.`);
+    } else if (inputs.targetCGPA < passingGP) {
+      warnings.push(`Target CGPA (${inputs.targetCGPA}) is below the minimum passing threshold (${passingGP}) under the active ${preset.shortName} regulation.`);
+    }
+  }
+
+  // 2. Completed / Current CGPA Check
+  if (inputs.currentCGPA !== undefined && inputs.currentCGPA > 0) {
+    if (inputs.currentCGPA > maxGP) {
+      warnings.push(`Current CGPA (${inputs.currentCGPA}) exceeds the maximum achievable grade point (${maxGP}) under the active ${preset.shortName} regulation.`);
+    }
+  }
+
+  // 3. Subject-level validation
+  if (inputs.subjects && inputs.subjects.length > 0) {
+    let hasFail = false;
+    let hasZeroCredits = false;
+    let hasHighCredits = false;
+    
+    inputs.subjects.forEach((sub) => {
+      const gp = convertLetterGradeToGradePoint(sub.grade, preset);
+      if (gp === 0 || !isPassingGrade(gp, preset)) {
+        hasFail = true;
+      }
+      if (sub.credits <= 0) {
+        hasZeroCredits = true;
+      }
+      if (sub.credits > 8) {
+        hasHighCredits = true;
+      }
+    });
+
+    if (hasFail && inputs.targetCGPA && inputs.targetCGPA >= passingGP) {
+      warnings.push(`The dataset contains failed courses, which might conflict with a passing target CGPA without clearing backlogs first.`);
+    }
+    if (hasZeroCredits) {
+      warnings.push(`Zero-credit courses are marked as Audit and will not contribute to the SGPA/CGPA weight calculation.`);
+    }
+    if (hasHighCredits) {
+      warnings.push(`Some courses have exceptionally high credits (> 8 credits), which will heavily skew the GPA calculation.`);
+    }
+  }
+
+  // 4. Pursuit Check (Required GPA in Remaining Semesters)
+  if (
+    inputs.targetCGPA !== undefined &&
+    inputs.currentCGPA !== undefined &&
+    inputs.completedCredits !== undefined &&
+    inputs.remainingCredits !== undefined &&
+    inputs.remainingCredits > 0
+  ) {
+    const reqGPA = calculateRequiredGPA(
+      inputs.targetCGPA,
+      inputs.currentCGPA,
+      inputs.completedCredits,
+      inputs.remainingCredits
+    );
+
+    if (reqGPA > maxGP) {
+      warnings.push(`Achieving target CGPA of ${inputs.targetCGPA} is mathematically IMPOSSIBLE because the required GPA in remaining semesters is ${reqGPA.toFixed(2)}, which exceeds the maximum grade point (${maxGP}).`);
+    } else if (reqGPA < 0) {
+      warnings.push(`Target CGPA is already exceeded by your current CGPA; you require 0 additional points to achieve your goal.`);
+    } else if (reqGPA > maxGP * 0.9) {
+      warnings.push(`Achieving target CGPA requires a near-perfect GPA of ${reqGPA.toFixed(2)} in remaining semesters under the active ${preset.shortName} regulation.`);
+    }
+  }
+
+  return warnings;
 }

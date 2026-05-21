@@ -20,6 +20,7 @@ import Grid from "@/components/layout/Grid";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import PresetInfoCard from "@/components/PresetInfoCard";
+import CalculationBreakdown from "@/components/CalculationBreakdown";
 
 interface Subject {
   id: string;
@@ -542,6 +543,24 @@ export default function CalculatorPage() {
                   </tbody>
                 </table>
               </Card>
+            </motion.div>
+
+            {/* Premium Trust Math Breakdown Component */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mb-8"
+            >
+              <CalculationBreakdown
+                preset={activePreset}
+                subjects={subjects.map(s => ({
+                  name: s.name || "Unnamed Course",
+                  credits: parseFloat(s.credits) || 0,
+                  grade: s.score
+                }))}
+                type="sgpa"
+              />
             </motion.div>
 
             {/* Save Section */}
