@@ -39,6 +39,8 @@ const { runStoreTests } = require("../tests/stores/usmStore.test");
 const { runStrategyTests } = require("../tests/strategy/strategy.test");
 const { runForecastTests } = require("../tests/forecasting/forecast.test");
 const { runIngestionTests } = require("../tests/ingestion/ingestion.test");
+const { runCareerTests } = require("../tests/career/placement.test");
+const { runAttendanceTests } = require("../tests/attendance/bunk.test");
 
 // CLI Colors
 const colors = {
@@ -53,7 +55,7 @@ const colors = {
 
 async function executeAllTests() {
   console.log(`\n${colors.bright}${colors.cyan}================================================================`);
-  console.log(`🚀 GradeFlow Phase-A MVP Master Unit Verification Suite`);
+  console.log(`🚀 GradeFlow Phase-B Master Unit Verification Suite`);
   console.log(`================================================================${colors.reset}`);
 
   let enginesSuccess = false;
@@ -61,6 +63,8 @@ async function executeAllTests() {
   let strategySuccess = false;
   let forecastSuccess = false;
   let ingestionSuccess = false;
+  let careerSuccess = false;
+  let attendanceSuccess = false;
 
   try {
     enginesSuccess = runEnginesTests();
@@ -94,6 +98,20 @@ async function executeAllTests() {
     ingestionSuccess = runIngestionTests();
   } catch (err: any) {
     console.error(`\n${colors.red}💥 CRITICAL ERROR executing JSON ingestion tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
+  try {
+    careerSuccess = runCareerTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing career placement tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
+  try {
+    attendanceSuccess = runAttendanceTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing attendance bunk tests:${colors.reset}`);
     console.error(err.stack || err);
   }
 
@@ -131,10 +149,22 @@ async function executeAllTests() {
     console.error(`  ${colors.red}✗ FAIL:${colors.reset} JSON Ingestion System`);
   }
 
+  if (careerSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} Career Placement Advisor Engine`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Career Placement Advisor Engine`);
+  }
+
+  if (attendanceSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} Attendance Bunk Simulator Engine`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Attendance Bunk Simulator Engine`);
+  }
+
   console.log(`----------------------------------------------------------------`);
 
-  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess) {
-    console.log(`\n🎉 ${colors.bright}${colors.green}ALL PHASE-A MVP UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
+  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && careerSuccess && attendanceSuccess) {
+    console.log(`\n🎉 ${colors.bright}${colors.green}ALL PHASE-B UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
     process.exit(0);
   } else {
     console.error(`\n🚨 ${colors.bright}${colors.red}SOME UNIT TESTS FAILED. PLEASE AUDIT RECENT MODIFICATIONS.${colors.reset}\n`);
@@ -145,3 +175,4 @@ async function executeAllTests() {
 executeAllTests();
 
 export {};
+

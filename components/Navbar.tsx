@@ -9,7 +9,7 @@ import {
   GraduationCap, Home, Calculator, CalendarDays,
   LayoutDashboard, Grip, ChevronDown, AlertTriangle,
   TrendingUp, Target, Moon, Sun, Menu, X, ArrowRight,
-  Compass, Flame
+  Compass, Flame, Briefcase, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useSession, signOut } from "next-auth/react";
@@ -58,6 +58,20 @@ const ADVANCED_TOOLS = [
     icon: Target,
     desc: "Predict end semester marks",
     color: "bg-[#10B981]/10 text-[#10B981]"
+  },
+  {
+    name: "Career Hub",
+    href: "/placement",
+    icon: Briefcase,
+    desc: "Recruiter eligibility & status",
+    color: "bg-indigo-500/10 text-indigo-400"
+  },
+  {
+    name: "Attendance OS",
+    href: "/attendance",
+    icon: Calendar,
+    desc: "Bunk simulator & compliance",
+    color: "bg-rose-500/10 text-rose-400"
   },
 ];
 

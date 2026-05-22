@@ -1040,6 +1040,154 @@ export default function DashboardClient({
               </div>
             </div>
 
+            {/* Intelligence Portals Widgets */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Placement Eligibility Widget */}
+              <Card className="border border-white/10 bg-slate-950/40 backdrop-blur-xl p-6 rounded-3xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700" />
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <Trophy className="text-indigo-400" size={22} />
+                    <div>
+                      <h3 className="text-lg font-black text-white">Placement Compliance</h3>
+                      <p className="text-xs text-slate-400">Recruiter gate benchmarks</p>
+                    </div>
+                  </div>
+                  <span className={cn(
+                    "text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border shadow-sm",
+                    placement.overallStatus === "ELIGIBLE"
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      : placement.overallStatus === "BORDERLINE"
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                      : "bg-red-500/10 border-red-500/30 text-red-400"
+                  )}>
+                    {placement.overallStatus}
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400 font-medium">Eligible Companies:</span>
+                    <span className="font-bold text-white font-mono">{placement.eligibleCount} / {placement.totalCount}</span>
+                  </div>
+                  
+                  <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        placement.overallStatus === "ELIGIBLE"
+                          ? "bg-emerald-500"
+                          : placement.overallStatus === "BORDERLINE"
+                          ? "bg-amber-500"
+                          : "bg-red-500"
+                      )}
+                      style={{ width: `${(placement.eligibleCount / placement.totalCount) * 100}%` }}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 mt-4">
+                    {placement.companies.map((company) => (
+                      <div 
+                        key={company.name} 
+                        className={cn(
+                          "p-2 rounded-xl border text-center transition-all duration-300",
+                          company.eligible === "ELIGIBLE"
+                            ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-300"
+                            : company.eligible === "BORDERLINE"
+                            ? "bg-amber-500/5 border-amber-500/10 text-amber-300"
+                            : "bg-red-500/5 border-red-500/10 text-red-300"
+                        )}
+                      >
+                        <p className="text-[10px] font-black tracking-tight truncate">{company.name}</p>
+                        <span className="text-[8px] font-bold block opacity-75 mt-0.5">{company.eligible}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <Link href="/placement" className="text-xs font-black uppercase tracking-wider text-indigo-400 hover:text-indigo-300 flex items-center gap-1 group-hover:underline">
+                      Explore Career Hub
+                      <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Attendance Tracker Widget */}
+              <Card className="border border-white/10 bg-slate-950/40 backdrop-blur-xl p-6 rounded-3xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700" />
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="text-rose-400" size={22} />
+                    <div>
+                      <h3 className="text-lg font-black text-white">Attendance OS</h3>
+                      <p className="text-xs text-slate-400">Class compliance tracking</p>
+                    </div>
+                  </div>
+                  <span className={cn(
+                    "text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border shadow-sm",
+                    attendance.overallRisk === "LOW"
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      : attendance.overallRisk === "MEDIUM"
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                      : "bg-red-500/10 border-red-500/30 text-red-400"
+                  )}>
+                    {attendance.overallRisk} RISK
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400 font-medium">Aggregate Attendance:</span>
+                    <span className={cn(
+                      "font-bold font-mono text-sm",
+                      attendance.overallRisk === "HIGH" ? "text-red-400" : attendance.overallRisk === "MEDIUM" ? "text-amber-400" : "text-emerald-400"
+                    )}>{attendance.aggregatePercentage}%</span>
+                  </div>
+                  
+                  <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        attendance.overallRisk === "LOW" ? "bg-emerald-500" : attendance.overallRisk === "MEDIUM" ? "bg-amber-500" : "bg-red-500"
+                      )}
+                      style={{ width: `${attendance.aggregatePercentage}%` }}
+                    />
+                  </div>
+
+                  <div className="space-y-2 mt-4 max-h-[110px] overflow-y-auto pr-1 custom-scrollbar">
+                    {attendance.courses.map((course) => (
+                      <div key={course.courseId} className="flex items-center justify-between text-xs bg-white/[0.01] border border-white/5 p-2 rounded-xl">
+                        <div className="truncate max-w-[140px] font-semibold text-slate-300">
+                          {course.courseName}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "font-mono font-bold",
+                            course.detentionRisk === "HIGH" ? "text-red-400" : course.detentionRisk === "MEDIUM" ? "text-amber-400" : "text-emerald-400"
+                          )}>
+                            {course.percentage}%
+                          </span>
+                          <span className="text-[9px] text-slate-500 uppercase font-black">
+                            {course.safeBunks > 0 ? `Safe: ${course.safeBunks}` : `Recover: ${course.recoveryRequired}`}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <Link href="/attendance" className="text-xs font-black uppercase tracking-wider text-rose-400 hover:text-rose-300 flex items-center gap-1 group-hover:underline">
+                      Configure Bunks
+                      <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
             {/* Trajectory Telemetry Widget */}
             {hasHistory ? (
               <Card className="border border-white/10 bg-slate-950/40 backdrop-blur-xl p-6 rounded-3xl relative overflow-hidden group">
