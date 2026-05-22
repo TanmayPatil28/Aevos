@@ -1,5 +1,6 @@
 import { TraceMetadata } from "../../stores/selectors";
 import { getPresetById } from "../presets/presetRegistry";
+import { pluggableRegulationEngine } from "../academic-intelligence/regulations/regulationEngine";
 
 export interface ProgressionSolverInput {
   currentCgpa: number;
@@ -167,23 +168,10 @@ export const progressionSolver = {
     });
 
     // 8. Traceability metadata
-    let sourceClause = "Section 5.3 choice based evaluation progression";
-    let sourceCircular = "Institutional grading ordinances";
-    let sourceRegulationId = `${presetId.toUpperCase()}-SIM-ORDINANCE`;
-
-    if (presetId === "vtu") {
-      sourceClause = "VTU CBCS Ordinance Clause 8.2 SGPA/CGPA Calculation";
-      sourceCircular = "VTU Executive Committee Resolution 2021";
-      sourceRegulationId = "VTU-CBCS-2021";
-    } else if (presetId === "sppu") {
-      sourceClause = "SPPU Credit System Handbook Clause 6.1";
-      sourceCircular = "SPPU Examination Circular R-114";
-      sourceRegulationId = "SPPU-REG-2019";
-    } else if (presetId === "mu") {
-      sourceClause = "MU CBCS Scheme Manual Section 4.5";
-      sourceCircular = "MU Executive Circular UG/12 of 2020";
-      sourceRegulationId = "MU-CBCS-2020";
-    }
+    const resolvedTrace = pluggableRegulationEngine.resolveProgressionTrace(presetId);
+    const sourceClause = resolvedTrace.sourceClause;
+    const sourceCircular = resolvedTrace.sourceCircular;
+    const sourceRegulationId = resolvedTrace.sourceRegulationId;
 
     const solverWarnings: string[] = [];
     if (requiredSgpaToMeetTarget > 10.0) {

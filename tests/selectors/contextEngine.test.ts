@@ -30,7 +30,6 @@ function buildStateFromPersona(personaId: string): USMStoreState {
       simulatedCourses: {},
       simulatedAttendance: {},
     },
-    risk: persona.risk,
     career: persona.career,
     sync: { pendingSyncActions: [] },
     // Stub actions (not used by selectors)
@@ -46,7 +45,6 @@ function buildStateFromPersona(personaId: string): USMStoreState {
     loadSimulationSnapshot: () => {},
     deleteSimulationSnapshot: () => {},
     resetSimulation: () => {},
-    setRisk: () => {},
     setSemesterHistory: () => {},
     addSemesterEntry: () => {},
     setCareer: () => {},

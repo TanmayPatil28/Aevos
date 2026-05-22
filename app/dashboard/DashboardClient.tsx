@@ -28,6 +28,7 @@ import {
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { getPresetById } from "@/lib/presets/presetRegistry";
+import { pluggableRegulationEngine } from "@/lib/academic-intelligence/regulations/regulationEngine";
 import { cn } from "@/lib/cn";
 import { demoPersonas } from "@/lib/demo/demo-personas";
 
@@ -76,6 +77,7 @@ import {
   selectAcademicHealth,
   selectVolatility,
   selectTrajectorySlope,
+  selectRecommendations,
   TraceMetadata
 } from "@/stores/selectors";
 import { scenarioFactory } from "@/lib/forecasting/scenarioFactory";
@@ -149,6 +151,7 @@ export default function DashboardClient({
 
   // Snapshot name state
   const [snapshotName, setSnapshotName] = useState("");
+  const [advisoryTab, setAdvisoryTab] = useState<"ALL" | "CRITICAL" | "WARNING" | "INFO">("ALL");
 
   // Selectors mapping
   const activeCourses = selectActiveCourses(store);
@@ -158,6 +161,7 @@ export default function DashboardClient({
   const recovery = selectRecoveryDifficulty(store);
   const semesterCredits = selectSemesterCredits(store);
   const healthScore = selectAcademicHealth(store);
+  const recommendations = selectRecommendations(store);
 
   // Derived forecasting metrics
   const volatility = selectVolatility(store);
@@ -265,7 +269,6 @@ export default function DashboardClient({
       store.setPresetId(arjun.presetId);
       store.setAcademic(arjun.academic);
       store.setCareer(arjun.career);
-      store.setRisk(arjun.risk);
     }
   }, [initialEnrollments, store]);
 
@@ -282,7 +285,6 @@ export default function DashboardClient({
     store.setAcademic(persona.academic);
     store.setCourses(persona.courses);
     store.setCareer(persona.career);
-    store.setRisk(persona.risk);
 
     toast.success(`Loaded demo persona: ${persona.name} (${persona.role})`);
   }, [store]);
@@ -357,12 +359,12 @@ export default function DashboardClient({
       { name: "Derived CGPA", value: gpa.cgpa, description: "Cumulative derived CGPA under simulated weights" },
     ]);
     
-    const uniLabel = store.presetId.toUpperCase();
+    const resolvedTrace = pluggableRegulationEngine.resolveProgressionTrace(store.presetId);
     setDrawerTrace({
-      formulaApplied: `Weighted Cumulative GPA Solver & target back-solver (${uniLabel})`,
-      sourceRegulationId: `${uniLabel}-CBCS-2019`,
-      sourceClause: "Clause 4.1.2 Piecewise Mapping & GPA Progression Rules",
-      sourceCircular: store.presetId === "mu" ? "No. UG/144 of 2019-20" : store.presetId === "vtu" ? "No. VTU/Aca/2018-19" : "CB/Science/2019-114",
+      formulaApplied: `Weighted Cumulative GPA Solver & target back-solver (${store.presetId.toUpperCase()})`,
+      sourceRegulationId: resolvedTrace.sourceRegulationId,
+      sourceClause: resolvedTrace.sourceClause,
+      sourceCircular: resolvedTrace.sourceCircular,
       lastVerifiedAt: new Date().toISOString(),
       confidenceScore: 100,
     });
@@ -407,16 +409,17 @@ export default function DashboardClient({
       { name: "Min Ordinance Limit", value: "75%", description: "Standard university minimum attendance requirement" },
       { name: "Overall Risk Level", value: attendance.overallRisk, description: "Attendance risk rating based on safety thresholds" },
     ]);
+    const resolvedTrace = pluggableRegulationEngine.resolveAttendanceTrace(store.presetId);
     setDrawerTrace({
       formulaApplied: "Attendance Safety Bunk & Recovery Stat Equations",
-      sourceRegulationId: "UGC-ATT-2023",
-      sourceClause: "Ordinance 12(A) minimum attendance standards",
-      sourceCircular: "UGC Circular No. F-1-1/2023(CPP-II)",
+      sourceRegulationId: resolvedTrace.sourceRegulationId,
+      sourceClause: resolvedTrace.sourceClause,
+      sourceCircular: resolvedTrace.sourceCircular,
       lastVerifiedAt: new Date().toISOString(),
       confidenceScore: 100,
     });
     setDrawerOpen(true);
-  }, [attendance.aggregatePercentage, attendance.overallRisk]);
+  }, [attendance.aggregatePercentage, attendance.overallRisk, store.presetId]);
 
   // ─── Calculations processing ───────────────────────────────────────────────
   const mockCalculationsList = useMemo(() => {
@@ -1039,6 +1042,188 @@ export default function DashboardClient({
                 })}
               </div>
             </div>
+
+        {/* Academic Intelligence Advisory Desk */}
+        <div className="space-y-6 mt-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Sparkles className="text-purple-400 animate-pulse" size={24} />
+                <h3 className="text-2xl font-black font-headline tracking-tighter text-white">
+                  Academic Intelligence Advisory Desk
+                </h3>
+              </div>
+              <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
+                Centralized analytical and regulatory compliance advisories synthesized from active GPA forecasting, bunk planners, and company placement requirements.
+              </p>
+            </div>
+            
+            {/* Severity Filter Tabs */}
+            <div className="flex flex-wrap gap-1.5 bg-slate-950/60 p-1 rounded-2xl border border-white/5 shrink-0">
+              {(["ALL", "CRITICAL", "WARNING", "INFO"] as const).map((tab) => {
+                const count = tab === "ALL"
+                  ? recommendations.length
+                  : recommendations.filter(r => r.priority === tab).length;
+                
+                const active = advisoryTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setAdvisoryTab(tab)}
+                    className={cn(
+                      "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2",
+                      active
+                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/10 scale-105"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    {tab === "ALL" ? "All" : tab === "WARNING" ? "Warnings" : tab.toLowerCase()}
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full font-mono text-[10px] font-bold transition-all",
+                      active
+                        ? "bg-white/20 text-white"
+                        : tab === "CRITICAL" && count > 0
+                        ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                        : tab === "WARNING" && count > 0
+                        ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        : "bg-white/5 text-slate-500"
+                    )}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recommendations list */}
+          {(() => {
+            const filtered = recommendations.filter(r => advisoryTab === "ALL" || r.priority === advisoryTab);
+            
+            if (filtered.length === 0) {
+              return (
+                <Card className="border border-emerald-500/10 bg-emerald-500/[0.01] backdrop-blur-xl p-8 rounded-3xl text-center flex flex-col items-center justify-center space-y-4">
+                  <div className="p-4 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/5">
+                    <ShieldCheck size={36} />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-lg font-black text-white uppercase tracking-wider">
+                      Academic Standing Secure
+                    </h4>
+                    <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                      Zero {advisoryTab !== "ALL" ? `${advisoryTab.toLowerCase()} ` : ""}advisory alerts detected for your active profile. All attendance margins, progression criteria, and placement gates are operating under secure thresholds.
+                    </p>
+                  </div>
+                </Card>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 gap-6">
+                {filtered.map((rec) => {
+                  const isCritical = rec.priority === "CRITICAL";
+                  const isWarning = rec.priority === "WARNING";
+
+                  const borderStyle = isCritical
+                    ? "border-l-4 border-red-500 bg-red-950/10 hover:bg-red-950/20 border-t border-r border-b border-white/5"
+                    : isWarning
+                    ? "border-l-4 border-amber-500 bg-amber-950/10 hover:bg-amber-950/20 border-t border-r border-b border-white/5"
+                    : "border-l-4 border-indigo-500 bg-indigo-950/10 hover:bg-indigo-950/20 border-t border-r border-b border-white/5";
+
+                  const iconColor = isCritical
+                    ? "text-red-400 bg-red-500/10 border border-red-500/20"
+                    : isWarning
+                    ? "text-amber-400 bg-amber-500/10 border border-amber-500/20"
+                    : "text-indigo-400 bg-indigo-500/10 border border-indigo-500/20";
+
+                  const Icon = isCritical
+                    ? AlertTriangle
+                    : isWarning
+                    ? Flag
+                    : Info;
+
+                  return (
+                    <Card
+                      key={rec.id}
+                      className={cn(
+                        "relative overflow-hidden p-6 rounded-3xl transition-all duration-300 group shadow-xl backdrop-blur-md",
+                        borderStyle
+                      )}
+                    >
+                      {/* Radial Glow */}
+                      <div className={cn(
+                        "absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-700 opacity-20",
+                        isCritical ? "bg-red-500" : isWarning ? "bg-amber-500" : "bg-indigo-500"
+                      )} />
+
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
+                        <div className="flex items-start gap-4">
+                          <div className={cn("p-3 rounded-2xl shrink-0 shadow-md", iconColor)}>
+                            <Icon size={20} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className={cn(
+                                "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border shadow-sm",
+                                isCritical
+                                  ? "bg-red-500/15 border-red-500/30 text-red-400"
+                                  : isWarning
+                                  ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                                  : "bg-indigo-500/15 border-indigo-500/30 text-indigo-400"
+                              )}>
+                                {rec.priority}
+                              </span>
+                              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border border-white/10 bg-white/5 text-slate-300 shadow-sm">
+                                Confidence: {rec.confidence}%
+                              </span>
+                              <span className="text-[9px] font-black font-mono uppercase tracking-widest text-slate-500">
+                                Dedupe: {rec.dedupeKey}
+                              </span>
+                            </div>
+                            <h4 className="text-lg font-black text-white leading-tight group-hover:text-purple-300 transition-colors">
+                              {rec.title}
+                            </h4>
+                            <p className="text-sm text-slate-300 font-medium leading-relaxed max-w-4xl">
+                              {rec.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        {rec.actionableStep && (
+                          <Link
+                            href={rec.actionableStep.path}
+                            className="sm:self-center flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white hover:bg-white/10 text-xs font-black uppercase tracking-wider transition shrink-0 shadow-md hover:scale-105"
+                          >
+                            {rec.actionableStep.label}
+                            <ArrowUpRight size={14} />
+                          </Link>
+                        )}
+                      </div>
+
+                      {/* Explainability Trace Evidence section */}
+                      {rec.evidence && rec.evidence.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-white/5 relative z-10">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <Sparkles size={11} className="text-purple-400 animate-pulse" />
+                            Trace Explainability Evidence
+                          </span>
+                          <ul className="mt-2 space-y-1.5">
+                            {rec.evidence.map((line, idx) => (
+                              <li key={idx} className="text-xs text-slate-400 flex items-start gap-2">
+                                <span className="mt-1.5 w-1 h-1 rounded-full bg-purple-500 shrink-0" />
+                                <span className="leading-relaxed font-medium">{line}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
 
             {/* Intelligence Portals Widgets */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

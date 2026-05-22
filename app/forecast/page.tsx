@@ -112,7 +112,6 @@ export default function ForecastPage() {
     store.setCourses(persona.courses);
     store.setSemesterHistory(persona.semesterHistory);
     store.setCareer(persona.career);
-    store.setRisk(persona.risk);
     
     toast.success(`Loaded demo persona: ${persona.name} (${persona.role})`);
   };
