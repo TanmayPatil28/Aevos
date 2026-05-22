@@ -64,6 +64,13 @@ export interface CareerState {
   ectsStandingBand: string;
 }
 
+export interface SemesterHistoryEntry {
+  semester: number;
+  sgpa: number;
+  credits: number;
+  earnedCredits: number;
+}
+
 export interface USMStoreState {
   // Identity & Preset
   presetId: string; // e.g. "sppu", "vtu", "jntuh"
@@ -71,6 +78,7 @@ export interface USMStoreState {
   // Core Slices
   academic: AcademicState;
   courses: CourseState[];
+  semesterHistory: SemesterHistoryEntry[];
   simulation: SimulationState;
   risk: RiskState;
   career: CareerState;
@@ -94,6 +102,10 @@ export interface USMStoreState {
 
   // Risk Actions
   setRisk: (risk: Partial<RiskState>) => void;
+
+  // Semester History Actions
+  setSemesterHistory: (history: SemesterHistoryEntry[]) => void;
+  addSemesterEntry: (entry: SemesterHistoryEntry) => void;
 
   // Career Actions
   setCareer: (career: Partial<CareerState>) => void;
@@ -148,6 +160,7 @@ export const useUSMStore = create<USMStoreState>()(
       presetId: "sppu",
       academic: initialAcademic,
       courses: [],
+      semesterHistory: [],
       simulation: initialSimulation,
       risk: initialRisk,
       career: initialCareer,
@@ -294,6 +307,16 @@ export const useUSMStore = create<USMStoreState>()(
         }));
       },
 
+      setSemesterHistory: (history) => {
+        set({ semesterHistory: history });
+      },
+
+      addSemesterEntry: (entry) => {
+        set((state) => ({
+          semesterHistory: [...state.semesterHistory, entry],
+        }));
+      },
+
       setCareer: (careerUpdates) => {
         set((state) => ({
           career: { ...state.career, ...careerUpdates },
@@ -323,6 +346,7 @@ export const useUSMStore = create<USMStoreState>()(
           presetId: "sppu",
           academic: initialAcademic,
           courses: [],
+          semesterHistory: [],
           simulation: initialSimulation,
           risk: initialRisk,
           career: initialCareer,
@@ -333,17 +357,25 @@ export const useUSMStore = create<USMStoreState>()(
     {
       name: "gradeflow-usm-storage",
       storage: createJSONStorage(() => typeof window !== "undefined" ? localStorage : undefined as any),
-      version: 1,
+      version: 2,
       migrate: (persistedState: any, version: number) => {
         if (version < 1) {
           return {
             presetId: "sppu",
             academic: initialAcademic,
             courses: [],
+            semesterHistory: [],
             simulation: initialSimulation,
             risk: initialRisk,
             career: initialCareer,
             sync: initialSync,
+          };
+        }
+        if (version < 2) {
+          // v1 → v2: add semesterHistory slice
+          return {
+            ...persistedState,
+            semesterHistory: [],
           };
         }
         return persistedState;
@@ -364,10 +396,15 @@ export const useUSMStore = create<USMStoreState>()(
             hydratedState.presetId = "sppu";
             hydratedState.academic = { ...initialAcademic };
             hydratedState.courses = [];
+            hydratedState.semesterHistory = [];
             hydratedState.simulation = { ...initialSimulation };
             hydratedState.risk = { ...initialRisk };
             hydratedState.career = { ...initialCareer };
             hydratedState.sync = { ...initialSync };
+          }
+          // Ensure semesterHistory exists for v1 hydrations
+          if (!Array.isArray(hydratedState.semesterHistory)) {
+            hydratedState.semesterHistory = [];
           }
         };
       },

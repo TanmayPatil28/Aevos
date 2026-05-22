@@ -1,0 +1,68 @@
+{
+  "presetId": "sppu",
+  "currentCgpa": 8.15,
+  "targetCgpa": 8.50,
+  "activeBacklogsCount": 0,
+  "semesterHistory": [
+    {
+      "semester": 1,
+      "sgpa": 7.80,
+      "credits": 20,
+      "earnedCredits": 20,
+      "courses": [
+        { "code": "CS-101", "name": "Introduction to Programming", "credits": 4, "grade": "A" },
+        { "code": "MA-101", "name": "Linear Algebra", "credits": 4, "grade": "B+" },
+        { "code": "PH-101", "name": "Engineering Physics", "credits": 4, "grade": "A" },
+        { "code": "EE-101", "name": "Basic Electrical Engineering", "credits": 4, "grade": "B" },
+        { "code": "ME-101", "name": "Engineering Graphics", "credits": 4, "grade": "A+" }
+      ]
+    },
+    {
+      "semester": 2,
+      "sgpa": 8.50,
+      "credits": 20,
+      "earnedCredits": 20,
+      "courses": [
+        { "code": "CS-102", "name": "Object-Oriented Programming", "credits": 4, "grade": "O" },
+        { "code": "MA-102", "name": "Calculus & ODEs", "credits": 4, "grade": "A" },
+        { "code": "CH-101", "name": "Engineering Chemistry", "credits": 4, "grade": "A+" },
+        { "code": "EC-101", "name": "Basic Electronics", "credits": 4, "grade": "B+" },
+        { "code": "HU-101", "name": "Communication Skills", "credits": 4, "grade": "A" }
+      ]
+    }
+  ],
+  "currentSemesterCourses": [
+    {
+      "code": "CS-201",
+      "name": "Data Structures & Algorithms",
+      "credits": 4,
+      "cieMarks": 45,
+      "attendanceTotal": 40,
+      "attendanceBunked": 2
+    },
+    {
+      "code": "CS-202",
+      "name": "Discrete Mathematics",
+      "credits": 4,
+      "cieMarks": 42,
+      "attendanceTotal": 40,
+      "attendanceBunked": 4
+    },
+    {
+      "code": "CS-203",
+      "name": "Digital Electronics",
+      "credits": 3,
+      "cieMarks": 38,
+      "attendanceTotal": 30,
+      "attendanceBunked": 1
+    },
+    {
+      "code": "CS-204",
+      "name": "Database Management Systems",
+      "credits": 4,
+      "cieMarks": 40,
+      "attendanceTotal": 40,
+      "attendanceBunked": 3
+    }
+  ]
+}

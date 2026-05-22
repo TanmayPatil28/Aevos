@@ -21,7 +21,9 @@ import {
   Layers,
   ArrowUpRight,
   Upload,
-  LucideIcon
+  LucideIcon,
+  Info,
+  TrendingDown
 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -57,6 +59,11 @@ const SemesterComparison = dynamic(() => import("@/components/dashboard/Semester
   loading: () => <Skeleton variant="card" className="h-[28rem]" />,
 });
 
+const TrajectoryChart = dynamic(() => import("@/components/forecast/TrajectoryChart"), {
+  ssr: false,
+  loading: () => <Skeleton variant="card" className="h-[320px]" />,
+});
+
 // Zustand Store & Selectors
 import { useUSMStore } from "@/stores/usmStore";
 import {
@@ -67,8 +74,12 @@ import {
   selectRecoveryDifficulty,
   selectSemesterCredits,
   selectAcademicHealth,
+  selectVolatility,
+  selectTrajectorySlope,
   TraceMetadata
 } from "@/stores/selectors";
+import { scenarioFactory } from "@/lib/forecasting/scenarioFactory";
+import { strategyAllocator } from "@/lib/strategy/strategyAllocator";
 import type { Calculation } from "@/types/calculation";
 
 interface Plan {
@@ -147,6 +158,79 @@ export default function DashboardClient({
   const recovery = selectRecoveryDifficulty(store);
   const semesterCredits = selectSemesterCredits(store);
   const healthScore = selectAcademicHealth(store);
+
+  // Derived forecasting metrics
+  const volatility = selectVolatility(store);
+  const slope = selectTrajectorySlope(store);
+  const hasHistory = store.semesterHistory && store.semesterHistory.length > 0;
+
+  // Generate forecast scenarios and projections
+  const forecastData = useMemo(() => {
+    if (!mounted) return null;
+
+    const preset = getPresetById(store.presetId);
+    const totalProgramSemesters = 8;
+    const creditsPerSemester = preset?.defaultCreditsPerSem || 20;
+
+    let latestSgpa = store.academic.currentCgpa;
+    if (store.semesterHistory && store.semesterHistory.length > 0) {
+      const sortedHistory = [...store.semesterHistory].sort((a, b) => b.semester - a.semester);
+      latestSgpa = sortedHistory[0].sgpa;
+    } else if (gpa.sgpa > 0) {
+      latestSgpa = gpa.sgpa;
+    }
+
+    const input = {
+      currentCgpa: store.academic.currentCgpa,
+      completedSemesters: store.academic.completedSemesters,
+      earnedCredits: store.academic.earnedCredits,
+      targetCgpa: store.academic.targetCgpa,
+      totalProgramSemesters,
+      creditsPerSemester,
+      currentSgpa: latestSgpa,
+      volatility
+    };
+
+    try {
+      const scenarios = scenarioFactory.generateAll(input, store.presetId);
+      return { scenarios, input };
+    } catch (err) {
+      console.error("Failed to generate forecast trajectories in dashboard:", err);
+      return null;
+    }
+  }, [mounted, store.presetId, store.academic.currentCgpa, store.academic.completedSemesters, store.academic.earnedCredits, store.academic.targetCgpa, store.semesterHistory, volatility, gpa.sgpa]);
+
+  // Generate strategies
+  const strategies = useMemo(() => {
+    if (!mounted || store.courses.length === 0) return null;
+
+    const engineInput = {
+      currentCgpa: store.academic.currentCgpa,
+      earnedCredits: store.academic.earnedCredits,
+      targetCgpa: store.academic.targetCgpa,
+      presetId: store.presetId,
+      courses: store.courses.map(c => ({
+        id: c.id,
+        code: c.code,
+        name: c.name,
+        credits: c.credits,
+        grade: c.grade,
+        cieMarks: c.cieMarks || 0,
+        attendanceTotal: c.attendanceTotal || 0,
+        attendanceBunked: c.attendanceBunked || 0,
+      }))
+    };
+
+    try {
+      const safe = strategyAllocator.generate(engineInput, 'SAFE');
+      const balanced = strategyAllocator.generate(engineInput, 'BALANCED');
+      const aggressive = strategyAllocator.generate(engineInput, 'AGGRESSIVE');
+      return { safe, balanced, aggressive };
+    } catch (err) {
+      console.error("Failed to generate strategies in dashboard:", err);
+      return null;
+    }
+  }, [mounted, store.presetId, store.academic.currentCgpa, store.academic.earnedCredits, store.academic.targetCgpa, store.courses]);
 
   // ─── Direct Store Hydration ──────────────────────────────────────────────────
   useEffect(() => {
@@ -956,6 +1040,73 @@ export default function DashboardClient({
               </div>
             </div>
 
+            {/* Trajectory Telemetry Widget */}
+            {hasHistory ? (
+              <Card className="border border-white/10 bg-slate-950/40 backdrop-blur-xl p-6 rounded-3xl relative overflow-hidden group">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <TrendingDown className={cn("text-indigo-400", slope >= 0 && "rotate-180 text-emerald-400")} size={22} />
+                    <div>
+                      <h3 className="text-xl font-black text-white">CGPA Trajectory Forecast</h3>
+                      <p className="text-xs text-slate-400">Future graduation projections and historical volatility analysis</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/5 text-indigo-300 flex items-center gap-1.5" title="Historic Volatility (Standard Deviation of SGPA)">
+                      <Info size={12} className="text-indigo-400 shrink-0" />
+                      Volatility: {volatility.toFixed(2)} σ
+                    </span>
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border flex items-center gap-1.5",
+                      slope > 0 
+                        ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-400" 
+                        : slope < 0 
+                        ? "border-red-500/30 bg-red-500/5 text-red-400" 
+                        : "border-white/10 bg-white/5 text-slate-400"
+                    )} title="Trajectory Slope (Linear Regression)">
+                      {slope > 0 ? "Improving" : slope < 0 ? "Declining" : "Stable"} ({slope > 0 ? `+${slope.toFixed(2)}` : slope.toFixed(2)})
+                    </span>
+                  </div>
+                </div>
+
+                {forecastData && (
+                  <div className="space-y-4">
+                    <TrajectoryChart
+                      scenarios={forecastData.scenarios}
+                      activeScenarioId="maintain"
+                      targetCgpa={store.academic.targetCgpa}
+                      currentCgpa={store.academic.currentCgpa}
+                      completedSemesters={store.academic.completedSemesters}
+                    />
+                    <div className="flex justify-end">
+                      <Link href="/forecast" className="text-xs font-black uppercase tracking-wider text-[#4F8EF7] hover:text-blue-400 flex items-center gap-1 group-hover:underline">
+                        Explore forecast assumptions & breakdown
+                        <ArrowUpRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            ) : (
+              <Card className="border border-white/10 bg-slate-950/40 backdrop-blur-xl p-8 rounded-3xl relative text-center space-y-6">
+                <div className="w-12 h-12 mx-auto rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                  <TrendingDown size={24} />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-md font-black text-white uppercase tracking-wider">Unlock Trajectory Projections</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                    Import your past semester SGPAs and credit details to project graduation pathways and evaluate historic volatility constraints.
+                  </p>
+                </div>
+                <Link href="/import" className="inline-block">
+                  <button className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F8EF7] to-blue-600 text-white text-xs font-black uppercase tracking-wider hover:shadow-[0_0_20px_rgba(79,142,247,0.3)] transition-all">
+                    Ingest Academic History
+                  </button>
+                </Link>
+              </Card>
+            )}
+
             <TrendChartSection data={trendData} />
             <HistoryTable calculations={mockCalculationsList} onDelete={() => {}} />
           </div>
@@ -968,6 +1119,80 @@ export default function DashboardClient({
               targetCgpa={store.academic.targetCgpa}
               topSubjects={topSubjects}
             />
+
+            {/* Target Strategy Summary Card */}
+            <Card className="flex flex-col h-fit group border border-white/10 bg-slate-950/40 backdrop-blur-xl p-6 rounded-3xl relative">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <Target size={22} className="text-[#A855F7]" />
+                  <div>
+                    <h3 className="text-lg font-black text-white">Target Grade Strategies</h3>
+                    <p className="text-xs text-slate-400">Pathways to reach target CGPA</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Render the 3 paths */}
+              {strategies ? (
+                <div className="space-y-4">
+                  {[
+                    { key: "safe", data: strategies.safe, colorClass: "text-emerald-400", bgClass: "bg-emerald-500/10 border-emerald-500/20" },
+                    { key: "balanced", data: strategies.balanced, colorClass: "text-[#4F8EF7]", bgClass: "bg-blue-500/10 border-blue-500/20" },
+                    { key: "aggressive", data: strategies.aggressive, colorClass: "text-[#A855F7]", bgClass: "bg-purple-500/10 border-purple-500/20" }
+                  ].map(({ key, data, colorClass, bgClass }) => {
+                    const feasibility = data.feasibilityScore;
+                    return (
+                      <div key={key} className="p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className={cn("text-sm font-bold", colorClass)}>{data.label}</span>
+                          <span className={cn("text-[10px] font-black uppercase px-2 py-0.5 rounded-full border", bgClass, colorClass)}>
+                            {feasibility >= 70 ? "High Feasibility" : feasibility >= 40 ? "Medium Feasibility" : "Low Feasibility"}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">{data.description}</p>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-xs pt-1">
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase font-semibold block">Proj. CGPA</span>
+                            <span className="font-bold text-white font-mono text-sm">{data.projectedCgpa.toFixed(2)}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase font-semibold block">Feasibility</span>
+                            <span className="font-bold text-white font-mono text-sm">{feasibility}%</span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full rounded-full transition-all duration-500",
+                              feasibility >= 70 ? "bg-emerald-500" : feasibility >= 40 ? "bg-amber-500" : "bg-red-500"
+                            )}
+                            style={{ width: `${feasibility}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="pt-2 flex justify-end">
+                    <Link href="/strategy" className="text-xs font-black uppercase tracking-wider text-[#A855F7] hover:text-purple-400 flex items-center gap-1 group-hover:underline">
+                      View course grade requirements
+                      <ArrowUpRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-6 text-center space-y-4">
+                  <div className="p-3.5 rounded-2xl bg-white/5 text-slate-400 w-fit mx-auto">
+                    <Target size={24} />
+                  </div>
+                  <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
+                    Set up your active semester syllabus courses first to generate target grade allocation paths.
+                  </p>
+                </div>
+              )}
+            </Card>
 
             {/* Premium quick action links including standard imports */}
             <Card className="flex flex-col h-fit group">
