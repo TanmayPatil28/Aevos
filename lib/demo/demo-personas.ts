@@ -1,4 +1,4 @@
-import { AcademicState, CourseState, CareerState, RiskState } from "@/stores/usmStore";
+import { AcademicState, CourseState, CareerState, RiskState, SemesterHistoryEntry } from "@/stores/usmStore";
 
 export interface DemoPersona {
   id: string;
@@ -8,6 +8,7 @@ export interface DemoPersona {
   presetId: string;
   academic: AcademicState;
   courses: CourseState[];
+  semesterHistory: SemesterHistoryEntry[];
   career: CareerState;
   risk: RiskState;
 }
@@ -83,6 +84,12 @@ export const demoPersonas: Record<string, DemoPersona> = {
         attendanceBunked: 0,
       },
     ],
+    semesterHistory: [
+      { semester: 1, sgpa: 7.5, credits: 20, earnedCredits: 20 },
+      { semester: 2, sgpa: 8.2, credits: 20, earnedCredits: 40 },
+      { semester: 3, sgpa: 8.8, credits: 20, earnedCredits: 60 },
+      { semester: 4, sgpa: 9.2, credits: 20, earnedCredits: 80 },
+    ],
     career: {
       targetCompanies: ["faang", "tcs", "cognizant"],
       wesGpaEquivalent: 3.9,
@@ -156,6 +163,12 @@ export const demoPersonas: Record<string, DemoPersona> = {
         attendanceBunked: 3,
       },
     ],
+    semesterHistory: [
+      { semester: 1, sgpa: 6.0, credits: 20, earnedCredits: 20 },
+      { semester: 2, sgpa: 5.8, credits: 20, earnedCredits: 38 },
+      { semester: 3, sgpa: 7.2, credits: 20, earnedCredits: 58 },
+      { semester: 4, sgpa: 7.5, credits: 20, earnedCredits: 78 },
+    ],
     career: {
       targetCompanies: ["tcs", "cognizant"],
       wesGpaEquivalent: 3.1,
@@ -228,6 +241,11 @@ export const demoPersonas: Record<string, DemoPersona> = {
         attendanceTotal: 20,
         attendanceBunked: 4,
       },
+    ],
+    semesterHistory: [
+      { semester: 1, sgpa: 7.0, credits: 20, earnedCredits: 20 },
+      { semester: 2, sgpa: 6.2, credits: 18, earnedCredits: 34 },
+      { semester: 3, sgpa: 5.5, credits: 16, earnedCredits: 52 },
     ],
     career: {
       targetCompanies: ["cognizant"],

@@ -36,6 +36,9 @@ global.window = {
 // Use require instead of ES import to execute setups before store hydration
 const { runEnginesTests } = require("../tests/simulation/engines.test");
 const { runStoreTests } = require("../tests/stores/usmStore.test");
+const { runStrategyTests } = require("../tests/strategy/strategy.test");
+const { runForecastTests } = require("../tests/forecasting/forecast.test");
+const { runIngestionTests } = require("../tests/ingestion/ingestion.test");
 
 // CLI Colors
 const colors = {
@@ -55,6 +58,9 @@ async function executeAllTests() {
 
   let enginesSuccess = false;
   let storeSuccess = false;
+  let strategySuccess = false;
+  let forecastSuccess = false;
+  let ingestionSuccess = false;
 
   try {
     enginesSuccess = runEnginesTests();
@@ -67,6 +73,27 @@ async function executeAllTests() {
     storeSuccess = runStoreTests();
   } catch (err: any) {
     console.error(`\n${colors.red}💥 CRITICAL ERROR executing Zustand store & selectors tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
+  try {
+    strategySuccess = runStrategyTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing strategy generator tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
+  try {
+    forecastSuccess = runForecastTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing forecasting engine tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
+  try {
+    ingestionSuccess = runIngestionTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing JSON ingestion tests:${colors.reset}`);
     console.error(err.stack || err);
   }
 
@@ -86,9 +113,27 @@ async function executeAllTests() {
     console.error(`  ${colors.red}✗ FAIL:${colors.reset} Zustand USM Store & selectors Persistence`);
   }
 
+  if (strategySuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} Strategy Generator Engine`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Strategy Generator Engine`);
+  }
+
+  if (forecastSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} Dynamic Forecasting Engine`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Dynamic Forecasting Engine`);
+  }
+
+  if (ingestionSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} JSON Ingestion System`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} JSON Ingestion System`);
+  }
+
   console.log(`----------------------------------------------------------------`);
 
-  if (enginesSuccess && storeSuccess) {
+  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess) {
     console.log(`\n🎉 ${colors.bright}${colors.green}ALL PHASE-A MVP UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
     process.exit(0);
   } else {

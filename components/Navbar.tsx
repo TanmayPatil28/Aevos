@@ -8,7 +8,8 @@ import { useTheme } from "next-themes";
 import {
   GraduationCap, Home, Calculator, CalendarDays,
   LayoutDashboard, Grip, ChevronDown, AlertTriangle,
-  TrendingUp, Target, Moon, Sun, Menu, X, ArrowRight
+  TrendingUp, Target, Moon, Sun, Menu, X, ArrowRight,
+  Compass, Flame
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useSession, signOut } from "next-auth/react";
@@ -23,6 +24,20 @@ const MAIN_LINKS = [
 ];
 
 const ADVANCED_TOOLS = [
+  {
+    name: "Strategy Generator",
+    href: "/strategy",
+    icon: Compass,
+    desc: "SAFE / BALANCED / PUSH paths",
+    color: "bg-emerald-500/10 text-emerald-400"
+  },
+  {
+    name: "CGPA Forecast",
+    href: "/forecast",
+    icon: Flame,
+    desc: "Deterministic projections",
+    color: "bg-violet-500/10 text-violet-400"
+  },
   {
     name: "Backlog Scanner",
     href: "/backlog",
