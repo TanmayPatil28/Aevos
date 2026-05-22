@@ -41,6 +41,7 @@ const { runForecastTests } = require("../tests/forecasting/forecast.test");
 const { runIngestionTests } = require("../tests/ingestion/ingestion.test");
 const { runCareerTests } = require("../tests/career/placement.test");
 const { runAttendanceTests } = require("../tests/attendance/bunk.test");
+const { runDecisionEngineTests } = require("../tests/advisory/decisionEngine.test");
 
 // CLI Colors
 const colors = {
@@ -65,6 +66,7 @@ async function executeAllTests() {
   let ingestionSuccess = false;
   let careerSuccess = false;
   let attendanceSuccess = false;
+  let advisorySuccess = false;
 
   try {
     enginesSuccess = runEnginesTests();
@@ -115,6 +117,13 @@ async function executeAllTests() {
     console.error(err.stack || err);
   }
 
+  try {
+    advisorySuccess = runDecisionEngineTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing advisory decision engine tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
   console.log(`\n${colors.bright}${colors.cyan}================================================================`);
   console.log(`📊 MASTER TEST RESULTS SUMMARY`);
   console.log(`================================================================${colors.reset}`);
@@ -161,9 +170,15 @@ async function executeAllTests() {
     console.error(`  ${colors.red}✗ FAIL:${colors.reset} Attendance Bunk Simulator Engine`);
   }
 
+  if (advisorySuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} Unified Decision & Recommendation Engine (UDRE)`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Unified Decision & Recommendation Engine (UDRE)`);
+  }
+
   console.log(`----------------------------------------------------------------`);
 
-  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && careerSuccess && attendanceSuccess) {
+  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess) {
     console.log(`\n🎉 ${colors.bright}${colors.green}ALL PHASE-B UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
     process.exit(0);
   } else {

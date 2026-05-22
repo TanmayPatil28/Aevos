@@ -80,7 +80,6 @@ export interface USMStoreState {
   courses: CourseState[];
   semesterHistory: SemesterHistoryEntry[];
   simulation: SimulationState;
-  risk: RiskState;
   career: CareerState;
   sync: OfflineSyncState;
 
@@ -99,9 +98,6 @@ export interface USMStoreState {
   loadSimulationSnapshot: (snapshotId: string) => void;
   deleteSimulationSnapshot: (snapshotId: string) => void;
   resetSimulation: () => void;
-
-  // Risk Actions
-  setRisk: (risk: Partial<RiskState>) => void;
 
   // Semester History Actions
   setSemesterHistory: (history: SemesterHistoryEntry[]) => void;
@@ -162,7 +158,6 @@ export const useUSMStore = create<USMStoreState>()(
       courses: [],
       semesterHistory: [],
       simulation: initialSimulation,
-      risk: initialRisk,
       career: initialCareer,
       sync: initialSync,
 
@@ -301,11 +296,6 @@ export const useUSMStore = create<USMStoreState>()(
         }));
       },
 
-      setRisk: (riskUpdates) => {
-        set((state) => ({
-          risk: { ...state.risk, ...riskUpdates },
-        }));
-      },
 
       setSemesterHistory: (history) => {
         set({ semesterHistory: history });
@@ -348,7 +338,6 @@ export const useUSMStore = create<USMStoreState>()(
           courses: [],
           semesterHistory: [],
           simulation: initialSimulation,
-          risk: initialRisk,
           career: initialCareer,
           sync: initialSync,
         });
@@ -366,7 +355,6 @@ export const useUSMStore = create<USMStoreState>()(
             courses: [],
             semesterHistory: [],
             simulation: initialSimulation,
-            risk: initialRisk,
             career: initialCareer,
             sync: initialSync,
           };
@@ -398,7 +386,6 @@ export const useUSMStore = create<USMStoreState>()(
             hydratedState.courses = [];
             hydratedState.semesterHistory = [];
             hydratedState.simulation = { ...initialSimulation };
-            hydratedState.risk = { ...initialRisk };
             hydratedState.career = { ...initialCareer };
             hydratedState.sync = { ...initialSync };
           }

@@ -1,4 +1,5 @@
 import { TraceMetadata } from "../../stores/selectors";
+import { pluggableRegulationEngine } from "../academic-intelligence/regulations/regulationEngine";
 
 export interface CourseAttendanceMetrics {
   percentage: number;
@@ -86,27 +87,10 @@ export const attendanceEngine = {
     }
 
     // 5. Ordinance Mapping (Trace Metadata)
-    let sourceClause = "Clause 4.2 Minimum Attendance Requirement";
-    let sourceCircular = "General Academic Circular 2019";
-    let sourceRegulationId = `${presetId.toUpperCase()}-REG-2019`;
-
-    if (presetId === "vtu") {
-      sourceClause = "Section VTU-OB 12.1 Attendance Eligibility";
-      sourceCircular = "Notification No. VTU/Aca/OS-Regulations/2021";
-      sourceRegulationId = "VTU-CBCS-2021";
-    } else if (presetId === "sppu") {
-      sourceClause = "SPPU Ordinance 119 Attendance Ordinance";
-      sourceCircular = "Circular No. Exam/Coordination/2019/33";
-      sourceRegulationId = "SPPU-REG-2019";
-    } else if (presetId === "jntuh") {
-      sourceClause = "JNTUH R22 Regulation Item 7: Attendance Criteria";
-      sourceCircular = "Academic Circular No. A1/3342/2022";
-      sourceRegulationId = "JNTUH-R22";
-    } else if (presetId === "mu") {
-      sourceClause = "Mumbai University Ordinance O.6086";
-      sourceCircular = "Circular No. UG/231 of 2018";
-      sourceRegulationId = "MU-CBCS-2018";
-    }
+    const resolvedTrace = pluggableRegulationEngine.resolveAttendanceTrace(presetId);
+    const sourceClause = resolvedTrace.sourceClause;
+    const sourceCircular = resolvedTrace.sourceCircular;
+    const sourceRegulationId = resolvedTrace.sourceRegulationId;
 
     const attWarnings: string[] = [];
     if (percentage < safeMinAtt) {
