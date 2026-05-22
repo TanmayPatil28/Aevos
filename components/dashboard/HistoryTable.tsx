@@ -4,14 +4,9 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Search, Eye, Trash2, X, ClipboardCheck, ArrowRight, Sparkles } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/lib/cn";
 import type { Calculation, Subject } from "@/types/calculation";
 import Card from "@/components/ui/Card";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 interface HistoryTableProps {
   calculations: Calculation[];

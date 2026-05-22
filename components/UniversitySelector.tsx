@@ -5,12 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { School, ChevronDown, Check, Search, X, Zap, GraduationCap, Building2 } from "lucide-react";
 import { useUniversity, UNI_PRESETS } from "@/components/providers/UniversityProvider";
 import { getPresetsByState, searchPresets, type UniversityPreset } from "@/lib/presets";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "@/lib/cn";
 
 // ─── Evaluation Model Badge ────────────────────────────────────────────────────
 

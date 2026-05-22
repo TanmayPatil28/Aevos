@@ -2,17 +2,12 @@ import { useRef } from "react";
 import { useMotionValue, useSpring } from "framer-motion";
 import { Calculator, Calendar, Download, ArrowRight, Loader2, Zap, LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/lib/cn";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Card from "../ui/Card";
 
 const MotionCard = motion(Card);
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 // --- Liquid Action Tile ---
 function LiquidActionTile({

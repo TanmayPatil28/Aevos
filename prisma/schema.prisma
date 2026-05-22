@@ -48,6 +48,7 @@ model User {
   sessions      Session[]
   calculations  Calculation[]
   plans         Plan[]
+  enrollments   Enrollment[]
   createdAt     DateTime  @default(now())
 
   @@map("users")
@@ -86,11 +87,51 @@ model Plan {
   remaining_semesters Int
   required_gpa        Float
   plan_data           Json
-  current_semester    String? // Made optional for backward compatibility if missed
+  current_semester    String? // Made optional for backward compatibility
   created_at          DateTime @default(now())
 
   userId              String?  @map("user_id")
   user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("plans")
+}
+
+model Course {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  credits     Int
+  prereqs     String[]     // Array of course codes that are prerequisites
+  enrollments Enrollment[]
+
+  @@map("courses")
+}
+
+model Enrollment {
+  id               String          @id @default(cuid())
+  userId           String          @map("user_id")
+  courseId         String          @map("course_id")
+  semester         String
+  grade            String?
+  cieMarks         Float           @default(0) @map("cie_marks")
+  seeMarks         Float?          @map("see_marks")
+  attendanceTotal  Int             @default(0) @map("attendance_total")
+  attendanceBunked Int             @default(0) @map("attendance_bunked")
+  
+  attendanceLogs   AttendanceLog[]
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course           Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model AttendanceLog {
+  id           String     @id @default(cuid())
+  enrollmentId String     @map("enrollment_id")
+  date         DateTime   @map("date") @default(now())
+  status       String     // "PRESENT", "ABSENT", "CANCELLED"
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@map("attendance_logs")
 }

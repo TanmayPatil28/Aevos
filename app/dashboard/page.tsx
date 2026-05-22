@@ -16,6 +16,7 @@ export default async function DashboardPage() {
 
   let rawCalculations: Calculation[] = [];
   let rawPlans: Plan[] = [];
+  let rawEnrollments: unknown[] = [];
   let dbError = false;
 
   try {
@@ -38,15 +39,29 @@ export default async function DashboardPage() {
     dbError = true;
   }
 
+  try {
+    rawEnrollments = await prisma.enrollment.findMany({
+      where: { userId },
+      include: {
+        course: true,
+      },
+    });
+  } catch (error) {
+    console.error("Dashboard enrollments load failed:", error);
+    dbError = true;
+  }
+
   // Safe serialization for props hydration boundary
   const initialCalculations = JSON.parse(JSON.stringify(rawCalculations));
   const initialPlans = JSON.parse(JSON.stringify(rawPlans));
+  const initialEnrollments = JSON.parse(JSON.stringify(rawEnrollments));
 
   return (
     <DashboardClient
       userName={session.user.name ?? "User"}
       initialCalculations={initialCalculations}
       initialPlans={initialPlans}
+      initialEnrollments={initialEnrollments}
       dbError={dbError}
     />
   );
