@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { PlusCircle, Calendar, Target, Award, Trash2, CheckCircle } from "lucide-react";
 import Card from "../ui/Card";
@@ -24,7 +25,7 @@ const getActivityIcon = (type: Activity["type"]) => {
   }
 };
 
-export default function ActivityTimeline({ activities }: { activities: Activity[] }) {
+const ActivityTimeline = memo(function ActivityTimeline({ activities }: { activities: Activity[] }) {
   return (
     <MotionCard
       initial={{ opacity: 0, scale: 0.95 }}
@@ -80,4 +81,6 @@ export default function ActivityTimeline({ activities }: { activities: Activity[
       </div>
     </MotionCard>
   );
-}
+});
+
+export default ActivityTimeline;

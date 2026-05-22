@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "test:presets": "npx tsx scripts/test-presets.ts"
+    "test:presets": "npx tsx scripts/test-presets.ts",
+    "test:unit": "npx tsx scripts/test-unit.ts",
+    "test:stability": "npx tsx scripts/test-data-stability.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -30,7 +32,8 @@
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

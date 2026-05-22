@@ -1,16 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import AnimatedCounter from "../AnimatedCounter";
 import { LucideIcon, TrendingUp } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/lib/cn";
 import Card from "../ui/Card";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 interface StatCardProps {
   label: string;
@@ -28,7 +23,7 @@ interface StatCardProps {
   tooltip?: string;
 }
 
-export default function StatCard({
+const StatCard = memo(function StatCard({
   label,
   value,
   decimals = 2,
@@ -112,4 +107,6 @@ export default function StatCard({
       </Card>
     </motion.div>
   );
-}
+});
+
+export default StatCard;

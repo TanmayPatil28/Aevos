@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { Rocket, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +13,7 @@ interface MotivationalBannerProps {
   targetCgpa: number;
 }
 
-export default function MotivationalBanner({ currentCgpa, targetCgpa }: MotivationalBannerProps) {
+const MotivationalBanner = memo(function MotivationalBanner({ currentCgpa, targetCgpa }: MotivationalBannerProps) {
   const diff = targetCgpa - currentCgpa;
   const isAbove = currentCgpa >= targetCgpa;
 
@@ -69,4 +70,6 @@ export default function MotivationalBanner({ currentCgpa, targetCgpa }: Motivati
       <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[120%] bg-secondary/5 rounded-full blur-[120px] pointer-events-none" />
     </MotionCard>
   );
-}
+});
+
+export default MotivationalBanner;

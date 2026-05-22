@@ -10,14 +10,9 @@ import {
   LayoutDashboard, Grip, ChevronDown, AlertTriangle,
   TrendingUp, Target, Moon, Sun, Menu, X, ArrowRight
 } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/lib/cn";
 import { useSession, signOut } from "next-auth/react";
 import UniversitySelector from "@/components/UniversitySelector";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 // --- Navigation Links ---
 const MAIN_LINKS = [

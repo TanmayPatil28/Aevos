@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import Card from "../ui/Card";
@@ -13,7 +14,7 @@ interface Insight {
   color: string;
 }
 
-export default function InsightsPanel({ insights }: { insights: Insight[] }) {
+const InsightsPanel = memo(function InsightsPanel({ insights }: { insights: Insight[] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       {insights.map((insight, i) => (
@@ -39,4 +40,6 @@ export default function InsightsPanel({ insights }: { insights: Insight[] }) {
       ))}
     </div>
   );
-}
+});
+
+export default InsightsPanel;
