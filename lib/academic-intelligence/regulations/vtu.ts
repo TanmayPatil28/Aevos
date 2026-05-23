@@ -28,6 +28,8 @@ export const VTU_2022_REGULATION: RegulationSystem = {
       { grade: "C",  points: 5,  description: "Average", isPass: true, absoluteMinMarks: 50 },
       { grade: "P",  points: 4,  description: "Pass", isPass: true, absoluteMinMarks: 40 },
       { grade: "F",  points: 0,  description: "Fail", isPass: false, absoluteMinMarks: 0 },
+      { grade: "PP", points: 0,  description: "Passed", isPass: true, absoluteMinMarks: 0 },
+      { grade: "NP", points: 0,  description: "Not Passed", isPass: false, absoluteMinMarks: 0 },
     ],
   },
 

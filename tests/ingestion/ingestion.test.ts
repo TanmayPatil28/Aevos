@@ -43,7 +43,7 @@ export function runIngestionTests(): boolean {
         credits: 20,
         earnedCredits: 20,
         courses: [
-          { code: "CS101", name: "Programming in C", credits: 4, grade: "A+" }
+          { code: "CS101", name: "Programming in C", credits: 20, grade: "A+" }
         ]
       },
       {
@@ -52,7 +52,7 @@ export function runIngestionTests(): boolean {
         credits: 20,
         earnedCredits: 20,
         courses: [
-          { code: "CS102", name: "Data Structures", credits: 4, grade: "O" }
+          { code: "CS102", name: "Data Structures", credits: 20, grade: "O" }
         ]
       }
     ],
@@ -109,7 +109,7 @@ export function runIngestionTests(): boolean {
   });
 
   test("validateImportPayload - flags target CGPA lower than current CGPA as a warning", () => {
-    const targetWarn = { ...validPayload, targetCgpa: 7.5, currentCgpa: 8.5 };
+    const targetWarn = { ...validPayload, targetCgpa: 7.5 };
     const result = validateImportPayload(targetWarn);
     assert(result.isValid === true, "Should still be valid");
     assert(result.warnings.some(w => w.includes("lower than current CGPA")), "Expected warning about lower target CGPA");

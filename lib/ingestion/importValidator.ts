@@ -92,6 +92,24 @@ export function validateImportPayload(rawData: unknown): ImportValidationResult 
   if (!Array.isArray(data.semesterHistory)) {
     errors.push("Missing or invalid field: 'semesterHistory' is required and must be an array.");
   } else {
+    // Check for gaps, sequence, duplicates
+    const semNums = data.semesterHistory
+      .map((s) => (s as RawSemesterInput)?.semester)
+      .filter((s): s is number => typeof s === "number" && Number.isInteger(s) && s > 0);
+
+    const uniqueSemNums = Array.from(new Set(semNums)).sort((a, b) => a - b);
+    
+    if (semNums.length !== uniqueSemNums.length) {
+      errors.push("Semester History Error: Duplicate semesters are detected in your academic history.");
+    }
+
+    for (let i = 0; i < uniqueSemNums.length; i++) {
+      if (uniqueSemNums[i] !== i + 1) {
+        errors.push(`Semester History Gap: Semesters must start at 1 and progress sequentially. Missing Semester ${i + 1}, found Semester ${uniqueSemNums[i]} instead.`);
+        break;
+      }
+    }
+
     data.semesterHistory.forEach((semRaw: unknown, idx: number) => {
       if (!semRaw || typeof semRaw !== "object" || Array.isArray(semRaw)) {
         errors.push(`semesterHistory[${idx}]: Invalid entry, must be an object.`);
@@ -126,6 +144,9 @@ export function validateImportPayload(rawData: unknown): ImportValidationResult 
         if (!Array.isArray(sem.courses)) {
           errors.push(`${semPrefix}: 'courses' must be an array.`);
         } else {
+          const courseCodes = new Set<string>();
+          let computedRegisteredCredits = 0;
+
           sem.courses.forEach((courseRaw: unknown, cIdx: number) => {
             const coursePrefix = `${semPrefix}.courses[${cIdx}]`;
             
@@ -138,6 +159,12 @@ export function validateImportPayload(rawData: unknown): ImportValidationResult 
 
             if (typeof course.code !== "string" || !course.code.trim()) {
               errors.push(`${coursePrefix}: 'code' is required and must be a non-empty string.`);
+            } else {
+              const normalizedCode = course.code.trim().toUpperCase();
+              if (courseCodes.has(normalizedCode)) {
+                errors.push(`${semPrefix}: Duplicate Course Code '${normalizedCode}' detected in semester ${sem.semester}. Course codes must be unique.`);
+              }
+              courseCodes.add(normalizedCode);
             }
 
             if (typeof course.name !== "string" || !course.name.trim()) {
@@ -146,6 +173,8 @@ export function validateImportPayload(rawData: unknown): ImportValidationResult 
 
             if (typeof course.credits !== "number" || course.credits <= 0) {
               errors.push(`${coursePrefix}: 'credits' must be a positive number.`);
+            } else {
+              computedRegisteredCredits += course.credits;
             }
 
             if (typeof course.grade !== "string" || !course.grade.trim()) {
@@ -157,6 +186,11 @@ export function validateImportPayload(rawData: unknown): ImportValidationResult 
               }
             }
           });
+
+          // Verify registered credit sum matches
+          if (typeof sem.credits === "number" && sem.courses.length > 0 && sem.credits !== computedRegisteredCredits) {
+            errors.push(`${semPrefix} Credit Mismatch: Total registered credits (${sem.credits}) does not match the sum of course credits (${computedRegisteredCredits}).`);
+          }
         }
       }
     });
@@ -221,6 +255,35 @@ export function validateImportPayload(rawData: unknown): ImportValidationResult 
           errors.push(`${coursePrefix}: 'attendanceBunked' was provided but 'attendanceTotal' is missing.`);
         }
       });
+    }
+  }
+
+  // 5.5 Impossible CGPA Jump Validation
+  if (errors.length === 0 && Array.isArray(data.semesterHistory) && data.semesterHistory.length > 0) {
+    let totalWeightedPoints = 0;
+    let totalRegisteredCredits = 0;
+    let hasValidHistory = true;
+
+    data.semesterHistory.forEach((semRaw: unknown) => {
+      const sem = semRaw as RawSemesterInput;
+      if (sem && typeof sem.sgpa === "number" && typeof sem.credits === "number") {
+        totalWeightedPoints += sem.sgpa * sem.credits;
+        totalRegisteredCredits += sem.credits;
+      } else {
+        hasValidHistory = false;
+      }
+    });
+
+    if (hasValidHistory && totalRegisteredCredits > 0) {
+      const calculatedCgpa = parseFloat((totalWeightedPoints / totalRegisteredCredits).toFixed(4));
+      const reportedCgpa = data.currentCgpa as number;
+      const cgpaDelta = Math.abs(calculatedCgpa - reportedCgpa);
+
+      if (cgpaDelta > 0.15) {
+        errors.push(`Impossible CGPA Jump: The reported CGPA of ${reportedCgpa} is mathematically inconsistent with the completed semester SGPAs. Calculated CGPA based on credits is ${calculatedCgpa.toFixed(2)} (discrepancy of ${cgpaDelta.toFixed(2)} exceeds strict limit of 0.15).`);
+      } else if (cgpaDelta > 0.05) {
+        warnings.push(`CGPA Precision Discrepancy: The reported CGPA of ${reportedCgpa} slightly deviates from the calculated cumulative SGPA value of ${calculatedCgpa.toFixed(2)} (discrepancy of ${cgpaDelta.toFixed(3)}).`);
+      }
     }
   }
 
