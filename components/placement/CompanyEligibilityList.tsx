@@ -97,7 +97,6 @@ export default function CompanyEligibilityList({
                 >
                   {/* Decorative glowing background mesh matching status */}
                   <div 
-                    className="absolute -top-12 -right-12 w-24 h-24 rounded-full blur-[35px] pointer-events-none opacity-40 transition-colors duration-500"
                     style={{ backgroundColor: statusStyle.glowColor }}
                   />
 

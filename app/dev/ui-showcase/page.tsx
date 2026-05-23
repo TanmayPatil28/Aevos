@@ -39,10 +39,8 @@ export default function UIShowcasePage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#050810]">
+    <div className="min-h-screen relative overflow-hidden bg-[#000000]">
       {/* Dynamic Background Ambience */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-5%] w-[50vw] h-[50vw] bg-purple-600/10 rounded-full blur-[140px] pointer-events-none" />
       
       <PageContainer className="pt-24 pb-32 max-w-7xl">
         

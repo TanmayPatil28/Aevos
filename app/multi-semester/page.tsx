@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -10,6 +9,8 @@ import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
 import CalculationBreakdown from "@/components/CalculationBreakdown";
+import { useUSMStore } from "@/stores/usmStore";
+import { resolveActiveAcademicContext } from "@/stores/selectors/academic";
 
 interface SemesterData {
   id: string;
@@ -32,34 +33,43 @@ export default function MultiSemesterPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { theme } = useTheme();
 
-  // Load from local storage on mount
+  const store = useUSMStore();
+  const context = resolveActiveAcademicContext(store);
+
+  // Load from global state on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("gradeflow_multi_sem");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setSemesters(parsed);
+    if (context.identity.hasAuthoritativeData && context.semesterHistory.length > 0) {
+      const mapped = context.semesterHistory.map((sh: any, idx: number) => ({
+        id: `sh-${idx}`,
+        name: sh.term,
+        credits: sh.totalCredits.toString(),
+        sgpa: sh.sgpa.toString(),
+        whatIfSgpa: sh.sgpa.toString()
+      }));
+      setSemesters(mapped);
+    } else {
+      // Fallback for non-hydrated users
+      try {
+        const saved = localStorage.getItem("gradeflow_multi_sem");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setSemesters(parsed);
+          } else {
+            setSemesters([{ id: "1", name: "Semester 1", credits: "", sgpa: "", whatIfSgpa: "" }]);
+          }
         } else {
           setSemesters([
-            { id: "1", name: "Semester 1", credits: "", sgpa: "", whatIfSgpa: "" }
+            { id: "1", name: "Semester 1", credits: "20", sgpa: "8.0", whatIfSgpa: "8.0" }
           ]);
         }
-      } else {
-        setSemesters([
-          { id: "1", name: "Semester 1", credits: "20", sgpa: "8.0", whatIfSgpa: "8.0" },
-          { id: "2", name: "Semester 2", credits: "22", sgpa: "7.5", whatIfSgpa: "7.5" },
-          { id: "3", name: "Semester 3", credits: "24", sgpa: "8.2", whatIfSgpa: "8.2" }
-        ]);
+      } catch (e) {
+        setSemesters([{ id: "1", name: "Semester 1", credits: "", sgpa: "", whatIfSgpa: "" }]);
       }
-    } catch (e) {
-      console.error("Local storage error:", e);
-      setSemesters([{ id: "1", name: "Semester 1", credits: "", sgpa: "", whatIfSgpa: "" }]);
     }
     setMounted(true);
-  }, []);
+  }, [context.identity.hasAuthoritativeData]);
 
   // Save to local storage on change
   useEffect(() => {
@@ -275,8 +285,6 @@ export default function MultiSemesterPage() {
 
   if (!mounted) return null;
 
-  const isDark = theme === "dark";
-
   const getPlaceholder = () => {
     if (scaleMode === "percent") return "0-100";
     if (scaleMode === "4") return "0.0-4.0";
@@ -285,8 +293,6 @@ export default function MultiSemesterPage() {
 
   return (
     <>
-      <div className="fixed top-[10%] right-[-5%] w-[40vw] h-[40vw] bg-primary/10 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
-      <div className="fixed bottom-[-10%] left-[10%] w-[35vw] h-[35vw] bg-indigo-500/10 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
 
       <main className="pt-32 pb-24 px-6 max-w-[1400px] mx-auto space-y-12 min-h-screen">
         <StaggerContainer className="text-center space-y-4 max-w-4xl mx-auto">
@@ -558,13 +564,13 @@ export default function MultiSemesterPage() {
                             <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"} vertical={false} />
-                        <XAxis dataKey="name" stroke={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"} tick={{ fill: "var(--on-surface-variant)", fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} dy={15}
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.2)" tick={{ fill: "var(--on-surface-variant)", fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} dy={15}
                           tickFormatter={(val) => val.replace('Semester ', 'Sem ')}
                         />
-                        <YAxis domain={['auto', 'auto']} stroke={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"} tick={{ fill: "var(--on-surface-variant)", fontSize: 10, fontWeight: 700, fontFamily: "monospace" }} axisLine={false} tickLine={false} dx={-15} />
+                        <YAxis domain={['auto', 'auto']} stroke="rgba(255,255,255,0.2)" tick={{ fill: "var(--on-surface-variant)", fontSize: 10, fontWeight: 700, fontFamily: "monospace" }} axisLine={false} tickLine={false} dx={-15} />
                         <Tooltip
-                          contentStyle={{ backgroundColor: isDark ? "rgba(18,20,28,0.95)" : "rgba(255,255,255,0.95)", borderRadius: "20px", border: "1px solid var(--outline-variant)", boxShadow: "0 20px 40px rgba(0,0,0,0.2)", backdropFilter: "blur(10px)" }}
+                          contentStyle={{ backgroundColor: "#111111", borderRadius: "20px", border: "1px solid var(--outline-variant)", boxShadow: "0 20px 40px rgba(0,0,0,0.5)", backdropFilter: "blur(10px)" }}
                           labelStyle={{ color: "var(--on-surface-variant)", fontWeight: "black", marginBottom: "12px", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.15em" }}
                           itemStyle={{ fontWeight: "900", fontSize: "16px", fontFamily: "monospace" }}
                         />

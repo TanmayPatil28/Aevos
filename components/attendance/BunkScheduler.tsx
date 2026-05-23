@@ -10,7 +10,43 @@ import {
   Info
 } from "lucide-react";
 import GlassCard from "../GlassCard";
-import { calculateBunkImpact } from "../../tests/attendance/bunk.test";
+export function calculateBunkImpact(
+  attended: number,
+  conducted: number,
+  futureBunks: number,
+  futureAttended: number,
+  minAttendance: number
+) {
+  const projectedConducted = conducted + futureBunks + futureAttended;
+  const projectedAttended = attended + futureAttended;
+  const percentage = projectedConducted > 0 ? Math.round((projectedAttended / projectedConducted) * 100) : 0;
+  
+  // Calculate safe bunks
+  let safeBunks = 0;
+  let testConducted = projectedConducted;
+  while (true) {
+    testConducted++;
+    if ((projectedAttended / testConducted) * 100 >= minAttendance) {
+      safeBunks++;
+    } else {
+      break;
+    }
+  }
+
+  // Calculate recovery required
+  let recoveryRequired = 0;
+  if (percentage < minAttendance) {
+    let testAttended = projectedAttended;
+    let testConducted = projectedConducted;
+    while ((testAttended / testConducted) * 100 < minAttendance) {
+      testAttended++;
+      testConducted++;
+      recoveryRequired++;
+    }
+  }
+
+  return { percentage, safeBunks, recoveryRequired };
+}
 
 interface CourseData {
   id: string;

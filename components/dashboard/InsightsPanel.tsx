@@ -35,7 +35,6 @@ const InsightsPanel = memo(function InsightsPanel({ insights }: { insights: Insi
           <p className="text-sm font-bold text-white leading-relaxed relative z-10 italic">
             {insight.text}
           </p>
-          <div className="absolute -right-8 -bottom-8 w-32 h-32 blur-[80px] opacity-[0.15] rounded-full pointer-events-none" style={{ backgroundColor: insight.color }} />
         </MotionCard>
       ))}
     </div>

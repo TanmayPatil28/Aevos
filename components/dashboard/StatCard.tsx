@@ -103,7 +103,6 @@ const StatCard = memo(function StatCard({
         </div>
         
         {/* Deep Atmosphere Glow */}
-        <div className="absolute -right-8 -top-8 w-32 h-32 blur-[60px] opacity-10 group-hover:opacity-20 transition-opacity rounded-full pointer-events-none" style={{ backgroundColor: glowColor }} />
       </Card>
     </motion.div>
   );

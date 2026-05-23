@@ -35,9 +35,10 @@ export const metadata: Metadata = {
   },
 };
 
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { UniversityProvider } from "@/components/providers/UniversityProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { AcademicStateProvider } from "@/contexts/AcademicContext";
+import { AcademicHydrationBoundary } from "@/components/providers/AcademicHydrationBoundary";
 
 import BackgroundEffects from "@/components/BackgroundEffects";
 
@@ -47,29 +48,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body bg-background text-foreground custom-scrollbar selection:bg-primary-container selection:text-on-primary-container transition-colors duration-700">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
+      <body className="font-body bg-background text-foreground custom-scrollbar selection:bg-primary-container selection:text-on-primary-container">
           <BackgroundEffects />
           <AuthProvider>
             <UniversityProvider>
             <CustomCursor />
             <Navbar />
             <ErrorBoundary>
-              <PageTransition>
-                {children}
-              </PageTransition>
+              <AcademicStateProvider>
+                <AcademicHydrationBoundary>
+                  <PageTransition>
+                    {children}
+                  </PageTransition>
+                </AcademicHydrationBoundary>
+              </AcademicStateProvider>
             </ErrorBoundary>
             <Footer />
             </UniversityProvider>
@@ -109,7 +108,6 @@ export default function RootLayout({
               },
             }}
           />
-        </ThemeProvider>
       </body>
     </html>
   );

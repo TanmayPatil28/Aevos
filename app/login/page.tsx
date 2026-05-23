@@ -43,7 +43,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen pt-24 pb-20 relative overflow-hidden flex items-center justify-center">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none opacity-50" />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}

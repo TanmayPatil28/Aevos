@@ -4,51 +4,49 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Target, Calculator, BrainCircuit,
-  AlertTriangle, CheckCircle2, Save
+  AlertTriangle, CheckCircle2, ChevronDown, Activity, FileSpreadsheet
 } from 'lucide-react';
 import clsx from 'clsx';
-import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
-import { useUniversity } from '@/components/providers/UniversityProvider';
-import { convertPercentageToGrade } from '@/lib/presets';
+import { useUSMStore } from '@/stores/usmStore';
+import { resolveActiveAcademicContext } from '@/stores/selectors/academic';
+import { getPresetById } from '@/lib/presets/presetRegistry';
 import PageContainer from '@/components/layout/PageContainer';
-import Card from '@/components/ui/Card';
-import PresetInfoCard from '@/components/PresetInfoCard';
-import CalculationBreakdown from '@/components/CalculationBreakdown';
+import GlassCard from '@/components/GlassCard';
 
 function getGradeColorClass(points: number, isPass: boolean = true) {
-  if (!isPass || points === 0) return "text-red-600";
+  if (!isPass || points === 0) return "text-rose-500";
   if (points >= 9) return "text-emerald-400";
   if (points >= 8) return "text-green-400";
   if (points >= 7) return "text-yellow-300";
-  if (points >= 6) return "text-yellow-400";
+  if (points >= 6) return "text-amber-400";
   if (points >= 5) return "text-orange-400";
-  return "text-red-400";
+  return "text-rose-400";
 }
 
-type SubjectType = 'theory100' | 'theory50' | 'lab';
-
 export default function PredictorPage() {
-  const { activePreset } = useUniversity();
-  const [type, setType] = useState<SubjectType>('theory100');
-
-  // Marks state
-  const [t1, setT1] = useState<string>('');
-  const [t2, setT2] = useState<string>('');
-  const [assig, setAssig] = useState<string>('');
-  const [endSem, setEndSem] = useState<string>('');
-  const [labExam, setLabExam] = useState<string>('');
-
-  // Settings
-  const [useBestOf, setUseBestOf] = useState(false);
+  const store = useUSMStore();
+  const context = resolveActiveAcademicContext(store);
+  const activePreset = getPresetById(context.presetId);
+  const courses = context.activeCourses;
+  
+  const [mounted, setMounted] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [targetGrade, setTargetGrade] = useState<string>('O');
 
-  const [mounted, setMounted] = useState(false);
+  // Input states for internal marks
+  const [cieMarks, setCieMarks] = useState<string>("");
+
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (courses.length > 0 && !selectedCourseId) {
+      setSelectedCourseId(courses[0].id);
+      setCieMarks(courses[0].cieMarks?.toString() || "0");
+    }
+  }, [courses, selectedCourseId]);
 
-  // When active preset changes, verify target grade is valid for this preset, otherwise fallback to highest grade
+  const selectedCourse = courses.find(c => c.id === selectedCourseId);
+
   useEffect(() => {
     if (activePreset?.gradeScale) {
       const validGrades = activePreset.gradeScale.filter(g => g.points > 0 && g.isPass !== false);
@@ -60,496 +58,204 @@ export default function PredictorPage() {
     }
   }, [activePreset, targetGrade]);
 
-  // Calculations
   const stats = useMemo(() => {
-    // Parse numbers safely inside to avoid hook dependency issues
-    const nT1 = parseFloat(t1) || 0;
-    const nT2 = parseFloat(t2) || 0;
-    const nAssig = parseFloat(assig) || 0;
-    const nEndSem = parseFloat(endSem) || 0;
-    const nLabExam = parseFloat(labExam) || 0;
+    if (!selectedCourse || !activePreset) return null;
 
-    // Constants
-    const maxEndSem = type === 'theory100' ? 100 : type === 'theory50' ? 50 : 0;
-    const maxT1 = 30;
-    const maxT2 = 30;
-    const maxAssig = 40;
-    const maxLabExam = 50;
-
-    const isLab = type === 'lab';
+    const nCie = parseFloat(cieMarks) || 0;
     
-    let maxBase = 0;
-    let scoredBase = 0;
-    let totalMax = 0;
-    let totalScored = 0;
+    // In a real generic system, max bounds would be regulation specific.
+    // For now we assume standard 100 mark split based on preset defaults or common norms
+    const isLab = selectedCourse.credits <= 2; 
+    const maxCie = isLab ? 50 : 30; // Approximation based on common university norms
+    const maxSee = isLab ? 50 : 70;
+    const totalMax = maxCie + maxSee;
 
-    if (isLab) {
-      maxBase = maxAssig;
-      scoredBase = Math.min(nAssig, maxAssig);
-      totalMax = maxAssig + maxLabExam; // 90
-      totalScored = scoredBase + Math.min(nLabExam, maxLabExam);
-    } else {
-      if (useBestOf) {
-        maxBase = maxT1 + maxAssig; // 30 + 40 = 70
-        scoredBase = Math.max(nT1, nT2) + Math.min(nAssig, maxAssig);
-      } else {
-        maxBase = maxT1 + maxT2 + maxAssig; // 100
-        scoredBase = Math.min(nT1, maxT1) + Math.min(nT2, maxT2) + Math.min(nAssig, maxAssig);
-      }
-      totalMax = maxBase + maxEndSem;
-      totalScored = scoredBase + Math.min(nEndSem, maxEndSem);
-    }
+    const scoredBase = Math.min(nCie, maxCie);
 
-    const percentage = totalMax > 0 ? (totalScored / totalMax) * 100 : 0;
-    const currentGrade = convertPercentageToGrade(percentage, activePreset);
-
-    // Predictor Logic
+    // Get target minimum marks from the preset grade scale
     const target = activePreset.gradeScale.find(g => g.grade === targetGrade) || activePreset.gradeScale[0];
     const targetMinMarks = target.minMarks ?? 0;
     const requiredTotalMarks = (targetMinMarks / 100) * totalMax;
     const neededInEndSem = requiredTotalMarks - scoredBase;
 
-    const achievable = neededInEndSem <= (isLab ? maxLabExam : maxEndSem);
+    const achievable = neededInEndSem <= maxSee;
     const alreadyThere = scoredBase >= requiredTotalMarks;
 
     return {
-      maxBase,
+      maxBase: maxCie,
       scoredBase,
       totalMax,
-      totalScored,
-      percentage,
-      currentGrade,
       neededInEndSem: Math.max(0, Math.ceil(neededInEndSem)),
       achievable,
       alreadyThere,
-      maxExamMarks: isLab ? maxLabExam : maxEndSem,
-      missingForPass: (0.4 * totalMax) - totalScored,
+      maxExamMarks: maxSee,
       isLab,
-      maxEndSem,
-      nT1,
-      nT2,
-      nAssig,
-      nEndSem,
-      nLabExam
+      nCie
     };
-  }, [type, t1, t2, assig, endSem, labExam, useBestOf, targetGrade, activePreset]);
+  }, [cieMarks, targetGrade, activePreset, selectedCourse]);
 
-  const [isSaving, setIsSaving] = useState(false);
+  if (!mounted) return null;
 
-  const handleSave = () => {
-    if (isSaving) return;
-    setIsSaving(true);
-    let existing = [];
-    try {
-      const saved = localStorage.getItem("gradeflow_predictor_scenarios");
-      const parsed = saved ? JSON.parse(saved) : [];
-      if (Array.isArray(parsed)) {
-        existing = parsed;
-      }
-    } catch {}
-
-    try {
-      existing.unshift({
-        type,
-        percentage: stats.percentage,
-        currentGrade: stats.currentGrade.grade,
-        neededInEndSem: stats.neededInEndSem,
-        saved_at: new Date().toISOString(),
-      });
-      localStorage.setItem("gradeflow_predictor_scenarios", JSON.stringify(existing.slice(0, 20)));
-      toast.success("Scenario saved locally.");
-    } catch {
-      toast.error("Failed to save scenario.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const isLab = type === 'lab';
-  const maxEndSem = type === 'theory100' ? 100 : type === 'theory50' ? 50 : 0;
+  if (courses.length === 0) {
+    return (
+      <PageContainer>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+          <Activity className="w-16 h-16 text-indigo-400 opacity-50" />
+          <h1 className="text-3xl font-bold text-white">Subject Intelligence</h1>
+          <p className="text-slate-400 max-w-md">You need active registered courses to predict outcomes. Please sync your academic data.</p>
+          <a href="/sync" className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-full font-bold text-white transition-colors">
+            Go to Data Hub
+          </a>
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer className="overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
-
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary text-xs font-bold tracking-widest uppercase mb-2">
-              <BrainCircuit className="w-4 h-4" />
-              Strategy Engine
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-white/60">
-              Marks Predictor
-            </h1>
-            <p className="text-on-surface-variant font-medium text-lg max-w-xl leading-relaxed">
-               Predict exact End Semester marks needed to achieve your target grade.
-            </p>
-            <div className="mt-4">
-              <PresetInfoCard compact />
-            </div>
+      
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b border-white/5 pb-8">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-widest uppercase mb-2">
+            <Target className="w-4 h-4" />
+            Subject Intelligence
           </div>
+          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
+            Marks Predictor
+          </h1>
+          <p className="text-slate-400 font-medium text-lg max-w-xl leading-relaxed">
+            Contextual grade boundary analysis for your active registered courses.
+          </p>
+        </div>
+      </div>
 
-          <div className="flex bg-[var(--surface-container-highest)]/50 backdrop-blur-md p-1.5 rounded-[1.25rem] border border-[var(--outline-variant)] w-full md:w-auto">
-            {(['theory100', 'theory50', 'lab'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setType(t)}
-                className={clsx(
-                  "flex-1 md:w-32 py-2.5 text-xs font-bold uppercase tracking-wider rounded-[1rem] transition-all relative",
-                  type === t ? "text-primary" : "text-on-surface-variant hover:text-on-surface hover:bg-white/5"
-                )}
-              >
-                {type === t && (
-                  <motion.div
-                    layoutId="type-active"
-                    className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-[1rem]"
-                  />
-                )}
-                <span className="relative z-10">
-                  {t === 'theory100' ? 'Theory (100)' : t === 'theory50' ? 'Theory (50)' : 'Lab Subject'}
-                </span>
-              </button>
-            ))}
-          </div>
+      <div className="grid lg:grid-cols-12 gap-8">
+        {/* Left Column: Course Selection & Inputs */}
+        <div className="lg:col-span-5 space-y-6">
+          <GlassCard className="border border-white/5 p-6 relative overflow-visible z-20">
+            <h3 className="text-xl font-bold flex items-center gap-2 text-white mb-6">
+              <FileSpreadsheet className="w-5 h-5 text-indigo-400" />
+              Active Course Context
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="relative">
+                <select
+                  value={selectedCourseId}
+                  onChange={(e) => {
+                    setSelectedCourseId(e.target.value);
+                    const c = courses.find(x => x.id === e.target.value);
+                    setCieMarks(c?.cieMarks?.toString() || "0");
+                  }}
+                  className="w-full bg-black/40 border border-white/10 text-white font-bold px-4 py-4 rounded-xl appearance-none outline-none focus:border-indigo-500/50 transition-all shadow-inner relative z-10"
+                >
+                  {courses.map(c => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.credits} Cr)</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-20" size={18} />
+              </div>
+
+              {stats && (
+                <div className="mt-6 pt-6 border-t border-white/5 space-y-4">
+                  <div className="flex justify-between items-center mb-2 px-1">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                      Internal Marks Achieved
+                    </label>
+                    <span className="text-[10px] font-mono text-slate-500">Max {stats.maxBase}</span>
+                  </div>
+                  <div className="relative flex items-center bg-black/40 border border-white/10 px-4 py-3 rounded-xl focus-within:border-indigo-500/50 transition-colors">
+                    <span className="font-black text-slate-600 mr-2">CIE</span>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={cieMarks}
+                      onChange={(e) => setCieMarks(e.target.value)}
+                      className="bg-transparent border-none outline-none w-full text-xl font-bold text-white font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </GlassCard>
+
+          {stats && (
+            <div className="bg-indigo-900/10 border border-indigo-500/20 rounded-2xl p-6 relative overflow-hidden backdrop-blur-md">
+              <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-indigo-500/20 rounded-xl text-indigo-400 shrink-0">
+                  <BrainCircuit className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white mb-1">Leverage Insight</h4>
+                  <p className="text-sm text-slate-400 leading-relaxed">
+                    {stats.scoredBase < (stats.maxBase * 0.4)
+                      ? `Your internal base is weak. Earning a ${targetGrade} grade will require a disproportionate push in the End Semester exam.`
+                      : `You have secured a strong foundation. Achieving ${targetGrade} requires only ${Math.ceil((stats.neededInEndSem / stats.maxExamMarks) * 100)}% of the final paper.`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-12">
-            <div className="grid lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-5 space-y-6">
-                <Card className="relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                  <div className="flex items-center justify-between mb-8 relative z-10">
-                    <h3 className="text-xl font-bold flex items-center gap-2 text-white">
-                      <Calculator className="w-5 h-5 text-primary" />
-                      Performance Inputs
-                    </h3>
-                    {!isLab && (
-                      <label className="flex items-center gap-2 cursor-pointer group/toggle">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant group-hover/toggle:text-on-surface transition-colors">
-                          Best of T1/T2
-                        </span>
-                        <div className={clsx(
-                          "w-9 h-5 rounded-full p-0.5 transition-colors duration-300 relative",
-                          useBestOf ? "bg-primary" : "bg-[var(--outline-variant)]"
-                        )}>
-                          <motion.div
-                            className="w-4 h-4 bg-white rounded-full shadow-sm"
-                            animate={{ x: useBestOf ? 16 : 0 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          />
-                        </div>
-                        <input type="checkbox" className="hidden" checked={useBestOf} onChange={() => setUseBestOf(!useBestOf)} />
-                      </label>
-                    )}
-                  </div>
-
-                  <div className="space-y-4 relative z-10">
-                    <AnimatePresence mode="popLayout">
-                      {!isLab ? (
-                        <motion.div
-                          key="theory"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20 }}
-                          className="grid grid-cols-2 gap-4"
-                        >
-                          <InputField label="T1 Marks" value={t1} setValue={setT1} max={30} icon="1" />
-                          <InputField label="T2 Marks" value={t2} setValue={setT2} max={30} icon="2" />
-                          <div className="col-span-2">
-                            <InputField label="Assignments" value={assig} setValue={setAssig} max={40} icon="A" />
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="lab"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20 }}
-                          className="space-y-4"
-                        >
-                          <InputField label="Assignments / Journal" value={assig} setValue={setAssig} max={40} icon="A" />
-                          <InputField label="Mock Practical (Optional)" value={t1} setValue={setT1} max={0} icon="M" disabled />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <div className="pt-4 mt-6 border-t border-[var(--outline-variant)]/30">
-                      <InputField
-                        label={isLab ? "Lab Final Exam" : "End Semester"}
-                        value={isLab ? labExam : endSem}
-                        setValue={isLab ? setLabExam : setEndSem}
-                        max={isLab ? 50 : maxEndSem}
-                        icon="E"
-                        highlight
-                      />
-                    </div>
-                  </div>
-                </Card>
-
-                <div className="bg-primary/5 border border-primary/20 rounded-3xl p-6 relative overflow-hidden backdrop-blur-xl">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-primary/10 rounded-xl text-primary">
-                      <BrainCircuit className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-on-surface mb-1">Strategic Insight</h4>
-                      <p className="text-sm text-on-surface-variant leading-relaxed">
-                        {stats.scoredBase < (stats.maxBase * 0.5)
-                          ? "Internal marks are weak."
-                          : "Strong internal base!"}
-                        {" "}
-                        {useBestOf && !isLab && (parseFloat(t1) === 0 || parseFloat(t2) === 0) && "Consider skipping the other test."}
-                      </p>
-                    </div>
-                  </div>
+        {/* Right Column: Prediction Logic */}
+        <div className="lg:col-span-7 space-y-6">
+          {stats && (
+            <GlassCard className="border border-white/5 p-8 relative overflow-hidden h-full flex flex-col justify-center">
+              
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 relative z-10">
+                <div>
+                  <h2 className="text-2xl font-black tracking-tight mb-1 flex items-center gap-2 text-white">
+                    <Calculator className="w-6 h-6 text-indigo-400" />
+                    Target Grade Analysis
+                  </h2>
+                </div>
+                <div className="flex items-center gap-3 bg-black/40 p-2 rounded-2xl border border-white/5 backdrop-blur-md">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-2">Target Grade</span>
+                  <select
+                    value={targetGrade}
+                    onChange={(e) => setTargetGrade(e.target.value)}
+                    className="bg-indigo-500/20 text-indigo-400 font-black text-xl w-16 text-center py-1 rounded-xl appearance-none outline-none border border-indigo-500/30 cursor-pointer"
+                  >
+                    {activePreset?.gradeScale
+                      .filter(g => g.points > 0 && g.isPass !== false)
+                      .map(g => (
+                        <option key={g.grade} value={g.grade}>{g.grade}</option>
+                      ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="lg:col-span-7 space-y-6">
-                <Card className="relative overflow-hidden z-20">
-                  <div className="absolute top-[-50%] right-[-10%] w-[300px] h-[300px] bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
-                    <div>
-                      <h2 className="text-2xl font-black tracking-tight mb-1 flex items-center gap-2 text-white">
-                        <Target className="w-6 h-6 text-primary" />
-                        Target Predictor
-                      </h2>
-                      <p className="text-sm font-medium text-on-surface-variant">Select desired grade to calculate required marks.</p>
+              <div className="relative z-10 bg-black/20 rounded-3xl p-8 border border-white/5 text-center flex flex-col items-center justify-center min-h-[200px]">
+                {stats.alreadyThere ? (
+                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center text-emerald-400">
+                    <CheckCircle2 className="w-16 h-16 mb-4 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
+                    <span className="font-extrabold tracking-tight text-2xl">Target Already Secured!</span>
+                    <span className="text-emerald-500/70 text-sm mt-2 font-medium">Internal marks alone exceed the boundary.</span>
+                  </motion.div>
+                ) : stats.achievable ? (
+                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+                    <span className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 block">End Semester Requirement</span>
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-7xl md:text-8xl font-black text-white tracking-tighter tabular-nums drop-shadow-2xl">
+                        {stats.neededInEndSem}
+                      </span>
+                      <span className="text-2xl font-bold text-slate-600">/ {stats.maxExamMarks}</span>
                     </div>
-                    <div className="flex items-center gap-3 bg-black/40 p-2 rounded-2xl border border-white/5 backdrop-blur-md">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant px-2">Target Grade</span>
-                      <select
-                        value={targetGrade}
-                        onChange={(e) => setTargetGrade(e.target.value)}
-                        className="bg-primary/20 text-primary font-black text-xl w-16 text-center py-1 rounded-xl appearance-none outline-none border border-primary/30 shadow-inner focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface cursor-pointer"
-                      >
-                        {activePreset.gradeScale
-                          .filter(g => g.points > 0 && g.isPass !== false)
-                          .map(g => (
-                            <option key={g.grade} value={g.grade}>{g.grade}</option>
-                          ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="relative z-10 bg-black/20 rounded-2xl p-6 border border-white/5 text-center flex flex-col items-center justify-center min-h-[140px]">
-                    {stats.alreadyThere ? (
-                      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center text-emerald-400">
-                        <CheckCircle2 className="w-12 h-12 mb-2" />
-                        <span className="font-extrabold tracking-tight text-xl">Target Already Achieved!</span>
-                      </motion.div>
-                    ) : stats.achievable ? (
-                      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-                        <span className="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-2 block">You need to score</span>
-                        <div className="flex items-baseline justify-center gap-2">
-                          <span className="text-6xl md:text-7xl font-black text-white tracking-tighter tabular-nums drop-shadow-2xl">
-                            {stats.neededInEndSem}
-                          </span>
-                          <span className="text-xl font-bold opacity-40">/ {stats.maxExamMarks}</span>
-                        </div>
-                        <span className="text-sm font-medium text-primary mt-2 block">in the {isLab ? 'Lab Exam' : 'End Semester'}</span>
-                      </motion.div>
-                    ) : (
-                      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center text-red-400">
-                        <AlertTriangle className="w-12 h-12 mb-2" />
-                        <span className="font-extrabold tracking-tight text-xl">Target Mathematically Impossible</span>
-                      </motion.div>
-                    )}
-                  </div>
-                </Card>
-
-                <Card className="grid md:grid-cols-2 gap-8 relative overflow-hidden">
-                  <div className="flex flex-col justify-center">
-                    <h3 className="text-lg font-bold flex items-center gap-2 mb-2 text-white">
-                       Score Distribution
-                    </h3>
-                    <div className="space-y-3">
-                      <LegendItem color="#3b82f6" label="Marks Scored" value={stats.totalScored} />
-                      <LegendItem color="#ef4444" label="Marks Lost" value={(stats.maxBase - stats.scoredBase) + (parseFloat(endSem) > 0 || parseFloat(labExam) > 0 ? (isLab ? 50 - parseFloat(labExam) : (type === 'theory100' ? 100 : 50) - parseFloat(endSem)) : 0)} />
-                      <LegendItem color="#cbd5e1" label="Remaining Potential" value={(!parseFloat(endSem) && !parseFloat(labExam)) ? (isLab ? 50 : (type === 'theory100' ? 100 : 50)) : 0} />
-                    </div>
-                  </div>
-                  <div className="h-[200px] w-full flex items-center justify-center relative">
-                    {mounted && (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={[
-                              { name: 'Scored', value: stats.totalScored },
-                              { name: 'Lost', value: (stats.maxBase - stats.scoredBase) + (parseFloat(endSem) > 0 || parseFloat(labExam) > 0 ? (isLab ? 50 - parseFloat(labExam) : (type === 'theory100' ? 100 : 50) - parseFloat(endSem)) : 0) },
-                              { name: 'Remaining', value: (!parseFloat(endSem) && !parseFloat(labExam)) ? (isLab ? 50 : (type === 'theory100' ? 100 : 50)) : 0 }
-                            ].filter(d => d.value > 0)}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                            stroke="none"
-                          >
-                            <Cell fill="#3b82f6" />
-                            <Cell fill="#ef4444" />
-                            <Cell fill="#cbd5e1" opacity={0.3} />
-                          </Pie>
-                          <RechartsTooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    )}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-3xl font-black text-white">{stats.percentage.toFixed(0)}%</span>
-                      <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Of Max</span>
-                    </div>
-                  </div>
-                </Card>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
-                  <StatCard label="Internal Base" value={`${stats.scoredBase.toFixed(1)}/${stats.maxBase}`} icon="box" />
-                  <StatCard label="Total Scored" value={`${stats.totalScored.toFixed(1)}/${stats.totalMax}`} icon="functions" highlight />
-                  <StatCard label="Running %" value={`${stats.percentage.toFixed(1)}%`} icon="percent" />
-                  <StatCard label="Current Grade" value={stats.currentGrade.grade} icon="star" colorClass={getGradeColorClass(stats.currentGrade.points, stats.currentGrade.isPass)} />
-                </div>
-
-                <div className="mt-6">
-                  <CalculationBreakdown
-                    preset={activePreset}
-                    subjects={[
-                      {
-                        name: isLab ? "Lab Subject (Predicted)" : "Theory Subject (Predicted)",
-                        credits: isLab ? 2 : 4,
-                        grade: stats.currentGrade.grade
-                      }
-                    ]}
-                    type="sgpa"
-                  />
-                </div>
-
-                <div className="flex justify-end pt-4">
-                  <button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="bg-white/5 hover:bg-white/10 text-on-surface border border-white/10 px-6 py-3 rounded-full flex items-center gap-3 transition-all active:scale-95 text-sm font-bold tracking-wide disabled:opacity-50"
-                  >
-                    {isSaving ? (
-                      <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : <Save className="w-4 h-4" />}
-                    {isSaving ? "Saving..." : "Save Scenario"}
-                  </button>
-                </div>
-            </div>
-          </div>
+                  </motion.div>
+                ) : (
+                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center text-rose-400">
+                    <AlertTriangle className="w-16 h-16 mb-4 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]" />
+                    <span className="font-extrabold tracking-tight text-2xl">Mathematically Unachievable</span>
+                    <span className="text-rose-400/70 text-sm mt-2 font-medium">Insufficient internal buffer to reach {targetGrade}.</span>
+                  </motion.div>
+                )}
+              </div>
+            </GlassCard>
+          )}
         </div>
       </div>
     </PageContainer>
-  );
-}
-
-interface InputFieldProps {
-  label: string;
-  value: string;
-  setValue: (val: string) => void;
-  max: number;
-  icon: string | React.ReactNode;
-  disabled?: boolean;
-  highlight?: boolean;
-}
-
-function InputField({ label, value, setValue, max, icon, disabled, highlight }: InputFieldProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (val === '' || val === '.') {
-      setValue(val);
-      return;
-    }
-    const num = parseFloat(val);
-    if (!isNaN(num) && num >= 0) {
-      if (num > max) {
-        setValue(max.toString());
-      } else {
-        setValue(val);
-      }
-    }
-  };
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-1.5 px-1">
-        <label className={clsx("text-xs font-bold uppercase tracking-wider", highlight ? "text-primary" : "text-on-surface-variant")}>
-          {label}
-        </label>
-        <span className="text-[10px] font-mono text-on-surface-variant/50">Max {max}</span>
-      </div>
-      <div className="relative group">
-        <div className={clsx(
-          "relative flex items-center bg-white/5 border px-4 py-3.5 rounded-2xl transition-all duration-300 outline-none",
-          disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-white/8 hover:border-white/20",
-          highlight 
-            ? "border-primary/50 focus-within:border-primary focus-within:bg-primary/5 focus-within:shadow-[0_0_20px_rgba(59,130,248,0.25)]" 
-            : "border-white/10 focus-within:border-primary focus-within:bg-primary/5 focus-within:shadow-[0_0_20px_rgba(59,130,248,0.25)]"
-        )}>
-          <span className="w-6 font-black text-on-surface-variant/40 mr-2">{icon}</span>
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.5"
-            value={value}
-            onChange={handleChange}
-            disabled={disabled}
-            placeholder={disabled ? "N/A" : "0"}
-            className="bg-transparent border-none outline-none w-full text-xl font-bold text-on-surface placeholder:text-on-surface-variant/30 font-mono"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface StatCardProps {
-  label: string;
-  value: string | number;
-  icon: string;
-  highlight?: boolean;
-  colorClass?: string;
-}
-
-function StatCard({ label, value, icon, highlight, colorClass }: StatCardProps) {
-  return (
-    <div className={clsx(
-      "p-5 rounded-2xl border transition-all duration-300 hover:-translate-y-1 relative overflow-hidden",
-      highlight 
-        ? "bg-primary/10 border-primary/20 shadow-[0_8px_32px_rgba(59,130,248,0.1)]" 
-        : "bg-white/5 border-white/10"
-    )}>
-      <span className={clsx("material-symbols-outlined mb-3 block text-2xl opacity-60", highlight && "text-primary")}>
-        {icon}
-      </span>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">{label}</p>
-      <p className={clsx("text-2xl font-black tracking-tight font-mono", colorClass || "text-on-surface")}>{value}</p>
-    </div>
-  );
-}
-
-interface LegendItemProps {
-  label: string;
-  value: number;
-  color: string;
-}
-
-function LegendItem({ label, value, color }: LegendItemProps) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-        <span className="text-sm font-semibold text-on-surface-variant">{label}</span>
-      </div>
-      <span className="text-sm font-black text-on-surface font-mono">{Number(value).toFixed(1)}</span>
-    </div>
   );
 }

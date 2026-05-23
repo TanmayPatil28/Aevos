@@ -144,7 +144,6 @@ export default function DashboardHeader({
       </div>
 
       {/* Atmospheric Void Background */}
-      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-[#4F8EF7]/5 blur-[120px] rounded-full pointer-events-none opacity-40 animate-pulse" />
     </div>
   );
 }

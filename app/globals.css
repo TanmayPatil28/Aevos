@@ -63,72 +63,22 @@
   --ease-floating: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-bouncy: cubic-bezier(0.68, -0.6, 0.32, 1.6);
 
-  /* Light Mode (Premium Soft Paper) */
-  --background: #fdfdfd;
-  --foreground: #020617;
-  
-  --primary: #4f46e5; /* Indigo-600 */
-  --primary-container: #eef2ff;
-  --primary-fixed: #4f46e5;
-  --primary-fixed-dim: #4338ca;
-
-  --secondary: #7c3aed; /* Violet-600 */
-  --secondary-container: #f5f3ff;
-
-  --tertiary: #475569;
-  --tertiary-container: #f8fafc;
-
-  --surface: #ffffff;
-  --surface-variant: #f1f5f9;
-  --surface-bright: #ffffff;
-  --surface-dim: #f8fafc;
-  
-  --surface-container-low: #f8fafc;
-  --surface-container: #f1f5f9;
-  --surface-container-high: #e2e8f0;
-  --surface-container-highest: #cbd5e1;
-  --surface-container-lowest: #ffffff;
-
-  --on-surface: #0f172a;
-  --on-surface-variant: #64748b;
-  
-  --outline: #e2e8f0;
-  --outline-variant: #f1f5f9;
-  
-  --error: #e11d48;
-  --error-container: #fff1f2;
-
-  --success: #059669; /* Emerald-600 */
-  --success-container: #ecfdf5;
-
-  --warning: #d97706; /* Amber-600 */
-  --warning-container: #fffbeb;
-
-  /* Premium Glass (Light) */
-  --glass-bg: rgba(255, 255, 255, 0.45);
-  --glass-border: rgba(15, 23, 42, 0.05);
-  --glass-blur: 16px;
-  
-  --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
-}
-
-.dark {
-  /* Dark Mode (Apple Level Matt Transition) */
+  /* Unified AMOLED Dark Mode */
   --background: #000000;
   --foreground: #fefefe;
   
-  --primary: #3b82f6; /* More vibrant Apple-style Blue */
+  --primary: #3b82f6;
   --primary-container: rgba(59, 130, 246, 0.1);
   --primary-fixed: #dbeafe;
   --primary-fixed-dim: #60a5fa;
 
-  --secondary: #a855f7; /* Vibrant Purple */
+  --secondary: #a855f7;
   --secondary-container: rgba(168, 85, 247, 0.1);
 
   --tertiary: #94a3b8;
   --tertiary-container: #0d0d0d;
 
-  --surface: #0a0a0a; /* Premium Matt Black */
+  --surface: #0a0a0a; /* Elevated surface */
   --surface-variant: #121212;
   --surface-bright: #1c1c1c;
   --surface-dim: #000000;
@@ -148,19 +98,23 @@
   --error: #fb7185;
   --error-container: #4c0519;
 
-  --success: #34d399; /* Emerald-400 */
+  --success: #34d399;
   --success-container: rgba(52, 211, 153, 0.15);
 
-  --warning: #fbbf24; /* Amber-400 */
+  --warning: #fbbf24;
   --warning-container: rgba(251, 191, 36, 0.15);
 
-  /* Premium Glass (Apple Aesthetics) */
+  /* Premium Glass (Deep Dark) */
   --glass-bg: rgba(10, 10, 10, 0.6);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: 32px;
   
   --shadow-premium: 0 30px 60px -12px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.08);
   --shadow-premium-hover: 0 50px 100px -20px rgba(0, 0, 0, 0.95), 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.dark {
+  /* Keeping empty .dark to preserve any specific overrides, though all variables are now in :root */
 }
 
 /* ═══════════════════════════════════════════
@@ -225,18 +179,16 @@
 
 @layer base {
   body {
-    background-color: var(--background);
+    background-color: #000000;
     color: var(--foreground);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    transition: background-color 1.2s cubic-bezier(0.23, 1, 0.32, 1), 
-                color 1.2s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   html, body {
-    background-color: var(--background);
+    background-color: #000000;
     scroll-behavior: smooth;
   }
 

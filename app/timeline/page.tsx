@@ -15,6 +15,8 @@ import Card from '@/components/ui/Card';
 
 const MotionCard = motion(Card);
 
+import { useUSMStore } from '@/stores/usmStore';
+
 // --- Types ---
 interface SemesterNode {
   id: number;
@@ -26,21 +28,53 @@ interface SemesterNode {
   color: string;
 }
 
-const SEMESTERS: SemesterNode[] = [
-  { id: 1, title: "Semester 01", status: 'completed', sgpa: "9.2", focus: ["Engineering Physics", "Calculus"], achievement: "Dean's List", color: "from-blue-500 to-cyan-400" },
-  { id: 2, title: "Semester 02", status: 'completed', sgpa: "8.8", focus: ["C Programming", "Engineering Graphics"], color: "from-cyan-400 to-emerald-400" },
-  { id: 3, title: "Semester 03", status: 'completed', sgpa: "9.5", focus: ["Data Structures", "Digital Logic"], achievement: "Hackathon Winner", color: "from-emerald-400 to-green-400" },
-  { id: 4, title: "Semester 04", status: 'current', sgpa: "TBD", focus: ["Algorithms", "OS", "Database"], color: "from-green-400 to-yellow-400" },
-  { id: 5, title: "Semester 05", status: 'upcoming', focus: ["Computer Networks", "AI"], color: "from-yellow-400 to-orange-400" },
-  { id: 6, title: "Semester 06", status: 'upcoming', focus: ["Software Engineering", "Security"], color: "from-orange-400 to-red-400" },
-  { id: 7, title: "Semester 07", status: 'upcoming', focus: ["Cloud Computing", "Project I"], color: "from-red-400 to-pink-400" },
-  { id: 8, title: "Semester 08", status: 'upcoming', focus: ["Industrial Internship"], color: "from-pink-400 to-purple-500" },
+const COLORS = [
+  "from-blue-500 to-cyan-400",
+  "from-cyan-400 to-emerald-400",
+  "from-emerald-400 to-green-400",
+  "from-green-400 to-yellow-400",
+  "from-yellow-400 to-orange-400",
+  "from-orange-400 to-red-400",
+  "from-red-400 to-pink-400",
+  "from-pink-400 to-purple-500"
 ];
 
 export default function AcademicTimeline() {
   const { activePreset } = useUniversity();
+  const store = useUSMStore();
   const [mounted, setMounted] = useState(false);
-  const [selectedSem, setSelectedSem] = useState<number | null>(4);
+  const [selectedSem, setSelectedSem] = useState<number | null>(null);
+
+  const dynamicSemesters: SemesterNode[] = store.semesterHistory.map((sh, idx) => ({
+    id: sh.semester,
+    title: `Semester ${String(sh.semester).padStart(2, '0')}`,
+    status: 'completed',
+    sgpa: sh.sgpa.toFixed(2),
+    focus: store.courses.filter(c => (c.semester || 1) === sh.semester).map((c: any) => c.name).slice(0, 5),
+    color: COLORS[idx % COLORS.length]
+  }));
+  
+  // Find current semester if any courses exist that aren't in history
+  const maxHistorySem = store.semesterHistory.length > 0 ? store.semesterHistory[store.semesterHistory.length - 1].semester : 0;
+  const maxCourseSem = store.courses.reduce((max, c) => Math.max(max, c.semester || 1), 1);
+  
+  if (maxCourseSem > maxHistorySem) {
+    dynamicSemesters.push({
+      id: maxCourseSem,
+      title: `Semester ${String(maxCourseSem).padStart(2, '0')}`,
+      status: 'current',
+      sgpa: 'TBD',
+      focus: store.courses.filter(c => (c.semester || 1) === maxCourseSem).map((c: any) => c.name).slice(0, 5),
+      color: COLORS[(maxCourseSem - 1) % COLORS.length]
+    });
+  }
+
+  useEffect(() => {
+    setMounted(true);
+    if (dynamicSemesters.length > 0 && selectedSem === null) {
+       setSelectedSem(dynamicSemesters[dynamicSemesters.length - 1].id);
+    }
+  }, [dynamicSemesters, selectedSem]);
 
   useEffect(() => {
     setMounted(true);
@@ -49,10 +83,7 @@ export default function AcademicTimeline() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#050810]">
-      {/* Background Ambience */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen relative overflow-hidden bg-[#000000]">
       
       <PageContainer className="pt-24 pb-32 max-w-[1200px] space-y-0 relative z-10">
         
@@ -106,7 +137,7 @@ export default function AcademicTimeline() {
             <div className="absolute left-6 top-8 bottom-8 w-[2px] bg-gradient-to-b from-blue-500/50 via-purple-500/50 to-transparent" />
             
             <div className="space-y-4">
-              {SEMESTERS.map((sem, idx) => (
+              {dynamicSemesters.map((sem, idx) => (
                 <motion.button
                   key={sem.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -121,7 +152,7 @@ export default function AcademicTimeline() {
                   {/* Node Icon */}
                   <div className={clsx(
                     "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 z-10 transition-all duration-500 shadow-lg",
-                    selectedSem === sem.id ? `bg-gradient-to-br ${sem.color} scale-110` : "bg-[#0A0F1E] border border-white/5 text-white/20 group-hover:text-white/40"
+                    selectedSem === sem.id ? `bg-gradient-to-br ${sem.color} scale-110` : "bg-[#000000] border border-white/5 text-white/20 group-hover:text-white/40"
                   )}>
                     <span className={clsx("font-black text-lg", selectedSem === sem.id ? "text-white" : "text-inherit")}>
                       {sem.id}
@@ -168,7 +199,7 @@ export default function AcademicTimeline() {
                   {/* Decorative Gradient Aura */}
                   <div className={clsx(
                     "absolute -top-24 -right-24 w-64 h-64 blur-[80px] opacity-20 transition-all duration-700",
-                    `bg-gradient-to-br ${SEMESTERS.find(s => s.id === selectedSem)?.color}`
+                    `bg-gradient-to-br ${dynamicSemesters.find(s => s.id === selectedSem)?.color}`
                   )} />
 
                   <div className="relative z-10 space-y-10">
@@ -180,31 +211,35 @@ export default function AcademicTimeline() {
                           <span className="text-blue-400 font-black uppercase tracking-widest text-xs">Academic Profile</span>
                         </div>
                         <h2 className="text-4xl font-black text-white tracking-tighter">
-                          {SEMESTERS.find(s => s.id === selectedSem)?.title}
+                          {dynamicSemesters.find(s => s.id === selectedSem)?.title}
                         </h2>
                       </div>
                       <div className="bg-white/5 px-6 py-4 rounded-2xl border border-white/10 text-center">
                         <span className="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">GPA</span>
-                        <span className="text-3xl font-black text-white">{SEMESTERS.find(s => s.id === selectedSem)?.sgpa || "—"}</span>
+                        <span className="text-3xl font-black text-white">{dynamicSemesters.find(s => s.id === selectedSem)?.sgpa || "—"}</span>
                       </div>
                     </div>
 
                     {/* Content Sections */}
                     <div className="grid md:grid-cols-2 gap-10">
-                      <div className="space-y-4">
+                      <div className="space-y-4 col-span-2">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2">
                           <BookOpen className="w-3 h-3" /> Core Focus
                         </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {SEMESTERS.find(s => s.id === selectedSem)?.focus.map(item => (
-                            <span key={item} className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-lg text-sm text-white/70 font-medium">
-                              {item}
-                            </span>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {store.courses.filter(c => (c.semester || 1) === selectedSem).map((course, idx) => (
+                            <div key={course.id + idx} className="flex flex-col p-4 bg-white/5 border border-white/5 rounded-xl">
+                              <span className="text-sm text-white/90 font-bold leading-tight">{course.name}</span>
+                              <div className="mt-2 flex justify-between items-center">
+                                <span className="text-xs text-white/50">{course.code}</span>
+                                <span className={clsx("text-xs font-black", course.grade === 'F' ? 'text-red-400' : 'text-emerald-400')}>{course.grade || '-'}</span>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
 
-                      {SEMESTERS.find(s => s.id === selectedSem)?.achievement && (
+                      {dynamicSemesters.find(s => s.id === selectedSem)?.achievement && (
                         <div className="space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2">
                             <Award className="w-3 h-3" /> Outcome
@@ -212,7 +247,7 @@ export default function AcademicTimeline() {
                           <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3">
                             <Sparkles className="text-emerald-400 w-5 h-5 flex-shrink-0" />
                             <span className="text-sm font-bold text-emerald-400">
-                              {SEMESTERS.find(s => s.id === selectedSem)?.achievement}
+                              {dynamicSemesters.find(s => s.id === selectedSem)?.achievement}
                             </span>
                           </div>
                         </div>

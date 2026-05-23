@@ -564,8 +564,6 @@ function StellarCTA() {
               className="w-full h-full glass-card rounded-[2rem] border border-white/10 bg-black/40 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)] inset-0 absolute overflow-hidden p-8 flex flex-col justify-between"
             >
               {/* Inner HUD Glow */}
-              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-secondary/20 blur-[60px] rounded-full pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[150px] h-[150px] bg-primary/20 blur-[50px] rounded-full pointer-events-none" />
 
               {/* HUD Header */}
               <div className="flex justify-between items-start relative z-10">

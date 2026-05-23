@@ -15,9 +15,6 @@ export default function DashboardError({ error, reset }: ErrorProps) {
 
   return (
     <div className="min-h-[80vh] pt-24 pb-20 px-4 md:px-8 flex items-center justify-center relative overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute top-[20%] left-[20%] w-[35vw] h-[35vw] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[20%] w-[35vw] h-[35vw] bg-red-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-2xl text-center">
         <div className="glass-card rounded-[3rem] p-10 md:p-14 border border-white/10 flex flex-col items-center">

@@ -132,7 +132,7 @@ export default function Navbar() {
       className={cn(
         "fixed top-0 left-0 right-0 z-[9999] transition-all duration-700 flex justify-center px-4 md:px-8 antialiased font-body",
         isScrolled
-          ? "h-14 mt-0 bg-[#0A0F1E]/95 backdrop-blur-[45px] shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8),0_0_80px_-20px_rgba(79,142,247,0.15)]"
+          ? "h-14 mt-0 bg-[#000000]/95 backdrop-blur-[45px] shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8),0_0_80px_-20px_rgba(79,142,247,0.15)]"
           : "h-16 mt-0 bg-transparent"
       )}
     >
@@ -166,7 +166,7 @@ export default function Navbar() {
 
         {/* CENTER: LIQUID PILL */}
         <nav className="hidden md:flex items-center">
-          <div className="bg-[#0A0F1E]/40 border border-white/[0.05] rounded-full p-1.5 flex items-center gap-1 shadow-2xl backdrop-blur-3xl relative">
+          <div className="bg-[#000000]/40 border border-white/[0.05] rounded-full p-1.5 flex items-center gap-1 shadow-2xl backdrop-blur-3xl relative">
             {MAIN_LINKS.map((link) => (
               <LiquidNavItem
                 key={link.href}
@@ -237,7 +237,7 @@ export default function Navbar() {
                       backgroundColor: "#000000",
                       backdropFilter: "blur(10px)"
                     }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 w-[260px] bg-[#0A0F1E]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-2 z-[99999] origin-top"
+                    className="absolute top-full left-1/2 -translate-x-1/2 w-[260px] bg-[#000000]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-2 z-[99999] origin-top"
                   >
                     <div className="absolute inset-0 rounded-[24px] border-[0.5px] border-gradient-to-br from-[#4F8EF7]/30 via-transparent to-[#A855F7]/30 pointer-events-none" />
                     <div className="px-4 pt-3 pb-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#4F8EF7]/50">
@@ -333,7 +333,7 @@ export default function Navbar() {
             <motion.div
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 w-[300px] h-full bg-[#0A0F1E]/98 backdrop-blur-[50px] border-l border-white/[0.05] z-[100001] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
+              className="fixed top-0 right-0 w-[300px] h-full bg-[#000000]/98 backdrop-blur-[50px] border-l border-white/[0.05] z-[100001] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
             >
               <div className="flex items-center justify-between mb-8">
                 <span className="font-headline font-black text-2xl text-white tracking-widest">GF.OS</span>
