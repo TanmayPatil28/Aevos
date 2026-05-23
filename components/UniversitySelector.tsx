@@ -214,7 +214,7 @@ export default function UniversitySelector({ variant = "navbar" }: UniversitySel
             animate={{ opacity: 1, scale: 1, y: 12, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.92, y: 8, filter: "blur(10px)" }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="absolute top-full right-0 w-[340px] bg-[#0A0F1E]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-3 z-[99999] origin-top-right select-none"
+            className="absolute top-full right-0 w-[340px] bg-[#000000]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-3 z-[99999] origin-top-right select-none"
             onKeyDown={handleKeyDown}
           >
             {/* Glow border */}

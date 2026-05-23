@@ -15,33 +15,66 @@ export interface DerivedSemesterCredits {
  * Memoized using WeakMap to ensure request isolation and SSR safety.
  */
 export const selectActiveCourses = createSelector((state: USMStoreState): CourseState[] => {
-  const { courses, simulation } = state;
-  if (!simulation.isSimulating) {
-    return courses;
+  if (!state.identity?.hasAuthoritativeData) {
+    return [];
   }
-  return courses.map((course) => {
-    const simCourse = simulation.simulatedCourses[course.id] || {};
-    const simAtt = simulation.simulatedAttendance[course.id] || {};
 
-    const updatedBunked = Math.max(
-      0,
-      course.attendanceBunked + (simAtt.bunkedOffset || 0)
-    );
+  const { courses, simulation } = state;
+  const activeScenario = simulation?.activeScenarios?.find(s => s.id === simulation?.selectedScenarioId);
+  
+  // Find the highest semester index to determine the "active" semester
+  const maxSemester = courses.reduce((max, c) => Math.max(max, c.semester || 1), 1);
+  const currentSemesterCourses = courses.filter(c => (c.semester || 1) === maxSemester);
+  
+  if (!activeScenario) {
+    return currentSemesterCourses;
+  }
+  
+  return currentSemesterCourses.map((course) => {
+    const courseOverride = activeScenario.overrides.courses[course.id] || activeScenario.overrides.courses[course.code] || {};
 
     let grade = course.grade;
-    if (simCourse.grade !== undefined) {
-      grade = simCourse.grade;
+    if (courseOverride.grade !== undefined) {
+      grade = courseOverride.grade;
     }
 
     return {
       ...course,
-      cieMarks: simCourse.cieMarks !== undefined ? simCourse.cieMarks : course.cieMarks,
-      seeMarks: simCourse.seeMarks !== undefined ? simCourse.seeMarks : course.seeMarks,
+      cieMarks: courseOverride.cieMarks !== undefined ? courseOverride.cieMarks : course.cieMarks,
+      seeMarks: courseOverride.seeMarks !== undefined ? courseOverride.seeMarks : course.seeMarks,
       grade,
-      attendanceBunked: updatedBunked,
     };
   });
 });
+
+/**
+ * Returns courses for a specific semester, factoring in simulation overrides if any.
+ */
+export const selectCoursesBySemester = (state: USMStoreState, semesterIndex: number): CourseState[] => {
+  if (!state.identity?.hasAuthoritativeData) return [];
+
+  const { courses, simulation } = state;
+  const activeScenario = simulation?.activeScenarios?.find(s => s.id === simulation?.selectedScenarioId);
+  
+  const semesterCourses = courses.filter(c => (c.semester || 1) === semesterIndex);
+
+  if (!activeScenario) {
+    return semesterCourses;
+  }
+
+  return semesterCourses.map((course) => {
+    const courseOverride = activeScenario.overrides.courses[course.id] || activeScenario.overrides.courses[course.code] || {};
+    let grade = course.grade;
+    if (courseOverride.grade !== undefined) grade = courseOverride.grade;
+
+    return {
+      ...course,
+      cieMarks: courseOverride.cieMarks !== undefined ? courseOverride.cieMarks : course.cieMarks,
+      seeMarks: courseOverride.seeMarks !== undefined ? courseOverride.seeMarks : course.seeMarks,
+      grade,
+    };
+  });
+};
 
 /**
  * Calculates current or simulated semester SGPA and active CGPA.
@@ -52,6 +85,10 @@ export const selectDerivedGPA = createSelector((state: USMStoreState): {
   cgpa: number;
   percentage: number;
 } => {
+  if (!state.identity?.hasAuthoritativeData) {
+    return { sgpa: 0, cgpa: 0, percentage: 0 };
+  }
+
   const activeCourses = selectActiveCourses(state);
   const preset = getPresetById(state.presetId);
   
@@ -104,6 +141,10 @@ export const selectDerivedGPA = createSelector((state: USMStoreState): {
  * Memoized using WeakMap to ensure request isolation and SSR safety.
  */
 export const selectSemesterCredits = createSelector((state: USMStoreState): DerivedSemesterCredits => {
+  if (!state.identity?.hasAuthoritativeData) {
+    return { totalActiveCredits: 0, earnedCredits: 0, simulatedEarnedCredits: 0, failedCredits: 0 };
+  }
+
   const activeCourses = selectActiveCourses(state);
   const totalActiveCredits = activeCourses.reduce((sum, c) => sum + c.credits, 0);
   const earnedCredits = state.academic.earnedCredits;
@@ -134,5 +175,37 @@ export const selectSemesterCredits = createSelector((state: USMStoreState): Deri
     earnedCredits,
     simulatedEarnedCredits: earnedCredits + simEarned,
     failedCredits,
+  };
+});
+
+/**
+ * Global Active Context Resolution
+ * Provides a unified snapshot of the current semantic academic state.
+ */
+export const resolveActiveAcademicContext = createSelector((state: USMStoreState) => {
+  const activeCourses = selectActiveCourses(state);
+  const { sgpa, cgpa, percentage } = selectDerivedGPA(state);
+  const { totalActiveCredits, earnedCredits, simulatedEarnedCredits, failedCredits } = selectSemesterCredits(state);
+  
+  const isSimulationActive = !!(state.simulation?.activeScenarios?.find(s => s.id === state.simulation?.selectedScenarioId));
+  
+  return {
+    identity: state.identity,
+    presetId: state.presetId,
+    academic: state.academic,
+    semesterHistory: state.semesterHistory,
+    activeCourses,
+    metrics: {
+      sgpa,
+      cgpa,
+      percentage,
+      totalActiveCredits,
+      earnedCredits,
+      simulatedEarnedCredits,
+      failedCredits,
+    },
+    workspaceMode: isSimulationActive ? 'SIMULATION' : 'AUTHORITATIVE',
+    workspaceContexts: state.workspaceContexts,
+    healthScore: state.healthScore,
   };
 });

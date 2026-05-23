@@ -19,7 +19,7 @@ export function EmptyState({
   onAction,
 }: EmptyStateProps) {
   return (
-    <GlassCard className="flex flex-col items-center justify-center text-center p-8 border-dashed border-white/10 bg-[#0D1321]/20">
+    <GlassCard className="flex flex-col items-center justify-center text-center p-8 border-dashed border-white/10 bg-[#000000]/20">
       <div className="p-4 rounded-full bg-white/5 border border-white/10 text-slate-400 mb-4">
         <Icon size={32} className="stroke-[1.5]" />
       </div>

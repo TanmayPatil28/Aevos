@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { calculateRequiredGPA, getDifficultyLevel, sgpaToPercentage as calcSgpaToPercentage } from "@/lib/presets";
@@ -53,8 +52,11 @@ function getRowDifficulty(gpa: number) {
   return { barWidth: 25, barColor: "bg-green-500", tint: "bg-green-500/[0.03]", label: "Easy" };
 }
 
+import { useUSMStore } from "@/stores/usmStore";
+
 export default function PlannerPage() {
   const { activePreset, maxGradePoint } = useUniversity();
+  const store = useUSMStore();
   const [currentCGPA, setCurrentCGPA] = useState("");
   const [completedSemesters, setCompletedSemesters] = useState("");
   const [totalCredits, setTotalCredits] = useState("");
@@ -69,11 +71,17 @@ export default function PlannerPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    if (store.academic.currentCgpa) {
+      setCurrentCGPA(store.academic.currentCgpa.toFixed(2));
+      setCompletedSemesters(store.semesterHistory.length.toString());
+      setTotalCredits(store.academic.earnedCredits.toString());
+      const remSems = Math.max(1, 8 - store.semesterHistory.length);
+      setRemainingSemesters(remSems.toString());
+    }
   }, []);
 
   // Live validation for green glow on valid fields
@@ -258,8 +266,6 @@ export default function PlannerPage() {
   };
 
 
-  const isDark = theme === "dark";
-
   // Removed getInputClass and labelClass helper to use componentized Input instead
 
   // Expert insight text
@@ -274,9 +280,6 @@ export default function PlannerPage() {
 
   return (
     <PageContainer className="relative z-10 space-y-12">
-      {/* Glowing Orbs */}
-      <div className="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-[#4F8EF7]/10 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
-      <div className="fixed bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
 
         {/* ━━━ PAGE HEADER ━━━ */}
         <StaggerContainer className="text-center space-y-4">
@@ -657,11 +660,11 @@ export default function PlannerPage() {
                           />
                           <Tooltip
                             contentStyle={{
-                              backgroundColor: isDark ? "#12141C" : "#1a1a2e",
+                              backgroundColor: "#111111",
                               borderRadius: "12px",
                               border: "1px solid rgba(255,255,255,0.1)",
                               color: "#fff",
-                              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
                             }}
                           />
                           <Line

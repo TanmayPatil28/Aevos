@@ -188,7 +188,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 200, mass: 0.8 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-[#0A0F1E]/80 backdrop-blur-[100px] border-l border-white/[0.08] z-[101] shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-y-auto custom-scrollbar"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-[#000000]/80 backdrop-blur-[100px] border-l border-white/[0.08] z-[101] shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-y-auto custom-scrollbar"
             >
               {/* Refractive Inner Borders */}
               <div className="absolute inset-y-0 left-0 w-[0.5px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />

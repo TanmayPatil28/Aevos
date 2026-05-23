@@ -93,7 +93,7 @@ export default function PresetInfoCard({ compact = false }: { compact?: boolean 
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         className={clsx(
-          "rounded-[20px] bg-[#0A0F1A]/95 border p-5 relative overflow-hidden group hover:border-[#4F8EF7]/20 transition-all duration-500 shadow-xl",
+          "rounded-[20px] bg-[#000000]/95 border p-5 relative overflow-hidden group hover:border-[#4F8EF7]/20 transition-all duration-500 shadow-xl",
           isIsolatedFallback ? "border-red-500/25 bg-gradient-to-b from-[#1C0D0D]/95 to-[#0A0F1A]/95" : "border-white/[0.06]"
         )}
       >

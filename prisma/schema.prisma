@@ -48,8 +48,10 @@ model User {
   sessions      Session[]
   calculations  Calculation[]
   plans         Plan[]
-  enrollments   Enrollment[]
-  createdAt     DateTime  @default(now())
+  enrollments       Enrollment[]
+  academicSnapshots AcademicSnapshot[]
+  activeSnapshotId  String?            @map("active_snapshot_id")
+  createdAt         DateTime           @default(now())
 
   @@map("users")
 }
@@ -134,4 +136,32 @@ model AttendanceLog {
   enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@map("attendance_logs")
+}
+
+model AcademicSnapshot {
+  id                   String   @id @default(cuid())
+  userId               String   @map("user_id")
+  createdAt            DateTime @default(now()) @map("created_at")
+  
+  // Provenance & Versioning Engine
+  sourceType           String   @map("source_type") // e.g., 'digicampus', 'ocr', 'manual'
+  sourceInstitution    String   @map("source_institution") // e.g., 'jspm', 'sppu'
+  snapshotType         String   @map("snapshot_type") // e.g., 'official_import', 'manual_entry', 'simulation', 'migration', 'recovery'
+  parserVersion        String   @map("parser_version")
+  regulationVersion    String   @map("regulation_version")
+  normalizationVersion String   @map("normalization_version")
+  schemaVersion        String   @default("1.0") @map("schema_version")
+  
+  // Integrity & Trust Metadata
+  confidenceScore      Float    @map("confidence_score")
+  checksumHash         String   @map("checksum_hash")
+  verificationStatus   String   @default("unverified") @map("verification_status") // verified, unverified, partial, conflicted, corrupted
+  
+  // The Immutable Academic State Payload
+  academicProfile      Json     @map("academic_profile")
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("academic_snapshots")
 }

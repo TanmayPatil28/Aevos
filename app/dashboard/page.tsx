@@ -57,12 +57,6 @@ export default async function DashboardPage() {
   const initialEnrollments = JSON.parse(JSON.stringify(rawEnrollments));
 
   return (
-    <DashboardClient
-      userName={session.user.name ?? "User"}
-      initialCalculations={initialCalculations}
-      initialPlans={initialPlans}
-      initialEnrollments={initialEnrollments}
-      dbError={dbError}
-    />
+    <DashboardClient />
   );
 }

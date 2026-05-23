@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function DashboardLoading() {
   return (
-    <div className="min-h-screen bg-[#090D16] text-white p-6 md:p-8 space-y-8 selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div className="min-h-screen bg-[#000000] text-white p-6 md:p-8 space-y-8 selection:bg-indigo-500/30 selection:text-indigo-200">
       {/* Header Skeleton */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
         <div className="space-y-2">

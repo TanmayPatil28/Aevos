@@ -104,8 +104,8 @@ export default function ForecastPage() {
     const persona = demoPersonas[personaId];
     if (!persona) return;
     
-    store.stopSimulation();
-    store.resetSimulation();
+    store.clearSimulationScenarios();
+    store.selectSimulationScenario(null);
     
     store.setPresetId(persona.presetId);
     store.setAcademic(persona.academic);
@@ -122,8 +122,6 @@ export default function ForecastPage() {
   return (
     <PageContainer className="relative z-10 space-y-10">
       {/* Background decorations */}
-      <div className="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-indigo-500/5 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
-      <div className="fixed bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-violet-500/5 rounded-full blur-[120px] mix-blend-screen -z-10 pointer-events-none" />
 
       {/* Page Header */}
       <div className="text-center space-y-4 max-w-3xl mx-auto">

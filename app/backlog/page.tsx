@@ -31,6 +31,7 @@ interface BacklogItem {
   subjectName: string;
   credits: string;
   expectedGrade: string; // Grade if failed (usually 0)
+  semester?: number;
 }
 
 interface BacklogResult {
@@ -49,15 +50,17 @@ interface BacklogResult {
   totalBacklogCredits: number;
 }
 
+import { useUSMStore } from "@/stores/usmStore";
+import { selectSemesterCredits } from "@/stores/selectors/academic";
+
 export default function BacklogPage() {
   const { maxGradePoint, activePreset } = useUniversity();
+  const store = useUSMStore();
   const [currentCGPA, setCurrentCGPA] = useState("");
   const [completedCredits, setCompletedCredits] = useState("");
   const [semesterCredits, setSemesterCredits] = useState("20");
   const [expectedGPA, setExpectedGPA] = useState("8.0"); // GPA for non-backlog subjects
-  const [backlogs, setBacklogs] = useState<BacklogItem[]>([
-    { id: "1", subjectName: "Engineering Math", credits: "4", expectedGrade: "0" }
-  ]);
+  const [backlogs, setBacklogs] = useState<BacklogItem[]>([]);
 
   const [result, setResult] = useState<BacklogResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -66,10 +69,35 @@ export default function BacklogPage() {
 
   const [mounted, setMounted] = useState(false);
 
-  // Removed inputClass and labelClass helper to use componentized Input instead
-
   useEffect(() => {
     setMounted(true);
+    if (store.academic.currentCgpa) {
+      setCurrentCGPA(store.academic.currentCgpa.toFixed(2));
+      setCompletedCredits(store.academic.earnedCredits.toString());
+      const semCredits = selectSemesterCredits(store);
+      if (semCredits.totalActiveCredits > 0) {
+         setSemesterCredits(semCredits.totalActiveCredits.toString());
+      }
+      
+      const backlogCourses = store.courses.filter(c => {
+         const scale = activePreset?.gradeScale.find(g => g.grade === c.grade);
+         return scale && scale.isPass === false;
+      });
+      
+      if (backlogCourses.length > 0) {
+        setBacklogs(backlogCourses.map(c => ({
+          id: c.id || Math.random().toString(),
+          subjectName: c.name,
+          credits: c.credits.toString(),
+          expectedGrade: "0",
+          semester: c.semester
+        })));
+      } else {
+        setBacklogs([{ id: "1", subjectName: "", credits: "4", expectedGrade: "0" }]);
+      }
+    } else {
+      setBacklogs([{ id: "1", subjectName: "Engineering Math", credits: "4", expectedGrade: "0" }]);
+    }
   }, []);
 
   const addBacklog = () => {
@@ -212,8 +240,6 @@ export default function BacklogPage() {
 
   return (
     <PageContainer className="relative z-10 space-y-12">
-      <div className="fixed top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-primary/10 rounded-full blur-[140px] mix-blend-screen -z-10 pointer-events-none animate-pulse" />
-      <div className="fixed bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-secondary/15 rounded-full blur-[140px] mix-blend-screen -z-10 pointer-events-none animate-pulse" />
         <StaggerContainer className="text-center space-y-4">
           <StaggerItem>
             <h1 className="text-5xl md:text-7xl font-headline font-black tracking-tighter mb-6 text-white drop-shadow-2xl">
@@ -320,7 +346,12 @@ export default function BacklogPage() {
                       exit={{ opacity: 0, x: -20, scale: 0.95 }}
                       className="grid grid-cols-12 gap-3 items-center group/row"
                     >
-                      <div className="col-span-5">
+                      <div className="col-span-5 relative">
+                        {backlog.semester && (
+                          <div className="absolute -top-3 left-4 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full z-10 font-bold uppercase tracking-wider backdrop-blur-md">
+                            Sem {backlog.semester}
+                          </div>
+                        )}
                         <Input
                           type="text"
                           value={backlog.subjectName}

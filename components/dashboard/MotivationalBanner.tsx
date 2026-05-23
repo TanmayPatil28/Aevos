@@ -66,8 +66,6 @@ const MotivationalBanner = memo(function MotivationalBanner({ currentCgpa, targe
       </div>
 
       {/* Decorative Orbs */}
-      <div className="absolute top-[-10%] right-[-5%] w-[30%] h-[150%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[120%] bg-secondary/5 rounded-full blur-[120px] pointer-events-none" />
     </MotionCard>
   );
 });

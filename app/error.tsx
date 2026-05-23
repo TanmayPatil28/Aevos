@@ -17,8 +17,8 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#090D16] p-6 text-white selection:bg-indigo-500/30 selection:text-indigo-200">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#090D16] to-[#090D16] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-[#000000] p-6 text-white selection:bg-indigo-500/30 selection:text-indigo-200">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#000000] to-[#000000] pointer-events-none" />
       
       <GlassCard className="max-w-md w-full p-8 text-center border-red-500/20 shadow-2xl relative overflow-hidden">
         <div className="absolute -top-12 -right-12 w-24 h-24 bg-red-500/10 rounded-full blur-xl pointer-events-none" />

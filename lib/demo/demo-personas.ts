@@ -37,7 +37,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         cieMarks: 28,
         seeMarks: 75,
         attendanceTotal: 40,
-        attendanceBunked: 3,
+        attendanceBunked: 3, semester: 4
       },
       {
         id: "cs-402",
@@ -48,7 +48,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         cieMarks: 27,
         seeMarks: 70,
         attendanceTotal: 40,
-        attendanceBunked: 2,
+        attendanceBunked: 2, semester: 4
       },
       {
         id: "cs-403",
@@ -59,7 +59,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         cieMarks: 29,
         seeMarks: 78,
         attendanceTotal: 30,
-        attendanceBunked: 2,
+        attendanceBunked: 2, semester: 4
       },
       {
         id: "cs-404",
@@ -70,7 +70,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         cieMarks: 26,
         seeMarks: 68,
         attendanceTotal: 30,
-        attendanceBunked: 1,
+        attendanceBunked: 1, semester: 4
       },
       {
         id: "cs-405",
@@ -81,7 +81,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         cieMarks: 29,
         seeMarks: 82,
         attendanceTotal: 20,
-        attendanceBunked: 0,
+        attendanceBunked: 0, semester: 4
       },
     ],
     semesterHistory: [
@@ -124,7 +124,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 4,
         cieMarks: 22,
         attendanceTotal: 40,
-        attendanceBunked: 8,
+        attendanceBunked: 8, semester: 4
       },
       {
         id: "cs-402",
@@ -133,7 +133,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 4,
         cieMarks: 18,
         attendanceTotal: 40,
-        attendanceBunked: 11,
+        attendanceBunked: 11, semester: 4
       },
       {
         id: "cs-403",
@@ -142,7 +142,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 3,
         cieMarks: 20,
         attendanceTotal: 30,
-        attendanceBunked: 6,
+        attendanceBunked: 6, semester: 4
       },
       {
         id: "cs-404",
@@ -151,7 +151,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 3,
         cieMarks: 19,
         attendanceTotal: 30,
-        attendanceBunked: 8,
+        attendanceBunked: 8, semester: 4
       },
       {
         id: "cs-405",
@@ -160,7 +160,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 2,
         cieMarks: 24,
         attendanceTotal: 20,
-        attendanceBunked: 3,
+        attendanceBunked: 3, semester: 4
       },
     ],
     semesterHistory: [
@@ -203,7 +203,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 4,
         cieMarks: 14,
         attendanceTotal: 40,
-        attendanceBunked: 14,
+        attendanceBunked: 14, semester: 4
       },
       {
         id: "cs-302",
@@ -212,7 +212,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 4,
         cieMarks: 12,
         attendanceTotal: 40,
-        attendanceBunked: 15,
+        attendanceBunked: 15, semester: 4
       },
       {
         id: "cs-303",
@@ -221,7 +221,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 3,
         cieMarks: 15,
         attendanceTotal: 30,
-        attendanceBunked: 8,
+        attendanceBunked: 8, semester: 4
       },
       {
         id: "cs-304",
@@ -230,7 +230,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 3,
         cieMarks: 13,
         attendanceTotal: 30,
-        attendanceBunked: 10,
+        attendanceBunked: 10, semester: 4
       },
       {
         id: "cs-305",
@@ -239,7 +239,7 @@ export const demoPersonas: Record<string, DemoPersona> = {
         credits: 2,
         cieMarks: 15,
         attendanceTotal: 20,
-        attendanceBunked: 4,
+        attendanceBunked: 4, semester: 4
       },
     ],
     semesterHistory: [

@@ -100,8 +100,6 @@ export default function AcademicAuditReport({
             className="w-full max-w-4xl bg-[#090F1A] border border-white/[0.06] rounded-[24px] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative flex flex-col my-auto max-h-[90vh]"
           >
             {/* Ambient Background Glows */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#4F8EF7]/5 rounded-full blur-[80px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#A855F7]/5 rounded-full blur-[80px] pointer-events-none" />
 
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.05] relative z-10">
