@@ -2,7 +2,7 @@
  * GradeFlow Student OS — Master Unit Test Runner
  * 
  * Aggregates and runs all unit tests for the State Machine, derived selectors,
- * calculation engines, persistence layers, and explainability systems.
+ * calculation engines, persistence layers, explainability systems, and AI infrastructure.
  */
 
 // ─── Setup Global Browser Mock First to prevent hoisting issues ──────────────
@@ -39,9 +39,11 @@ const { runStoreTests } = require("../tests/stores/usmStore.test");
 const { runStrategyTests } = require("../tests/strategy/strategy.test");
 const { runForecastTests } = require("../tests/forecasting/forecast.test");
 const { runIngestionTests } = require("../tests/ingestion/ingestion.test");
+const { runSmartImportTests } = require("../tests/ingestion/smartImport.test");
 const { runCareerTests } = require("../tests/career/placement.test");
 const { runAttendanceTests } = require("../tests/attendance/bunk.test");
 const { runDecisionEngineTests } = require("../tests/advisory/decisionEngine.test");
+const { runAIInfrastructureTests } = require("../tests/ai/infrastructure.test");
 
 // CLI Colors
 const colors = {
@@ -64,9 +66,11 @@ async function executeAllTests() {
   let strategySuccess = false;
   let forecastSuccess = false;
   let ingestionSuccess = false;
+  let smartIngestionSuccess = false;
   let careerSuccess = false;
   let attendanceSuccess = false;
   let advisorySuccess = false;
+  let aiSuccess = false;
 
   try {
     enginesSuccess = runEnginesTests();
@@ -104,6 +108,13 @@ async function executeAllTests() {
   }
 
   try {
+    smartIngestionSuccess = runSmartImportTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing Smart Academic Ingestion tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
+  try {
     careerSuccess = runCareerTests();
   } catch (err: any) {
     console.error(`\n${colors.red}💥 CRITICAL ERROR executing career placement tests:${colors.reset}`);
@@ -121,6 +132,13 @@ async function executeAllTests() {
     advisorySuccess = runDecisionEngineTests();
   } catch (err: any) {
     console.error(`\n${colors.red}💥 CRITICAL ERROR executing advisory decision engine tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
+  try {
+    aiSuccess = await runAIInfrastructureTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing AI infrastructure tests:${colors.reset}`);
     console.error(err.stack || err);
   }
 
@@ -158,6 +176,12 @@ async function executeAllTests() {
     console.error(`  ${colors.red}✗ FAIL:${colors.reset} JSON Ingestion System`);
   }
 
+  if (smartIngestionSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} Smart Academic Import Ingestion Engine`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Smart Academic Import Ingestion Engine`);
+  }
+
   if (careerSuccess) {
     console.log(`  ${colors.green}✓ PASS:${colors.reset} Career Placement Advisor Engine`);
   } else {
@@ -176,10 +200,16 @@ async function executeAllTests() {
     console.error(`  ${colors.red}✗ FAIL:${colors.reset} Unified Decision & Recommendation Engine (UDRE)`);
   }
 
+  if (aiSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} AI Resilient Ingestion Infrastructure`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} AI Resilient Ingestion Infrastructure`);
+  }
+
   console.log(`----------------------------------------------------------------`);
 
-  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess) {
-    console.log(`\n🎉 ${colors.bright}${colors.green}ALL PHASE-B UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
+  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && smartIngestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess && aiSuccess) {
+    console.log(`\n🎉 ${colors.bright}${colors.green}ALL MASTER UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
     process.exit(0);
   } else {
     console.error(`\n🚨 ${colors.bright}${colors.red}SOME UNIT TESTS FAILED. PLEASE AUDIT RECENT MODIFICATIONS.${colors.reset}\n`);
@@ -190,4 +220,3 @@ async function executeAllTests() {
 executeAllTests();
 
 export {};
-

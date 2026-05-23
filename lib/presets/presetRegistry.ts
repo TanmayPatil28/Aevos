@@ -220,26 +220,110 @@ const PRESET_SPPU_2024: UniversityPreset = {
 
 
 
+const PRESET_JSPM_WAGHOLI: UniversityPreset = {
+  id: "jspm_university_wagholi",
+  trust: {
+      "verificationLevel": "official",
+      "confidenceScore": 98,
+      "lastVerifiedAt": "2026-05-22",
+      "verifiedSources": [
+          "JSPM University Wagholi Academic Ordinances",
+          "Digicampus Academic System Integration Data"
+      ],
+      "regulationBasis": "JSPM University Wagholi State Private University Curriculum framework 2023",
+      "circularRef": "JSPMUNI/REG/2023/45",
+      "academicReasoning": "JSPM University Wagholi uses the standard State Private University offset formula of (CGPA - 0.5) * 10 to map the 10-point scale to a percentage."
+  },
+  name: "JSPM University Pune (Wagholi)",
+  shortName: "JSPM University",
+  state: "Maharashtra",
+  type: "Private University",
+  gradingSystem: "10-point NEP Hybrid",
+  evaluationModel: "hybrid",
+  canonicalInstitutionId: "jspm_university_wagholi",
+  version: "1.0.0",
+  regulationYear: 2023,
+  status: "active",
+  country: "IN",
+  nepAligned: true,
+  gradeScale: [
+    { grade: "O",  points: 10, description: "Outstanding" },
+    { grade: "A+", points: 9,  description: "Excellent" },
+    { grade: "A",  points: 8,  description: "Very Good" },
+    { grade: "B+", points: 7,  description: "Good" },
+    { grade: "B",  points: 6,  description: "Above Average" },
+    { grade: "C",  points: 5,  description: "Average" },
+    { grade: "P",  points: 4,  description: "Pass" },
+    { grade: "PP", points: 0,  description: "Passed Audit Course", isPass: true },
+    { grade: "NP", points: 0,  description: "Failed Audit Course", isPass: false },
+    { grade: "F",  points: 0,  description: "Fail", isPass: false },
+  ],
+  relativeGrading: {
+    model: "statistical_relative_hybrid",
+    curveDescription: "Grade boundaries are dynamically allocated based on academic board relative performance ranges, falling back to absolute parameters only under extreme class sizes.",
+    usesStandardDeviation: false,
+    usesMean: false,
+    usesMedian: false,
+    hasAbsoluteFloor: true,
+    absoluteFloorValue: 40,
+    minClassStrength: 10,
+    bandCount: 10
+  },
+  creditType: "credits",
+  totalProgramCredits: 166,
+  sgpaFormula: "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
+  cgpaFormula: "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
+  sgpaToPercentage: "(SGPA - 0.5) * 10",
+  cgpaToPercentage: "(CGPA - 0.5) * 10",
+  passRules: {
+    minAttendance: 75,
+    minSgpa: 4.0,
+    minGradePoint: 4.0,
+    independentPassing: true
+  },
+  backlogPolicy: {
+    description: "JSPM Wagholi progression guidelines apply. Summer/re-exams available.",
+    replacementPolicy: "New grade permanently replaces old in CGPA calculation upon retake",
+    supplementaryExams: true
+  },
+  assessmentScheme: {
+    components: ["Continuous Internal Evaluation (CIE)", "Semester End Examination (SEE)"],
+    split: "50/50 continuous evaluation split",
+    theoryPracticalSeparation: true,
+  },
+  metadata: {
+    patternYear: "2023 NEP Pattern",
+    erpSystem: "Digicampus",
+    affiliatedAuthority: "Self-Governed Private University",
+  },
+  specialFeatures: {
+    isVerified: true,
+    hasLetterGrades: true,
+    defaultCreditsPerSem: [21, 23, 20, 20, 20, 20, 20, 20],
+    hasZeroCreditBlockers: true,
+  },
+};
+
 const PRESET_JSPM: UniversityPreset = {
   id: "jspm",
   trust: {
       "verificationLevel": "official",
-      "confidenceScore": 95,
-      "lastVerifiedAt": "2026-05-21",
+      "confidenceScore": 98,
+      "lastVerifiedAt": "2026-05-22",
       "verifiedSources": [
           "JSPM RSCOE Autonomous Examination Hand Book",
-          "UGC Autonomous Guidelines (2018)"
+          "SPPU Circular No. 332/2020 on Autonomy Normalisation"
       ],
       "regulationBasis": "JSPM RSCOE Academic Board autonomous curriculum revision of 2023",
-      "circularRef": "JSPM/EXAM/2023/102",
-      "academicReasoning": "Under autonomous status, JSPM adopts SPPU's linear percentage conversion factor (0.75 deduction) for standardising student results."
+      "circularRef": "SPPU-332-2020",
+      "academicReasoning": "Under autonomous status, JSPM RSCOE adopts the SPPU Circular No. 332/2020 standardized linear multiplier of CGPA * 8.9 (superseding linear subtraction models)."
   },
   name: "JSPM Rajarshi Shahu College of Engineering",
   shortName: "JSPM RSCOE",
   state: "Maharashtra",
   type: "Autonomous Affiliated",
-  gradingSystem: "10-point Autonomous",
-  evaluationModel: "absolute",
+  gradingSystem: "10-point Autonomous Hybrid",
+  evaluationModel: "hybrid",
   canonicalInstitutionId: "jspm",
   version: "1.0.0",
   regulationYear: 2023,
@@ -247,33 +331,47 @@ const PRESET_JSPM: UniversityPreset = {
   country: "IN",
   nepAligned: true,
   gradeScale: [
-    { grade: "O",  minMarks: 90, points: 10, description: "Outstanding" },
-    { grade: "A+", minMarks: 80, points: 9,  description: "Excellent" },
-    { grade: "A",  minMarks: 70, points: 8,  description: "Very Good" },
-    { grade: "B+", minMarks: 60, points: 7,  description: "Good" },
-    { grade: "B",  minMarks: 55, points: 6,  description: "Above Average" },
-    { grade: "C",  minMarks: 45, points: 5,  description: "Average" },
-    { grade: "P",  minMarks: 40, points: 4,  description: "Pass" },
-    { grade: "PP", minMarks: 40, points: 0,  description: "Passed Audit Course", isPass: true },
-    { grade: "NP", minMarks: 0,  points: 0,  description: "Failed Audit Course", isPass: false },
-    { grade: "F",  minMarks: 0,  points: 0,  description: "Fail", isPass: false },
+    { grade: "O",  points: 10, description: "Outstanding" },
+    { grade: "A+", points: 9,  description: "Excellent" },
+    { grade: "A",  points: 8,  description: "Very Good" },
+    { grade: "B+", points: 7,  description: "Good" },
+    { grade: "B",  points: 6,  description: "Above Average" },
+    { grade: "C",  points: 5,  description: "Average" },
+    { grade: "P",  points: 4,  description: "Pass" },
+    { grade: "PP", points: 0,  description: "Passed Audit Course", isPass: true },
+    { grade: "NP", points: 0,  description: "Failed Audit Course", isPass: false },
+    { grade: "F",  points: 0,  description: "Fail", isPass: false },
   ],
+  relativeGrading: {
+    model: "statistical_relative_hybrid",
+    curveDescription: "Grade boundaries are dynamically allocated based on academic board relative performance ranges, falling back to absolute parameters only under extreme class sizes.",
+    usesStandardDeviation: false,
+    usesMean: false,
+    usesMedian: false,
+    hasAbsoluteFloor: true,
+    absoluteFloorValue: 40,
+    minClassStrength: 10,
+    bandCount: 10
+  },
   creditType: "credits",
   totalProgramCredits: 160,
   sgpaFormula: "SUM(CourseCredits * GradePoints) / SUM(CourseCredits)",
   cgpaFormula: "SUM(TotalSemesterPoints) / SUM(TotalCreditsEarned)",
-  sgpaToPercentage: "(SGPA - 0.75) * 10",
-  cgpaToPercentage: "(CGPA - 0.75) * 10",
+  sgpaToPercentage: "SGPA * 8.9",
+  cgpaToPercentage: "CGPA * 8.9",
   passRules: {
     minAttendance: 75,
+    minSgpa: 4.0,
+    minGradePoint: 4.0,
+    independentPassing: true
   },
   backlogPolicy: {
     description: "SPPU ATKT norms apply. New grade permanently replaces old in CGPA on retake.",
     replacementPolicy: "New grade permanently replaces old in CGPA calculation upon retake",
   },
   assessmentScheme: {
-    components: ["In-Semester Evaluation (ISE)", "Mid-Semester Evaluation (MSE)", "End-Semester Evaluation (ESE)"],
-    split: "Continuous tripartite split",
+    components: ["Continuous Internal Evaluation (CIE)", "Mid-Semester Evaluation (MSE)", "Semester End Examination (SEE)"],
+    split: "Continuous tripartite split 30/20/50",
     theoryPracticalSeparation: true,
   },
   metadata: {
@@ -856,6 +954,8 @@ const PRESET_VTU: UniversityPreset = {
     { grade: "C",  minMarks: 50, points: 5,  description: "Average" },
     { grade: "P",  minMarks: 40, points: 4,  description: "Pass" },
     { grade: "F",  minMarks: 0,  points: 0,  description: "Fail", isPass: false },
+    { grade: "PP", minMarks: 0,  points: 0,  description: "Passed", isPass: true },
+    { grade: "NP", minMarks: 0,  points: 0,  description: "Not Passed", isPass: false },
   ],
   creditType: "credits",
   defaultCreditsPerSem: 20,
@@ -1616,6 +1716,7 @@ const PRESET_PERCENT: UniversityPreset = {
 
 export const PRESETS: UniversityPreset[] = [
   // Maharashtra (10)
+  PRESET_JSPM_WAGHOLI,
   PRESET_JSPM,
   PRESET_SPPU,
   PRESET_SPPU_2015,
