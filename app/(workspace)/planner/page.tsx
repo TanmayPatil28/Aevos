@@ -12,7 +12,8 @@ import CalculationBreakdown from "@/components/CalculationBreakdown";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
-import PageContainer from "@/components/layout/PageContainer";
+import WorkspaceContent from "@/components/layout/WorkspaceContent";
+import WorkspaceSection from "@/components/layout/WorkspaceSection";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 
@@ -279,7 +280,8 @@ export default function PlannerPage() {
   };
 
   return (
-    <PageContainer className="relative z-10 space-y-12">
+    <WorkspaceContent className="relative z-10">
+      <WorkspaceSection>
 
         {/* ━━━ PAGE HEADER ━━━ */}
         <StaggerContainer className="text-center space-y-4">
@@ -866,6 +868,7 @@ export default function PlannerPage() {
             </PremiumButton>
           </Link>
         </div>
-    </PageContainer>
+      </WorkspaceSection>
+    </WorkspaceContent>
   );
 }

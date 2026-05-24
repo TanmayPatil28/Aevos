@@ -8,13 +8,27 @@ import ExpandableTrustPanel from "@/components/dashboard/ExpandableTrustPanel";
 import AcademicTimeline from "@/components/dashboard/AcademicTimeline";
 import { AlertCircle, Target, TrendingUp, Activity, Compass, ArrowRight } from "lucide-react";
 import { AcademicIdentityBar } from "@/components/dashboard/identity/AcademicIdentityBar";
-import { DataSyncDrawer } from "@/components/dashboard/sync/DataSyncDrawer";
-import { DataSyncEngine } from "@/components/dashboard/sync/DataSyncEngine";
+import WorkspaceContent from "@/components/layout/WorkspaceContent";
+import WorkspaceSection from "@/components/layout/WorkspaceSection";
+import dynamic from "next/dynamic";
 
-export default function DashboardClient() {
+const DataSyncDrawer = dynamic(() => import("@/components/dashboard/sync/DataSyncDrawer").then(mod => mod.DataSyncDrawer), { ssr: false });
+const DataSyncEngine = dynamic(() => import("@/components/dashboard/sync/DataSyncEngine").then(mod => mod.DataSyncEngine), { ssr: false });
+import { diagnostics } from "@/lib/diagnostics";
+
+export default function DashboardClient({
+  initialCalculations = [],
+  initialPlans = [],
+  initialEnrollments = []
+}: {
+  initialCalculations?: any[];
+  initialPlans?: any[];
+  initialEnrollments?: any[];
+}) {
   const store = useUSMStore();
   const searchParams = useSearchParams();
   const [isSyncDrawerOpen, setIsSyncDrawerOpen] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   const activeCourses = selectActiveCourses(store);
   const { cgpa, percentage } = selectDerivedGPA(store);
@@ -23,10 +37,142 @@ export default function DashboardClient() {
 
   // Auto-evaluate interventions if empty but we have authoritative data
   useEffect(() => {
+    // EMERGENCY FIX: If local storage is corrupted with 60+ semesters from the old timeline bug, nuke it.
+    if (store.semesterHistory.length > 20) {
+      localStorage.removeItem("gradeflow-usm-storage");
+      window.location.reload();
+      return;
+    }
+
     if (store.identity.hasAuthoritativeData && store.interventions.length === 0) {
       store.evaluateInterventions();
     }
-  }, [store.identity.hasAuthoritativeData, store]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.identity.hasAuthoritativeData, store.interventions.length]);
+
+// Hydrate store from server props
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") diagnostics.info("DashboardClient", `Hydration Effect triggered. hasHydrated: ${hasHydrated}`);
+    if (!hasHydrated) {
+      if (process.env.NODE_ENV === "development") diagnostics.info("DashboardClient", `Starting bootstrap. Server Calculations: ${initialCalculations.length}, Server Enrollments: ${initialEnrollments.length}`);
+      if (initialCalculations.length > 0 || initialEnrollments.length > 0) {
+        let semesterHistory: any[] = [];
+        let courses: any[] = [];
+        
+        // Identify which semesters are locked by the authoritative snapshot
+        const authoritativeSemesters = store.identity.hasAuthoritativeData 
+             ? new Set(store.semesterHistory.map(s => s.semester))
+             : new Set();
+             
+        let startingSemester = 1;
+        if (store.identity.hasAuthoritativeData && store.semesterHistory.length > 0) {
+          startingSemester = Math.max(...store.semesterHistory.map(s => s.semester)) + 1;
+        }
+
+        const multiSem = initialCalculations.find((c: any) => c.semester.startsWith("Multi-Sem"));
+        if (multiSem && Array.isArray(multiSem.subjects)) {
+          semesterHistory = multiSem.subjects.map((s: any, i: number) => ({
+            semester: startingSemester + i,
+            sgpa: Number(s.sgpa) || 0,
+            credits: Number(s.credits) || 0,
+            earnedCredits: Number(s.credits) || 0
+          }));
+        } else {
+          const singleSems = initialCalculations.filter((c: any) => !c.semester.startsWith("Multi-Sem"));
+          if (singleSems.length > 0) {
+            // Deduplicate by semester string to prevent spam saves from creating infinite semesters
+            // Since array is ordered by desc, the first one encountered is the newest.
+            const uniqueMap = new Map();
+            singleSems.forEach((c: any) => {
+              if (!uniqueMap.has(c.semester)) {
+                uniqueMap.set(c.semester, c);
+              }
+            });
+            
+            const deduplicatedSems = Array.from(uniqueMap.values());
+            const chronological = [...deduplicatedSems].reverse();
+            
+            chronological.forEach((s: any, i: number) => {
+              const parsedSem = s.semester.match(/\d+/) ? parseInt(s.semester.match(/\d+/)[0]) : startingSemester + i;
+              
+              // NEVER overwrite an authoritative snapshot semester with a manual calculation
+              if (authoritativeSemesters.has(parsedSem)) {
+                if (process.env.NODE_ENV === "development") console.warn(`[QA Instrumentation] Hydration blocked: Manual calculation for Semester ${parsedSem} skipped due to existing authoritative data.`);
+                return;
+              }
+              
+              // Extract manual calculation subjects so they show up in Active Course Ledger
+              if (Array.isArray(s.subjects)) {
+                s.subjects.forEach((sub: any) => {
+                  courses.push({
+                    id: `manual_${parsedSem}_${Math.random().toString(36).substr(2, 9)}`,
+                    code: sub.name ? sub.name.substring(0, 6).toUpperCase() : "SUBJ",
+                    name: sub.name || "Unknown Subject",
+                    semester: parsedSem,
+                    credits: Number(sub.credits) || 0,
+                    grade: sub.score ? sub.score.toString() : "",
+                    cieMarks: 0,
+                    seeMarks: 0,
+                    attendanceTotal: 0,
+                    attendanceBunked: 0
+                  });
+                });
+              }
+
+              semesterHistory.push({
+                semester: parsedSem,
+                sgpa: Number(s.sgpa) || 0,
+                credits: Number(s.total_credits) || 0,
+                earnedCredits: Number(s.total_credits) || 0
+              });
+            });
+          }
+        }
+
+        // Only inject enrollments for semesters that are NOT authoritative
+        if (initialEnrollments.length > 0) {
+          const validEnrollments = initialEnrollments.filter((e: any) => !authoritativeSemesters.has(parseInt(e.semester) || 1));
+          
+          validEnrollments.forEach((e: any) => {
+            courses.push({
+              id: e.courseId,
+              code: e.course?.code || "",
+              name: e.course?.name || "",
+              semester: parseInt(e.semester) || 1,
+              credits: e.course?.credits || 0,
+              grade: e.grade,
+              cieMarks: e.cieMarks,
+              seeMarks: e.seeMarks,
+              attendanceTotal: e.attendanceTotal,
+              attendanceBunked: e.attendanceBunked
+            });
+          });
+        }
+
+        if (semesterHistory.length > 0 || courses.length > 0) {
+          if (process.env.NODE_ENV === "development") console.log(`[QA Instrumentation] Executing hydrateFromSnapshot. Injecting ${semesterHistory.length} semesters and ${courses.length} courses.`);
+          store.hydrateFromSnapshot({
+            sourceType: store.identity.sourceType || "database_sync",
+            sourceInstitution: store.identity.institution || "gradeflow",
+            createdAt: new Date().toISOString(),
+            verificationStatus: store.identity.isVerified ? "verified" : "unverified",
+            confidenceScore: 1.0,
+            academicProfile: {
+              semesterHistory,
+              courses,
+              presetId: store.presetId
+            }
+          });
+        } else {
+          if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] No new authoritative data to hydrate. Store remains unmodified by server props.");
+        }
+      } else {
+        if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] Server props were empty. Bypassing hydration.");
+      }
+      if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] Hydration complete. Setting hasHydrated to true.");
+      setHasHydrated(true);
+    }
+  }, [hasHydrated, initialCalculations, initialEnrollments, store]);
 
   // Handle URL parameters for routing redirects
   useEffect(() => {
@@ -40,9 +186,9 @@ export default function DashboardClient() {
   // Adaptive Empty State
   if (!store.identity.hasAuthoritativeData) {
     return (
-      <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 min-h-[80vh] flex flex-col justify-center">
+      <WorkspaceContent className="min-h-[80vh] flex flex-col justify-center">
         <DataSyncEngine isHero />
-      </div>
+      </WorkspaceContent>
     );
   }
 
@@ -62,7 +208,7 @@ export default function DashboardClient() {
         : "from-indigo-900/40 to-indigo-600/10 border-indigo-500/30 text-indigo-400";
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
+    <WorkspaceContent className="space-y-8">
       
       {/* 1. Identity Layer */}
       <AcademicIdentityBar onSyncClick={() => setIsSyncDrawerOpen(true)} />
@@ -195,7 +341,21 @@ export default function DashboardClient() {
                 </div>
               ))}
               {activeCourses.length === 0 && (
-                <div className="text-sm text-slate-500 text-center py-4">No active courses available.</div>
+                <div className="flex flex-col items-center justify-center p-8 bg-white/[0.02] border border-dashed border-white/5 rounded-xl text-center">
+                  <div className="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center mb-3">
+                    <Activity className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <div className="text-sm font-bold text-white mb-1">No Active Courses</div>
+                  <div className="text-xs text-slate-400 max-w-[200px] mb-4">
+                    Import your syllabus or academic records to begin tracking your semester trajectory.
+                  </div>
+                  <button 
+                    onClick={() => setIsSyncDrawerOpen(true)}
+                    className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-bold border border-white/10 transition-colors"
+                  >
+                    Open Data Sync
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -212,6 +372,6 @@ export default function DashboardClient() {
         onClose={() => setIsSyncDrawerOpen(false)} 
       />
 
-    </div>
+    </WorkspaceContent>
   );
 }

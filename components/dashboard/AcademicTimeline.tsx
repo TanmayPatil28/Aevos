@@ -11,10 +11,14 @@ interface AcademicTimelineProps {
 export default function AcademicTimeline({ history }: AcademicTimelineProps) {
   if (history.length === 0) {
     return (
-      <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl flex flex-col items-center justify-center text-center h-48">
-        <Activity className="w-8 h-8 text-slate-600 mb-3" />
-        <h3 className="text-slate-400 font-medium">No History Available</h3>
-        <p className="text-xs text-slate-500 mt-1">Timeline will appear once you complete a semester.</p>
+      <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl h-[500px] flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-full bg-white/[0.02] border border-white/5 flex items-center justify-center mb-4">
+          <Activity className="w-8 h-8 text-slate-600" />
+        </div>
+        <h3 className="text-white font-bold text-lg mb-2">No History Available</h3>
+        <p className="text-slate-400 text-sm max-w-[220px]">
+          Your academic timeline will dynamically render here once you complete a semester.
+        </p>
       </div>
     );
   }

@@ -9,6 +9,8 @@ import { useUSMStore } from "@/stores/usmStore";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import PremiumButton from "@/components/PremiumButton";
+import { useNetworkState } from "@/lib/hooks/useNetworkState";
+import { diagnostics } from "@/lib/diagnostics";
 
 interface Subject {
   id: string;
@@ -21,6 +23,7 @@ interface Subject {
 export default function CalculatorPage() {
   const store = useUSMStore();
   const preset = getPresetById(store.presetId || "sppu") || getPresetById("sppu")!;
+  const isOnline = useNetworkState();
   
   const [usePercentage, setUsePercentage] = useState(false);
   const [subjects, setSubjects] = useState<Subject[]>([
@@ -39,21 +42,24 @@ export default function CalculatorPage() {
     setMounted(true);
   }, []);
 
-  const addSubject = () => {
-    setSubjects([...subjects, { id: Math.random().toString(), name: "", credits: "", score: "" }]);
-  };
+  const addSubject = useCallback(() => {
+    setSubjects(prev => [...prev, { id: Math.random().toString(), name: "", credits: "", score: "" }]);
+  }, []);
 
-  const removeSubject = (id: string) => {
-    if (subjects.length > 1) {
-      setSubjects(subjects.filter((s) => s.id !== id));
-    } else {
-      toast.error("You must have at least one subject");
-    }
-  };
+  const removeSubject = useCallback((id: string) => {
+    setSubjects(prev => {
+      if (prev.length > 1) {
+        return prev.filter((s) => s.id !== id);
+      } else {
+        toast.error("You must have at least one subject");
+        return prev;
+      }
+    });
+  }, []);
 
-  const handleChange = (id: string, field: keyof Subject, value: string) => {
-    setSubjects(subjects.map((s) => (s.id === id ? { ...s, [field]: value, error: undefined } : s)));
-  };
+  const handleChange = useCallback((id: string, field: keyof Subject, value: string) => {
+    setSubjects(prev => prev.map((s) => (s.id === id ? { ...s, [field]: value, error: undefined } : s)));
+  }, []);
 
   const validateInputs = useCallback((): boolean => {
     let valid = true;
@@ -106,8 +112,19 @@ export default function CalculatorPage() {
 
   const handleSave = async () => {
     if (!result) return;
+    
+    if (!isOnline) {
+      diagnostics.warn("ManualCalculator", "Save blocked: Device is offline");
+      toast.error("Network disconnected. Results cannot be saved offline.");
+      return;
+    }
+
     setIsSaving(true);
     setSaveSuccess(false);
+    
+    if (process.env.NODE_ENV === "development") {
+      diagnostics.info("ManualCalculator", `Initiating manual save. Total Credits: ${result.totalCredits}, SGPA: ${result.sgpa}`);
+    }
 
     try {
       const res = await fetch("/api/calculations", {
@@ -115,19 +132,28 @@ export default function CalculatorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           semester: "Semester",
-          subjects,
-          sgpa: result.sgpa,
-          cgpa: result.sgpa,
+          subjects: subjects.map(s => {
+            const gradePoint = usePercentage ? convertPercentageToGrade(parseFloat(s.score) || 0, preset).points : (parseFloat(s.score) || 0);
+            return { ...s, gradePoint };
+          }),
+          presetId: store.presetId || "sppu",
+          type: "semester",
           total_credits: result.totalCredits,
         }),
       });
 
       if (!res.ok) throw new Error("Failed to save");
       setSaveSuccess(true);
+      if (process.env.NODE_ENV === "development") {
+        diagnostics.info("ManualCalculator", "Manual save successful");
+      }
       toast.success("Result saved to Dashboard!");
       setTimeout(() => setSaveSuccess(false), 2000);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      if (process.env.NODE_ENV === "development") {
+        diagnostics.error("ManualCalculator", "Manual save failed", err);
+      }
       toast.error("Error saving calculation. Please try again.");
     } finally {
       setIsSaving(false);
@@ -137,13 +163,7 @@ export default function CalculatorPage() {
   if (!mounted) return null;
 
   return (
-    <main className="pt-32 pb-20 px-6 max-w-7xl mx-auto min-h-screen relative overflow-hidden">
-      {/* Ambient Background Blur */}
-      <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute top-[-10%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-primary/10 blur-[100px] opacity-60 mix-blend-screen" />
-        <div className="absolute bottom-[20%] right-[-5%] w-[35vw] h-[35vw] rounded-full bg-secondary/10 blur-[120px] opacity-60 mix-blend-screen" />
-        <div className="absolute top-[40%] left-[50%] w-[30vw] h-[30vw] rounded-full bg-success/5 blur-[100px] opacity-40 mix-blend-screen transform -translate-x-1/2" />
-      </div>
+    <main className="w-full relative px-6 max-w-7xl mx-auto pb-20">
 
       {/* Hero Header */}
       <StaggerContainer className="text-center mb-16 flex flex-col items-center">
@@ -275,8 +295,10 @@ export default function CalculatorPage() {
               </button>
             </div>
 
-            <div onClick={handleCalculate} className={isCalculating ? "opacity-70 pointer-events-none" : ""}>
+            <div className="w-full">
               <PremiumButton
+                onClick={handleCalculate}
+                disabled={isCalculating}
                 variant="primary"
                 className="w-full justify-between mt-4"
                 icon={isCalculating ? (
@@ -411,8 +433,10 @@ export default function CalculatorPage() {
                 <p className="text-on-surface-variant">Sync your GPA to your cloud dashboard to track semester-on-semester progress.</p>
               </div>
               <div className="flex gap-4 w-full md:w-auto">
-                <div onClick={handleSave} className={`w-full ${isSaving ? "opacity-50 pointer-events-none" : ""}`}>
+                <div className="w-full">
                   <PremiumButton
+                    onClick={handleSave}
+                    disabled={isSaving}
                     variant={saveSuccess ? "outline" : "primary"}
                     className="w-full justify-between"
                     icon={isSaving ? (

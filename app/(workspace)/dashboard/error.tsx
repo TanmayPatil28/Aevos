@@ -20,8 +20,8 @@ export default function DashboardError({ error, reset }: ErrorProps) {
         <div className="glass-card rounded-[3rem] p-10 md:p-14 border border-white/10 flex flex-col items-center">
           
           {/* Icon HUD */}
-          <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-8 shadow-inner animate-pulse">
-            <AlertCircle className="text-red-500 w-10 h-10" />
+          <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-8 shadow-inner">
+            <AlertCircle className="text-white/70 w-10 h-10" />
           </div>
 
           {/* Heading */}
@@ -30,24 +30,27 @@ export default function DashboardError({ error, reset }: ErrorProps) {
           </h2>
 
           {/* Subtext */}
-          <p className="text-on-surface-variant font-medium leading-relaxed max-w-md mb-8">
-            An unexpected validation anomaly or engine mismatch occurred while rendering your academic progress workspace.
+          <p className="text-slate-400 font-medium leading-relaxed max-w-md mb-8 text-sm">
+            An unexpected mismatch occurred while rendering your academic workspace. Don't worry, your authoritative data is secure.
           </p>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center w-full sm:w-auto">
+          <div className="flex flex-col gap-4 justify-center w-full max-w-xs">
             <button
               onClick={() => reset()}
-              className="px-8 h-14 rounded-full bg-primary text-white font-black uppercase text-xs flex items-center justify-center gap-3 transition-all hover:bg-primary-hover active:scale-95 shadow-[0_10px_30px_rgba(80,143,248,0.2)]"
+              className="w-full h-14 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-3 transition-all hover:bg-white/90 active:scale-95"
             >
               <RotateCcw className="w-4 h-4" />
-              Reset Workspace
+              Recover Workspace
             </button>
             <button
-              onClick={() => window.location.reload()}
-              className="px-8 h-14 rounded-full border border-white/10 hover:border-white/20 text-white font-black uppercase text-xs flex items-center justify-center gap-3 transition-all active:scale-95 bg-white/5"
+              onClick={() => {
+                localStorage.removeItem("gradeflow-usm-storage");
+                window.location.reload();
+              }}
+              className="w-full h-14 rounded-xl border border-white/10 hover:border-white/20 text-white/70 font-bold flex items-center justify-center gap-3 transition-all active:scale-95 bg-white/5 hover:text-white"
             >
-              Reload Page
+              Clear Local Cache & Reload
             </button>
           </div>
         </div>

@@ -12,73 +12,52 @@ import {
   Compass, Flame, Briefcase, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { useSession, signOut } from "next-auth/react";
-import UniversitySelector from "@/components/UniversitySelector";
+import { useUSMStore } from "@/stores/usmStore";
+import NavbarActionSuite from "./NavbarActionSuite";
+import NavbarMobileDrawer from "./NavbarMobileDrawer";
 
 // --- Navigation Links ---
-const MAIN_LINKS = [
+export const MAIN_LINKS = [
   { name: "Home", href: "/", icon: Home },
   { name: "Calculator", href: "/calculator", icon: Calculator },
   { name: "Planner", href: "/planner", icon: CalendarDays },
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
 ];
 
-const ADVANCED_TOOLS = [
+export const ADVANCED_TOOLS = [
   {
     name: "Strategy Generator",
-    href: "/strategy",
+    panelKey: "STRATEGY" as const,
     icon: Compass,
     desc: "SAFE / BALANCED / PUSH paths",
     color: "bg-emerald-500/10 text-emerald-400"
   },
   {
-    name: "CGPA Forecast",
-    href: "/forecast",
-    icon: Flame,
-    desc: "Deterministic projections",
-    color: "bg-violet-500/10 text-violet-400"
-  },
-  {
-    name: "Backlog Scanner",
-    href: "/backlog",
-    icon: AlertTriangle,
-    desc: "Calculate fail grade impact",
-    color: "bg-[#4F8EF7]/10 text-[#4F8EF7]"
-  },
-  {
-    name: "Timeline",
-    href: "/timeline",
-    icon: TrendingUp,
-    desc: "View academic journey",
-    color: "bg-[#A855F7]/10 text-[#4F8EF7]"
-  },
-  {
     name: "Marks Predictor",
-    href: "/predictor",
+    panelKey: "PREDICTOR" as const,
     icon: Target,
     desc: "Predict end semester marks",
     color: "bg-[#10B981]/10 text-[#10B981]"
   },
   {
-    name: "Career Hub",
-    href: "/placement",
-    icon: Briefcase,
-    desc: "Recruiter eligibility & status",
-    color: "bg-indigo-500/10 text-indigo-400"
+    name: "Backlog Scanner",
+    panelKey: "BACKLOG" as const,
+    icon: AlertTriangle,
+    desc: "Calculate fail grade impact",
+    color: "bg-[#4F8EF7]/10 text-[#4F8EF7]"
   },
   {
-    name: "Attendance OS",
-    href: "/attendance",
-    icon: Calendar,
-    desc: "Bunk simulator & compliance",
+    name: "Interventions",
+    panelKey: "INTERVENTIONS" as const,
+    icon: Flame,
+    desc: "Academic recovery actions",
     color: "bg-rose-500/10 text-rose-400"
-  },
+  }
 ];
 
 // --- Navbar Component ---
 export default function Navbar() {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
@@ -86,9 +65,9 @@ export default function Navbar() {
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
 
-  const { data: session } = useSession();
-
-  const isAnyToolActive = ADVANCED_TOOLS.some(tool => pathname === tool.href);
+  const activePanel = useUSMStore(state => state.workspaceUi.activePanel);
+  const openPanel = useUSMStore(state => state.openPanel);
+  const isAnyToolActive = activePanel !== "NONE";
 
   // Avoid hydration mismatch
   useEffect(() => {
@@ -245,12 +224,15 @@ export default function Navbar() {
                     </div>
                     <div className="space-y-1 mt-1">
                       {ADVANCED_TOOLS.map((tool) => (
-                        <Link
-                          key={tool.href}
-                          href={tool.href}
+                        <button
+                          key={tool.panelKey}
+                          onClick={() => {
+                            openPanel(tool.panelKey);
+                            setIsToolsOpen(false);
+                          }}
                           className={cn(
-                            "flex items-center gap-3.5 p-3 rounded-[16px] transition-all duration-500 group relative",
-                            pathname === tool.href ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
+                            "w-full text-left flex items-center gap-3.5 p-3 rounded-[16px] transition-all duration-500 group relative",
+                            activePanel === tool.panelKey ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
                           )}
                         >
                           <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500", tool.color)}>
@@ -260,10 +242,10 @@ export default function Navbar() {
                             <div className="text-[14px] font-black text-white/90 group-hover:text-white transition-colors tracking-tight">{tool.name}</div>
                             <div className="text-[12px] font-medium text-white/30 group-hover:text-white/50">{tool.desc}</div>
                           </div>
-                          {pathname === tool.href && (
+                          {activePanel === tool.panelKey && (
                             <motion.div layoutId="tool-dot" className="absolute right-4 w-1.5 h-1.5 bg-[#4F8EF7] rounded-full shadow-[0_0_10px_#4F8EF7]" />
                           )}
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   </motion.div>
@@ -274,47 +256,7 @@ export default function Navbar() {
         </nav>
 
         {/* RIGHT: ACTION SUITE */}
-        <div className="hidden md:flex items-center gap-4">
-          <UniversitySelector variant="navbar" />
-
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-            className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/[0.05] flex items-center justify-center transition-all duration-500 hover:bg-[#4F8EF7]/10 hover:border-[#4F8EF7]/20 text-white hover:text-[#4F8EF7] group shadow-inner"
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={theme}
-                initial={{ rotate: -180, scale: 0.5, opacity: 0 }}
-                animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                exit={{ rotate: 180, scale: 0.5, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              >
-                {theme === 'dark' ? <Moon size={18} strokeWidth={2.5} /> : <Sun size={18} strokeWidth={2.5} className="text-yellow-400" />}
-              </motion.div>
-            </AnimatePresence>
-          </button>
-
-          {session ? (
-            <button
-               onClick={() => signOut()}
-               className="bg-white/5 hover:bg-white/10 text-white px-5 py-2.5 rounded-full text-[14px] font-bold tracking-tight transition-all border border-white/10 shadow-inner"
-            >
-              Log Out
-            </button>
-          ) : (
-            <Link href="/login">
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2, boxShadow: "0 15px 30px rgba(124,58,237,0.4)" }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-br from-[#4F8EF7] via-[#7C3AED] to-[#A855F7] text-white px-7 py-2.5 rounded-full text-[14px] font-black tracking-tight flex items-center gap-2 shadow-premium"
-              >
-                Login
-                <ArrowRight size={17} strokeWidth={3} />
-              </motion.button>
-            </Link>
-          )}
-        </div>
+        <NavbarActionSuite />
 
         {/* MOBILE TRIGGER */}
         <div className="flex md:hidden items-center group">
@@ -326,67 +268,7 @@ export default function Navbar() {
       </div>
 
       {/* MOBILE DRAWER */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-[#000]/80 backdrop-blur-[15px] z-[100000]" />
-            <motion.div
-              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 w-[300px] h-full bg-[#000000]/98 backdrop-blur-[50px] border-l border-white/[0.05] z-[100001] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
-            >
-              <div className="flex items-center justify-between mb-8">
-                <span className="font-headline font-black text-2xl text-white tracking-widest">GF.OS</span>
-                <button onClick={() => setIsMobileOpen(false)} aria-label="Close navigation menu" className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 text-white/60">
-                  <X size={26} strokeWidth={3} />
-                </button>
-              </div>
-
-              {/* Mobile University Selector */}
-              <UniversitySelector variant="mobile" />
-
-              <div className="flex flex-col gap-2 flex-1">
-                {MAIN_LINKS.map((link, i) => (
-                  <motion.div key={link.href} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 + i * 0.05 }}>
-                    <Link
-                      href={link.href}
-                      className={cn(
-                        "flex items-center gap-4 p-4 rounded-2xl text-[17px] font-black transition-all",
-                        pathname === link.href ? "bg-[#4F8EF7]/10 text-[#4F8EF7]" : "text-white/40 hover:text-white"
-                      )}
-                    >
-                      <link.icon size={22} strokeWidth={3} />
-                      {link.name}
-                    </Link>
-                  </motion.div>
-                ))}
-
-                <div className="h-[1px] bg-white/[0.03] my-6" />
-
-                {ADVANCED_TOOLS.map((tool, i) => (
-                  <motion.div key={tool.href} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 + i * 0.05 }}>
-                    <Link href={tool.href} className="flex items-center gap-4 p-4 rounded-2xl group active:bg-white/5">
-                      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", tool.color)}>
-                        <tool.icon size={22} strokeWidth={3} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[16px] font-black text-white/90">{tool.name}</span>
-                        <span className="text-[12px] font-medium text-white/30">{tool.desc}</span>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-
-              <Link href="/calculator" className="mt-auto">
-                <button className="w-full bg-gradient-to-br from-[#4F8EF7] to-[#7C3AED] text-white py-5 rounded-[22px] font-black text-lg flex items-center justify-center gap-3 shadow-premium">
-                  Get Started <ArrowRight size={20} strokeWidth={3} />
-                </button>
-              </Link>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <NavbarMobileDrawer isOpen={isMobileOpen} setIsOpen={setIsMobileOpen} />
     </header>
   );
 }

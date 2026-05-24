@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { semester, subjects, sgpa, cgpa, total_credits } = validation.data;
+    const { semester, subjects, presetId, type, total_credits } = validation.data;
 
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
@@ -61,14 +61,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // 1. Resolve preset
+    const { getPresetById, calculateSGPA, calculateCGPA, convertLetterGradeToGradePoint } = await import("@/lib/presets");
+    const preset = getPresetById(presetId || "sppu") || getPresetById("sppu");
+
+    let serverSgpa = 0;
+    let serverCgpa = 0;
+
+    // 2. Compute server-side SGPA or CGPA based on the payload type
+    if (type === "multi_semester") {
+      const semestersData = (subjects as Record<string, unknown>[]).map((sem) => ({
+        credits: Number(sem.credits) || 0,
+        sgpa: Number(sem.sgpa) || 0, // In multi_semester, it's aggregating semesters
+      })).filter(s => s.credits > 0);
+
+      const calculated = calculateCGPA(semestersData);
+      serverSgpa = isNaN(calculated) ? 0 : calculated;
+      serverCgpa = serverSgpa; 
+    } else {
+      const parsedSubjects = (subjects as Record<string, unknown>[]).map((sub) => {
+        let gp = 0;
+        if (sub.gradePoint !== undefined) {
+          gp = Number(sub.gradePoint);
+        } else if (sub.grade !== undefined) {
+          gp = convertLetterGradeToGradePoint(String(sub.grade), preset!);
+        } else {
+          gp = Number(sub.score) || 0; // fallback if only score is provided (assuming 10-point scale)
+        }
+        return {
+          credits: Number(sub.credits) || 0,
+          gradePoint: gp
+        };
+      }).filter(s => s.credits > 0);
+
+      const calculated = calculateSGPA(parsedSubjects);
+      serverSgpa = isNaN(calculated) ? 0 : calculated;
+      serverCgpa = serverSgpa; 
+    }
+
     let calculation;
     try {
       calculation = await prisma.calculation.create({
         data: {
           semester,
           subjects: subjects as Prisma.InputJsonValue,
-          sgpa: Number(sgpa),
-          cgpa: Number(cgpa) || 0,
+          sgpa: serverSgpa,
+          cgpa: serverCgpa,
           total_credits: Number(total_credits),
           userId,
         },

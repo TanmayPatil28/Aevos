@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Calculation, Plan } from "@prisma/client";
-import DashboardClient from "./DashboardClient";
+import dynamic from "next/dynamic";
+const DashboardClient = dynamic(() => import("./DashboardClient"), { ssr: false });
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -17,7 +18,6 @@ export default async function DashboardPage() {
   let rawCalculations: Calculation[] = [];
   let rawPlans: Plan[] = [];
   let rawEnrollments: unknown[] = [];
-  let dbError = false;
 
   try {
     rawCalculations = await prisma.calculation.findMany({
@@ -26,7 +26,6 @@ export default async function DashboardPage() {
     });
   } catch (error) {
     console.error("Dashboard calculation load failed:", error);
-    dbError = true;
   }
 
   try {
@@ -36,7 +35,6 @@ export default async function DashboardPage() {
     });
   } catch (error) {
     console.error("Dashboard plan load failed:", error);
-    dbError = true;
   }
 
   try {
@@ -48,7 +46,6 @@ export default async function DashboardPage() {
     });
   } catch (error) {
     console.error("Dashboard enrollments load failed:", error);
-    dbError = true;
   }
 
   // Safe serialization for props hydration boundary
@@ -57,6 +54,10 @@ export default async function DashboardPage() {
   const initialEnrollments = JSON.parse(JSON.stringify(rawEnrollments));
 
   return (
-    <DashboardClient />
+    <DashboardClient 
+      initialCalculations={initialCalculations}
+      initialPlans={initialPlans}
+      initialEnrollments={initialEnrollments}
+    />
   );
 }

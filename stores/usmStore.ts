@@ -61,6 +61,14 @@ export interface CareerState {
   ectsStandingBand: string;
 }
 
+export interface WorkspaceState {
+  selectedSubjectId: string | null;
+  activePanel: "NONE" | "PREDICTOR" | "STRATEGY" | "BACKLOG" | "INTERVENTIONS";
+  globalTargetCgpa: number | null;
+  mode: "DEFAULT" | "SANDBOX" | "RECOVERY" | "OPTIMIZATION" | "FOCUS";
+  preferredDensity: "COMFORTABLE" | "COMPACT";
+}
+
 export interface SemesterHistoryEntry {
   semester: number;
   sgpa: number;
@@ -80,6 +88,7 @@ export interface USMStoreState {
   simulation: SimulationState;
   career: CareerState;
   sync: OfflineSyncState;
+  workspaceUi: WorkspaceState;
 
   // Actions
   setPresetId: (presetId: string) => void;
@@ -116,6 +125,13 @@ export interface USMStoreState {
   workspaceContexts: WorkspaceContextType[];
   healthScore: AcademicHealthScore | null;
   evaluateInterventions: () => void;
+  
+  // Workspace UI Actions
+  setWorkspaceUi: (updates: Partial<WorkspaceState>) => void;
+  openPanel: (panel: WorkspaceState["activePanel"], subjectId?: string) => void;
+  closePanel: () => void;
+  setWorkspaceMode: (mode: WorkspaceState["mode"]) => void;
+  setWorkspaceDensity: (density: WorkspaceState["preferredDensity"]) => void;
 }
 
 const initialAcademic: AcademicState = {
@@ -157,6 +173,14 @@ const initialSync: OfflineSyncState = {
   pendingSyncActions: [],
 };
 
+const initialWorkspaceUi: WorkspaceState = {
+  selectedSubjectId: null,
+  activePanel: "NONE",
+  globalTargetCgpa: null,
+  mode: "DEFAULT",
+  preferredDensity: "COMFORTABLE",
+};
+
 // ─── Store Creation ──────────────────────────────────────────────────────────
 
 export const useUSMStore = create<USMStoreState>()(
@@ -170,6 +194,7 @@ export const useUSMStore = create<USMStoreState>()(
       simulation: initialSimulation,
       career: initialCareer,
       sync: initialSync,
+      workspaceUi: initialWorkspaceUi,
       
       interventions: [],
       workspaceContexts: ["DEFAULT"],
@@ -201,6 +226,44 @@ export const useUSMStore = create<USMStoreState>()(
           workspaceContexts: newContexts,
           healthScore: newHealth
         });
+      },
+      
+      setWorkspaceUi: (updates) => {
+        set((state) => ({
+          workspaceUi: { ...state.workspaceUi, ...updates }
+        }));
+      },
+      
+      openPanel: (panel, subjectId) => {
+        set((state) => ({
+          workspaceUi: { 
+            ...state.workspaceUi, 
+            activePanel: panel,
+            ...(subjectId !== undefined && { selectedSubjectId: subjectId })
+          }
+        }));
+      },
+      
+      closePanel: () => {
+        set((state) => ({
+          workspaceUi: {
+            ...state.workspaceUi,
+            activePanel: "NONE",
+            selectedSubjectId: null
+          }
+        }));
+      },
+
+      setWorkspaceMode: (mode) => {
+        set((state) => ({
+          workspaceUi: { ...state.workspaceUi, mode }
+        }));
+      },
+
+      setWorkspaceDensity: (density) => {
+        set((state) => ({
+          workspaceUi: { ...state.workspaceUi, preferredDensity: density }
+        }));
       },
 
       setPresetId: (presetId) => {
@@ -345,6 +408,7 @@ export const useUSMStore = create<USMStoreState>()(
           simulation: initialSimulation,
           career: initialCareer,
           sync: initialSync,
+          workspaceUi: initialWorkspaceUi,
         });
       },
 
@@ -355,10 +419,15 @@ export const useUSMStore = create<USMStoreState>()(
       },
 
       hydrateFromSnapshot: (snapshot) => {
+        if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] usmStore.hydrateFromSnapshot called. Snapshot source:", snapshot.sourceType);
         const profile = snapshot.academicProfile;
-        if (!profile) return;
+        if (!profile) {
+          if (process.env.NODE_ENV === "development") console.warn("[QA Instrumentation] hydrateFromSnapshot aborted: no academicProfile in snapshot.");
+          return;
+        }
 
         set((state) => {
+          if (process.env.NODE_ENV === "development") console.log(`[QA Instrumentation] usmStore computing merge. Current courses: ${state.courses.length}, Incoming: ${profile.courses?.length || 0}`);
           let mergedCourses = state.courses;
           let mergedHistory = state.semesterHistory;
           let newAcademic = state.academic;
@@ -438,6 +507,7 @@ export const useUSMStore = create<USMStoreState>()(
             simulation: initialSimulation,
             career: initialCareer,
             sync: initialSync,
+            workspaceUi: initialWorkspaceUi,
           };
         }
         if (version < 2) {
@@ -451,10 +521,13 @@ export const useUSMStore = create<USMStoreState>()(
         return persistedState;
       },
       onRehydrateStorage: (state) => {
+        if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] Zustand onRehydrateStorage starting restore from localStorage.");
         return (hydratedState, error) => {
           if (error || !hydratedState) {
+            if (process.env.NODE_ENV === "development") console.error("[QA Instrumentation] Zustand onRehydrateStorage error or no state:", error);
             return;
           }
+          if (process.env.NODE_ENV === "development") console.log(`[QA Instrumentation] Zustand onRehydrateStorage successful. Loaded ${hydratedState.semesterHistory?.length || 0} semesters.`);
           const isValid =
             hydratedState.presetId &&
             typeof hydratedState.presetId === "string" &&
@@ -471,6 +544,7 @@ export const useUSMStore = create<USMStoreState>()(
             hydratedState.simulation = { ...initialSimulation };
             hydratedState.career = { ...initialCareer };
             hydratedState.sync = { ...initialSync };
+            hydratedState.workspaceUi = { ...initialWorkspaceUi };
           }
           // Ensure new fields exist for v1/v2 hydrations
           if (!Array.isArray(hydratedState.semesterHistory)) {

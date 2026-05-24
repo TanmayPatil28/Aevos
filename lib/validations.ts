@@ -8,9 +8,8 @@ export const registerSchema = z.object({
 
 export const calculationSchema = z.object({
   semester: z.string().trim().min(1, "Semester is required"),
-  sgpa: z.coerce.number().min(0, "SGPA must be a non-negative number"),
-  cgpa: z.coerce.number().min(0, "CGPA must be a non-negative number").optional().default(0),
-  total_credits: z.coerce.number().int().min(0, "Total credits must be a non-negative integer"),
+  presetId: z.string().optional(),
+  type: z.enum(["semester", "multi_semester"]).optional().default("semester"),
   subjects: z.array(z.record(z.string(), z.unknown())).min(1, "Subjects/semesters array cannot be empty"),
 });
 

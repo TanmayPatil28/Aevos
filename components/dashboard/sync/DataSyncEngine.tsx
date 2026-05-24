@@ -11,6 +11,8 @@ import { normalizeExtraction } from "@/lib/ingestion/normalizationEngine";
 import { computeImportDiff } from "@/lib/ingestion/diffEngine";
 import { RawInputForm } from "@/components/ingestion/RawInputForm";
 import { ImportVerificationModal } from "@/components/ingestion/ImportVerificationModal";
+import { diagnostics } from "@/lib/diagnostics";
+import { useNetworkState } from "@/lib/hooks/useNetworkState";
 
 interface DataSyncEngineProps {
   onSuccess?: () => void;
@@ -20,6 +22,7 @@ interface DataSyncEngineProps {
 export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProps) {
   const router = useRouter();
   const store = useUSMStore();
+  const isOnline = useNetworkState();
   
   const [pipelineState, setPipelineState] = useState<PipelineState>("idle");
   const [payload, setPayload] = useState<NormalizedImportPayload | null>(null);
@@ -93,14 +96,23 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
       setPipelineState("verifying");
 
     } catch (err: any) {
+      diagnostics.error("DataSyncEngine", "Normalization failed", err);
       setPipelineState("failed");
       setPipelineError(`Normalization failed: ${err.message}`);
     }
   };
 
   const handleConfirmPersist = async () => {
+    if (!isOnline) {
+      setPipelineState("failed");
+      setPipelineError("Network disconnected. Please check your connection and try saving again.");
+      diagnostics.warn("DataSyncEngine", "Persist blocked: Offline");
+      return;
+    }
+    
     if (!payload) return;
     setPipelineState("persisting");
+    diagnostics.info("DataSyncEngine", "Initiating snapshot persist", { sourceInstitution: payload.detectedInstitution });
 
     try {
       const res = await fetch("/api/academic/snapshots", {
@@ -122,6 +134,7 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
         throw new Error("Failed to create immutable snapshot.");
       }
 
+      diagnostics.info("DataSyncEngine", "Snapshot persist success");
       setPipelineState("completed");
       
       if (onSuccess) {
@@ -131,6 +144,7 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
         window.location.href = "/dashboard";
       }
     } catch (err: any) {
+      diagnostics.error("DataSyncEngine", "Persistence failed", err);
       setPipelineState("failed");
       setPipelineError(`Persistence failed: ${err.message}`);
     }

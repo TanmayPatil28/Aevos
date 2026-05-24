@@ -11,6 +11,7 @@ import {
   getMaxGradePoint,
   getPassingGradePoint,
 } from "@/lib/presets";
+import { useUSMStore } from "@/stores/usmStore";
 
 export type { UniversityPreset, GradingScale };
 export const UNI_PRESETS = getAllPresets();
@@ -83,6 +84,13 @@ export function UniversityProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [selectedUniId, mounted]);
+
+  const setPresetId = useUSMStore(state => state.setPresetId);
+  useEffect(() => {
+    if (mounted) {
+      setPresetId(selectedUniId);
+    }
+  }, [selectedUniId, mounted, setPresetId]);
 
   const activePreset = useMemo(() => {
     return getAllPresets().find((u) => u.id === selectedUniId) || getAllPresets()[0];

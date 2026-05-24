@@ -10,15 +10,18 @@ export default function UnifiedCalculatorPage() {
   const [mode, setMode] = useState<"simulator" | "manual">("simulator");
 
   return (
-    <div className="relative min-h-screen bg-[#000000]">
-      {/* Global Mode Toggle Floating at Top */}
-      <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex items-center p-1.5 bg-[#0F172A]/80 border border-white/10 rounded-full backdrop-blur-xl shadow-2xl">
+    <div className="w-full relative">
+      {/* Global Mode Toggle at Top */}
+      <div className="flex justify-center mb-8 relative z-50">
+        <div className="relative overflow-hidden flex items-center p-1.5 bg-[#0F172A]/90 border border-white/[0.08] rounded-full backdrop-blur-xl shadow-[0_15px_30px_-10px_rgba(0,0,0,0.7)] group">
+        <div className="absolute inset-0 bg-[#4F8EF7]/5 rounded-full blur-xl pointer-events-none group-hover:bg-[#4F8EF7]/10 transition-colors duration-500" />
+        
         <button
           onClick={() => setMode("simulator")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+          className={`relative z-10 flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
             mode === "simulator" 
-              ? "bg-gradient-to-r from-[#4F8EF7] to-blue-600 text-white shadow-[0_0_20px_rgba(79,142,247,0.4)]" 
-              : "text-white/50 hover:text-white hover:bg-white/5"
+              ? "bg-gradient-to-r from-[#4F8EF7] to-blue-500 text-white shadow-[0_0_20px_rgba(79,142,247,0.4)] border border-[#4F8EF7]/50" 
+              : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
           }`}
         >
           <Layers size={16} />
@@ -26,15 +29,16 @@ export default function UnifiedCalculatorPage() {
         </button>
         <button
           onClick={() => setMode("manual")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+          className={`relative z-10 flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
             mode === "manual" 
-              ? "bg-gradient-to-r from-[#4F8EF7] to-blue-600 text-white shadow-[0_0_20px_rgba(79,142,247,0.4)]" 
-              : "text-white/50 hover:text-white hover:bg-white/5"
+              ? "bg-gradient-to-r from-[#4F8EF7] to-blue-500 text-white shadow-[0_0_20px_rgba(79,142,247,0.4)] border border-[#4F8EF7]/50" 
+              : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
           }`}
         >
           <Edit3 size={16} />
           Manual Sandbox
         </button>
+        </div>
       </div>
 
       {/* Animate out the old component and animate in the new one */}

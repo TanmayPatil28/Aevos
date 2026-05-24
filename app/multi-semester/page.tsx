@@ -232,8 +232,8 @@ export default function MultiSemesterPage() {
         body: JSON.stringify({
           semester: `Multi-Sem Timeline (${scaleMode} Scale)`,
           subjects: semesters,
-          sgpa: result.finalActual,
-          cgpa: result.finalActual,
+          presetId: store.presetId || "sppu",
+          type: "multi_semester",
           total_credits: result.totalCredits,
         }),
       });

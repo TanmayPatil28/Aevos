@@ -23,44 +23,44 @@ export default function Error({
       <GlassCard className="max-w-md w-full p-8 text-center border-red-500/20 shadow-2xl relative overflow-hidden">
         <div className="absolute -top-12 -right-12 w-24 h-24 bg-red-500/10 rounded-full blur-xl pointer-events-none" />
         
-        <div className="inline-flex p-4 bg-red-500/10 rounded-2xl border border-red-500/20 text-red-400 mb-6 animate-pulse">
+        <div className="inline-flex p-4 bg-white/5 rounded-2xl border border-white/10 text-white mb-6">
           <AlertTriangle size={32} />
         </div>
 
         <h1 className="text-2xl font-bold tracking-tight text-white mb-2">
-          Application Exception
+          System Interruption
         </h1>
         <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-          An unexpected application-level boundary was crossed. We&apos;ve logged this event for our team.
+          The application encountered a critical state mismatch. Your data is safe, but we need to reset the current view.
         </p>
 
         {error && (
-          <div className="bg-black/40 border border-white/5 rounded-lg p-3 text-left font-mono text-xs text-red-300 max-h-32 overflow-auto mb-6 select-all scrollbar-thin scrollbar-thumb-white/10">
+          <div className="bg-black/40 border border-white/5 rounded-lg p-3 text-left font-mono text-xs text-white/50 max-h-32 overflow-auto mb-8 select-all scrollbar-thin scrollbar-thumb-white/10">
             {error.name}: {error.message}
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <GlowButton
+        <div className="flex flex-col gap-3 justify-center w-full">
+          <button
             onClick={() => reset()}
-            variant="primary"
-            className="w-full sm:w-auto animate-pulse"
+            className="w-full flex items-center justify-center gap-2 bg-white text-black py-3 rounded-lg font-bold hover:bg-white/90 transition-colors"
           >
-            <RefreshCw size={16} className="mr-2" />
-            Reload Component
-          </GlowButton>
-          <GlowButton
+            <RefreshCw size={16} />
+            Recover View
+          </button>
+          
+          <button
             onClick={() => {
               if (typeof window !== "undefined") {
+                localStorage.removeItem("gradeflow-usm-storage");
                 window.location.href = "/dashboard";
               }
             }}
-            variant="secondary"
-            className="w-full sm:w-auto"
+            className="w-full flex items-center justify-center gap-2 bg-transparent border border-white/10 text-white/70 py-3 rounded-lg font-bold hover:bg-white/5 hover:text-white transition-colors"
           >
-            <Home size={16} className="mr-2" />
-            Dashboard
-          </GlowButton>
+            <Home size={16} />
+            Reset Sandbox State & Return Home
+          </button>
         </div>
       </GlassCard>
     </div>

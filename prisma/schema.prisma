@@ -1,5 +1,5 @@
 generator client {
-  provider   = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -7,20 +7,19 @@ datasource db {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
-  type               String
-  provider           String
-  providerAccountId  String  @map("provider_account_id")
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -37,21 +36,21 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  password      String?
-  university    String    @default("jspm")
-  accounts      Account[]
-  sessions      Session[]
-  calculations  Calculation[]
-  plans         Plan[]
-  enrollments       Enrollment[]
-  academicSnapshots AcademicSnapshot[]
-  activeSnapshotId  String?            @map("active_snapshot_id")
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  emailVerified     DateTime?          @map("email_verified")
+  image             String?
+  password          String?
+  university        String             @default("jspm")
   createdAt         DateTime           @default(now())
+  activeSnapshotId  String?            @map("active_snapshot_id")
+  academicSnapshots AcademicSnapshot[]
+  accounts          Account[]
+  calculations      Calculation[]
+  enrollments       Enrollment[]
+  plans             Plan[]
+  sessions          Session[]
 
   @@map("users")
 }
@@ -74,7 +73,6 @@ model Calculation {
   cgpa          Float
   total_credits Int
   created_at    DateTime @default(now())
-
   userId        String?  @map("user_id")
   user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -89,9 +87,8 @@ model Plan {
   remaining_semesters Int
   required_gpa        Float
   plan_data           Json
-  current_semester    String? // Made optional for backward compatibility
+  current_semester    String?
   created_at          DateTime @default(now())
-
   userId              String?  @map("user_id")
   user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -103,7 +100,7 @@ model Course {
   code        String       @unique
   name        String
   credits     Int
-  prereqs     String[]     // Array of course codes that are prerequisites
+  prereqs     String[]
   enrollments Enrollment[]
 
   @@map("courses")
@@ -119,10 +116,9 @@ model Enrollment {
   seeMarks         Float?          @map("see_marks")
   attendanceTotal  Int             @default(0) @map("attendance_total")
   attendanceBunked Int             @default(0) @map("attendance_bunked")
-  
   attendanceLogs   AttendanceLog[]
-  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   course           Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@map("enrollments")
@@ -131,8 +127,8 @@ model Enrollment {
 model AttendanceLog {
   id           String     @id @default(cuid())
   enrollmentId String     @map("enrollment_id")
-  date         DateTime   @map("date") @default(now())
-  status       String     // "PRESENT", "ABSENT", "CANCELLED"
+  date         DateTime   @default(now()) @map("date")
+  status       String
   enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@map("attendance_logs")
@@ -142,24 +138,17 @@ model AcademicSnapshot {
   id                   String   @id @default(cuid())
   userId               String   @map("user_id")
   createdAt            DateTime @default(now()) @map("created_at")
-  
-  // Provenance & Versioning Engine
-  sourceType           String   @map("source_type") // e.g., 'digicampus', 'ocr', 'manual'
-  sourceInstitution    String   @map("source_institution") // e.g., 'jspm', 'sppu'
-  snapshotType         String   @map("snapshot_type") // e.g., 'official_import', 'manual_entry', 'simulation', 'migration', 'recovery'
+  sourceType           String   @map("source_type")
+  sourceInstitution    String   @map("source_institution")
+  snapshotType         String   @map("snapshot_type")
   parserVersion        String   @map("parser_version")
   regulationVersion    String   @map("regulation_version")
   normalizationVersion String   @map("normalization_version")
   schemaVersion        String   @default("1.0") @map("schema_version")
-  
-  // Integrity & Trust Metadata
   confidenceScore      Float    @map("confidence_score")
   checksumHash         String   @map("checksum_hash")
-  verificationStatus   String   @default("unverified") @map("verification_status") // verified, unverified, partial, conflicted, corrupted
-  
-  // The Immutable Academic State Payload
+  verificationStatus   String   @default("unverified") @map("verification_status")
   academicProfile      Json     @map("academic_profile")
-
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])

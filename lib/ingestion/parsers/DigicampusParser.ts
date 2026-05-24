@@ -71,15 +71,26 @@ export const DigicampusParser: AcademicParser = {
       
       // Heuristic to guess semester index (e.g. "UG First Year", "Even Term" -> Sem 2)
       // For now, let's just infer from length or simple text parsing
-      let semIndex = semesters.length + 1;
-      if (termLevelStr.includes("First Year") && termStr.includes("Odd")) semIndex = 1;
-      else if (termLevelStr.includes("First Year") && termStr.includes("Even")) semIndex = 2;
-      else if (termLevelStr.includes("Second Year") && termStr.includes("Odd")) semIndex = 3;
-      else if (termLevelStr.includes("Second Year") && termStr.includes("Even")) semIndex = 4;
-      else if (termLevelStr.includes("Third Year") && termStr.includes("Odd")) semIndex = 5;
-      else if (termLevelStr.includes("Third Year") && termStr.includes("Even")) semIndex = 6;
-      else if (termLevelStr.includes("Fourth Year") && termStr.includes("Odd")) semIndex = 7;
-      else if (termLevelStr.includes("Fourth Year") && termStr.includes("Even")) semIndex = 8;
+      // Prioritize the explicitly provided semesterIndex from the AI extraction
+      let semIndex = typeof node.semesterIndex === 'number' ? node.semesterIndex : semesters.length + 1;
+      
+      // Fallback heuristics if explicitly not provided
+      if (typeof node.semesterIndex !== 'number') {
+        // Direct semester matching (e.g. "Semester 2", "Sem 4")
+        const semMatch = (termLevelStr + " " + termStr).match(/sem(?:ester)?\s*(\d+)/i);
+        if (semMatch && semMatch[1]) {
+          semIndex = parseInt(semMatch[1], 10);
+        }
+        // Legacy Digicampus Year/Term matching
+        else if (termLevelStr.includes("First Year") && termStr.includes("Odd")) semIndex = 1;
+        else if (termLevelStr.includes("First Year") && termStr.includes("Even")) semIndex = 2;
+        else if (termLevelStr.includes("Second Year") && termStr.includes("Odd")) semIndex = 3;
+        else if (termLevelStr.includes("Second Year") && termStr.includes("Even")) semIndex = 4;
+        else if (termLevelStr.includes("Third Year") && termStr.includes("Odd")) semIndex = 5;
+        else if (termLevelStr.includes("Third Year") && termStr.includes("Even")) semIndex = 6;
+        else if (termLevelStr.includes("Fourth Year") && termStr.includes("Odd")) semIndex = 7;
+        else if (termLevelStr.includes("Fourth Year") && termStr.includes("Even")) semIndex = 8;
+      }
 
       if (node.institution) {
         detectedInstitution = node.institution.toLowerCase();

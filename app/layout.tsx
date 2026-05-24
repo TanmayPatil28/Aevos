@@ -3,7 +3,6 @@ import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CustomCursor from "@/components/CustomCursor";
-import PageTransition from "@/components/PageTransition";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import "./globals.css";
 
@@ -60,17 +59,13 @@ export default function RootLayout({
           <AuthProvider>
             <UniversityProvider>
             <CustomCursor />
-            <Navbar />
             <ErrorBoundary>
               <AcademicStateProvider>
                 <AcademicHydrationBoundary>
-                  <PageTransition>
-                    {children}
-                  </PageTransition>
+                  {children}
                 </AcademicHydrationBoundary>
               </AcademicStateProvider>
             </ErrorBoundary>
-            <Footer />
             </UniversityProvider>
           </AuthProvider>
           <Toaster 
