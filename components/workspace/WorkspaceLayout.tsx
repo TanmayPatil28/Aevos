@@ -23,7 +23,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     <div className="relative min-h-screen w-full bg-[#000000]">
       {/* Main Canvas - Shrinks on desktop when panel is open */}
       <div 
-        className={`transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+        className={`transition-all duration-500 ease-out ${
           activePanel !== "NONE" ? "lg:mr-[420px]" : ""
         }`}
       >

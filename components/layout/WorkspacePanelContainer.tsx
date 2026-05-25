@@ -33,7 +33,10 @@ export default function WorkspacePanelContainer() {
           transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
           className="fixed z-[9900] flex flex-col pointer-events-auto 
             inset-x-0 bottom-0 top-[15vh] rounded-t-[32px]
-            lg:inset-auto lg:top-[70px] lg:bottom-[20px] lg:right-[20px] lg:w-[400px] lg:rounded-[24px]"
+            lg:inset-auto lg:top-[70px] lg:bottom-[20px] lg:w-[400px] lg:rounded-[24px]"
+          style={{
+            right: "max(20px, calc(50vw - 800px + 20px))"
+          }}
         >
           {/* Glass Shell */}
           <div className="absolute inset-0 bg-[#0a0a0a]/90 lg:bg-[#0a0a0a]/80 backdrop-blur-[40px] rounded-t-[32px] lg:rounded-[24px] border border-white/[0.05] shadow-[0_-20px_100px_rgba(0,0,0,0.5)] lg:shadow-[-20px_0_100px_rgba(0,0,0,0.5)] pointer-events-none" />

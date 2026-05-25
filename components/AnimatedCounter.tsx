@@ -23,14 +23,12 @@ export default function AnimatedCounter({
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
-  const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (!isInView || hasAnimated.current) return;
-    hasAnimated.current = true;
+    if (!isInView) return;
 
     const startTime = performance.now();
-    const startValue = 0;
+    const startValue = count;
 
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime;

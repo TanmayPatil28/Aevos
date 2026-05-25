@@ -220,22 +220,22 @@ export default function DashboardClient({
         <div className="flex justify-between items-start">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-2 block">
-              {isSimulation ? "Strategy Sandbox Active" : "Academic Command Center"}
+              {isSimulation ? "Strategy Sandbox Active" : "Your Dashboard"}
             </span>
             <h1 className="text-3xl font-black text-white">
               {isSimulation 
                 ? activeScenario.name 
                 : isRecovery 
-                  ? "Recovery Protocol Active" 
+                  ? "Get Back on Track" 
                   : isOptimization 
-                    ? "Optimization Trajectory" 
+                    ? "Optimize Your Grades" 
                     : "Academic Overview"}
             </h1>
             <p className="text-sm mt-2 opacity-80 max-w-2xl">
               {isSimulation 
-                ? "You are viewing a projected simulation overlay. Authoritative data is protected."
+                ? "You are in sandbox mode. Your original academic records are safely locked."
                 : isRecovery 
-                  ? "Your academic health requires immediate attention. Focus on clearing backlogs and stabilizing momentum."
+                  ? "We've mapped out a clear path to help you clear your backlogs and stabilize your grades."
                   : "Your academic standing is healthy. Focus on CGPA optimization and strategic skill acquisition."}
             </p>
           </div>
@@ -293,7 +293,7 @@ export default function DashboardClient({
                   
                   {inv.actionTrigger && (
                     <button className="flex items-center gap-1.5 text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded transition-colors">
-                      {inv.actionTrigger.includes("backlog") ? "Launch Recovery Plan" : "Open Optimizer"}
+                      {inv.actionTrigger.includes("backlog") ? "View Next Steps" : "Explore Options"}
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -347,13 +347,13 @@ export default function DashboardClient({
                   </div>
                   <div className="text-sm font-bold text-white mb-1">No Active Courses</div>
                   <div className="text-xs text-slate-400 max-w-[200px] mb-4">
-                    Import your syllabus or academic records to begin tracking your semester trajectory.
+                    Let's set up your workspace. Import your past grades to unlock personalized insights.
                   </div>
                   <button 
                     onClick={() => setIsSyncDrawerOpen(true)}
                     className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-bold border border-white/10 transition-colors"
                   >
-                    Open Data Sync
+                    Import Grades
                   </button>
                 </div>
               )}

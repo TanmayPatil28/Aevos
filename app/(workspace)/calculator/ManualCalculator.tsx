@@ -1,14 +1,16 @@
 "use client";
 
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { useState, useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { Calculator, Plus, RotateCcw, Save, CheckCircle2, X, Target, ArrowRight } from "lucide-react";
 import { getPresetById, convertPercentageToGrade, calculateSGPA } from "@/lib/presets";
 import { useUSMStore } from "@/stores/usmStore";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
-import PremiumButton from "@/components/PremiumButton";
+import WorkspaceContent from "@/components/layout/WorkspaceContent";
+import WorkspaceSection from "@/components/layout/WorkspaceSection";
+import CalculationBreakdown from "@/components/CalculationBreakdown";
 import { useNetworkState } from "@/lib/hooks/useNetworkState";
 import { diagnostics } from "@/lib/diagnostics";
 
@@ -20,40 +22,41 @@ interface Subject {
   error?: string;
 }
 
-export default function CalculatorPage() {
+export default function ManualCalculator() {
   const store = useUSMStore();
   const preset = getPresetById(store.presetId || "sppu") || getPresetById("sppu")!;
   const isOnline = useNetworkState();
   
   const [usePercentage, setUsePercentage] = useState(false);
   const [subjects, setSubjects] = useState<Subject[]>([
-    { id: "1", name: "Mathematics", credits: "", score: "" },
-    { id: "2", name: "Physics", credits: "", score: "" },
-    { id: "3", name: "Computer Science", credits: "", score: "" },
-    { id: "4", name: "English", credits: "", score: "" },
+    { id: "initial-1", name: "", credits: "", score: "" },
   ]);
-  const [result, setResult] = useState<{ sgpa: number; totalCredits: number } | null>(null);
+  
   const [isSaving, setIsSaving] = useState(false);
-  const [isCalculating, setIsCalculating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const lastAddedId = useRef<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const addSubject = useCallback(() => {
-    setSubjects(prev => [...prev, { id: Math.random().toString(), name: "", credits: "", score: "" }]);
+    const newId = Math.random().toString();
+    setSubjects(prev => [...prev, { id: newId, name: "", credits: "", score: "" }]);
+    lastAddedId.current = newId;
+    
+    // Auto-focus the new row's name input
+    setTimeout(() => {
+      document.getElementById(`name-${newId}`)?.focus();
+    }, 50);
   }, []);
 
   const removeSubject = useCallback((id: string) => {
     setSubjects(prev => {
-      if (prev.length > 1) {
-        return prev.filter((s) => s.id !== id);
-      } else {
-        toast.error("You must have at least one subject");
-        return prev;
-      }
+      if (prev.length > 1) return prev.filter((s) => s.id !== id);
+      toast.error("You must have at least one subject");
+      return prev;
     });
   }, []);
 
@@ -61,57 +64,65 @@ export default function CalculatorPage() {
     setSubjects(prev => prev.map((s) => (s.id === id ? { ...s, [field]: value, error: undefined } : s)));
   }, []);
 
-  const validateInputs = useCallback((): boolean => {
-    let valid = true;
-
-    const updated = subjects.map((sub) => {
-      const credits = parseFloat(sub.credits);
-      const score = parseFloat(sub.score);
-      let error = "";
-
-      if (!sub.name.trim()) error = "Name required";
-      else if (isNaN(credits) || credits < 1 || credits > 6) error = "Credits: 1-6";
-      else if (isNaN(score)) error = "Score required";
-      else if (usePercentage && (score < 0 || score > 100)) error = "Marks: 0-100";
-      else if (!usePercentage && (score < 0 || score > 10)) error = "Grade: 0-10";
-
-      if (error) valid = false;
-      return { ...sub, error };
-    });
-
-    setSubjects(updated);
-    return valid;
-  }, [subjects, usePercentage]);
-
-  const handleCalculate = () => {
-    if (!validateInputs()) {
-      toast.error("Please fix the errors highlighted in red.");
-      return;
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent, field: 'name' | 'credits' | 'score', index: number, courseId: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (field === 'name') {
+        document.getElementById(`credits-${courseId}`)?.focus();
+      } else if (field === 'credits') {
+        document.getElementById(`score-${courseId}`)?.focus();
+      } else if (field === 'score') {
+        if (index === subjects.length - 1) {
+          addSubject();
+        } else {
+          document.getElementById(`name-${subjects[index + 1].id}`)?.focus();
+        }
+      }
     }
+  }, [subjects.length, addSubject, subjects]);
 
-    setIsCalculating(true);
+  const handleReset = useCallback(() => {
+    setSubjects([{ id: Math.random().toString(), name: "", credits: "", score: "" }]);
+    toast("Sandbox Reset", { icon: "🔄" });
+  }, []);
 
-    // 800ms artificial delay for satisfying feel
-    setTimeout(() => {
-      const parsedSubjects = subjects.map((sub) => {
-        const credits = parseFloat(sub.credits);
-        const score = parseFloat(sub.score);
-        const gradePoint = usePercentage ? convertPercentageToGrade(score, preset).points : score;
-        return { credits, gradePoint };
-      });
+  // Compute derived subjects exactly as simulator does
+  const derivationSubjects = useMemo(() => {
+    return subjects.map((sub, index) => {
+      const credits = parseFloat(sub.credits) || 0;
+      const score = parseFloat(sub.score) || 0;
+      let gradePoint = 0;
+      let gradeStr = "";
+      
+      if (usePercentage) {
+        const result = convertPercentageToGrade(score, preset);
+        gradePoint = result.points;
+        gradeStr = result.grade;
+      } else {
+        gradePoint = score;
+        const matchingScale = preset.gradeScale.find(g => gradePoint >= g.points);
+        gradeStr = matchingScale ? matchingScale.grade : "F";
+      }
 
-      let totalCredits = 0;
-      parsedSubjects.forEach((s) => (totalCredits += s.credits));
+      return {
+        id: sub.id,
+        name: sub.name || `Course ${index + 1}`,
+        credits,
+        grade: gradeStr,
+        gradePoint,
+        isPass: gradeStr !== "F"
+      };
+    }).filter(c => c.credits > 0);
+  }, [subjects, preset, usePercentage]);
 
-      const sgpa = calculateSGPA(parsedSubjects);
-      setResult({ sgpa, totalCredits });
-      setIsCalculating(false);
-      toast.success("Calculation complete!");
-    }, 800);
-  };
+  const calculatedSGPA = useMemo(() => calculateSGPA(derivationSubjects), [derivationSubjects]);
+  const totalCredits = useMemo(() => derivationSubjects.reduce((acc, c) => acc + c.credits, 0), [derivationSubjects]);
 
   const handleSave = async () => {
-    if (!result) return;
+    if (derivationSubjects.length === 0 || totalCredits === 0) {
+      toast.error("Please add valid subjects and credits first.");
+      return;
+    }
     
     if (!isOnline) {
       diagnostics.warn("ManualCalculator", "Save blocked: Device is offline");
@@ -121,10 +132,6 @@ export default function CalculatorPage() {
 
     setIsSaving(true);
     setSaveSuccess(false);
-    
-    if (process.env.NODE_ENV === "development") {
-      diagnostics.info("ManualCalculator", `Initiating manual save. Total Credits: ${result.totalCredits}, SGPA: ${result.sgpa}`);
-    }
 
     try {
       const res = await fetch("/api/calculations", {
@@ -132,28 +139,19 @@ export default function CalculatorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           semester: "Semester",
-          subjects: subjects.map(s => {
-            const gradePoint = usePercentage ? convertPercentageToGrade(parseFloat(s.score) || 0, preset).points : (parseFloat(s.score) || 0);
-            return { ...s, gradePoint };
-          }),
+          subjects: derivationSubjects,
           presetId: store.presetId || "sppu",
           type: "semester",
-          total_credits: result.totalCredits,
+          total_credits: totalCredits,
         }),
       });
 
       if (!res.ok) throw new Error("Failed to save");
       setSaveSuccess(true);
-      if (process.env.NODE_ENV === "development") {
-        diagnostics.info("ManualCalculator", "Manual save successful");
-      }
       toast.success("Result saved to Dashboard!");
       setTimeout(() => setSaveSuccess(false), 2000);
     } catch (err: any) {
       console.error(err);
-      if (process.env.NODE_ENV === "development") {
-        diagnostics.error("ManualCalculator", "Manual save failed", err);
-      }
       toast.error("Error saving calculation. Please try again.");
     } finally {
       setIsSaving(false);
@@ -163,316 +161,314 @@ export default function CalculatorPage() {
   if (!mounted) return null;
 
   return (
-    <main className="w-full relative px-6 max-w-7xl mx-auto pb-20">
+    <>
+      <WorkspaceContent className="relative z-10">
+        <WorkspaceSection>
+          
+          {/* =======================================
+              ROW 1: LEDGER & NUMBERS SUMMARY
+              ======================================= */}
+          <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-8">
 
-      {/* Hero Header */}
-      <StaggerContainer className="text-center mb-16 flex flex-col items-center">
-        <StaggerItem>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/20 text-primary text-sm font-semibold mb-6">
-            <span className="material-symbols-outlined text-sm">calculate</span>
-            CGPA Calculator
-          </div>
-        </StaggerItem>
-        <StaggerItem>
-          <h1 className="text-5xl md:text-6xl font-headline font-extrabold tracking-tight mb-6 bg-gradient-to-br from-on-surface via-on-surface/90 to-on-surface/40 bg-clip-text text-transparent drop-shadow-sm">
-            Calculate Your CGPA Instantly
-          </h1>
-        </StaggerItem>
-        <StaggerItem>
-          <p className="text-on-surface-variant max-w-2xl text-lg leading-relaxed">
-            Enter your subjects, credits, and marks. Get your CGPA in one click.
-          </p>
-        </StaggerItem>
-      </StaggerContainer>
+            {/* LEFT PANE: Smart Glass Ledger */}
+            <div className="flex-[2] min-w-[320px] flex flex-col gap-6 relative z-10 w-full">
+              <div className="w-full flex flex-col gap-6">
 
-      {/* Main Content Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-        {/* Left: Add Your Subjects */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="lg:col-span-8"
-        >
-          <div className="glass-card rounded-[2rem] p-8">
+                {/* Header Toolbar */}
+                <div className="relative overflow-hidden bg-black/60 backdrop-blur-3xl border border-white/[0.05] px-6 py-5 rounded-[2rem] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] shrink-0 flex justify-between items-center group">
+                  <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#4F8EF7]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#4F8EF7]/15 transition-colors duration-500" />
+                  
+                  <div className="flex items-center gap-3 relative z-10">
+                    <Calculator className="text-[#4F8EF7] w-5 h-5 drop-shadow-[0_0_8px_rgba(79,142,247,0.5)]" />
+                    <span className="font-bold text-white tracking-tight text-lg">Manual Sandbox</span>
+                  </div>
 
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-xl font-headline font-bold text-on-surface tracking-tight">Add Your Subjects</h2>
-              <button
-                onClick={addSubject}
-                className="flex items-center gap-2 px-5 py-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-on-surface font-bold hover:border-primary/40 hover:shadow-[0_0_20px_rgba(80,143,248,0.1)] transition-all active:scale-95 text-sm"
-              >
-                <span className="material-symbols-outlined text-[18px] text-primary">add</span>
-                Add Subject
-              </button>
-            </div>
-
-            <div className="overflow-x-auto mb-8">
-              <table className="w-full text-left min-w-[500px]">
-                <thead>
-                  <tr className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-[0.2em] border-b border-outline-variant/10">
-                    <th className="pb-4 px-2 w-[40%]">Subject Name</th>
-                    <th className="pb-4 px-2 w-[20%]">Credits</th>
-                    <th className="pb-4 px-2 w-[25%]">Grade/Marks</th>
-                    <th className="pb-4 px-2 text-center w-[15%]">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <AnimatePresence mode="popLayout">
-                    {subjects.map((subject) => (
-                      <motion.tr
-                        key={subject.id}
-                        layout
-                        initial={{ opacity: 0, y: -20, backgroundColor: "rgba(80, 143, 248, 0.1)" }}
-                        animate={{ opacity: 1, y: 0, backgroundColor: "transparent" }}
-                        exit={{ opacity: 0, x: -50, height: 0, overflow: "hidden" }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="group"
+                  <div className="flex items-center gap-3 relative z-10">
+                    {/* Mode Toggle */}
+                    <div className="flex bg-white/[0.03] p-1 rounded-full relative border border-white/[0.05]">
+                      <div
+                        className="absolute inset-y-1 bg-[#4F8EF7] rounded-full transition-all duration-300 ease-out z-0"
+                        style={{ width: 'calc(50% - 4px)', left: usePercentage ? '4px' : 'calc(50%)' }}
+                      />
+                      <button
+                        onClick={() => setUsePercentage(true)}
+                        className={`relative z-10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 ${usePercentage ? 'text-white' : 'text-white/40 hover:text-white'}`}
                       >
-                        <td className="py-2.5 px-2">
-                          <input
-                            type="text"
-                            value={subject.name}
-                            onChange={(e) => handleChange(subject.id, "name", e.target.value)}
-                            className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && !subject.name.trim() ? "border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5" : ""}`}
-                            placeholder="e.g. Data Structures"
-                          />
-                        </td>
-                        <td className="py-2.5 px-2">
-                          <input
-                            type="number"
-                            value={subject.credits}
-                            onChange={(e) => handleChange(subject.id, "credits", e.target.value)}
-                            className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && subject.error.includes("Credits") ? "border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5" : ""}`}
-                            placeholder="4"
-                            min="1" max="6"
-                          />
-                        </td>
-                        <td className="py-2.5 px-2">
-                          <input
-                            type="number"
-                            value={subject.score}
-                            onChange={(e) => handleChange(subject.id, "score", e.target.value)}
-                            className={`w-full bg-surface-container/30 hover:bg-surface-container/50 border border-transparent rounded-xl text-on-surface focus:bg-surface-container focus:border-primary/30 focus:shadow-[0_0_15px_rgba(80,143,248,0.15)] outline-none transition-all duration-300 py-3 px-4 ${subject.error && (subject.error.includes("Score") || subject.error.includes("Marks") || subject.error.includes("Grade")) ? "border-error/50 shadow-[inset_0_0_0_1px_rgba(248,113,113,0.5)] bg-error/5" : ""}`}
-                            placeholder={usePercentage ? "e.g., 85" : "e.g., 9"}
-                          />
-                        </td>
-                        <td className="py-2 px-2 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            <button onClick={() => removeSubject(subject.id)} className="text-on-surface-variant/30 hover:text-error transition-all p-2 rounded-xl border border-transparent hover:border-error/20 hover:bg-error/10 hover:shadow-[0_0_10px_rgba(248,113,113,0.15)] flex items-center justify-center">
-                               <span className="material-symbols-outlined text-[20px]">close</span>
-                            </button>
-                            <AnimatePresence>
-                              {subject.error && (
-                                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-red-400 text-[10px]">{subject.error}</motion.span>
-                              )}
-                            </AnimatePresence>
+                        Percent
+                      </button>
+                      <button
+                        onClick={() => setUsePercentage(false)}
+                        className={`relative z-10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 ${!usePercentage ? 'text-white' : 'text-white/40 hover:text-white'}`}
+                      >
+                        Grades
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={handleReset}
+                      title="Reset Sandbox"
+                      className="text-white/50 bg-white/[0.03] p-2.5 rounded-full hover:bg-white/[0.08] hover:text-white border border-transparent hover:border-white/10 transition-all flex items-center justify-center shadow-sm"
+                    >
+                      <RotateCcw size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Smart Glass Ledger */}
+                <div className="flex flex-col gap-3 relative z-20">
+                  {/* Ledger Header */}
+                  <div className="flex items-center px-4 md:px-6 mb-1">
+                     <span className="flex-1 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Course Name</span>
+                     <span className="w-20 md:w-28 text-center text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Credits</span>
+                     <span className="w-24 md:w-32 text-right text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Score</span>
+                     <span className="w-10"></span>
+                  </div>
+
+                  <AnimatePresence mode="popLayout">
+                    {subjects.map((course, idx) => {
+                      const derived = derivationSubjects.find(d => d.id === course.id);
+                      const hasValidScore = parseFloat(course.score) >= 0;
+                      const isPassing = derived ? derived.isPass : true;
+                      
+                      // Dynamic Glow logic
+                      const ringClass = hasValidScore 
+                        ? (isPassing ? "focus-within:ring-green-500/30 border-green-500/20" : "focus-within:ring-red-500/30 border-red-500/20") 
+                        : "focus-within:ring-[#4F8EF7]/30 hover:border-white/10";
+
+                      return (
+                        <motion.div
+                          key={course.id}
+                          layout
+                          initial={{ opacity: 0, x: -20, backgroundColor: "rgba(255,255,255,0)" }}
+                          animate={{ opacity: 1, x: 0, backgroundColor: "rgba(255,255,255,0.02)" }}
+                          exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                          className={`relative flex items-center bg-black/40 border border-white/[0.05] rounded-[1.25rem] p-2 md:p-3 shadow-sm transition-all duration-300 group ring-1 ring-transparent ${ringClass}`}
+                        >
+                          {/* Course Name */}
+                          <div className="flex-1 relative">
+                            <input
+                              id={`name-${course.id}`}
+                              type="text"
+                              value={course.name}
+                              onChange={(e) => handleChange(course.id, 'name', e.target.value)}
+                              onKeyDown={(e) => handleInputKeyDown(e, 'name', idx, course.id)}
+                              className="w-full bg-transparent border-none text-white font-semibold text-sm md:text-base px-3 py-2 outline-none placeholder:text-white/20"
+                              placeholder={`Course ${idx + 1}`}
+                            />
                           </div>
-                        </td>
-                      </motion.tr>
-                    ))}
+
+                          {/* Divider */}
+                          <div className="h-8 w-[1px] bg-white/[0.05]" />
+
+                          {/* Credits */}
+                          <div className="w-20 md:w-28 flex justify-center">
+                            <input
+                              id={`credits-${course.id}`}
+                              type="number"
+                              value={course.credits}
+                              onChange={(e) => handleChange(course.id, 'credits', e.target.value)}
+                              onKeyDown={(e) => handleInputKeyDown(e, 'credits', idx, course.id)}
+                              className="w-12 md:w-16 text-center font-mono font-bold bg-white/[0.03] text-white border border-transparent text-sm md:text-base py-2 rounded-xl outline-none focus:bg-[#4F8EF7]/10 focus:text-[#4F8EF7] focus:border-[#4F8EF7]/30 transition-all [&::-webkit-inner-spin-button]:appearance-none"
+                              placeholder="CR"
+                              min="1" max="10"
+                            />
+                          </div>
+
+                          {/* Divider */}
+                          <div className="h-8 w-[1px] bg-white/[0.05]" />
+
+                          {/* Score Input (Colossal) */}
+                          <div className="w-24 md:w-32 flex justify-end px-2">
+                            <input
+                              id={`score-${course.id}`}
+                              type="number"
+                              value={course.score}
+                              onChange={(e) => handleChange(course.id, 'score', e.target.value)}
+                              onKeyDown={(e) => handleInputKeyDown(e, 'score', idx, course.id)}
+                              className={`w-16 md:w-20 text-right font-mono font-black bg-transparent ${hasValidScore ? (isPassing ? 'text-green-400' : 'text-red-400') : 'text-white'} text-xl md:text-2xl py-1 outline-none placeholder:text-white/10 transition-colors [&::-webkit-inner-spin-button]:appearance-none`}
+                              placeholder={usePercentage ? "85" : "9.0"}
+                            />
+                          </div>
+
+                          {/* Remove Button */}
+                          <div className="w-10 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => removeSubject(course.id)}
+                              className="p-2 rounded-full bg-white/[0.05] text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </AnimatePresence>
-                </tbody>
-              </table>
+
+                  {/* Add Course Floating Row */}
+                  <motion.button
+                    layout
+                    onClick={addSubject}
+                    className="flex items-center justify-center gap-2 w-full py-4 mt-2 rounded-[1.25rem] border-2 border-dashed border-white/[0.05] text-white/30 hover:text-[#4F8EF7] hover:border-[#4F8EF7]/30 hover:bg-[#4F8EF7]/5 transition-all duration-300 font-bold tracking-widest text-[10px] uppercase group"
+                  >
+                    <Plus size={16} className="group-hover:scale-125 transition-transform" />
+                    <span>Add Another Course</span>
+                  </motion.button>
+
+                </div>
+              </div>
             </div>
 
-            <div className="flex bg-surface-container-highest p-1 rounded-full w-fit mb-8 relative border border-outline-variant/30">
-              <div
-                className="absolute inset-y-1 bg-primary rounded-full transition-all duration-300 ease-premium-expo z-0"
-                style={{ width: 'calc(50% - 4px)', left: usePercentage ? '4px' : 'calc(50%)' }}
-              />
-              <button
-                onClick={() => setUsePercentage(true)}
-                className={`relative z-10 px-6 py-2 rounded-full text-sm font-bold transition-colors duration-300 w-32 ${usePercentage ? 'text-white' : 'text-on-surface-variant hover:text-on-surface'}`}
-              >
-                Percentage
-              </button>
-              <button
-                onClick={() => setUsePercentage(false)}
-                className={`relative z-10 px-6 py-2 rounded-full text-sm font-bold transition-colors duration-300 w-32 ${!usePercentage ? 'text-white' : 'text-on-surface-variant hover:text-on-surface'}`}
-              >
-                Grade Points
-              </button>
-            </div>
+            {/* RIGHT PANE: Numbers Summary */}
+            <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10 w-full">
+              
+              <div className="flex flex-col">
+                <span className="text-white/50 font-black tracking-[0.3em] text-[10px] mb-6 uppercase">Calculated SGPA</span>
+                <motion.div 
+                  className="flex items-baseline gap-2"
+                  animate={{ opacity: [0.8, 1, 0.8] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <AnimatedCounter target={calculatedSGPA} decimals={2} className="text-[6rem] lg:text-[7rem] xl:text-[9rem] font-semibold tracking-tighter text-white leading-[0.8]" />
+                </motion.div>
+                <span className="text-white/40 font-medium text-lg mt-6 tracking-tight">out of {preset.gradeScale[0]?.points || 10}.0 maximum scale.</span>
+              </div>
 
-            <div className="w-full">
-              <PremiumButton
-                onClick={handleCalculate}
-                disabled={isCalculating}
-                variant="primary"
-                className="w-full justify-between mt-4"
-                icon={isCalculating ? (
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                ) : "arrow_forward"}
-              >
-                {isCalculating ? "Calculating..." : "Calculate Results"}
-              </PremiumButton>
+              <div className="flex flex-col w-full border-t border-white/[0.08] pt-8 gap-8 mt-2">
+                <div className="flex flex-col">
+                  <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Total Credits</span>
+                  <AnimatedCounter target={totalCredits} className="text-4xl font-semibold tracking-tighter text-white" />
+                </div>
+              </div>
+
+              <div className="mt-6 pt-8 border-t border-white/[0.08]">
+                <button onClick={handleSave} disabled={isSaving} className="group w-full flex items-center justify-center gap-3 bg-white text-black font-bold py-5 rounded-full hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-95 transition-all duration-300 ease-out disabled:opacity-50 disabled:hover:scale-100">
+                  {isSaving ? (
+                     <svg className="animate-spin h-5 w-5 text-black" fill="none" viewBox="0 0 24 24">
+                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                     </svg>
+                  ) : saveSuccess ? (
+                    <><CheckCircle2 size={18} /> Saved!</>
+                  ) : (
+                    <><Save size={18} className="transition-transform duration-300 group-hover:scale-110" /> Save Result</>
+                  )}
+                </button>
+              </div>
+
             </div>
           </div>
-        </motion.div>
 
-        {/* Right: Grade Scale Reference */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-4"
-        >
-          <div className="glass-card rounded-none p-8 sticky top-28 border border-outline-variant">
-            <h2 className="text-xl font-headline font-bold mb-6 text-on-surface flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary">analytics</span>
-              Scale Reference
-            </h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] px-4">
-                <span>Range</span><span>Grade</span><span>Pts</span>
+          {/* =======================================
+              ROW 2: TYPOGRAPHY & STATUTORY MATRIX
+              ======================================= */}
+          <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-24">
+
+            {/* LEFT PANE: Typography */}
+            <div className="flex-1 min-w-[320px] max-w-2xl flex flex-col gap-12 relative z-10 lg:sticky lg:top-28 h-fit w-full">
+              <div className="w-full flex flex-col gap-12 relative z-10 px-2 lg:px-6">
+
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="flex flex-col gap-5"
+                >
+                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] text-white leading-[1.1]">
+                    <motion.span 
+                      className="text-transparent bg-clip-text inline-block"
+                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    >Calculate your trajectory.</motion.span><br />
+                    Complete Sandbox.
+                  </h3>
+                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                    <strong className="text-[#f5f5f7]">A completely isolated environment.</strong> Enter your subjects manually and observe how grade boundaries and credit weights impact your academic standing.
+                  </p>
+                </motion.div>
+
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
+                  className="flex flex-col gap-5"
+                >
+                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
+                    <motion.span 
+                      className="text-transparent bg-clip-text inline-block"
+                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    >Statutory Accuracy.</motion.span>
+                  </h3>
+                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                    GradeFlow silently translates percentage marks into valid statutory grade points automatically if you select the Percent mode, ensuring every calculation mirrors the exact university formula.
+                  </p>
+                </motion.div>
+                
               </div>
-              <div className="space-y-2.5">
-                {preset.gradeScale.map((row, i) => (
-                  <div key={i} className="flex justify-between items-center bg-surface-container/40 px-5 py-3.5 rounded-none border border-outline-variant/30 hover:bg-surface-container-high hover:border-primary/40 hover:shadow-sm transition-all group">
-                    <span className="text-on-surface-variant group-hover:text-on-surface font-medium text-xs w-20">{row.minMarks !== undefined ? `${row.minMarks} - 100` : `Below`}</span>
-                    <span className={`px-2.5 py-0.5 rounded-none text-xs ${!row.isPass ? "bg-error/10 text-error" : "bg-success/10 text-success"} font-bold w-auto border border-transparent group-hover:border-current transition-colors`}>{row.grade}</span>
-                    <span className={`font-black tracking-tight ${!row.isPass ? "text-error" : "text-on-surface"} w-6 text-right`}>{row.points}</span>
+            </div>
+
+            {/* RIGHT PANE: Statutory Matrix */}
+            <div className="flex-[2] min-w-[320px] relative z-10 w-full">
+              <div className="w-full relative z-10">
+                {derivationSubjects.length > 0 ? (
+                  <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+                    <CalculationBreakdown
+                      preset={preset}
+                      subjects={derivationSubjects}
+                      type="sgpa"
+                    />
+                  </motion.div>
+                ) : (
+                  <div className="h-64 flex items-center justify-center border border-white/5 bg-black/40 rounded-[32px] text-white/30 font-medium">
+                    Add valid subjects to view the statutory breakdown.
                   </div>
-                ))}
+                )}
               </div>
             </div>
-          </div>
-        </motion.div>
-      </div>
 
-      {/* Result Section */}
-      <AnimatePresence>
-        {result && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
+          </div>
+
+          {/* =======================================
+              ROW 3: PREDICTOR SHORTCUT BANNER
+              ======================================= */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="mb-12"
+            transition={{ delay: 0.2 }}
+            className="mt-12 relative overflow-hidden bg-gradient-to-r from-purple-500/10 to-[#4F8EF7]/10 border border-purple-500/20 hover:border-[#4F8EF7]/40 rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 group transition-colors duration-500"
           >
-            <h2 className="text-3xl font-headline font-black mb-8 text-on-surface">Semester Results</h2>
-            <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              <StaggerItem>
-                <div className="glass-card rounded-[2.5rem] p-10 border-t-4 border-primary shadow-premium hover:-translate-y-2 transition-all duration-500 group overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
-                  <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Semester SGPA</p>
-                  <h3 className="text-6xl font-black font-headline text-primary tracking-tighter group-hover:scale-105 transition-transform origin-left">
-                    <AnimatedCounter target={result.sgpa} decimals={2} />
-                  </h3>
-                  <div className="mt-6 flex items-center gap-2 text-primary font-bold text-sm bg-primary/5 w-fit px-3 py-1 rounded-full">
-                    <span className="material-symbols-outlined text-sm">trending_up</span> Top Tier
-                  </div>
-                </div>
-              </StaggerItem>
-              <StaggerItem>
-                <div className="glass-card rounded-[2.5rem] p-10 border-t-4 border-secondary shadow-premium hover:-translate-y-2 transition-all duration-500 group overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-secondary/10 transition-colors" />
-                  <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Earned Credits</p>
-                  <h3 className="text-6xl font-black font-headline text-secondary tracking-tighter group-hover:scale-105 transition-transform origin-left">
-                    <AnimatedCounter target={result.totalCredits} />
-                  </h3>
-                  <div className="mt-6 flex items-center gap-2 text-secondary font-bold text-sm bg-secondary/5 w-fit px-3 py-1 rounded-full">
-                    <span className="material-symbols-outlined text-sm">verified</span> Academic Load
-                  </div>
-                </div>
-              </StaggerItem>
-              <StaggerItem>
-                <div className="glass-card rounded-[2.5rem] p-10 border-t-4 border-success shadow-premium hover:-translate-y-2 transition-all duration-500 group overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-success/10 transition-colors" />
-                  <p className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Performance Indicator</p>
-                  <motion.h3
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1.6 }}
-                    className="text-4xl lg:text-5xl font-black font-headline text-success tracking-tighter group-hover:scale-105 transition-transform origin-left"
-                  >
-                    {result.sgpa >= 9 ? "LEGENDARY" : result.sgpa >= 8 ? "ELITE" : result.sgpa >= 7 ? "STABLE" : "RECOVERY"}
-                  </motion.h3>
-                  <div className="mt-6 flex items-center gap-2 text-success font-bold text-sm bg-success/5 w-fit px-3 py-1 rounded-full">
-                    <span className="material-symbols-outlined text-sm">stars</span> Grade Status
-                  </div>
-                </div>
-              </StaggerItem>
-            </StaggerContainer>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card rounded-[2rem] p-8 mb-8 overflow-x-auto">
-              <h3 className="text-xl font-headline font-bold mb-6 text-on-surface">Subject Breakdown</h3>
-              <table className="w-full text-left min-w-[500px]">
-                <thead>
-                  <tr className="text-on-surface-variant/60 text-xs font-bold uppercase tracking-widest border-b border-outline-variant/10">
-                    <th className="pb-4 px-2">Subject Name</th>
-                    <th className="pb-4 px-2">Credits</th>
-                    <th className="pb-4 px-2">Score</th>
-                    <th className="pb-4 px-2">Grade Point</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subjects.map(s => {
-                    const gradePoint = usePercentage ? convertPercentageToGrade(parseFloat(s.score) || 0, preset).points : parseFloat(s.score) || 0;
-                    return (
-                      <tr key={s.id} className="border-b border-outline-variant/5 last:border-0 hover:bg-surface-container-low/50 transition-colors">
-                        <td className="py-4 px-2 font-medium text-on-surface">{s.name || "Unnamed"}</td>
-                        <td className="py-4 px-2 text-on-surface-variant">{s.credits}</td>
-                        <td className="py-4 px-2 text-on-surface-variant">{s.score}</td>
-                        <td className="py-4 px-2 font-bold text-primary">{gradePoint.toFixed(1)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </motion.div>
-
-            {/* Save Section */}
-            <div className="glass-card rounded-[2rem] p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-              <div>
-                <h3 className="text-2xl font-headline font-black mb-2 text-on-surface">Secure These Results</h3>
-                <p className="text-on-surface-variant">Sync your GPA to your cloud dashboard to track semester-on-semester progress.</p>
+            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            
+            <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-5 relative z-10">
+              <div className="w-14 h-14 shrink-0 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+                <Target className="text-purple-400 w-6 h-6" />
               </div>
-              <div className="flex gap-4 w-full md:w-auto">
-                <div className="w-full">
-                  <PremiumButton
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    variant={saveSuccess ? "outline" : "primary"}
-                    className="w-full justify-between"
-                    icon={isSaving ? (
-                      <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : saveSuccess ? "check_circle" : "cloud_upload"}
-                  >
-                    {isSaving ? "Saving..." : saveSuccess ? "Saved!" : "Save to Dashboard"}
-                  </PremiumButton>
-                </div>
+              <div className="flex flex-col gap-1.5">
+                <h4 className="text-white font-bold text-xl md:text-2xl tracking-tight">Need precise internal marks?</h4>
+                <p className="text-white/60 text-sm md:text-base font-medium max-w-lg">
+                  Use the intelligent <strong className="text-white/80">Contextual Predictor</strong> to calculate exactly what scores you need in Test 1, Test 2, and Assignments to secure your target grade.
+                </p>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Navigation Pills */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="flex flex-col md:flex-row justify-center items-center gap-6 mt-6 pb-10"
-      >
-        <Link href="/" className="w-full md:w-64">
-          <PremiumButton variant="outline" icon="arrow_back" className="w-full justify-between">
-            Back to Home
-          </PremiumButton>
-        </Link>
-        <Link href="/planner" className="w-full md:w-64">
-          <PremiumButton variant="primary" icon="calendar_month" className="w-full justify-between">
-            Plan Semester
-          </PremiumButton>
-        </Link>
-      </motion.div>
-    </main>
+            <button 
+              onClick={() => {
+                const activeCourses = useUSMStore.getState().courses || [];
+                useUSMStore.getState().openPanel("PREDICTOR", activeCourses[0]?.id || "");
+              }}
+              className="relative z-10 px-8 py-4 rounded-full bg-white text-black font-bold text-sm md:text-base hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] whitespace-nowrap flex items-center gap-2 group-hover:bg-[#4F8EF7] group-hover:text-white"
+            >
+              Open Predictor <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </motion.div>
+
+        </WorkspaceSection>
+      </WorkspaceContent>
+    </>
   );
 }

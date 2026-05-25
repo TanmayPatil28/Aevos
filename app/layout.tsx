@@ -62,7 +62,9 @@ export default function RootLayout({
             <ErrorBoundary>
               <AcademicStateProvider>
                 <AcademicHydrationBoundary>
+                  <Navbar />
                   {children}
+                  <Footer />
                 </AcademicHydrationBoundary>
               </AcademicStateProvider>
             </ErrorBoundary>

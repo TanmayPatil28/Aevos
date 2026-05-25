@@ -211,17 +211,17 @@ export default function CalculatorPage() {
           {/* =======================================
       ROW 1: BENTO GRID & NUMBERS SUMMARY
       ======================================= */}
-          <div className="grid grid-cols-12 gap-4 lg:gap-16 items-start">
+          <div className="flex flex-wrap gap-8 lg:gap-12 items-start">
 
             {/* LEFT PANE: Bento Grid */}
-            <div className="col-span-8 flex flex-col gap-6 relative z-10 w-full min-w-0">
+            <div className="flex-[2] min-w-[320px] flex flex-col gap-6 relative z-10 w-full">
 
               {/* =======================================
             LEFT PANE: The Bento Grid Subject Ledger
             ======================================= */}
               <div className="w-full flex flex-col gap-6">
 
-                <div className="relative overflow-hidden bg-[#0F172A]/90 backdrop-blur-xl border border-white/[0.08] px-6 py-4 rounded-2xl shadow-2xl shrink-0 mt-2 flex justify-between items-center group">
+                <div className="relative overflow-hidden bg-black/60 backdrop-blur-3xl border border-white/[0.05] px-6 py-5 rounded-[2rem] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] shrink-0 mt-2 flex justify-between items-center group">
                   <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#4F8EF7]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#4F8EF7]/15 transition-colors duration-500" />
 
                   <div className="flex items-center gap-3 relative z-10">
@@ -247,7 +247,7 @@ export default function CalculatorPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-20">
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 relative z-20">
                   <AnimatePresence mode="popLayout">
                     {simulatedCourses.length === 0 ? (
                       <motion.div
@@ -261,13 +261,13 @@ export default function CalculatorPage() {
                         </div>
                         <h3 className="text-white font-bold text-lg mb-2">Sandbox is Empty</h3>
                         <p className="text-white/40 text-sm max-w-sm text-center mb-6">
-                          Add a course to begin predicting your grades. The simulation engine will automatically traverse your syllabus permutations.
+                          Add a course to see how different grades affect your overall CGPA. It's completely safe and won't affect your real records.
                         </p>
                         <button
                           onClick={handleAddTemporary}
                           className="px-6 py-3 rounded-full bg-white/5 hover:bg-white/10 text-white text-sm font-bold border border-white/10 transition-colors flex items-center gap-2"
                         >
-                          <Plus className="w-4 h-4" /> Initialize Sandbox
+                          <Plus className="w-4 h-4" /> Add a Course
                         </button>
                       </motion.div>
                     ) : (
@@ -287,7 +287,7 @@ export default function CalculatorPage() {
                               openPanel("PREDICTOR", course.id);
                             }
                           }}
-                          className={`relative bg-[#0F172A]/90 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 flex flex-col h-full min-h-[140px] shadow-2xl transition-all duration-300 group hover:border-[#4F8EF7]/50 hover:bg-[#131C31] hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(79,142,247,0.15)] cursor-pointer ${course.isTemporary ? 'ring-1 ring-[#4F8EF7]/50 shadow-[0_0_20px_rgba(79,142,247,0.1)]' : ''}`}
+                          className={`relative bg-black border border-white/[0.08] rounded-[2rem] p-5 flex flex-col h-full min-h-[150px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] transition-all duration-500 group hover:border-[#4F8EF7]/40 hover:bg-[#050505] hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(79,142,247,0.15)] cursor-pointer ${course.isTemporary ? 'ring-1 ring-[#4F8EF7]/50 shadow-[0_0_20px_rgba(79,142,247,0.1)]' : ''}`}
                         >
 
                           {/* Subtle Ambient Glow inside card (clipped to rounded corners) */}
@@ -366,62 +366,56 @@ export default function CalculatorPage() {
             </div>
 
             {/* RIGHT PANE: Numbers Summary */}
-            <div className="col-span-4 flex flex-col gap-8 lg:sticky lg:top-28 h-fit relative z-10 min-w-0">
+            <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10 w-full">
+              {/* No backgrounds, borders, or padding on the main container */}
+              
+              <div className="flex flex-col">
+                <span className="text-white/50 font-black tracking-[0.3em] text-[10px] mb-6 uppercase">Simulated SGPA</span>
+                <motion.div 
+                  className="flex items-baseline gap-2"
+                  animate={{ 
+                    opacity: [0.8, 1, 0.8]
+                  }}
+                  transition={{ 
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <AnimatedCounter target={calculatedSGPA} decimals={2} className="text-[6rem] lg:text-[7rem] xl:text-[9rem] font-semibold tracking-tighter text-white leading-[0.8]" />
+                </motion.div>
+                <span className="text-white/40 font-medium text-lg mt-6 tracking-tight">out of {preset?.gradeScale[0]?.points || 10}.0 maximum scale.</span>
+              </div>
 
-              {/* =======================================
-            RIGHT PANE: Clean Notion-Style Summary
-            ======================================= */}
-              <div className="w-full flex flex-col gap-8 ">
+              <div className="flex flex-col w-full border-t border-white/[0.08] pt-8 gap-8 mt-2">
+                <div className="flex flex-col">
+                  <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Projected CGPA</span>
+                  <AnimatedCounter target={projectedCGPA} decimals={2} className="text-4xl font-semibold tracking-tighter text-white" />
+                </div>
+                
+                <div className="w-full h-px bg-white/[0.08]" />
 
                 <div className="flex flex-col">
-                  <span className="text-[#4F8EF7] font-semibold tracking-widest text-xs mb-4 uppercase">Simulated SGPA</span>
-                  <div className="flex items-baseline gap-2">
-                    <AnimatedCounter target={calculatedSGPA} decimals={2} className="text-[6rem] lg:text-[7.5rem] xl:text-[8.5rem] font-medium tracking-tighter text-white leading-[0.85]" />
-                  </div>
-                  <span className="text-gray-500 font-medium text-lg mt-4 tracking-tight">out of {preset?.gradeScale[0]?.points || 10}.0 maximum scale.</span>
+                  <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Current Standing</span>
+                  <span className="text-4xl font-semibold tracking-tighter text-white">{context.metrics.cgpa?.toFixed(2) || 'N/A'} CGPA</span>
                 </div>
+              </div>
 
-                <div className="flex flex-col gap-10 mt-4">
-                  <div className="flex flex-col">
-                    <span className="text-white/40 font-semibold tracking-widest text-xs mb-1 uppercase">Projected CGPA</span>
-                    <AnimatedCounter target={projectedCGPA} decimals={2} className="text-5xl font-medium tracking-tight text-white" />
-                  </div>
-
-                  <div className="flex flex-col">
-                    <span className="text-white/40 font-semibold tracking-widest text-xs mb-1 uppercase">Current Standing</span>
-                    <div className="text-3xl font-medium tracking-tight text-white">{context.metrics.cgpa?.toFixed(2) || 'N/A'} CGPA</div>
-                  </div>
-                </div>
-
-                {/* Actions Pane */}
+              <div className="mt-6 pt-8 border-t border-white/[0.08]">
                 <div className="flex gap-3">
                   {hasChanges && (
                     <button
                       onClick={handleReset}
-                      className="px-4 py-3 rounded-lg bg-transparent border border-white/[0.1] hover:bg-white/[0.05] text-white/50 hover:text-white transition-all flex items-center justify-center"
+                      className="px-5 py-4 rounded-full bg-transparent border border-white/[0.1] hover:bg-white/[0.05] text-white/50 hover:text-white transition-all flex items-center justify-center hover:scale-105 active:scale-95"
                     >
-                      <RotateCcw size={16} />
+                      <RotateCcw size={18} />
                     </button>
                   )}
-                  <button
-                    onClick={handleSaveSandbox}
-                    className="flex-1 py-3 bg-white text-black font-medium text-sm rounded-lg hover:bg-white/90 transition-all flex items-center justify-center gap-2"
-                  >
-                    <Save size={16} /> Save Sandbox State
+                  <button onClick={handleSaveSandbox} className="group flex-1 flex items-center justify-center gap-3 bg-white text-black font-bold py-5 rounded-full hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-95 transition-all duration-300 ease-out">
+                    <Save size={18} className="transition-transform duration-300 group-hover:scale-110" />
+                    Save Scenario
                   </button>
                 </div>
-
-                {/* Apple Typography */}
-                <div className="flex flex-col gap-2 mt-4 relative z-10">
-                  <h2 className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white mb-2 leading-[1.05]">
-                    Deterministic projections.<br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">Cryptographically precise.</span>
-                  </h2>
-                  <p className="text-gray-400 text-base md:text-lg font-medium leading-snug mt-2">
-                    The GradeFlow Trust Engine evaluates academic trajectories using strict deterministic state modeling. Every combinatorial permutation is statically bound to verified University Grants Commission (UGC) algorithms, guaranteeing zero-variance predictability.
-                  </p>
-                </div>
-
               </div>
 
             </div>
@@ -431,64 +425,116 @@ export default function CalculatorPage() {
           {/* =======================================
       ROW 2: TYPOGRAPHY & STATUTORY MATRIX
       ======================================= */}
-          <div className="grid grid-cols-12 gap-4 lg:gap-16 items-start mt-24">
+          <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-24">
 
             {/* LEFT PANE: Typography */}
-            <div className="col-span-4 flex flex-col gap-16 relative z-10 lg:sticky lg:top-28 h-fit min-w-0">
+            <div className="flex-1 min-w-[320px] max-w-2xl flex flex-col gap-12 relative z-10 lg:sticky lg:top-28 h-fit w-full">
               {/* LEFT: Apple-Style Guide Typography */}
-              <div className="w-full flex flex-col gap-16 relative z-10 px-2 lg:px-6">
+              <div className="w-full flex flex-col gap-12 relative z-10 px-2 lg:px-6">
 
-                <div className="flex flex-col gap-4">
-                  <h3 className="text-4xl md:text-5xl lg:text-[3.5rem] font-semibold tracking-tight text-white leading-[1.05]">
-                    <span className="text-[#4F8EF7]">Dynamic State Mutation.</span><br />
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="flex flex-col gap-5"
+                >
+                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] text-white leading-[1.1]">
+                    <motion.span 
+                      className="text-transparent bg-clip-text inline-block"
+                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    >Plan with Confidence.</motion.span><br />
                     Shape your trajectory.
                   </h3>
-                  <p className="text-gray-400 text-lg md:text-xl font-medium leading-snug mt-2">
-                    <strong className="text-white">Execute non-destructive combinatorial grade testing.</strong> The engine traverses an acyclic dependency graph to propagate target grade substitutions, calculating downstream SGPA and CGPA impacts with absolute deterministic fidelity.
+                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                    <strong className="text-[#f5f5f7]">Test different scenarios safely.</strong> Change a grade and see the impact immediately. The system instantly calculates how any target grade affects your overall SGPA and CGPA.
                   </p>
-                </div>
+                </motion.div>
 
-                <div className="flex flex-col gap-4">
-                  <h3 className="text-3xl md:text-4xl font-semibold tracking-tight text-white leading-[1.1]">
-                    Regulatory Parity Engine.
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
+                  className="flex flex-col gap-5"
+                >
+                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
+                    <motion.span 
+                      className="text-transparent bg-clip-text inline-block"
+                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    >Always Accurate.</motion.span>
                   </h3>
-                  <p className="text-gray-400 text-lg font-medium leading-relaxed">
-                    Projections are not estimations. They are strict mathematical equivalencies mapped exactly to your institution’s proprietary credit weightings and offset derivation formulas, ensuring a 1:1 correlation with official transcript ledgers.
+                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                    Projections are not estimations. They are calculated using your institution’s exact credit formulas, ensuring what you see here matches your official academic record.
                   </p>
-                </div>
+                </motion.div>
 
-                <div className="flex flex-col gap-4">
-                  <h3 className="text-3xl md:text-4xl font-semibold tracking-tight text-white leading-[1.1]">
-                    Zero-Delta Substitution.
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                  className="flex flex-col gap-5"
+                >
+                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
+                    <motion.span 
+                      className="text-transparent bg-clip-text inline-block"
+                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    >Instant Scenarios.</motion.span>
                   </h3>
-                  <p className="text-gray-400 text-lg font-medium leading-relaxed">
-                    Grade manipulations trigger an immediate cascading recalculation. The computation layer bypasses server roundtrips, utilizing localized memory caching to resolve complex fractional derivations instantaneously.
+                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                    Every adjustment updates your projections immediately. The calculator runs directly on your device, allowing you to test complex "what-if" scenarios without waiting.
                   </p>
-                </div>
+                </motion.div>
 
-                <div className="w-full h-[1px] bg-gradient-to-r from-white/10 to-transparent my-2" />
+                <div className="w-full h-[1px] bg-gradient-to-r from-white/10 to-transparent my-6" />
 
-                <div className="flex flex-col gap-12 pt-4">
-                  <div>
-                    <div className="text-[#4F8EF7] font-semibold text-7xl tracking-tighter mb-1">0<span className="text-5xl text-[#4F8EF7]/70 tracking-tight">ms</span></div>
-                    <div className="text-white font-semibold text-xl tracking-tight">Edge-Computed Trajectories.</div>
-                    <div className="text-gray-500 mt-2 text-base font-medium leading-snug max-w-sm">All combinatorial simulations execute entirely via client-edge DOM mutation, ensuring immediate topological recalculation.</div>
-                  </div>
+                <div className="flex flex-col gap-16 pt-4">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                  >
+                    <div className="text-white font-semibold text-8xl md:text-[7rem] tracking-tighter leading-none mb-4">0<span className="text-5xl md:text-7xl text-white/40 tracking-tight">ms</span></div>
+                    <motion.div 
+                      className="text-transparent bg-clip-text font-semibold text-2xl tracking-tight mb-2" 
+                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    >Real-time Updates.</motion.div>
+                    <div className="text-[#86868b] text-lg font-medium leading-snug max-w-sm">All calculations happen instantly on your device, giving you immediate feedback as you adjust your goals.</div>
+                  </motion.div>
 
-                  <div>
-                    <div className="text-white font-semibold text-7xl tracking-tighter mb-1">100<span className="text-5xl text-white/50 tracking-tight">%</span></div>
-                    <div className="text-white font-semibold text-xl tracking-tight">Algorithmic Integrity.</div>
-                    <div className="text-gray-500 mt-2 text-base font-medium leading-snug max-w-sm">Cryptographically and mathematically tethered to the latest institutional regulatory frameworks and statutory offset schemas.</div>
-                  </div>
+                  <motion.div 
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                  >
+                    <div className="text-white font-semibold text-8xl md:text-[7rem] tracking-tighter leading-none mb-4">100<span className="text-5xl md:text-7xl text-white/40 tracking-tight">%</span></div>
+                    <motion.div 
+                      className="text-transparent bg-clip-text font-semibold text-2xl tracking-tight mb-2" 
+                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    >Predictive Accuracy.</motion.div>
+                    <div className="text-[#86868b] text-lg font-medium leading-snug max-w-sm">Mathematically tied to the latest institutional grading frameworks so you can trust every calculation.</div>
+                  </motion.div>
                 </div>
 
               </div>
 
             </div>
-          </div>
 
-          {/* RIGHT PANE: Statutory Matrix */}
-          <div className="col-span-8 w-full relative z-10 min-w-0">
+            {/* RIGHT PANE: Statutory Matrix */}
+            <div className="flex-[2] min-w-[320px] relative z-10 w-full">
             {/* RIGHT: Statutory Matrix */}
             <div className="w-full relative z-10">
               <motion.div
@@ -504,16 +550,17 @@ export default function CalculatorPage() {
                 {/* Apple-style statutory footnotes */}
                 <div className="mt-10 pt-8 border-t border-white/5 flex flex-col gap-3">
                   <p className="text-[11px] md:text-xs text-gray-500 leading-relaxed font-medium">
-                    <span className="text-gray-400">1. Algorithmic State Derivatives:</span> Rendered quotients (SGPA/CGPA) represent computed heuristic states derived from user-supplied target vectors. While the GradeFlow Trust Engine operates with strict deterministic compliance to university-mandated offset algorithms, these outputs serve as high-fidelity predictive instruments and do not constitute legally binding academic records.
+                    <span className="text-gray-400">1. Projections vs Official Records:</span> These projections are highly accurate planning tools based on official formulas. However, they are for your personal guidance and do not serve as official or legally binding academic records.
                   </p>
                   <p className="text-[11px] md:text-xs text-gray-500 leading-relaxed font-medium">
-                    <span className="text-gray-400">2. Edge Computation Latency:</span> The 0ms threshold characterizes the execution time of the localized arithmetic matrix substitution. Upstream state persistence (Sandbox Saving) remains subject to standard TCP/IP network traversal latency and backend validation.
+                    <span className="text-gray-400">2. Localized Calculations:</span> The instant (0ms) calculations happen directly on your device. Saving your sandbox scenario will briefly use your network to store the plan securely.
                   </p>
                   <p className="text-[11px] md:text-xs text-gray-500 leading-relaxed font-medium">
-                    <span className="text-gray-400">3. Regulatory Schema Alignment:</span> 100% computational integrity is contingent upon the synchronization of the sandbox topology with the exact credit structures published in the institutional syllabus for the user&apos;s specific matriculation cohort.
+                    <span className="text-gray-400">3. Curriculum Sync:</span> The accuracy of these calculations depends on ensuring your courses and credits match your institution's official syllabus for your academic year.
                   </p>
                 </div>
               </motion.div>
+            </div>
             </div>
 
           </div>

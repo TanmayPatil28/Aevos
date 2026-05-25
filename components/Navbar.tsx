@@ -126,7 +126,7 @@ export default function Navbar() {
         />
       </div>
 
-      <div className="w-full max-w-7xl flex items-center justify-between relative z-[9999] border-b border-white/[0.03]">
+      <div className="w-full max-w-[1600px] flex items-center justify-between relative z-[9999] border-b border-white/[0.03]">
 
         {/* LEFT: AUTHORITATIVE LOGO */}
         <Link href="/" className="flex items-center gap-2 group outline-none">

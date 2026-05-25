@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import toast from "react-hot-toast";
 import { calculateRequiredGPA, getDifficultyLevel, sgpaToPercentage as calcSgpaToPercentage } from "@/lib/presets";
 import { useUniversity } from "@/components/providers/UniversityProvider";
@@ -18,6 +18,21 @@ import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 
 const MotionCard = motion(Card);
+
+// Apple-style fade-in text component
+function FadeText({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) {
+  return (
+    <motion.span
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={`inline-block ${className}`}
+    >
+      {children}
+    </motion.span>
+  );
+}
 
 interface ChartDataItem {
   semester: string;
@@ -42,7 +57,7 @@ interface PlannerResult {
   creditsPerSem: number;
   isImpossible: boolean;
   percentageNeeded: number;
-  journeyPercent: number;
+  maxAchievable?: number;
 }
 
 // Helper: get difficulty info for a specific GPA value (for per-row coloring)
@@ -55,6 +70,43 @@ function getRowDifficulty(gpa: number) {
 
 import { useUSMStore } from "@/stores/usmStore";
 
+function SliderInputField({ label, value, setValue, max, step = 0.1, placeholder = "-" }: { label: string, value: string, setValue: (v: string) => void, max: number, step?: number, placeholder?: string }) {
+  const numValue = parseFloat(value) || 0;
+  const percentage = Math.min((numValue / max) * 100, 100);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '' || val === '.') return setValue(val);
+    const num = parseFloat(val);
+    if (!isNaN(num) && num >= 0) {
+      if (num > max) setValue(max.toString());
+      else setValue(val);
+    }
+  };
+
+  return (
+    <div className="flex flex-col bg-[#000000] border border-white/5 focus-within:border-white/20 rounded-2xl transition-all shadow-inner relative group pb-1">
+      <div className="flex flex-col px-5 pt-4 pb-5 z-10 gap-1">
+        <span className="text-xs font-semibold text-[#A1A1A6]">{label}</span>
+        <input
+          type="number" inputMode="decimal" step={step}
+          value={value} onChange={handleChange} placeholder={placeholder}
+          className="bg-transparent border-none outline-none w-full text-left text-2xl font-bold text-[#F5F5F7] tracking-tight placeholder:text-[#A1A1A6]/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none m-0"
+        />
+      </div>
+      
+      <div className="absolute bottom-0 left-0 w-full h-1.5 opacity-40 group-hover:opacity-100 transition-opacity rounded-b-[2rem] overflow-hidden">
+        <div className="absolute top-0 left-0 h-full bg-[#06b6d4] pointer-events-none transition-all duration-75 ease-linear" style={{ width: `${percentage}%` }} />
+        <input 
+          type="range" min={0} max={max} step={step} 
+          value={numValue} onChange={handleChange} 
+          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function PlannerPage() {
   const { activePreset, maxGradePoint } = useUniversity();
   const store = useUSMStore();
@@ -64,6 +116,25 @@ export default function PlannerPage() {
   const [targetCGPA, setTargetCGPA] = useState("");
   const [remainingSemesters, setRemainingSemesters] = useState("");
   const [creditsPerSemester, setCreditsPerSemester] = useState("20");
+  const [activeTab, setActiveTab] = useState<'strategy' | 'attendance'>('strategy');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { scrollY } = useScroll();
+  
+  // Transform background element on scroll
+  const glowY = useTransform(scrollY, [0, 500], [0, 150]);
+  const glowOpacity = useTransform(scrollY, [0, 300], [0.6, 0]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isAuthoritative = store.identity.hasAuthoritativeData;
+  const branch = (store.identity.studentIdentity as any)?.branch || "B.Tech Student";
+  const currSem = store.semesterHistory.length > 0 ? store.semesterHistory.length + 1 : 1;
 
   const [result, setResult] = useState<PlannerResult | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -82,8 +153,10 @@ export default function PlannerPage() {
       setTotalCredits(store.academic.earnedCredits.toString());
       const remSems = Math.max(1, 8 - store.semesterHistory.length);
       setRemainingSemesters(remSems.toString());
+      const defCredits = (activePreset as any).defaultCreditsPerSem || 20;
+      setCreditsPerSemester(defCredits.toString());
     }
-  }, []);
+  }, [store.academic, store.semesterHistory, activePreset]);
 
   // Live validation for green glow on valid fields
   const fieldValid = useMemo(() => {
@@ -152,13 +225,21 @@ export default function PlannerPage() {
       const target = parseFloat(targetCGPA);
       const remSems = parseInt(remainingSemesters);
       const credPerSem = parseInt(creditsPerSemester);
+      const backlogCredits = store.academic.activeBacklogsCount > 0 ? store.academic.activeBacklogsCount * 3 : 0;
 
-      const remainingCredits = remSems * credPerSem;
-      const requiredGPA = calculateRequiredGPA(target, cCGPA, currentCredits, remainingCredits);
-      const isImpossible = requiredGPA > maxGradePoint;
+      const remainingCredits = (remSems * credPerSem) + backlogCredits;
+      let requiredGPA = calculateRequiredGPA(target, cCGPA, currentCredits, remainingCredits);
+      let isImpossible = requiredGPA > maxGradePoint;
+      let maxAchievable = undefined;
+      let actualTarget = target;
 
       if (isImpossible) {
-        toast.error(`Target requires GPA above ${maxGradePoint} — mathematically impossible!`);
+        maxAchievable = Number((((cCGPA * currentCredits) + (maxGradePoint * remainingCredits)) / (currentCredits + remainingCredits)).toFixed(2));
+        requiredGPA = maxGradePoint;
+        actualTarget = maxAchievable;
+        toast.success(`Target adjusted to maximum achievable: ${maxAchievable}`);
+      } else {
+        toast.success("Plan generated successfully!");
       }
 
       // Build chart data — linear interpolation from current to target
@@ -170,7 +251,7 @@ export default function PlannerPage() {
       });
 
       for (let i = 1; i <= remSems; i++) {
-        const projectedCGPA = cCGPA + ((target - cCGPA) * (i / remSems));
+        const projectedCGPA = cCGPA + ((actualTarget - cCGPA) * (i / remSems));
         chartData.push({
           semester: `Sem ${completedSemsVal + i}`,
           Target_Path: Number(projectedCGPA.toFixed(2)),
@@ -178,9 +259,8 @@ export default function PlannerPage() {
         });
       }
 
-      const gap = Number((target - cCGPA).toFixed(2));
+      const gap = Number((actualTarget - cCGPA).toFixed(2));
       const percentageNeeded = Number(calcSgpaToPercentage(requiredGPA, activePreset).toFixed(1));
-      const journeyPercent = Number(((cCGPA / target) * 100).toFixed(1));
 
       setResult({
         requiredGPA: Number(requiredGPA.toFixed(2)),
@@ -191,11 +271,10 @@ export default function PlannerPage() {
         creditsPerSem: credPerSem,
         isImpossible,
         percentageNeeded,
-        journeyPercent,
+        maxAchievable,
       });
 
       setIsGenerating(false);
-      if (!isImpossible) toast.success("Plan generated successfully!");
     }, 1000);
   };
 
@@ -272,7 +351,7 @@ export default function PlannerPage() {
   // Expert insight text
   const getExpertText = () => {
     if (!result) return "";
-    if (result.isImpossible) return "Mathematically impossible target. Please adjust your target CGPA or increase remaining semesters.";
+    if (result.isImpossible) return `Your original target was mathematically impossible. We have recalibrated to the maximum achievable target of ${result.maxAchievable}. You will need to score a perfect ${result.requiredGPA} every remaining semester to reach this.`;
     if (result.requiredGPA > 9.5) return `Your target requires maximum effort. Focus on high-credit core subjects first. Maintaining ${result.requiredGPA}+ GPA every semester is extremely demanding but achievable with disciplined study habits.`;
     if (result.requiredGPA >= 8.0) return `Your target requires consistent focus. Scoring ${result.requiredGPA} each semester is achievable with regular study and good preparation. Avoid backlogs at all costs.`;
     if (result.requiredGPA >= 7.0) return "Your target is well within reach. Maintain consistent performance and avoid any backlogs this semester.";
@@ -280,91 +359,198 @@ export default function PlannerPage() {
   };
 
   return (
-    <WorkspaceContent className="relative z-10">
-      <WorkspaceSection>
+    <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-white/20 selection:text-white pb-32">
+      {/* Background Ambient Glows (Ice Blue/Cyan) */}
+      <motion.div 
+        style={{ y: glowY, opacity: glowOpacity }}
+        className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] pointer-events-none z-0"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-cyan-900/30 via-transparent to-transparent blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-cyan-500/15 blur-[100px] rounded-full mix-blend-screen" />
+      </motion.div>
 
-        {/* ━━━ PAGE HEADER ━━━ */}
-        <StaggerContainer className="text-center space-y-4">
-          <StaggerItem>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#4F8EF7]/30 bg-[#4F8EF7]/5 text-[#4F8EF7] text-xs font-bold tracking-widest uppercase mb-4">
-              <span className="material-symbols-outlined text-sm">calendar_month</span>
-              Semester Planner
+      {/* Cinematic Hero Section */}
+      <section className="relative z-10 w-full min-h-[70vh] flex flex-col items-center justify-center pt-24 pb-16 px-6">
+        <div className="max-w-5xl mx-auto text-center flex flex-col items-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="mb-8"
+          >
+            <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-white/50 border border-white/10 rounded-full px-4 py-1.5 bg-white/5 backdrop-blur-md">
+              GradeFlow Intelligence
             </span>
-          </StaggerItem>
-          <StaggerItem>
-            <h1 className="text-5xl md:text-6xl font-headline font-extrabold tracking-tight mb-6 text-on-surface drop-shadow-sm">
-              Plan Your Path to Your Target CGPA
-            </h1>
-          </StaggerItem>
-          <StaggerItem>
-            <p className="text-on-surface-variant max-w-[500px] mx-auto text-lg leading-relaxed text-center">
-              Enter your current standing and target.
-              <br />
-              GradeFlow maps your exact path to success.
-            </p>
-          </StaggerItem>
-          <StaggerItem>
-            <div className="mt-4 flex justify-center">
-              <PresetInfoCard compact />
-            </div>
-          </StaggerItem>
-        </StaggerContainer>
+          </motion.div>
+          
+          <h1 className="text-7xl md:text-8xl lg:text-[9rem] font-bold tracking-[-0.05em] leading-[1.05] mb-8 text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(to right, #06b6d4, #67e8f9, #cffafe, #67e8f9, #06b6d4)", backgroundSize: "200% auto" }}>
+            <motion.span animate={{ backgroundPosition: ["0% center", "200% center"] }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="inline-block w-full">
+              <FadeText delay={0.1} className="text-transparent">Plan.</FadeText> <FadeText delay={0.3} className="text-transparent">Achieve.</FadeText> <FadeText delay={0.5} className="text-transparent">Conquer.</FadeText>
+            </motion.span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed">
+            <FadeText delay={0.7}>
+              GradeFlow maps your exact path to success. Calculates your required SGPA to hit your targets effortlessly.
+            </FadeText>
+          </p>
 
-        {/* ━━━ INPUT CARD ━━━ */}
-        <MotionCard
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.8 }}
+            className="mt-12"
+          >
+            <PresetInfoCard compact />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Sticky Dynamic Island Navigation */}
+      <div className={`sticky top-6 z-[100] flex justify-center mb-16 transition-all duration-500 ${isScrolled ? 'px-4' : 'px-6'}`}>
+        <motion.div 
+          layout
+          className="relative overflow-hidden flex items-center p-1.5 bg-black/60 border border-white/[0.08] rounded-full backdrop-blur-3xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]"
         >
-          <div className="grid md:grid-cols-2 gap-12 items-start mb-10">
-            {/* Left — Current Status */}
+          {/* Active Highlight Background */}
+          <div 
+            className="absolute top-1.5 bottom-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 transition-all duration-500 ease-in-out z-0"
+            style={{
+              left: activeTab === "strategy" ? "6px" : "50%",
+              width: "calc(50% - 6px)",
+            }}
+          />
+          
+          <button
+            onClick={() => setActiveTab("strategy")}
+            className={`relative z-10 flex items-center justify-center gap-2 px-6 py-3 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold transition-colors duration-300 w-40 md:w-48 ${
+              activeTab === "strategy" 
+                ? "text-white drop-shadow-md" 
+                : "text-white/50 hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined text-base">strategy</span>
+            Strategy
+          </button>
+          
+          <button
+            onClick={() => setActiveTab("attendance")}
+            className={`relative z-10 flex items-center justify-center gap-2 px-6 py-3 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold transition-colors duration-300 w-40 md:w-48 ${
+              activeTab === "attendance" 
+                ? "text-white drop-shadow-md" 
+                : "text-white/50 hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined text-base">policy</span>
+            Attendance OS
+          </button>
+        </motion.div>
+      </div>
+
+      <div className="relative z-10 w-full px-4 md:px-8 max-w-[1400px] mx-auto">
+        <WorkspaceContent className="!pt-0 !px-0 bg-transparent">
+          <WorkspaceSection>
+
+        <div className="flex flex-col xl:flex-row gap-8 items-start w-full">
+          
+          {/* ━━━ RIGHT PANE (Controls / Side Panel) ━━━ */}
+          <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10 w-full order-first xl:order-last">
+            <MotionCard
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex flex-col space-y-10 !bg-[#2A2A2D]/70 !backdrop-blur-md !rounded-[32px] !border-none"
+            >
+              {/* Left — Academic Profile (Context) */}
             <div className="space-y-8">
               <h3 className="font-headline text-xl font-bold flex items-center gap-4 text-white">
                 <span className="w-10 h-10 rounded-full bg-[#4F8EF7]/20 flex items-center justify-center shadow-[0_0_15px_rgba(79,142,247,0.4)]">
-                  <span className="material-symbols-outlined text-[#4F8EF7] text-xl">person</span>
+                  <span className="material-symbols-outlined text-[#4F8EF7] text-xl">school</span>
                 </span>
-                Your Current Status
+                Academic Context
               </h3>
-              <div className="grid grid-cols-1 gap-6">
-                {/* Current CGPA */}
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="10"
-                  value={currentCGPA}
-                  onChange={(e) => { setCurrentCGPA(e.target.value); setErrors({ ...errors, currentCGPA: "" }); setTouched({ ...touched, currentCGPA: true }); }}
-                  label="Current CGPA"
-                  floating
-                  error={touched.currentCGPA ? errors.currentCGPA : undefined}
-                  isValid={fieldValid.currentCGPA && touched.currentCGPA}
-                  placeholder="."
-                />
-                {/* Completed Sems + Credits */}
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    type="number"
-                    min="1"
-                    value={completedSemesters}
-                    onChange={(e) => { setCompletedSemesters(e.target.value); setErrors({ ...errors, completedSemesters: "" }); setTouched({ ...touched, completedSemesters: true }); }}
-                    label="Completed Sems"
-                    floating
-                    error={touched.completedSemesters ? errors.completedSemesters : undefined}
-                    isValid={fieldValid.completedSemesters && touched.completedSemesters}
-                    placeholder="."
-                  />
-                  <Input
-                    type="number"
-                    min="1"
-                    value={totalCredits}
-                    onChange={(e) => { setTotalCredits(e.target.value); setErrors({ ...errors, totalCredits: "" }); setTouched({ ...touched, totalCredits: true }); }}
-                    label="Credits Done"
-                    floating
-                    error={touched.totalCredits ? errors.totalCredits : undefined}
-                    isValid={fieldValid.totalCredits && touched.totalCredits}
-                    placeholder="."
-                  />
+              
+              <div className="p-6 rounded-2xl border border-white/10 bg-white/[0.02] space-y-6">
+                <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                  <div>
+                    <div className="text-xs text-on-surface-variant uppercase tracking-widest font-bold mb-1">Programme</div>
+                    <div className="text-lg font-headline font-bold text-white">{branch}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-on-surface-variant uppercase tracking-widest font-bold mb-1">Status</div>
+                    <div className="text-lg font-headline font-bold text-purple-400">Semester {currSem}</div>
+                  </div>
                 </div>
+
+                {isAuthoritative ? (
+                  <div className="grid grid-cols-2 gap-6 pt-2">
+                    <div>
+                      <div className="text-xs text-on-surface-variant font-bold mb-1">Current CGPA</div>
+                      <div className="text-3xl font-black text-white">{currentCGPA || "0.00"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-on-surface-variant font-bold mb-1">Earned Credits</div>
+                      <div className="text-3xl font-black text-white">{totalCredits || "0"}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      value={currentCGPA}
+                      onChange={(e) => { setCurrentCGPA(e.target.value); setErrors({ ...errors, currentCGPA: "" }); setTouched({ ...touched, currentCGPA: true }); }}
+                      label="Current CGPA"
+                      floating
+                      error={touched.currentCGPA ? errors.currentCGPA : undefined}
+                      isValid={fieldValid.currentCGPA && touched.currentCGPA}
+                      placeholder="."
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={completedSemesters}
+                        onChange={(e) => { setCompletedSemesters(e.target.value); setErrors({ ...errors, completedSemesters: "" }); setTouched({ ...touched, completedSemesters: true }); }}
+                        label="Completed Sems"
+                        floating
+                        error={touched.completedSemesters ? errors.completedSemesters : undefined}
+                        isValid={fieldValid.completedSemesters && touched.completedSemesters}
+                        placeholder="."
+                      />
+                      <Input
+                        type="number"
+                        min="1"
+                        value={totalCredits}
+                        onChange={(e) => { setTotalCredits(e.target.value); setErrors({ ...errors, totalCredits: "" }); setTouched({ ...touched, totalCredits: true }); }}
+                        label="Credits Done"
+                        floating
+                        error={touched.totalCredits ? errors.totalCredits : undefined}
+                        isValid={fieldValid.totalCredits && touched.totalCredits}
+                        placeholder="."
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {isAuthoritative && (
+                  <div className="flex flex-col gap-2 mt-4">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
+                      <span className="material-symbols-outlined text-green-400 text-sm">verified</span>
+                      <span className="text-xs text-green-400 font-medium">Synced with University DB</span>
+                    </div>
+                    {store.academic.activeBacklogsCount > 0 && (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-lg mt-2">
+                        <span className="material-symbols-outlined text-red-400 text-sm">warning</span>
+                        <span className="text-xs text-red-400 font-medium">
+                          {store.academic.activeBacklogsCount} Active Backlogs detected. Clearance simulated.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -378,19 +564,24 @@ export default function PlannerPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6">
                 {/* Target CGPA */}
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="10"
+                <SliderInputField
                   value={targetCGPA}
-                  onChange={(e) => { setTargetCGPA(e.target.value); setErrors({ ...errors, targetCGPA: "" }); setTouched({ ...touched, targetCGPA: true }); }}
+                  setValue={(v) => { setTargetCGPA(v); setErrors({ ...errors, targetCGPA: "" }); setTouched({ ...touched, targetCGPA: true }); }}
                   label="Target CGPA"
-                  floating
-                  error={touched.targetCGPA ? errors.targetCGPA : undefined}
-                  isValid={fieldValid.targetCGPA && touched.targetCGPA}
-                  placeholder="."
+                  max={maxGradePoint}
+                  step={0.1}
+                  placeholder="-"
                 />
+                {targetCGPA && !errors.targetCGPA && (
+                  <div className="text-xs text-on-surface-variant px-2 flex justify-between">
+                    <span>Career Eligibility:</span>
+                    <span className={`font-bold ${parseFloat(targetCGPA) >= 8.5 ? "text-green-400" : parseFloat(targetCGPA) >= 7.5 ? "text-blue-400" : parseFloat(targetCGPA) >= 6.5 ? "text-orange-400" : "text-red-400"}`}>
+                      {parseFloat(targetCGPA) >= 8.5 ? "Product Tier / Higher Ed" :
+                       parseFloat(targetCGPA) >= 7.5 ? "MNCs / IT Services" :
+                       parseFloat(targetCGPA) >= 6.5 ? "Mass Recruiters" : "High Risk"}
+                    </span>
+                  </div>
+                )}
                 {/* Remaining Sems + Credits Per Sem */}
                 <div className="grid grid-cols-2 gap-4">
                   <Input
@@ -420,66 +611,82 @@ export default function PlannerPage() {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Generate Button */}
-          <div className="flex justify-center w-full">
-            <motion.button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              whileHover={{ scale: 1.02, boxShadow: "0 0 40px rgba(79,142,247,0.4)" }}
-              whileTap={{ scale: 0.97 }}
-              className="w-full max-w-md py-4 px-8 rounded-full font-bold text-white text-base flex items-center justify-center gap-3 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-              style={{
-                background: "linear-gradient(135deg, #4F8EF7 0%, #7C3AED 100%)",
-                boxShadow: "0 0 25px rgba(79,142,247,0.3)",
-              }}
-            >
-              {isGenerating ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  Generate My Plan
-                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                </>
-              )}
-            </motion.button>
-          </div>
-        </MotionCard>
+            {/* Generate Button */}
+            <div className="flex justify-center w-full pt-4">
+              <motion.button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full max-w-md py-4 px-8 rounded-full font-semibold text-black text-lg flex items-center justify-center gap-3 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed bg-[#F5F5F7]"
+              >
+                {isGenerating ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-black" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    Generate Plan
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </MotionCard>
+        </div>
 
-        {/* ━━━ RESULTS ━━━ */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
+        {/* ━━━ LEFT PANE (Results & Playbook) ━━━ */}
+        <div className="flex-[2] min-w-[320px] flex flex-col gap-6 relative z-10 w-full">
+          
+          {/* Segmented Control Removed (Moved to Dynamic Island) */}
+
+          <AnimatePresence mode="wait">
+            {activeTab === 'strategy' ? (
+              <motion.div key="strategy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                {!result && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="h-[500px] flex flex-col items-center justify-center rounded-[32px] bg-[#2A2A2D]/40 backdrop-blur-md border-none"
+                  >
+                    <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                      <span className="material-symbols-outlined text-white/20 text-4xl">dashboard_customize</span>
+                    </div>
+                    <h3 className="text-2xl font-semibold tracking-tight text-[#F5F5F7]">Your Academic Canvas</h3>
+                    <p className="text-[#F5F5F7]/40 mt-2 max-w-sm text-center font-medium">
+                      Set your targets on the left to generate your interactive playbook and strategy breakdown.
+                    </p>
+                  </motion.div>
+                )}
+                {result && (
+              <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className="space-y-12"
             >
-              {/* Impossible Warning */}
-              {result.isImpossible && (
+              {/* Adjusted Target Warning */}
+              {result.isImpossible && result.maxAchievable !== undefined && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="rounded-[2rem] p-8 border border-red-500/40 text-center space-y-3"
+                  className="rounded-[2rem] p-8 border border-orange-500/40 text-center space-y-3"
                   style={{
-                    background: "rgba(239,68,68,0.08)",
-                    boxShadow: "0 0 30px rgba(239,68,68,0.2)",
+                    background: "rgba(249,115,22,0.08)",
+                    boxShadow: "0 0 30px rgba(249,115,22,0.2)",
                     backdropFilter: "blur(20px)",
                   }}
                 >
-                  <span className="material-symbols-outlined text-red-400 text-4xl">warning</span>
-                  <h3 className="text-xl font-bold text-red-400">Target Cannot Be Achieved</h3>
-                  <p className="text-red-300/80 max-w-md mx-auto">
-                    This target cannot be achieved in the remaining semesters.
-                    Please adjust your target CGPA or increase the number of remaining semesters.
+                  <span className="material-symbols-outlined text-orange-400 text-4xl">info</span>
+                  <h3 className="text-xl font-bold text-orange-400">Adjusted Maximum Target: {result.maxAchievable}</h3>
+                  <p className="text-orange-300/80 max-w-md mx-auto">
+                    Your original target was mathematically impossible. We have adjusted your goal to the maximum achievable CGPA ({result.maxAchievable}) assuming perfect scores in all remaining semesters.
                   </p>
                 </motion.div>
               )}
@@ -503,13 +710,13 @@ export default function PlannerPage() {
                 {/* Card 2 — Required GPA */}
                 <StaggerItem>
                   <Card
-                    className="flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden border-t-[3px] border-purple-500/60 shadow-[0_0_20px_rgba(168,85,247,0.1)]"
+                    className="flex flex-col items-center text-center space-y-3 group hover:-translate-y-2 transition-all duration-500 relative overflow-hidden border-t-[3px] border-cyan-500/60 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
                   >
                     <span className="text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em]">Required Each Semester</span>
-                    <div className="text-5xl font-black font-headline bg-gradient-to-br from-purple-400 to-purple-600 bg-clip-text text-transparent tracking-tighter group-hover:scale-105 transition-transform">
+                    <div className="text-5xl font-black font-headline bg-gradient-to-br from-cyan-400 to-cyan-600 bg-clip-text text-transparent tracking-tighter group-hover:scale-105 transition-transform">
                       <AnimatedCounter target={result.requiredGPA} decimals={2} />
                     </div>
-                    <span className="text-on-surface-variant/60 text-xs">Average maintenance GPA</span>
+                    <span className="text-on-surface-variant/60 text-xs">Required SGPA</span>
                   </Card>
                 </StaggerItem>
 
@@ -537,8 +744,7 @@ export default function PlannerPage() {
                 </StaggerItem>
               </StaggerContainer>
 
-              {/* ━━━ SEMESTER TABLE ━━━ */}
-              {!result.isImpossible && (
+              {/* ━━━ INTERACTIVE PLAYBOOK TABLE ━━━ */}
                 <MotionCard
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -547,8 +753,11 @@ export default function PlannerPage() {
                   className="overflow-x-auto"
                 >
                   <div className="mb-8">
-                    <h3 className="font-headline text-2xl font-bold text-on-surface">Semester Plan Breakdown</h3>
-                    <p className="text-on-surface-variant/60 text-sm mt-1">Your required performance per semester</p>
+                    <h3 className="font-headline text-2xl font-bold text-on-surface flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[#4F8EF7]">menu_book</span>
+                      The Playbook
+                    </h3>
+                    <p className="text-on-surface-variant/60 text-sm mt-1">Your required performance mapped semester by semester.</p>
                   </div>
                   <table className="w-full text-left min-w-[700px]">
                     <thead>
@@ -556,14 +765,13 @@ export default function PlannerPage() {
                         <th className="pb-4 px-2">Semester</th>
                         <th className="pb-4 px-2">Credits</th>
                         <th className="pb-4 px-2">Required GPA</th>
-                        <th className="pb-4 px-2">Percentage Needed</th>
+                        <th className="pb-4 px-2">Action / Status</th>
                         <th className="pb-4 px-2 w-[30%]">Difficulty Bar</th>
                       </tr>
                     </thead>
                     <tbody>
                       {Array.from({ length: result.remainingSems }).map((_, i) => {
                         const rowDiff = getRowDifficulty(result.requiredGPA);
-                        const pct = calcSgpaToPercentage(result.requiredGPA, activePreset);
                         return (
                           <motion.tr
                             key={i}
@@ -574,8 +782,16 @@ export default function PlannerPage() {
                           >
                             <td className="py-5 px-2 font-bold text-on-surface">Semester {parseInt(completedSemesters) + i + 1}</td>
                             <td className="py-5 px-2 text-on-surface-variant">{result.creditsPerSem}</td>
-                            <td className="py-5 px-2 font-bold text-purple-400">{result.requiredGPA}</td>
-                            <td className="py-5 px-2 text-on-surface-variant font-medium">{pct.toFixed(1)}%</td>
+                            <td className="py-5 px-2">
+                              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg font-mono font-bold text-cyan-400">
+                                {result.requiredGPA}
+                              </span>
+                            </td>
+                            <td className="py-5 px-2">
+                              <button className="text-xs font-bold text-[#4F8EF7] hover:underline flex items-center gap-1">
+                                <span className="material-symbols-outlined text-xs">tune</span> Adjust
+                              </button>
+                            </td>
                             <td className="py-5 px-2">
                               <div className="h-2.5 w-full bg-white/[0.08] rounded-full overflow-hidden">
                                 <motion.div
@@ -592,19 +808,21 @@ export default function PlannerPage() {
                       {/* Final row */}
                       <tr>
                         <td colSpan={5} className="py-0 px-0">
-                          <div className="mt-2 rounded-2xl py-5 px-4 text-center font-bold text-lg" style={{ background: "linear-gradient(135deg, rgba(79,142,247,0.1), rgba(124,58,237,0.1))" }}>
-                            <span className="bg-gradient-to-r from-[#4F8EF7] to-purple-400 bg-clip-text text-transparent">
-                              Final Predicted CGPA: {targetCGPA} / 10
-                            </span>
+                          <div className="mt-4 rounded-2xl py-6 px-4 text-center border border-white/10 relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.1), rgba(4,120,87,0.1))" }}>
+                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-sky-600/10 opacity-50 blur-xl" />
+                            <div className="relative z-10 flex flex-col items-center justify-center space-y-2">
+                              <span className="text-xs uppercase tracking-widest text-on-surface-variant font-bold">Projected Graduation CGPA</span>
+                              <span className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-sky-400 bg-clip-text text-transparent">
+                                {result.maxAchievable ?? targetCGPA} <span className="text-lg text-white/30">/ {maxGradePoint}</span>
+                              </span>
+                            </div>
                           </div>
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </MotionCard>
-              )}
 
-              {!result.isImpossible && (
                 <CalculationBreakdown
                   preset={activePreset}
                   semesters={[
@@ -621,95 +839,11 @@ export default function PlannerPage() {
                   ]}
                   type="cgpa"
                 />
-              )}
 
-              {/* ━━━ CGPA PROJECTION CHART ━━━ */}
-              {!result.isImpossible && (
-                <MotionCard
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 }}
-                  className="space-y-8"
-                >
-                  <div className="flex justify-between items-end">
-                    <div className="space-y-1">
-                      <h3 className="font-headline text-2xl font-bold text-on-surface">CGPA Projection</h3>
-                      <p className="text-on-surface-variant text-sm">Visualization of your path from current to target status.</p>
-                    </div>
-                  </div>
-                  <div className="w-full h-[300px] sm:h-[400px]">
-                    {mounted && (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={result.chartData} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                          <XAxis
-                            dataKey="semester"
-                            stroke="rgba(255,255,255,0.3)"
-                            tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                            axisLine={false}
-                            tickLine={false}
-                            dy={10}
-                          />
-                          <YAxis
-                            domain={[0, 10]}
-                            stroke="rgba(255,255,255,0.3)"
-                            tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                            axisLine={false}
-                            tickLine={false}
-                            dx={-10}
-                            ticks={[0, 2, 4, 6, 8, 10]}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: "#111111",
-                              borderRadius: "12px",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                              color: "#fff",
-                              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-                            }}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="Current_Trend"
-                            stroke="rgba(255,255,255,0.3)"
-                            strokeWidth={2}
-                            strokeDasharray="6 6"
-                            dot={false}
-                            animationDuration={1500}
-                            name="Current Trend"
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="Target_Path"
-                            stroke="#4F8EF7"
-                            strokeWidth={3}
-                            activeDot={{ r: 8, fill: "#4F8EF7", stroke: "#0a0a0f", strokeWidth: 3 }}
-                            dot={{ r: 5, fill: "#4F8EF7", stroke: "#0a0a0f", strokeWidth: 2 }}
-                            style={{ filter: "drop-shadow(0 0 6px #4F8EF7)" }}
-                            animationDuration={1500}
-                            name="Target Path"
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    )}
-                  </div>
-                  {/* Legend */}
-                  <div className="flex items-center justify-center gap-6">
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/10">
-                      <div className="w-6 h-0 border-t-2 border-dashed border-white/30" />
-                      <span className="text-xs text-on-surface-variant font-medium">Current Trend</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/10">
-                      <div className="w-6 h-0.5 bg-[#4F8EF7] rounded-full shadow-[0_0_6px_#4F8EF7]" />
-                      <span className="text-xs text-on-surface-variant font-medium">Target Path</span>
-                    </div>
-                  </div>
-                </MotionCard>
-              )}
+
 
               {/* ━━━ EXPERT INSIGHT + CGPA JOURNEY ━━━ */}
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1">
                 {/* Expert Insight */}
                  <MotionCard
                    initial={{ opacity: 0, y: 20 }}
@@ -736,77 +870,32 @@ export default function PlannerPage() {
                      </button>
                    </Link>
                  </MotionCard>
-
+                 
+                 {/* Attendance OS Buffer Insight */}
                  <MotionCard
                    initial={{ opacity: 0, y: 20 }}
                    whileInView={{ opacity: 1, y: 0 }}
                    viewport={{ once: true }}
                    transition={{ delay: 0.6 }}
-                   variant="accent"
-                   className="flex flex-col justify-center"
+                   className="space-y-6 flex flex-col justify-between mt-8 border border-blue-500/20"
+                   style={{ background: "rgba(59,130,246,0.05)" }}
                  >
-                   <h4 className="font-headline font-bold text-xl text-white mb-8">Your CGPA Journey</h4>
-                   <div className="relative pt-10 pb-2">
-                     {/* Current CGPA Marker */}
-                     <motion.div
-                       initial={{ left: "0%" }}
-                       animate={{ left: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                       transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
-                       className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
-                     >
-                       <span className="text-[11px] font-bold text-[#4F8EF7] whitespace-nowrap">Current: {parseFloat(currentCGPA).toFixed(1)}</span>
-                       <span className="material-symbols-outlined text-[#4F8EF7] text-sm">arrow_drop_down</span>
-                     </motion.div>
- 
-                     {/* Target CGPA Marker */}
-                     <motion.div
-                       initial={{ left: "0%" }}
-                       animate={{ left: `${(parseFloat(targetCGPA) / 10) * 100}%` }}
-                       transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
-                       className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
-                     >
-                       <span className="text-[11px] font-bold text-purple-400 whitespace-nowrap flex items-center gap-0.5">
-                         <span className="material-symbols-outlined text-[12px]">flag</span>
-                         Target: {parseFloat(targetCGPA).toFixed(1)}
-                       </span>
-                       <span className="material-symbols-outlined text-purple-400 text-sm">arrow_drop_down</span>
-                     </motion.div>
- 
-                     {/* Progress Bar */}
-                     <div className="h-3 bg-white/[0.08] rounded-md w-full relative overflow-hidden">
-                       <motion.div
-                         initial={{ width: 0 }}
-                         animate={{ width: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                         transition={{ duration: 1, ease: "easeOut", delay: 0.8 }}
-                         className="absolute inset-y-0 left-0 rounded-md"
-                         style={{ background: "linear-gradient(90deg, #4F8EF7, #7C3AED)" }}
-                       />
-                       {/* Current position dot */}
-                       <motion.div
-                         initial={{ left: "0%" }}
-                         animate={{ left: `${(parseFloat(currentCGPA) / 10) * 100}%` }}
-                         transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
-                         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#4F8EF7] border-2 border-black/50 z-10"
-                         style={{ boxShadow: "0 0 10px rgba(79,142,247,0.6)" }}
-                       />
-                       {/* Target position dot */}
-                       <motion.div
-                         initial={{ left: "0%" }}
-                         animate={{ left: `${(parseFloat(targetCGPA) / 10) * 100}%` }}
-                         transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
-                         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-purple-500 border-2 border-black/50 z-10"
-                         style={{ boxShadow: "0 0 10px rgba(124,58,237,0.6)" }}
-                       />
+                   <div className="space-y-5">
+                     <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)" }}>
+                       <span className="material-symbols-outlined text-blue-400 text-2xl">policy</span>
                      </div>
- 
-                     {/* Scale Labels */}
-                     <div className="flex justify-between mt-2 text-[10px] text-on-surface-variant/50 font-bold tracking-widest">
-                       <span>0.0</span><span>5.0</span><span>10.0</span>
+                     <div className="space-y-3">
+                       <h4 className="font-headline font-bold text-lg text-white">Attendance OS Safety Buffer</h4>
+                       <p className="text-on-surface-variant leading-relaxed text-base">
+                         To safely hit a <strong className="text-blue-400">{result.requiredGPA} SGPA</strong>, you must maintain a minimum attendance of <strong>85%</strong> across all core subjects. Any detentions or marks deducted for low attendance will instantly derail this projection. Use the Attendance OS to track your exact bunking limits.
+                       </p>
                      </div>
                    </div>
-                   <p className="text-on-surface-variant text-sm mt-6 text-center">
-                     You are <span className="text-[#4F8EF7] font-bold">{result.journeyPercent}%</span> of the way to your target.
-                   </p>
+                   <Link href="/attendance">
+                     <button className="mt-4 px-5 py-2.5 rounded-full border border-blue-400/40 text-blue-400 text-sm font-bold hover:bg-blue-400/10 hover:border-blue-400/60 transition-all">
+                       Open Attendance OS →
+                     </button>
+                   </Link>
                  </MotionCard>
               </div>
 
@@ -822,12 +911,12 @@ export default function PlannerPage() {
                 <motion.button
                   onClick={handleSavePlan}
                   disabled={isSaving}
-                  whileHover={{ scale: 1.02, boxShadow: "0 0 35px rgba(79,142,247,0.4)" }}
+                  whileHover={{ scale: 1.02, boxShadow: "0 0 35px rgba(16,185,129,0.4)" }}
                   whileTap={{ scale: 0.97 }}
                   className={`w-full sm:w-64 px-8 py-4 rounded-full font-bold text-white text-center flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 ${saveSuccess ? "!bg-green-500 !shadow-[0_0_25px_rgba(34,197,94,0.4)]" : ""}`}
                   style={!saveSuccess ? {
-                    background: "linear-gradient(135deg, #4F8EF7 0%, #7C3AED 100%)",
-                    boxShadow: "0 0 20px rgba(79,142,247,0.3)",
+                    background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
+                    boxShadow: "0 0 20px rgba(16,185,129,0.3)",
                   } : undefined}
                 >
                   {isSaving ? (
@@ -852,10 +941,50 @@ export default function PlannerPage() {
                 </motion.button>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div key="attendance" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
+                {/* ━━━ ATTENDANCE OS MOCK ━━━ */}
+                <div className="rounded-[32px] bg-[#2A2A2D]/40 backdrop-blur-md p-10 flex flex-col items-center text-center space-y-6">
+                  <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-blue-400 text-4xl">policy</span>
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter text-[#F5F5F7]">
+                    Attendance OS
+                  </h2>
+                  <p className="text-[#F5F5F7]/60 max-w-lg text-lg">
+                    Your attendance limits are seamlessly integrated. Keep your attendance above <strong className="text-[#F5F5F7]">85%</strong> to ensure you can sit for all exams and achieve your planned CGPA.
+                  </p>
+                  
+                  <div className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                    <div className="bg-black/40 rounded-3xl p-6 border border-white/5">
+                      <div className="text-[#F5F5F7]/50 text-sm font-semibold tracking-wide uppercase mb-2">Total Classes</div>
+                      <div className="text-5xl font-semibold text-[#F5F5F7]">120</div>
+                    </div>
+                    <div className="bg-black/40 rounded-3xl p-6 border border-white/5 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent opacity-50" />
+                      <div className="relative z-10">
+                        <div className="text-blue-400/80 text-sm font-semibold tracking-wide uppercase mb-2">Current %</div>
+                        <div className="text-5xl font-semibold text-blue-400">88%</div>
+                      </div>
+                    </div>
+                    <div className="bg-black/40 rounded-3xl p-6 border border-white/5 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-b from-orange-500/10 to-transparent opacity-50" />
+                      <div className="relative z-10">
+                        <div className="text-orange-400/80 text-sm font-semibold tracking-wide uppercase mb-2">Bunks Left</div>
+                        <div className="text-5xl font-semibold text-orange-400">4</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
-        {/* ━━━ BOTTOM NAVIGATION ━━━ */}
+      {/* ━━━ BOTTOM NAVIGATION ━━━ */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-20 pb-10">
           <Link href="/calculator" className="w-full sm:w-auto">
             <PremiumButton variant="outline" icon="arrow_back" className="w-full justify-between">
@@ -870,5 +999,7 @@ export default function PlannerPage() {
         </div>
       </WorkspaceSection>
     </WorkspaceContent>
+    </div>
+    </div>
   );
 }

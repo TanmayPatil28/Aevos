@@ -154,9 +154,9 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
     <div className={`space-y-8 ${isHero ? 'max-w-4xl mx-auto' : ''}`}>
       {isHero && (
         <div className="text-center">
-          <h1 className="text-4xl font-black text-white tracking-tight">Smart Academic Import Engine</h1>
+          <h1 className="text-4xl font-black text-white tracking-tight">Bring in your records</h1>
           <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
-            Securely extract, verify, and persist your official academic records.
+            Securely import your academic history to instantly unlock personalized predictions.
           </p>
         </div>
       )}
@@ -164,7 +164,7 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
       {/* Error State */}
       {pipelineState === "failed" && pipelineError && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-200 p-4 rounded-xl text-center">
-          <strong>Import Pipeline Error:</strong> {pipelineError}
+          <strong>Import Issue:</strong> {pipelineError}
           <div className="mt-4">
             <button onClick={() => setPipelineState("idle")} className="text-sm underline hover:text-red-100">Try Again</button>
           </div>
