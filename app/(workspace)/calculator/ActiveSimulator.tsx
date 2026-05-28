@@ -43,7 +43,7 @@ function GradeDropdown({ value, onChange, options }: { value: string, onChange: 
         aria-haspopup="listbox"
         aria-label="Select grade"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-20 h-9 bg-white/[0.04] border ${isOpen ? 'border-[#4F8EF7]' : 'border-white/10'} text-white font-bold px-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#4F8EF7] focus-visible:border-transparent transition-all cursor-pointer hover:bg-white/[0.08] flex items-center justify-between gap-1 shadow-inner`}
+        className={`w-24 h-10 bg-[#2c2c2e] hover:bg-[#3a3a3c] text-[#F5F5F7] font-bold px-4 rounded-xl outline-none transition-colors cursor-pointer flex items-center justify-between gap-2`}
       >
         <span className="flex-1 text-center text-sm">{value || "-"}</span>
         <ChevronDown size={14} className={`text-white/40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -57,13 +57,13 @@ function GradeDropdown({ value, onChange, options }: { value: string, onChange: 
             exit={{ opacity: 0, y: -5, scale: 0.95 }}
             transition={{ duration: 0.15 }}
             role="listbox"
-            className="absolute top-full mt-2 w-28 left-1/2 -translate-x-1/2 bg-[#131C31]/95 backdrop-blur-2xl border border-white/[0.15] rounded-xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.8)] z-[100] overflow-y-auto overflow-x-hidden py-1.5 max-h-48 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            className="absolute top-full mt-2 w-24 left-0 bg-[#2c2c2e] border border-white/[0.05] rounded-xl shadow-2xl z-[100] overflow-y-auto overflow-x-hidden py-1.5 max-h-48 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           >
             <button
               role="option"
               aria-selected={value === ""}
               onClick={() => { onChange(""); setIsOpen(false); }}
-              className={`w-full text-center px-4 py-2.5 text-sm font-bold transition-all duration-200 ${value === "" ? 'bg-gradient-to-r from-[#4F8EF7]/20 to-blue-500/5 text-[#4F8EF7] border-l-2 border-[#4F8EF7]' : 'text-white/85 hover:bg-white/[0.08] hover:text-white border-l-2 border-transparent'}`}
+              className={`w-full text-center px-4 py-2 text-sm font-bold transition-colors duration-200 ${value === "" ? 'text-[#4F8EF7] bg-white/[0.05]' : 'text-[#86868b] hover:bg-white/[0.05] hover:text-[#F5F5F7]'}`}
             >
               -
             </button>
@@ -73,7 +73,7 @@ function GradeDropdown({ value, onChange, options }: { value: string, onChange: 
                 role="option"
                 aria-selected={value === opt}
                 onClick={() => { onChange(opt); setIsOpen(false); }}
-                className={`w-full text-center px-4 py-2.5 text-sm font-bold transition-all duration-200 ${value === opt ? 'bg-gradient-to-r from-[#4F8EF7]/20 to-blue-500/5 text-[#4F8EF7] border-l-2 border-[#4F8EF7]' : 'text-white/85 hover:bg-white/[0.08] hover:text-white border-l-2 border-transparent'}`}
+                className={`w-full text-center px-4 py-2 text-sm font-bold transition-colors duration-200 ${value === opt ? 'text-[#4F8EF7] bg-white/[0.05]' : 'text-[#86868b] hover:bg-white/[0.05] hover:text-[#F5F5F7]'}`}
               >
                 {opt}
               </button>
@@ -288,64 +288,52 @@ export default function CalculatorPage() {
                               openPanel("PREDICTOR", course.id);
                             }
                           }}
-                          className={`relative bg-black border border-white/[0.08] rounded-[2rem] p-5 flex flex-col h-full min-h-[150px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] transition-all duration-500 group hover:border-[#4F8EF7]/40 hover:bg-[#050505] hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(79,142,247,0.15)] cursor-pointer ${course.isTemporary ? 'ring-1 ring-[#4F8EF7]/50 shadow-[0_0_20px_rgba(79,142,247,0.1)]' : ''}`}
+                          className={`relative bg-[#1c1c1e] rounded-[1.5rem] p-5 flex flex-col h-full min-h-[140px] transition-all duration-300 group hover:bg-[#2c2c2e] hover:scale-[1.02] cursor-pointer ${course.isTemporary ? 'ring-2 ring-[#4F8EF7]' : ''}`}
                         >
-
-                          {/* Subtle Ambient Glow inside card (clipped to rounded corners) */}
-                          <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#4F8EF7]/10 rounded-full blur-2xl group-hover:bg-[#4F8EF7]/20 transition-all duration-500" />
-                          </div>
-
-                          {/* Top Row: Code & Credits */}
-                          <div className="flex justify-between items-start mb-3 gap-2 relative z-10">
+                          {/* Top Row: Code & Credits Combined */}
+                          <div className="flex justify-between items-center mb-3">
                             {course.isTemporary ? (
-                              <input
-                                value={course.code}
-                                onChange={(e) => handleUpdateTemp(course.id, 'code', e.target.value)}
-                                className="bg-white/[0.05] border border-[#4F8EF7]/40 rounded-md text-[10px] text-[#4F8EF7] font-mono h-6 px-2 w-20 uppercase placeholder:text-[#4F8EF7]/50 outline-none focus:border-[#4F8EF7] focus:bg-[#4F8EF7]/10 transition-colors"
-                                placeholder="CODE"
-                              />
+                              <div className="flex items-center gap-2">
+                                <input
+                                  value={course.code}
+                                  onChange={(e) => handleUpdateTemp(course.id, 'code', e.target.value)}
+                                  className="bg-[#2c2c2e] text-[#F5F5F7] font-bold text-xs h-7 px-2 w-20 rounded-md outline-none focus:ring-1 focus:ring-[#4F8EF7] transition-all placeholder:text-[#86868b] uppercase"
+                                  placeholder="CODE"
+                                />
+                                <span className="text-[#86868b] text-xs font-bold">•</span>
+                                <input
+                                  type="number"
+                                  value={course.credits}
+                                  onChange={(e) => handleUpdateTemp(course.id, 'credits', parseInt(e.target.value) || 0)}
+                                  className="bg-[#2c2c2e] text-[#F5F5F7] font-bold text-xs h-7 w-12 text-center rounded-md outline-none focus:ring-1 focus:ring-[#4F8EF7] transition-all [&::-webkit-inner-spin-button]:appearance-none placeholder:text-[#86868b]"
+                                  placeholder="CR"
+                                />
+                              </div>
                             ) : (
-                              <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase bg-white/[0.04] px-2.5 py-1 rounded-md border border-white/[0.08] group-hover:border-white/20 group-hover:text-white/80 transition-colors">
-                                {course.code}
-                              </span>
-                            )}
-
-                            {course.isTemporary ? (
-                              <input
-                                type="number"
-                                value={course.credits}
-                                onChange={(e) => handleUpdateTemp(course.id, 'credits', parseInt(e.target.value) || 0)}
-                                className="w-12 text-center font-mono font-bold bg-[#4F8EF7]/15 text-[#4F8EF7] border border-[#4F8EF7]/40 text-[10px] h-6 px-1 rounded-md outline-none focus:border-[#4F8EF7] focus:bg-[#4F8EF7]/20 transition-colors [&::-webkit-inner-spin-button]:appearance-none"
-                              />
-                            ) : (
-                              <span className="bg-[#4F8EF7]/15 px-2.5 py-1 rounded-md text-[10px] font-bold text-[#4F8EF7] border border-[#4F8EF7]/30 shadow-[0_0_10px_rgba(79,142,247,0.1)]">
-                                {course.credits} CR
+                              <span className="text-xs font-bold text-[#86868b] tracking-wider uppercase">
+                                {course.code} &bull; {course.credits} CR
                               </span>
                             )}
                           </div>
 
                           {/* Middle Row: Name */}
-                          <div className="relative z-10 flex-1">
+                          <div className="flex-1 mb-4">
                             {course.isTemporary ? (
                               <textarea
                                 value={course.name}
                                 onChange={(e) => handleUpdateTemp(course.id, 'name', e.target.value)}
-                                className="bg-white/[0.02] border border-transparent focus:border-[#4F8EF7]/40 focus:bg-white/[0.05] rounded-lg p-2 text-white font-semibold text-sm resize-none outline-none w-full shadow-none placeholder:text-white/30 h-16 transition-colors"
+                                className="bg-[#2c2c2e] text-[#F5F5F7] font-semibold text-lg leading-tight w-full rounded-md p-2 outline-none focus:ring-1 focus:ring-[#4F8EF7] resize-none h-16 placeholder:text-[#86868b] transition-all"
                                 placeholder="New Course Name..."
                               />
                             ) : (
-                              <h3 className="text-sm font-semibold text-white/95 leading-snug line-clamp-3 overflow-hidden pr-2 group-hover:text-white transition-colors">
+                              <h3 className="text-[17px] font-semibold text-[#F5F5F7] leading-snug line-clamp-2">
                                 {course.name}
                               </h3>
                             )}
                           </div>
 
-                          {/* Bottom Row: Grade Selector */}
-                          <div className="mt-auto flex items-center justify-between border-t border-white/[0.08] group-hover:border-white/[0.15] pt-3 relative z-10 transition-colors">
-                            <span className="text-[9px] font-black uppercase text-white/40 tracking-widest flex items-center gap-1.5">
-                              <CheckCircle2 size={12} className="text-[#4F8EF7]/50 group-hover:text-[#4F8EF7]/80 transition-colors" /> Expected
-                            </span>
+                          {/* Bottom Row: Grade Selector (Left Aligned for cleanliness) */}
+                          <div className="mt-auto flex items-center justify-start">
                             <div onClick={e => e.stopPropagation()}>
                               <GradeDropdown
                                 value={course.grade || ""}
