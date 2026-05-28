@@ -6,6 +6,9 @@ import {
   RadialBarChart, RadialBar
 } from "recharts";
 import { Award } from "lucide-react";
+import Card from "../ui/Card";
+
+const MotionCard = motion(Card);
 
 interface Subject {
   name: string;
@@ -41,13 +44,12 @@ export default function BreakdownCards({
   return (
     <div className="space-y-8">
       {/* Performance Donut */}
-      <motion.div
+      <MotionCard
         initial={{ opacity: 0, x: 20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
-        className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col items-center"
+        className="flex flex-col items-center group"
       >
-        <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
         <h3 className="text-xl font-black font-headline tracking-tighter text-white self-start mb-8 relative z-10">Performance Breakdown</h3>
 
         <div className="relative w-64 h-64 flex items-center justify-center">
@@ -96,17 +98,16 @@ export default function BreakdownCards({
             </div>
           ))}
         </div>
-      </motion.div>
+      </MotionCard>
 
       {/* CGPA Gauge */}
-      <motion.div
+      <MotionCard
         initial={{ opacity: 0, x: 20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
-        className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col items-center"
+        className="flex flex-col items-center group"
       >
-        <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
         <h3 className="text-xl font-black font-headline tracking-tighter text-white self-start mb-8 relative z-10">CGPA Progress Gauge</h3>
 
         <div className="relative w-64 h-64 flex items-center justify-center">
@@ -140,17 +141,16 @@ export default function BreakdownCards({
           <span className="text-primary">Target: {targetCgpa.toFixed(2)}</span>
           <span>10.0</span>
         </div>
-      </motion.div>
+      </MotionCard>
 
       {/* Top Subjects */}
-      <motion.div
+      <MotionCard
         initial={{ opacity: 0, x: 20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.2 }}
-        className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)]"
+        className="group"
       >
-        <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
         <h3 className="text-xl font-black font-headline tracking-tighter text-white mb-8 flex items-center gap-3 relative z-10">
           <Award size={24} strokeWidth={3} className="text-[#4F8EF7]" /> Top Performance
         </h3>
@@ -178,7 +178,7 @@ export default function BreakdownCards({
             <p className="text-sm text-on-surface-variant text-center py-4">Add more calculations to see full analysis</p>
           )}
         </div>
-      </motion.div>
+      </MotionCard>
     </div>
   );
 }

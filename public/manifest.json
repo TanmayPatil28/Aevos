@@ -1,0 +1,17 @@
+{
+  "name": "GradeFlow Student Intelligence OS",
+  "short_name": "GradeFlow",
+  "description": "Deterministic academic simulation, regulation-aware planning, and placement compliance advisor for B.Tech students.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

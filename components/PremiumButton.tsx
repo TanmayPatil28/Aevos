@@ -1,14 +1,16 @@
 "use client";
 
-import { motion, useMotionTemplate, useMotionValue, useSpring, animate } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue, useSpring, animate, useReducedMotion } from "framer-motion";
 import React, { useRef } from "react";
 
-interface PremiumButtonProps {
+interface PremiumButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   onClick?: () => void;
   className?: string;
   variant?: "primary" | "expand" | "glow" | "outline";
   icon?: React.ReactNode;
+  disabled?: boolean;
+  "aria-label"?: string;
 }
 
 export default function PremiumButton({
@@ -17,8 +19,12 @@ export default function PremiumButton({
   className = "",
   variant = "primary",
   icon = "add",
+  disabled = false,
+  "aria-label": ariaLabel,
+  ...rest
 }: PremiumButtonProps) {
   const containerRef = useRef<HTMLButtonElement>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   // Mouse tracking
   const mouseX = useMotionValue(0);
@@ -42,7 +48,7 @@ export default function PremiumButton({
   const textColor = isLight ? "text-on-surface" : "text-white";
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || disabled || shouldReduceMotion) return;
     const rect = containerRef.current.getBoundingClientRect();
     
     // Absolute mouse pos in button
@@ -64,10 +70,12 @@ export default function PremiumButton({
   };
 
   const handleMouseEnter = () => {
+    if (disabled || shouldReduceMotion) return;
     animate(hoverProgress, 1, { duration: 0.3, ease: "easeOut" });
   };
 
   const handleMouseLeave = () => {
+    if (shouldReduceMotion) return;
     animate(hoverProgress, 0, { duration: 0.5, ease: "easeOut" });
     targetX.set(0);
     targetY.set(0);
@@ -78,23 +86,28 @@ export default function PremiumButton({
   const borderGlow = useMotionTemplate`radial-gradient(60px circle at ${mouseX}px ${mouseY}px, ${isLight ? 'rgba(255,255,255,0.5)' : 'rgba(0,122,255,0.8)'}, transparent 100%)`;
 
   return (
+    // @ts-ignore - Supress Framer Motion type collision on onDrag
     <motion.button
+      {...rest}
       ref={containerRef}
+      role="button"
+      aria-label={ariaLabel || (typeof children === 'string' ? children : undefined)}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      whileHover={{ 
+      whileHover={disabled || shouldReduceMotion ? {} : { 
         scale: 1.02,
         transition: { type: "spring", stiffness: 400, damping: 25 }
       }}
-      whileTap={{ 
+      whileTap={disabled || shouldReduceMotion ? {} : { 
         scale: 0.96,
         transition: { type: "spring", stiffness: 600, damping: 30 }
       }}
-      onClick={onClick}
-      className={`group relative flex items-center justify-between pl-6 pr-2 py-2 border rounded-full cursor-pointer overflow-hidden transition-colors duration-300 ${bodyBg} ${className}`}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`group relative flex items-center justify-between pl-6 pr-2 py-2 border rounded-full overflow-hidden transition-colors duration-300 premium-focus ${bodyBg} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
       style={{
-        boxShadow: "0 20px 40px -10px rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.05)"
+        boxShadow: disabled ? "none" : "0 20px 40px -10px rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.05)"
       }}
     >
       {/* Inner Hover Spotlight (Ambient Glint) */}

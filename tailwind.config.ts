@@ -65,19 +65,17 @@ const config: Config = {
         premium: "var(--shadow-premium)",
         "premium-hover": "var(--shadow-premium-hover)",
       },
-      animation: {
-        "shimmer-slow": "shimmer 8s linear infinite",
-        "holographic": "holographic-shift 6s ease-in-out infinite",
-        "float-y": "float-y 10s ease-in-out infinite",
-        "border-glow": "soft-pulse 4s ease-in-out infinite",
+      spacing: {
+        "os-micro": "0.5rem",   // 8px
+        "os-component": "1.5rem", // 24px
+        "os-section": "3rem",     // 48px
+        "os-macro": "6rem",       // 96px
       },
-      backgroundImage: {
-        "glass-gradient": "linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0))",
+      animation: {
+        "fade-in": "fade-in 300ms ease-in forwards",
       },
       transitionTimingFunction: {
-        "premium-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "liquid-spring": "cubic-bezier(0.68, -0.6, 0.32, 1.6)",
-        "hud-expo": "cubic-bezier(0.19, 1, 0.22, 1)",
+        "os-smooth": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },

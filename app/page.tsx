@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useInView, useMotionValue, useSpring, useTransform, useMotionTemplate } from "framer-motion";
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, useState } from "react";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import StaggerContainer, { StaggerItem } from "@/components/StaggerContainer";
 import ThreeDProgress from "@/components/ThreeDProgress";
@@ -11,6 +11,11 @@ import PremiumButton from "@/components/PremiumButton";
 
 // Floating Particles Component
 function FloatingParticles() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const particles = useMemo(() => Array.from({ length: 12 }, (_, i) => ({
     id: i,
     left: `${Math.random() * 100}%`,
@@ -19,6 +24,8 @@ function FloatingParticles() {
     size: `${1.5 + Math.random() * 2.5}px`,
     opacity: 0.1 + Math.random() * 0.2,
   })), []);
+
+  if (!mounted) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -557,8 +564,6 @@ function StellarCTA() {
               className="w-full h-full glass-card rounded-[2rem] border border-white/10 bg-black/40 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)] inset-0 absolute overflow-hidden p-8 flex flex-col justify-between"
             >
               {/* Inner HUD Glow */}
-              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-secondary/20 blur-[60px] rounded-full pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[150px] h-[150px] bg-primary/20 blur-[50px] rounded-full pointer-events-none" />
 
               {/* HUD Header */}
               <div className="flex justify-between items-start relative z-10">

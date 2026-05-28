@@ -2,14 +2,12 @@ import { useRef } from "react";
 import { useMotionValue, useSpring } from "framer-motion";
 import { Calculator, Calendar, Download, ArrowRight, Loader2, Zap, LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/lib/cn";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Card from "../ui/Card";
 
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+const MotionCard = motion(Card);
 
 // --- Liquid Action Tile ---
 function LiquidActionTile({
@@ -53,7 +51,7 @@ function LiquidActionTile({
       onMouseLeave={handleMouseLeave}
       style={{ x: springX, y: springY }}
       className={cn(
-        "relative p-6 rounded-[28px] border transition-all duration-500 flex items-center justify-between group overflow-hidden shadow-2xl",
+        "relative p-6 rounded-2xl border transition-all duration-500 flex items-center justify-between group overflow-hidden shadow-2xl",
         variant === "primary" ? "bg-gradient-to-r from-[#4F8EF7] to-[#7C3AED] border-transparent text-white" :
           variant === "secondary" ? "bg-[#A855F7]/10 border-[#A855F7]/20 text-[#A855F7] hover:bg-[#A855F7]/20" :
             "bg-white/[0.03] border-white/[0.05] text-white hover:bg-white/[0.05]"
@@ -96,13 +94,12 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
   };
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col h-fit"
+      className="flex flex-col h-fit group"
     >
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
 
       <div className="flex items-center gap-3 mb-8 relative z-10">
         <Zap size={22} strokeWidth={3} className="text-[#4F8EF7]" />
@@ -134,6 +131,6 @@ export default function QuickActions({ onExportPDF }: { onExportPDF: () => void 
           variant="ghost"
         />
       </div>
-    </motion.div>
+    </MotionCard>
   );
 }

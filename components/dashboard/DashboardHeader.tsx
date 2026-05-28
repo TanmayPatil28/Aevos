@@ -2,12 +2,7 @@ import { useRef } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Download, FileText, Trash2, Sparkles, LucideIcon } from "lucide-react";
 import toast from "react-hot-toast";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "@/lib/cn";
 
 // --- Liquid Action Button ---
 function LiquidActionButton({
@@ -149,7 +144,6 @@ export default function DashboardHeader({
       </div>
 
       {/* Atmospheric Void Background */}
-      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-[#4F8EF7]/5 blur-[120px] rounded-full pointer-events-none opacity-40 animate-pulse" />
     </div>
   );
 }

@@ -30,13 +30,20 @@ export default function BackgroundEffects() {
 
   useEffect(() => {
     setMounted(true);
+    let rafId: number;
     const handleMouseMove = (e: MouseEvent) => {
-      // Normalize mouse pos (-1 to 1)
-      mouseX.set((e.clientX / window.innerWidth) * 2 - 1);
-      mouseY.set((e.clientY / window.innerHeight) * 2 - 1);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        // Normalize mouse pos (-1 to 1)
+        mouseX.set((e.clientX / window.innerWidth) * 2 - 1);
+        mouseY.set((e.clientY / window.innerHeight) * 2 - 1);
+      });
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
   }, [mouseX, mouseY]);
 
   if (!mounted) return null;
@@ -63,27 +70,27 @@ export default function BackgroundEffects() {
       </motion.div>
 
       {/* B. DYNAMIC ATMOSPHERIC NEBULA (The "Vibe" source) */}
-      <div className="absolute inset-0 opacity-[0.25] mix-blend-screen">
+      <div className="absolute inset-0 opacity-[0.25] mix-blend-screen pointer-events-none">
         {/* Active Cloud 1: Primary (Mouse Reactive) */}
         <motion.div
-           style={{ x: cloud1X, y: cloud1Y }}
+           style={{ x: cloud1X, y: cloud1Y, willChange: "transform, opacity" }}
           animate={{
             scale: [1, 1.1, 1],
             opacity: [0.15, 0.25, 0.15],
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[120%] h-[120%] rounded-full bg-[radial-gradient(circle,var(--primary)_0%,transparent_70%)] blur-[160px]"
+          className="absolute -top-[20%] -left-[10%] w-[120%] h-[120%] rounded-full bg-[radial-gradient(circle,var(--primary)_0%,transparent_70%)] blur-[96px]"
         />
 
         {/* Active Cloud 2: Secondary (Drifting) */}
         <motion.div
-          style={{ x: cloud2X, y: cloud2Y }}
+          style={{ x: cloud2X, y: cloud2Y, willChange: "transform, opacity" }}
           animate={{
             scale: [1.1, 0.9, 1.1],
             opacity: [0.1, 0.2, 0.1],
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-[20%] -right-[15%] w-[110%] h-[110%] rounded-full bg-[radial-gradient(circle,var(--secondary)_0%,transparent_70%)] blur-[150px]"
+          className="absolute -bottom-[20%] -right-[15%] w-[110%] h-[110%] rounded-full bg-[radial-gradient(circle,var(--secondary)_0%,transparent_70%)] blur-[96px]"
         />
       </div>
 
@@ -109,6 +116,7 @@ export default function BackgroundEffects() {
               ease: "linear"
             }}
             className="absolute w-1 h-1 bg-white rounded-full blur-[2px] opacity-20"
+            style={{ willChange: "transform, opacity" }}
           />
         ))}
       </div>
@@ -129,9 +137,10 @@ export default function BackgroundEffects() {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.08)_50%),linear-gradient(90deg,rgba(255,0,0,0.005),rgba(0,255,0,0.005),rgba(0,0,255,0.005))] bg-[length:100%_2px,3px_100%] pointer-events-none opacity-40" />
 
       {/* High-Freq Optical Noise */}
-      <div className="absolute inset-0 opacity-[0.05] pointer-events-none mix-blend-overlay"
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
            style={{
              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+             backgroundRepeat: "repeat",
            }}
       />
     </div>

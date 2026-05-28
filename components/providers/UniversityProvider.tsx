@@ -1,46 +1,38 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 
-export type GradingScale = "10" | "4" | "percent";
+import {
+  UniversityPreset,
+  GradingScale,
+  getScaleMode,
+  PRESETS,
+  getAllPresets,
+  getMaxGradePoint,
+  getPassingGradePoint,
+} from "@/lib/presets";
+import { useUSMStore } from "@/stores/usmStore";
 
-export interface UniversityPreset {
-  id: string;
-  name: string;
-  scaleMode: GradingScale;
-  shortName: string;
-  specialFeatures?: {
-    isVerified: boolean;
-    hasLetterGrades?: boolean;
-    defaultCreditsPerSem?: number[];
-  };
-}
-
-export const UNI_PRESETS: UniversityPreset[] = [
-  { 
-    id: "jspm", 
-    name: "JSPM RSCOE", 
-    shortName: "JSPM", 
-    scaleMode: "10",
-    specialFeatures: {
-      isVerified: true,
-      hasLetterGrades: true,
-      defaultCreditsPerSem: [21, 23, 20, 20, 20, 20, 20, 20] 
-    }
-  },
-  { id: "sppu", name: "SPPU (General)", shortName: "SPPU", scaleMode: "10" },
-  { id: "mu", name: "Mumbai University", shortName: "Mumbai Uni", scaleMode: "percent" },
-  { id: "vtu", name: "VTU", shortName: "VTU", scaleMode: "10" },
-  { id: "us", name: "US / Global Tech", shortName: "Global", scaleMode: "4" },
-  { id: "custom_10", name: "Custom (10.0 Scale)", shortName: "Custom 10", scaleMode: "10" },
-  { id: "custom_percent", name: "Custom (Percentage)", shortName: "Custom %", scaleMode: "percent" },
-];
+export type { UniversityPreset, GradingScale };
+export const UNI_PRESETS = getAllPresets();
 
 interface UniversityContextType {
   selectedUniId: string;
   setSelectedUniId: (id: string) => void;
   activePreset: UniversityPreset;
   scaleMode: GradingScale;
+
+  // Derived computed values — thin consumers use these instead of
+  // manually inspecting preset fields or branching on preset.id
+  creditLabel: string;           // "Credits" or "Units"
+  isRelativeGrading: boolean;    // true for relative/hybrid evaluation models
+  maxGradePoint: number;         // e.g., 10 or 4
+  passingGradePoint: number;     // lowest passing grade point in the scale
+
+  // Isolation telemetry & fallback state
+  isIsolatedFallback: boolean;
+  isolatedPresetId: string | null;
+  isolatedPresetName: string | null;
 }
 
 const UniversityContext = createContext<UniversityContextType | undefined>(undefined);
@@ -48,12 +40,34 @@ const UniversityContext = createContext<UniversityContextType | undefined>(undef
 export function UniversityProvider({ children }: { children: ReactNode }) {
   const [selectedUniId, setSelectedUniId] = useState<string>("jspm");
   const [mounted, setMounted] = useState(false);
+  const [isIsolatedFallback, setIsIsolatedFallback] = useState<boolean>(false);
+  const [isolatedPresetId, setIsolatedPresetId] = useState<string | null>(null);
+  const [isolatedPresetName, setIsolatedPresetName] = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("gradeflow_global_uni");
-      if (saved && UNI_PRESETS.find(u => u.id === saved)) {
-        setSelectedUniId(saved);
+      if (saved) {
+        const verifiedList = getAllPresets();
+        const isVerified = verifiedList.some(u => u.id === saved);
+        if (isVerified) {
+          setSelectedUniId(saved);
+          setIsIsolatedFallback(false);
+          setIsolatedPresetId(null);
+          setIsolatedPresetName(null);
+        } else {
+          // If it exists in raw PRESETS, but not in VERIFIED_PRESETS
+          const rawPreset = PRESETS.find(u => u.id === saved);
+          if (rawPreset) {
+            setIsIsolatedFallback(true);
+            setIsolatedPresetId(rawPreset.id);
+            setIsolatedPresetName(rawPreset.name);
+            setSelectedUniId("custom_10");
+            console.error(`[GradeFlow Trust Telemetry] Isolated preset loaded as fallback: ${rawPreset.id}`);
+          } else {
+            setSelectedUniId("jspm");
+          }
+        }
       }
     } catch (e) {
       console.error(e);
@@ -63,19 +77,64 @@ export function UniversityProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem("gradeflow_global_uni", selectedUniId);
+      try {
+        localStorage.setItem("gradeflow_global_uni", selectedUniId);
+      } catch (e) {
+        console.error(e);
+      }
     }
   }, [selectedUniId, mounted]);
 
-  const activePreset = UNI_PRESETS.find((u) => u.id === selectedUniId) || UNI_PRESETS[0];
+  const setPresetId = useUSMStore(state => state.setPresetId);
+  useEffect(() => {
+    if (mounted) {
+      setPresetId(selectedUniId);
+    }
+  }, [selectedUniId, mounted, setPresetId]);
+
+  const activePreset = useMemo(() => {
+    return getAllPresets().find((u) => u.id === selectedUniId) || getAllPresets()[0];
+  }, [selectedUniId]);
+
+  const handleSelectUni = (id: string) => {
+    const verifiedList = getAllPresets();
+    const isVerified = verifiedList.some(u => u.id === id);
+    if (isVerified) {
+      setSelectedUniId(id);
+      setIsIsolatedFallback(false);
+      setIsolatedPresetId(null);
+      setIsolatedPresetName(null);
+    } else {
+      const rawPreset = PRESETS.find(u => u.id === id);
+      if (rawPreset) {
+        setIsIsolatedFallback(true);
+        setIsolatedPresetId(rawPreset.id);
+        setIsolatedPresetName(rawPreset.name);
+        setSelectedUniId("custom_10");
+        console.error(`[GradeFlow Trust Telemetry] Isolated preset loaded as fallback: ${rawPreset.id}`);
+      }
+    }
+  };
+
+  // Derived values computed from activePreset — avoids manual branching in feature modules
+  const derived = useMemo(() => ({
+    creditLabel: activePreset.creditType === "units" ? "Units" : "Credits",
+    isRelativeGrading: activePreset.evaluationModel === "relative" || activePreset.evaluationModel === "hybrid",
+    maxGradePoint: getMaxGradePoint(activePreset),
+    passingGradePoint: getPassingGradePoint(activePreset),
+  }), [activePreset]);
 
   return (
     <UniversityContext.Provider
       value={{
         selectedUniId,
-        setSelectedUniId,
+        setSelectedUniId: handleSelectUni,
         activePreset,
-        scaleMode: activePreset.scaleMode,
+        scaleMode: getScaleMode(activePreset),
+        isIsolatedFallback,
+        isolatedPresetId,
+        isolatedPresetName,
+        ...derived,
       }}
     >
       {children}

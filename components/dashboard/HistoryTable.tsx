@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { Search, Eye, Trash2, X, ClipboardCheck, ArrowRight, Sparkles } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/lib/cn";
 import type { Calculation, Subject } from "@/types/calculation";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import Card from "@/components/ui/Card";
 
 interface HistoryTableProps {
   calculations: Calculation[];
@@ -19,6 +16,19 @@ interface HistoryTableProps {
 export default function HistoryTable({ calculations, onDelete }: HistoryTableProps) {
   const [search, setSearch] = useState("");
   const [selectedCalc, setSelectedCalc] = useState<Calculation | null>(null);
+
+  useEffect(() => {
+    if (!selectedCalc) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedCalc(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedCalc]);
 
   const filteredCalculations = useMemo(() => {
     return calculations.filter((calc) =>
@@ -34,10 +44,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
   };
 
   return (
-    <div className="relative group p-8 rounded-[32px] bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.05] shadow-[0_30px_90px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col h-fit">
-      {/* 2. PRISMATIC EDGE PRISM: Refractive micro-shimmer */}
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.1] pointer-events-none z-10" />
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-gradient-to-br from-[#4F8EF7]/30 via-transparent to-[#A855F7]/30 pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+    <Card className="flex flex-col h-fit group">
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 relative z-10">
         <div className="space-y-1">
@@ -59,7 +66,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
       </div>
 
       <div className="overflow-x-auto relative z-10">
-        <table className="w-full text-left">
+        <table className="w-full text-left min-w-[600px]">
           <thead>
             <tr className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] border-b border-white/[0.05]">
               <th className="pb-4 px-4 whitespace-nowrap">Index</th>
@@ -84,7 +91,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                 >
                   <td className="py-6 px-4 font-black text-white/10 text-xs italic">#{(index + 1).toString().padStart(2, '0')}</td>
                   <td className="py-6 px-4">
-                    <p className="text-sm font-bold text-white/60">{new Date(calc.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    <p className="text-sm font-bold text-white/60">{new Date(calc.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</p>
                   </td>
                   <td className="py-6 px-4">
                     <div className="text-[10px] font-black text-[#4F8EF7] px-3 py-1 rounded-full bg-[#4F8EF7]/10 border border-[#4F8EF7]/20 w-fit uppercase tracking-widest leading-none">
@@ -141,13 +148,15 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                 Establish your first academic record to initialize the observatory.
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#4F8EF7] to-[#7C3AED] text-white text-sm font-black tracking-tight flex items-center gap-3 shadow-[0_20px_50px_rgba(79,142,247,0.3)]"
-            >
-              Initialize Calculation <ArrowRight size={18} strokeWidth={3} />
-            </motion.button>
+            <Link href="/calculator" passHref legacyBehavior>
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#4F8EF7] to-[#7C3AED] text-white text-sm font-black tracking-tight flex items-center gap-3 shadow-[0_20px_50px_rgba(79,142,247,0.3)] cursor-pointer"
+              >
+                Initialize Calculation <ArrowRight size={18} strokeWidth={3} />
+              </motion.a>
+            </Link>
           </div>
         )}
       </div>
@@ -172,11 +181,14 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
               className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
             />
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="drawer-title"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 200, mass: 0.8 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-[#0A0F1E]/80 backdrop-blur-[100px] border-l border-white/[0.08] z-[101] shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-y-auto custom-scrollbar"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-[#000000]/80 backdrop-blur-[100px] border-l border-white/[0.08] z-[101] shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-y-auto custom-scrollbar"
             >
               {/* Refractive Inner Borders */}
               <div className="absolute inset-y-0 left-0 w-[0.5px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
@@ -184,7 +196,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
               <div className="p-10 space-y-12">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <h4 className="text-3xl font-black font-headline tracking-tighter text-white">Observer Report</h4>
+                    <h4 id="drawer-title" className="text-3xl font-black font-headline tracking-tighter text-white">Observer Report</h4>
                     <p className="text-[10px] text-[#4F8EF7] font-black uppercase tracking-[0.2em]">Detailed Analytics Frame</p>
                   </div>
                    <button
@@ -203,7 +215,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                   </div>
                   <div className="relative p-6 rounded-[24px] bg-white/[0.02] border border-white/[0.05] overflow-hidden">
                     <p className="text-[10px] font-black uppercase text-white/20 tracking-widest mb-2">Telemetry Date</p>
-                    <p className="text-xl font-black text-white/60">{new Date(selectedCalc.date).toLocaleDateString()}</p>
+                    <p className="text-xl font-black text-white/60">{new Date(selectedCalc.date).toLocaleDateString('en-US', { timeZone: 'UTC' })}</p>
                   </div>
                   <div className="relative p-6 rounded-[24px] bg-[#4F8EF7]/5 border border-[#4F8EF7]/20 overflow-hidden">
                     <p className="text-[10px] font-black uppercase text-[#4F8EF7]/60 tracking-widest mb-2">SGPA SCORE</p>
@@ -241,20 +253,20 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
                   </div>
                 </div>
 
-                <div className="p-8 rounded-[32px] bg-gradient-to-br from-[#4F8EF7]/10 to-transparent border border-[#4F8EF7]/20 relative overflow-hidden group">
-                   <div className="relative z-10">
-                      <h5 className="text-lg font-black text-white tracking-tight mb-2">Insight Detected</h5>
-                      <p className="text-sm text-white/40 leading-relaxed italic">
-                        {selectedCalc.sgpa >= 9 ? "Exceptional performance. You are currently in the 99th percentile of academic trajectory." : "Consistency is key. Improving your credit weighting in core subjects is recommended."}
-                      </p>
-                   </div>
-                   <Sparkles className="absolute -right-4 -bottom-4 text-[#4F8EF7]/10 group-hover:scale-150 transition-transform duration-1000" size={120} />
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
+                 <Card className="bg-gradient-to-br from-[#4F8EF7]/10 to-transparent border-[#4F8EF7]/20 relative overflow-hidden group">
+                    <div className="relative z-10">
+                       <h5 className="text-lg font-black text-white tracking-tight mb-2">Insight Detected</h5>
+                       <p className="text-sm text-white/40 leading-relaxed italic">
+                         {selectedCalc.sgpa >= 9 ? "Exceptional performance. You are currently in the 99th percentile of academic trajectory." : "Consistency is key. Improving your credit weighting in core subjects is recommended."}
+                       </p>
+                    </div>
+                    <Sparkles className="absolute -right-4 -bottom-4 text-[#4F8EF7]/10 group-hover:scale-150 transition-transform duration-1000" size={120} />
+                 </Card>
+               </div>
+             </motion.div>
+           </>
+         )}
+       </AnimatePresence>
+     </Card>
   );
 }

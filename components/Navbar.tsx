@@ -2,74 +2,63 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
-import { useTheme } from "next-themes";
 import {
   GraduationCap, Home, Calculator, CalendarDays,
   LayoutDashboard, Grip, ChevronDown, AlertTriangle,
-  TrendingUp, Target, Moon, Sun, Menu, X, ArrowRight, School, Check
+  Target, Menu, Compass, Flame, Briefcase, Calendar, BookOpen
 } from "lucide-react";
-import { useUniversity, UNI_PRESETS } from "@/components/providers/UniversityProvider";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { useSession, signOut } from "next-auth/react";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "@/lib/cn";
+import { useUSMStore } from "@/stores/usmStore";
+import NavbarActionSuite from "./NavbarActionSuite";
+import NavbarMobileDrawer from "./NavbarMobileDrawer";
 
 // --- Navigation Links ---
-const MAIN_LINKS = [
+export const MAIN_LINKS = [
   { name: "Home", href: "/", icon: Home },
-  { name: "Calculator", href: "/calculator", icon: Calculator },
-  { name: "Planner", href: "/planner", icon: CalendarDays },
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Command Center", href: "/dashboard", icon: LayoutDashboard },
 ];
 
-const ADVANCED_TOOLS = [
+export const INTELLIGENCE_MODULES = [
   {
-    name: "Backlog Scanner",
-    href: "/backlog",
-    icon: AlertTriangle,
-    desc: "Calculate fail grade impact",
-    color: "bg-[#4F8EF7]/10 text-[#4F8EF7]"
+    category: "Academic Predictors",
+    items: [
+      { name: "CGPA Calculator", href: "/calculator", icon: Calculator, desc: "Real-time active semester calculation" },
+      { name: "Semester Planner", href: "/planner", icon: CalendarDays, desc: "Strategic target setting & scenarios" },
+      { name: "CGPA Forecast", href: "/forecast", icon: Flame, desc: "Long-term AI trajectory forecasting" }
+    ]
   },
   {
-    name: "Timeline",
-    href: "/timeline",
-    icon: TrendingUp,
-    desc: "View academic journey",
-    color: "bg-[#A855F7]/10 text-[#4F8EF7]"
+    category: "Survival & Recovery",
+    items: [
+      { name: "Attendance Engine", href: "/attendance", icon: AlertTriangle, desc: "Safe-bunk & detention risk" },
+      { name: "Backlog Protocol", href: "/backlog", icon: Target, desc: "Clearance strategy & marks prediction" }
+    ]
   },
   {
-    name: "Marks Predictor",
-    href: "/predictor",
-    icon: Target,
-    desc: "Predict end semester marks",
-    color: "bg-[#10B981]/10 text-[#10B981]"
+    category: "Career Intelligence",
+    items: [
+      { name: "Placement Predictor", href: "/placement", icon: Briefcase, desc: "Eligibility radar & skill gaps" }
+    ]
   },
+  {
+    category: "Strategic Timelines",
+    items: [
+      { name: "Predictive Timeline", href: "/timeline", icon: Compass, desc: "Visual academic roadmap" },
+      { name: "Multi-Semester", href: "/multi-semester", icon: BookOpen, desc: "High-level multi-year trajectory" }
+    ]
+  }
 ];
 
-// --- Navbar Component ---
 export default function Navbar() {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isToolsOpen, setIsToolsOpen] = useState(false);
-  const [isUniOpen, setIsUniOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
-  const toolsRef = useRef<HTMLDivElement>(null);
-  const uniRef = useRef<HTMLDivElement>(null);
 
-  const { activePreset, setSelectedUniId } = useUniversity();
-  const { data: session } = useSession();
-
-  const isAnyToolActive = ADVANCED_TOOLS.some(tool => pathname === tool.href);
-
-  // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -77,35 +66,19 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close dropdown/drawer on click outside or escape
   useEffect(() => {
     const handleEvents = (e: MouseEvent | globalThis.KeyboardEvent) => {
       if (e instanceof KeyboardEvent && e.key === "Escape") {
-        setIsToolsOpen(false);
-        setIsUniOpen(false);
         setIsMobileOpen(false);
       }
-      if (e instanceof MouseEvent) {
-        if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) {
-          setIsToolsOpen(false);
-        }
-        if (uniRef.current && !uniRef.current.contains(e.target as Node)) {
-          setIsUniOpen(false);
-        }
-      }
     };
-    document.addEventListener("mousedown", handleEvents);
     document.addEventListener("keydown", handleEvents);
     return () => {
-      document.removeEventListener("mousedown", handleEvents);
       document.removeEventListener("keydown", handleEvents);
     };
   }, []);
 
-  // Close dropdown on page change
   useEffect(() => {
-    setIsToolsOpen(false);
-    setIsUniOpen(false);
     setIsMobileOpen(false);
   }, [pathname]);
 
@@ -114,140 +87,101 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-[1000] transition-all duration-700 flex justify-center px-4 md:px-8 antialiased font-body",
+        "fixed top-0 left-0 right-0 z-[9999] transition-all duration-700 flex justify-center px-4 md:px-8 antialiased font-body",
         isScrolled
-          ? "h-14 mt-0 bg-[#0A0F1E]/95 backdrop-blur-[45px] shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8),0_0_80px_-20px_rgba(79,142,247,0.15)]"
+          ? "h-14 mt-0 bg-black/50 backdrop-blur-[45px] shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8),0_0_80px_-20px_rgba(79,142,247,0.15)]"
           : "h-16 mt-0 bg-transparent"
       )}
     >
-      <div className="absolute inset-x-0 top-0 h-[100%] overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            x: ["-100%", "200%"],
-            opacity: [0, 0.15, 0]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white to-transparent -skew-x-[45deg] z-0 blur-[100px]"
-        />
-      </div>
+      <div className="w-full max-w-[1600px] flex items-center justify-between relative z-[9999] border-b border-white/[0.03]">
 
-      <div className="w-full max-w-7xl flex items-center justify-between relative z-10 border-b border-white/[0.03]">
-
-        {/* LEFT: AUTHORITATIVE LOGO */}
+        {/* LEFT: LOGO */}
         <Link href="/" className="flex items-center gap-2 group outline-none">
           <motion.div
             whileHover={{ scale: 1.1, rotate: -3 }}
-            className="text-[#4F8EF7] flex items-center justify-center p-1 relative"
+            className="text-blue-500 flex items-center justify-center p-1 relative"
           >
-            <GraduationCap size={24} strokeWidth={2.5} className="z-10 drop-shadow-[0_0_15px_#4F8EF7]" />
-            <motion.div initial={{ scale: 0 }} whileHover={{ scale: 1.5 }} className="absolute -z-10 w-full h-full bg-[#4F8EF7]/10 blur-xl rounded-full" />
+            <GraduationCap size={24} strokeWidth={2.5} className="z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+            <motion.div initial={{ scale: 0 }} whileHover={{ scale: 1.5 }} className="absolute -z-10 w-full h-full bg-blue-500/10 blur-xl rounded-full" />
           </motion.div>
           <span className="font-headline text-[20px] font-bold tracking-tight select-none">
             <span className="text-white drop-shadow-sm font-black">Grade</span>
-            <span className="bg-gradient-to-r from-[#A855F7] via-[#7C3AED] to-[#A855F7] bg-[length:200%_auto] animate-gradient bg-clip-text text-transparent font-black">Flow</span>
+            <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent font-black">Flow</span>
           </span>
         </Link>
 
-        {/* CENTER: LIQUID PILL */}
+        {/* CENTER: CONTEXTUAL NAV */}
         <nav className="hidden md:flex items-center">
-          <div className="bg-[#0A0F1E]/40 border border-white/[0.05] rounded-full p-1.5 flex items-center gap-1 shadow-2xl backdrop-blur-3xl relative">
+          <div className="bg-black/40 border border-white/5 rounded-full p-1.5 flex items-center gap-1 shadow-2xl backdrop-blur-3xl relative transition-all duration-500">
             {MAIN_LINKS.map((link) => (
               <LiquidNavItem
                 key={link.href}
                 href={link.href}
                 icon={link.icon}
                 label={link.name}
-                isActive={pathname === link.href}
+                isActive={pathname === link.href || (pathname === '/' && link.href === '/overview')}
                 isHovered={hoveredPath === link.href}
                 onHover={setHoveredPath}
               />
             ))}
 
-            <div className="w-[1px] h-4 bg-white/[0.08] mx-1 opacity-50" />
-
-            {/* Tools Refraction HUD */}
-            <div
+            {/* Intelligence Mega-Menu */}
+            <div 
               className="relative"
-              ref={toolsRef}
-              onMouseEnter={() => setHoveredPath("tools")}
-              onMouseLeave={() => setHoveredPath(null)}
+              onMouseEnter={() => setIsToolsOpen(true)}
+              onMouseLeave={() => setIsToolsOpen(false)}
             >
               <button
-                onClick={() => setIsToolsOpen(!isToolsOpen)}
-                aria-expanded={isToolsOpen}
-                aria-haspopup="menu"
-                aria-label="Toggle tools menu"
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-500 text-sm font-bold tracking-tight relative z-10",
-                  isToolsOpen || isAnyToolActive ? "text-white" : "text-white/60 hover:text-white group"
+                  "relative z-10 px-4 py-2.5 outline-none group flex items-center gap-2 transition-all",
+                  isToolsOpen ? "text-white" : "text-white/60 hover:text-white"
                 )}
               >
-                <Grip size={17} className={cn("transition-colors duration-500", (isToolsOpen || isAnyToolActive) ? "text-[#4F8EF7]" : "text-white/30 group-hover:text-[#4F8EF7]")} />
-                <span>Tools</span>
-                <motion.div animate={{ rotate: isToolsOpen ? 180 : 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}>
-                  <ChevronDown size={15} className="opacity-30" />
-                </motion.div>
-
-                {/* Shared Liquid Effects */}
-                <AnimatePresence>
-                  {((hoveredPath === "tools") || (!hoveredPath && isAnyToolActive)) && (
-                    <motion.div
-                      layoutId="liquid-pill"
-                      className="absolute inset-0 bg-[#4F8EF7]/10 rounded-full z-[-1] shadow-[0_0_20px_rgba(79,142,247,0.1),inset_0_1px_0_rgba(255,255,255,0.05)]"
-                      transition={{ type: "spring", stiffness: 300, damping: 28 }}
-                    />
-                  )}
-                </AnimatePresence>
-
-                <AnimatePresence>
-                  {((hoveredPath === "tools") || (!hoveredPath && isAnyToolActive)) && (
-                    <motion.div
-                      layoutId="liquid-aura"
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-[#4F8EF7] rounded-full blur-[1px] z-[20]"
-                    />
-                  )}
-                </AnimatePresence>
+                <Grip size={18} strokeWidth={isToolsOpen ? 2.5 : 2} className={cn("transition-colors duration-500", isToolsOpen ? "text-blue-500" : "text-white/30 group-hover:text-white/60")} />
+                <span className={cn(
+                  "text-[14px] font-black tracking-tight transition-all duration-500",
+                  isToolsOpen ? "text-white" : "text-white/50 group-hover:text-white"
+                )}>
+                  Intelligence
+                </span>
+                <ChevronDown size={14} className={cn("transition-transform duration-300", isToolsOpen && "rotate-180")} />
               </button>
 
-              {/* Dropdown Menu */}
               <AnimatePresence>
                 {isToolsOpen && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 15, filter: "blur(20px)" }}
-                    animate={{ opacity: 1, scale: 1, y: 12, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, scale: 0.9, y: 15, filter: "blur(20px)" }}
-                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    style={{
-                      backgroundColor: "#000000",
-                      backdropFilter: "blur(10px)"
-                    }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 w-[260px] bg-[#0A0F1E]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-2 z-[1001] origin-top"
+                    initial={{ opacity: 0, scale: 0.95, y: 15, filter: "blur(15px)" }}
+                    animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, scale: 0.95, y: 15, filter: "blur(15px)" }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[800px] bg-[#000000]/95 backdrop-blur-3xl border border-white/[0.08] rounded-[24px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.05)] overflow-hidden z-[9999]"
                   >
-                    <div className="absolute inset-0 rounded-[24px] border-[0.5px] border-gradient-to-br from-[#4F8EF7]/30 via-transparent to-[#A855F7]/30 pointer-events-none" />
-                    <div className="px-4 pt-3 pb-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#4F8EF7]/50">
-                      Academic Nexus
-                    </div>
-                    <div className="space-y-1 mt-1">
-                      {ADVANCED_TOOLS.map((tool) => (
-                        <Link
-                          key={tool.href}
-                          href={tool.href}
-                          className={cn(
-                            "flex items-center gap-3.5 p-3 rounded-[16px] transition-all duration-500 group relative",
-                            pathname === tool.href ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
-                          )}
-                        >
-                          <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500", tool.color)}>
-                            <tool.icon size={20} className="drop-shadow-sm" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+                    <div className="p-6 relative z-10 grid grid-cols-2 gap-8">
+                      {INTELLIGENCE_MODULES.map((module) => (
+                        <div key={module.category} className="flex flex-col gap-3">
+                          <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 ml-2">
+                            {module.category}
+                          </h3>
+                          <div className="flex flex-col gap-1">
+                            {module.items.map((tool) => (
+                              <Link
+                                key={tool.href}
+                                href={tool.href}
+                                onClick={() => setIsToolsOpen(false)}
+                                className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group"
+                              >
+                                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-white/50 group-hover:text-blue-400 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all shadow-inner">
+                                  <tool.icon size={18} strokeWidth={2.5} />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-[14px] font-bold text-white/90 group-hover:text-white transition-colors tracking-tight">{tool.name}</span>
+                                  <span className="text-[12px] font-medium text-white/40 group-hover:text-white/60 transition-colors leading-tight">{tool.desc}</span>
+                                </div>
+                              </Link>
+                            ))}
                           </div>
-                          <div>
-                            <div className="text-[14px] font-black text-white/90 group-hover:text-white transition-colors tracking-tight">{tool.name}</div>
-                            <div className="text-[12px] font-medium text-white/30 group-hover:text-white/50">{tool.desc}</div>
-                          </div>
-                          {pathname === tool.href && (
-                            <motion.div layoutId="tool-dot" className="absolute right-4 w-1.5 h-1.5 bg-[#4F8EF7] rounded-full shadow-[0_0_10px_#4F8EF7]" />
-                          )}
-                        </Link>
+                        </div>
                       ))}
                     </div>
                   </motion.div>
@@ -258,211 +192,21 @@ export default function Navbar() {
         </nav>
 
         {/* RIGHT: ACTION SUITE */}
-        <div className="hidden md:flex items-center gap-4">
-          <div className="relative" ref={uniRef}>
-            <button
-              onClick={() => setIsUniOpen(!isUniOpen)}
-              aria-expanded={isUniOpen}
-              aria-haspopup="listbox"
-              aria-label="Select university"
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border transition-all duration-500 text-[13px] font-bold group shadow-inner",
-                isUniOpen
-                  ? "border-[#4F8EF7] bg-[#4F8EF7]/10 text-white"
-                  : "border-white/[0.05] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-[#4F8EF7]/30"
-              )}
-            >
-              <School size={16} className={cn("transition-transform group-hover:scale-110", isUniOpen ? "text-white" : "text-[#4F8EF7]")} />
-              <span>{activePreset.shortName || "Select Identity"}</span>
-              <motion.div animate={{ rotate: isUniOpen ? 180 : 0 }} transition={{ duration: 0.5 }}>
-                <ChevronDown size={14} className="opacity-30" />
-              </motion.div>
-            </button>
-
-            {/* University Selection Dropdown */}
-            <AnimatePresence>
-              {isUniOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 15, filter: "blur(20px)" }}
-                  animate={{ opacity: 1, scale: 1, y: 12, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, scale: 0.9, y: 15, filter: "blur(20px)" }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  className="absolute top-full right-0 w-[240px] bg-[#0A0F1E]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-2 z-[1001] origin-top-right"
-                >
-                  <div className="px-4 pt-3 pb-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#4F8EF7]/50">
-                    Select Identity
-                  </div>
-                  <div className="space-y-0.5 mt-1">
-                    {UNI_PRESETS.map((uni) => (
-                      <button
-                        key={uni.id}
-                        onClick={() => {
-                          setSelectedUniId(uni.id);
-                          setIsUniOpen(false);
-                        }}
-                        className={cn(
-                          "w-full flex items-center justify-between p-3 rounded-[16px] transition-all duration-300 group",
-                          activePreset.id === uni.id ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-black",
-                            activePreset.id === uni.id ? "bg-[#4F8EF7] text-white" : "bg-white/5 text-white/40 group-hover:bg-white/10 group-hover:text-white/60"
-                          )}>
-                            {uni.shortName[0]}
-                          </div>
-                          <span className={cn(
-                            "text-[13px] font-bold tracking-tight",
-                            activePreset.id === uni.id ? "text-white" : "text-white/50 group-hover:text-white"
-                          )}>
-                            {uni.name}
-                          </span>
-                        </div>
-                        {activePreset.id === uni.id && (
-                          <Check size={14} className="text-[#4F8EF7]" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-            className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/[0.05] flex items-center justify-center transition-all duration-500 hover:bg-[#4F8EF7]/10 hover:border-[#4F8EF7]/20 text-white hover:text-[#4F8EF7] group shadow-inner"
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={theme}
-                initial={{ rotate: -180, scale: 0.5, opacity: 0 }}
-                animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                exit={{ rotate: 180, scale: 0.5, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              >
-                {theme === 'dark' ? <Moon size={18} strokeWidth={2.5} /> : <Sun size={18} strokeWidth={2.5} className="text-yellow-400" />}
-              </motion.div>
-            </AnimatePresence>
-          </button>
-
-          {session ? (
-            <button
-               onClick={() => signOut()}
-               className="bg-white/5 hover:bg-white/10 text-white px-5 py-2.5 rounded-full text-[14px] font-bold tracking-tight transition-all border border-white/10 shadow-inner"
-            >
-              Log Out
-            </button>
-          ) : (
-            <Link href="/login">
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2, boxShadow: "0 15px 30px rgba(124,58,237,0.4)" }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-br from-[#4F8EF7] via-[#7C3AED] to-[#A855F7] text-white px-7 py-2.5 rounded-full text-[14px] font-black tracking-tight flex items-center gap-2 shadow-premium"
-              >
-                Login
-                <ArrowRight size={17} strokeWidth={3} />
-              </motion.button>
-            </Link>
-          )}
-        </div>
+        <NavbarActionSuite />
 
         {/* MOBILE TRIGGER */}
         <div className="flex md:hidden items-center group">
-          <button onClick={() => setIsMobileOpen(true)} aria-label="Open navigation menu" className="w-11 h-11 flex items-center justify-center rounded-full bg-white/[0.04] text-white active:scale-90 transition-all">
-            <Menu size={22} className="group-hover:text-[#4F8EF7] transition-colors" />
+          <button onClick={() => setIsMobileOpen(true)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 text-white active:scale-90 transition-all">
+            <Menu size={22} className="group-hover:text-blue-500 transition-colors" />
           </button>
         </div>
-
       </div>
-
-      {/* MOBILE DRAWER */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-[#000]/80 backdrop-blur-[15px] z-[1002]" />
-            <motion.div
-              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 w-[300px] h-full bg-[#0A0F1E]/98 backdrop-blur-[50px] border-l border-white/[0.05] z-[1003] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
-            >
-              <div className="flex items-center justify-between mb-8">
-                <span className="font-headline font-black text-2xl text-white tracking-widest">GF.OS</span>
-                <button onClick={() => setIsMobileOpen(false)} aria-label="Close navigation menu" className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 text-white/60">
-                  <X size={26} strokeWidth={3} />
-                </button>
-              </div>
-
-              {/* Mobile University Selector */}
-              <div className="mb-8 p-1 bg-white/[0.02] border border-white/[0.05] rounded-[24px]">
-                <div className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/20">Active Institution</div>
-                <div className="flex flex-wrap gap-1 p-1">
-                  {UNI_PRESETS.map((uni) => (
-                    <button
-                      key={uni.id}
-                      onClick={() => setSelectedUniId(uni.id)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-full text-[12px] font-bold transition-all",
-                        activePreset.id === uni.id
-                          ? "bg-[#4F8EF7] text-white shadow-[0_0_15px_rgba(79,142,247,0.3)]"
-                          : "text-white/30 hover:text-white/60"
-                      )}
-                    >
-                      {uni.shortName}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2 flex-1">
-                {MAIN_LINKS.map((link, i) => (
-                  <motion.div key={link.href} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 + i * 0.05 }}>
-                    <Link
-                      href={link.href}
-                      className={cn(
-                        "flex items-center gap-4 p-4 rounded-2xl text-[17px] font-black transition-all",
-                        pathname === link.href ? "bg-[#4F8EF7]/10 text-[#4F8EF7]" : "text-white/40 hover:text-white"
-                      )}
-                    >
-                      <link.icon size={22} strokeWidth={3} />
-                      {link.name}
-                    </Link>
-                  </motion.div>
-                ))}
-
-                <div className="h-[1px] bg-white/[0.03] my-6" />
-
-                {ADVANCED_TOOLS.map((tool, i) => (
-                  <motion.div key={tool.href} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 + i * 0.05 }}>
-                    <Link href={tool.href} className="flex items-center gap-4 p-4 rounded-2xl group active:bg-white/5">
-                      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", tool.color)}>
-                        <tool.icon size={22} strokeWidth={3} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[16px] font-black text-white/90">{tool.name}</span>
-                        <span className="text-[12px] font-medium text-white/30">{tool.desc}</span>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-
-              <Link href="/calculator" className="mt-auto">
-                <button className="w-full bg-gradient-to-br from-[#4F8EF7] to-[#7C3AED] text-white py-5 rounded-[22px] font-black text-lg flex items-center justify-center gap-3 shadow-premium">
-                  Get Started <ArrowRight size={20} strokeWidth={3} />
-                </button>
-              </Link>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      
+      <NavbarMobileDrawer isOpen={isMobileOpen} setIsOpen={setIsMobileOpen} />
     </header>
   );
 }
 
-// --- LIQUID NAV ITEM ---
 function LiquidNavItem({
   href, icon: Icon, label, isActive, isHovered, onHover
 }: {
@@ -496,7 +240,7 @@ function LiquidNavItem({
       className="relative z-10 px-4 py-2.5 outline-none group"
     >
       <motion.div style={{ x: springX, y: springY }} className="flex items-center gap-2.5 relative z-[2]">
-        <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={cn("transition-colors duration-500", isActive ? "text-[#4F8EF7]" : "text-white/30 group-hover:text-white/60")} />
+        <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={cn("transition-colors duration-500", isActive ? "text-blue-500" : "text-white/30 group-hover:text-white/60")} />
         <span className={cn(
           "text-[14px] font-black tracking-tight transition-all duration-500",
           isActive ? "text-white" : "text-white/50 group-hover:text-white"
@@ -504,25 +248,24 @@ function LiquidNavItem({
           {label}
         </span>
       </motion.div>
-
       <AnimatePresence>
         {(isActive || isHovered) && (
           <motion.div
             layoutId="liquid-pill"
-            className="absolute inset-0 bg-[#4F8EF7]/10 rounded-full z-[1] shadow-[0_0_20px_rgba(79,142,247,0.1),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            className="absolute inset-0 bg-blue-500/10 rounded-full z-[1] shadow-[0_0_20px_rgba(59,130,246,0.1),inset_0_1px_0_rgba(255,255,255,0.05)]"
             transition={{ type: "spring", stiffness: 300, damping: 28, mass: 0.8 }}
           />
         )}
       </AnimatePresence>
-
       <AnimatePresence>
         {(isActive || isHovered) && (
           <motion.div
             layoutId="liquid-aura"
-            className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-[#4F8EF7] rounded-full blur-[1px] z-[20]"
+            className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-blue-500 rounded-full blur-[1px] z-[20]"
           />
         )}
       </AnimatePresence>
     </Link>
   );
 }
+

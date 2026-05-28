@@ -1,14 +1,27 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { registerSchema } from "@/lib/validations";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { name, email, password } = await req.json();
+    const body = await req.json();
+    const validation = registerSchema.safeParse(body);
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid request payload",
+          details: validation.error.issues.map((err) => ({
+            field: err.path.join("."),
+            message: err.message,
+          })),
+        },
+        { status: 400 }
+      );
     }
+
+    const { name, email, password } = validation.data;
 
     const exist = await prisma.user.findUnique({
       where: {
@@ -30,7 +43,15 @@ export async function POST(req: Request) {
       }
     });
 
-    return NextResponse.json(user);
+    const userResponse = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified,
+      image: user.image,
+    };
+
+    return NextResponse.json(userResponse);
 
   } catch (error) {
     console.error("Registration error:", error);

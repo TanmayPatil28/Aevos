@@ -1,15 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import AnimatedCounter from "../AnimatedCounter";
 import { LucideIcon, TrendingUp } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "@/lib/cn";
+import Card from "../ui/Card";
 
 interface StatCardProps {
   label: string;
@@ -27,7 +23,7 @@ interface StatCardProps {
   tooltip?: string;
 }
 
-export default function StatCard({
+const StatCard = memo(function StatCard({
   label,
   value,
   decimals = 2,
@@ -67,14 +63,7 @@ export default function StatCard({
       className="group relative"
       title={tooltip}
     >
-      {/* 2. PRISMATIC EDGE PRISM: Refractive micro-shimmer */}
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-white/[0.08] pointer-events-none z-10" />
-      <div className="absolute inset-0 rounded-[32px] border-[0.5px] border-gradient-to-br from-[#4F8EF7]/30 via-transparent to-[#A855F7]/30 pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-      
-      <div className={cn(
-        "relative overflow-hidden p-8 rounded-[32px] transition-all duration-700 bg-[#0A0F1E]/40 backdrop-blur-[50px] border border-white/[0.03] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.05)]",
-        "group-hover:bg-[#0A0F1E]/50 group-hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.9)]"
-      )}>
+      <Card className="relative overflow-hidden">
         {/* Dynamic Light Sweep */}
         <div className="absolute inset-x-0 top-0 h-full overflow-hidden pointer-events-none group-hover:opacity-100 opacity-30 transition-opacity duration-700">
           <motion.div 
@@ -114,8 +103,9 @@ export default function StatCard({
         </div>
         
         {/* Deep Atmosphere Glow */}
-        <div className="absolute -right-8 -top-8 w-32 h-32 blur-[60px] opacity-10 group-hover:opacity-20 transition-opacity rounded-full pointer-events-none" style={{ backgroundColor: glowColor }} />
-      </div>
+      </Card>
     </motion.div>
   );
-}
+});
+
+export default StatCard;
