@@ -29,8 +29,10 @@ export function OSModeProvider({ children }: { children: ReactNode }) {
     setModeState(newMode);
     localStorage.setItem("gradeflow_os_mode", newMode);
     
-    // Optional: Auto-route to a specific hub if switching away from unified
-    // For now, just changing state so the current page can react
+    // Auto-route to the dashboard if switching OS modes, to give immediate visual feedback
+    if (pathname !== "/dashboard" && pathname !== "/") {
+       router.push("/dashboard");
+    }
   };
 
   return (

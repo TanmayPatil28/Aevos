@@ -7,6 +7,8 @@ import Link from "next/link";
 import TermSection from "./TermSection";
 import { COPY } from "@/lib/os/constants/copy";
 
+import { PageHero } from "@/components/ui/PageHero";
+
 export default function LedgerCanvas() {
   const { terms } = useDomainStore();
   const { setContextBar, clearContextBar } = useUIStore();
@@ -30,8 +32,12 @@ export default function LedgerCanvas() {
   const sortedTerms = [...terms].sort((a, b) => b.order - a.order);
 
   return (
-    <div className="w-full flex flex-col gap-os-section pb-32 max-w-5xl mx-auto animate-fade-in ease-os-smooth duration-700">
+    <div className="w-full flex flex-col gap-os-section pt-24 pb-32 max-w-5xl mx-auto animate-fade-in ease-os-smooth duration-700 px-6">
       
+      <PageHero 
+        headline={<>Track every mark.<br/>Your immutable academic record.</>}
+        description="A comprehensive vault of all your semester records, subject grades, and credit history. Easily review past performance and maintain a granular view of your academic progression over time."
+      />
       {sortedTerms.length === 0 ? (
         <div className="flex flex-col items-center justify-center pt-20 pb-20 px-4 text-center">
           <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center mb-6">

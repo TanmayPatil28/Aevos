@@ -26,20 +26,7 @@ import { useUSMStore } from "@/stores/usmStore";
 import { selectAttendanceRisk } from "@/stores/selectors/attendance";
 import { getPresetById } from "@/lib/presets/presetRegistry";
 
-// Apple-style fade-in text component
-function FadeText({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) {
-  return (
-    <motion.span
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={`inline-block ${className}`}
-    >
-      {children}
-    </motion.span>
-  );
-}
+import { PageHero } from "@/components/ui/PageHero";
 
 export default function AttendancePage() {
   const storeState = useUSMStore();
@@ -115,37 +102,15 @@ export default function AttendancePage() {
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#4F8EF7]/15 blur-[100px] rounded-full mix-blend-screen" />
       </motion.div>
 
-      {/* Cinematic Hero Section */}
-      <section className="relative z-10 w-full min-h-[60vh] flex flex-col items-center justify-center pt-24 pb-16 px-6">
-        <div className="max-w-5xl mx-auto text-center flex flex-col items-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="mb-8"
-          >
-            <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-white/50 border border-white/10 rounded-full px-4 py-1.5 bg-white/5 backdrop-blur-md">
-              GradeFlow Risk Engine
-            </span>
-          </motion.div>
-          
-          <h1 className="text-7xl md:text-8xl lg:text-[9rem] font-bold tracking-[-0.05em] leading-[1.05] mb-8 text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(to right, #A855F7, #D8B4FE, #E9D5FF, #D8B4FE, #A855F7)", backgroundSize: "200% auto" }}>
-            <motion.span animate={{ backgroundPosition: ["0% center", "200% center"] }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="inline-block w-full">
-              <FadeText delay={0.1} className="text-transparent">Safe.</FadeText> <FadeText delay={0.3} className="text-transparent">Strategic.</FadeText> <FadeText delay={0.5} className="text-transparent">Smart.</FadeText>
-            </motion.span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed">
-            <FadeText delay={0.7}>
-              Monitor detention probability, assess assignment impact, and dynamically adjust your academic strategy based on faculty strictness.
-            </FadeText>
-          </p>
-        </div>
-      </section>
+
 
       {/* Main Content Area */}
       <WorkspaceContent className="relative z-10">
         <WorkspaceSection>
+          <PageHero 
+            headline={<>Calculate safe bunks.<br/>Never drop below the threshold.</>}
+            description="The attendance intelligence system tracks your classes in real-time. Know exactly how many lectures you can afford to skip, or the exact recovery path needed to stay out of the danger zone."
+          />
           
           <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-8">
             

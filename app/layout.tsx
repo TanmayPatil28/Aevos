@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import CustomCursor from "@/components/CustomCursor";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import dynamic from "next/dynamic";
+
+const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: false });
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -38,11 +43,9 @@ import { UniversityProvider } from "@/components/providers/UniversityProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AcademicStateProvider } from "@/contexts/AcademicContext";
 import { AcademicHydrationBoundary } from "@/components/providers/AcademicHydrationBoundary";
-import DiagnosticOverlay from "@/components/layout/DiagnosticOverlay";
-
+const DiagnosticOverlay = dynamic(() => import("@/components/layout/DiagnosticOverlay"), { ssr: false });
+const BackgroundEffects = dynamic(() => import("@/components/BackgroundEffects"), { ssr: false });
 import { OSModeProvider } from "@/contexts/OSModeContext";
-
-import BackgroundEffects from "@/components/BackgroundEffects";
 
 export default function RootLayout({
   children,
@@ -57,7 +60,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body bg-background text-foreground custom-scrollbar selection:bg-primary-container selection:text-on-primary-container">
+      <body className={`${inter.variable} font-body bg-background text-foreground custom-scrollbar selection:bg-primary-container selection:text-on-primary-container`}>
           <BackgroundEffects />
           <AuthProvider>
             <UniversityProvider>

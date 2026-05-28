@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef, useDeferredValue } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -86,9 +86,11 @@ export default function ManualCalculator() {
     toast("Sandbox Reset", { icon: "🔄" });
   }, []);
 
+  const deferredSubjects = useDeferredValue(subjects);
+
   // Compute derived subjects exactly as simulator does
   const derivationSubjects = useMemo(() => {
-    return subjects.map((sub, index) => {
+    return deferredSubjects.map((sub, index) => {
       const credits = parseFloat(sub.credits) || 0;
       const score = parseFloat(sub.score) || 0;
       let gradePoint = 0;
@@ -113,7 +115,7 @@ export default function ManualCalculator() {
         isPass: gradeStr !== "F"
       };
     }).filter(c => c.credits > 0);
-  }, [subjects, preset, usePercentage]);
+  }, [deferredSubjects, preset, usePercentage]);
 
   const calculatedSGPA = useMemo(() => calculateSGPA(derivationSubjects), [derivationSubjects]);
   const totalCredits = useMemo(() => derivationSubjects.reduce((acc, c) => acc + c.credits, 0), [derivationSubjects]);
@@ -238,7 +240,6 @@ export default function ManualCalculator() {
                       return (
                         <motion.div
                           key={course.id}
-                          layout
                           initial={{ opacity: 0, x: -20, backgroundColor: "rgba(255,255,255,0)" }}
                           animate={{ opacity: 1, x: 0, backgroundColor: "rgba(255,255,255,0.02)" }}
                           exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
@@ -307,7 +308,6 @@ export default function ManualCalculator() {
 
                   {/* Add Course Floating Row */}
                   <motion.button
-                    layout
                     onClick={addSubject}
                     className="flex items-center justify-center gap-2 w-full py-4 mt-2 rounded-[1.25rem] border-2 border-dashed border-white/[0.05] text-white/30 hover:text-[#4F8EF7] hover:border-[#4F8EF7]/30 hover:bg-[#4F8EF7]/5 transition-all duration-300 font-bold tracking-widest text-[10px] uppercase group"
                   >

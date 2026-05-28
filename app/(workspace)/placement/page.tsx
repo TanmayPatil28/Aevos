@@ -13,19 +13,7 @@ import TopperBenchmark from "@/components/placement/TopperBenchmark";
 import CompanyLedgerRow from "@/components/placement/CompanyLedgerRow";
 import { cn } from "@/lib/cn";
 
-function FadeText({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) {
-  return (
-    <motion.span
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={`inline-block ${className}`}
-    >
-      {children}
-    </motion.span>
-  );
-}
+import { PageHero } from "@/components/ui/PageHero";
 
 export default function CareerIntelligencePage() {
   const [mode, setMode] = useState<"matrix" | "radar">("matrix");
@@ -107,28 +95,16 @@ export default function CareerIntelligencePage() {
         <div className={cn("absolute top-20 left-1/2 -translate-x-1/2 w-[400px] h-[400px] blur-[100px] rounded-full mix-blend-screen transition-colors duration-700", isSandbox ? "bg-[#3b82f6]/15" : "bg-[#8b5cf6]/15")} />
       </motion.div>
 
-      {/* Cinematic Hero Section */}
-      <section className="relative z-10 w-full flex flex-col items-center justify-center pt-32 pb-20 px-6">
-        <div className="max-w-6xl mx-auto text-center flex flex-col items-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="mb-6 flex items-center gap-3"
-          >
-            <span className={cn("text-[11px] font-bold tracking-[0.25em] uppercase border rounded-full px-5 py-2 backdrop-blur-2xl transition-all duration-500", isSandbox ? "text-blue-400 border-blue-500/30 bg-blue-500/10 shadow-[0_0_30px_rgba(59,130,246,0.15)]" : "text-white/50 border-white/10 bg-white/5")}>
-              {isSandbox ? "Simulator Active" : "Career Intelligence OS"}
-            </span>
-          </motion.div>
-          
-          <h1 className="text-[5rem] md:text-[8rem] lg:text-[10rem] font-black tracking-[-0.06em] leading-[0.9] mb-12 text-transparent bg-clip-text" style={{ backgroundImage: isSandbox ? "linear-gradient(to right, #60a5fa, #bfdbfe, #eff6ff, #bfdbfe, #60a5fa)" : "linear-gradient(to right, #a855f7, #ddd6fe, #f5f3ff, #ddd6fe, #a855f7)", backgroundSize: "200% auto" }}>
-            <motion.span animate={{ backgroundPosition: ["0% center", "200% center"] }} transition={{ duration: 12, repeat: Infinity, ease: "linear" }} className="inline-block w-full">
-              <FadeText delay={0.1} className="text-transparent">Predict.</FadeText> <FadeText delay={0.3} className="text-transparent">Prepare.</FadeText> <FadeText delay={0.5} className="text-transparent">Placed.</FadeText>
-            </motion.span>
-          </h1>
+      {/* Standardized Hero Section */}
+      <section className="relative z-10 w-full flex flex-col items-center justify-center pt-32 pb-8 px-6">
+        <div className="w-full max-w-7xl mx-auto flex flex-col">
+          <PageHero 
+            headline={<>Predict placements.<br/>Know your exact eligibility.</>}
+            description="The career intelligence engine evaluates your current CGPA and skill profile against live company requirements, instantly calculating your eligibility for top-tier tech roles and identifying skill gaps."
+          />
 
           {/* Integrated Prominent Sandbox Sliders */}
-          <div className="w-full max-w-4xl mx-auto">
+          <div className="w-full max-w-4xl mx-auto mt-4">
             <div className="flex items-center justify-center gap-4 mb-8">
                <button 
                 onClick={() => setIsSandbox(!isSandbox)}

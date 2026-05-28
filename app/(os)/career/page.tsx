@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BrainCircuit, Code2, Database, LayoutTemplate, ShieldCheck } from "lucide-react";
+import { PageHero } from "@/components/ui/PageHero";
 
 export default function CareerOSPage() {
   const tracks = [
@@ -51,13 +52,11 @@ export default function CareerOSPage() {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col pt-8">
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Career Decision OS</h1>
-        <p className="text-slate-400 max-w-2xl text-lg">
-          Select your target career path. Our adaptive engine will guide you through the golden path, track your strict milestones, and ensure placement readiness.
-        </p>
-      </div>
+    <div className="w-full h-full flex flex-col pt-24 px-6 max-w-7xl mx-auto pb-32">
+      <PageHero 
+        headline={<>Structured skill paths.<br/>From beginner to industry-ready.</>}
+        description="High-impact, structured roadmaps tailored to your career goals. Track your mastery of key technologies, uncover hidden prerequisites, and build an engineering portfolio that stands out."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tracks.map((track) => (

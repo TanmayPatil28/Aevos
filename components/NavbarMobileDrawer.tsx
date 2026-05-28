@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, GraduationCap, Home, Calculator, CalendarDays, LayoutDashboard, Compass, Target, Briefcase, Flame, BookOpen } from "lucide-react";
 import { cn } from "@/lib/cn";
 import UniversitySelector from "@/components/UniversitySelector";
-import { MAIN_LINKS, ADVANCED_TOOLS } from "./Navbar";
+import { MAIN_LINKS, INTELLIGENCE_MODULES } from "./Navbar";
 import { useUSMStore } from "@/stores/usmStore";
 
 interface NavbarMobileDrawerProps {
@@ -58,25 +58,31 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen }: NavbarMobileDr
 
               <div className="h-[1px] bg-white/5 my-6" />
 
-              {ADVANCED_TOOLS.map((tool, i) => (
-                <motion.div key={tool.panelKey} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 + i * 0.05 }}>
-                  <button 
-                    onClick={() => {
-                      openPanel(tool.panelKey);
-                      setIsOpen(false);
-                    }}
-                    className="w-full text-left flex items-center gap-4 p-4 rounded-2xl group active:bg-white/5"
-                  >
-                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", tool.color)}>
-                      <tool.icon size={22} strokeWidth={3} />
+              <div className="overflow-y-auto pb-20 pr-2">
+                {INTELLIGENCE_MODULES.map((module, i) => (
+                  <motion.div key={module.category} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 + i * 0.1 }} className="mb-6">
+                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-white/30 mb-3 ml-2">{module.category}</h4>
+                    <div className="flex flex-col gap-1">
+                      {module.items.map((tool) => (
+                        <Link 
+                          key={tool.href}
+                          href={tool.href}
+                          onClick={() => setIsOpen(false)}
+                          className="w-full text-left flex items-center gap-4 p-3 rounded-2xl group active:bg-white/5 transition-colors"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-white/50 group-hover:text-blue-400 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all shadow-inner">
+                            <tool.icon size={18} strokeWidth={2.5} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[14px] font-bold text-white/90 group-hover:text-white transition-colors">{tool.name}</span>
+                            <span className="text-[11px] font-medium text-white/40 group-hover:text-white/60 transition-colors leading-tight">{tool.desc}</span>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[16px] font-black text-white/90">{tool.name}</span>
-                      <span className="text-[12px] font-medium text-white/30">{tool.desc}</span>
-                    </div>
-                  </button>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.div>
         </>

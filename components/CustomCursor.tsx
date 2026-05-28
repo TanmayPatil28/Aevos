@@ -42,29 +42,48 @@ export default function CustomCursor() {
 
     setIsVisible(true);
 
+    let moveRafId: number;
+    let hoverRafId: number;
+
     const moveCursor = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
+      cancelAnimationFrame(moveRafId);
+      moveRafId = requestAnimationFrame(() => {
+        mouseX.set(e.clientX);
+        mouseY.set(e.clientY);
+      });
     };
 
     const handleMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest("a, button, input, select, textarea, [role='button'], .glass-card")) {
-        hoverValue.set(1);
-      } else {
-        hoverValue.set(0);
-      }
+      cancelAnimationFrame(hoverRafId);
+      hoverRafId = requestAnimationFrame(() => {
+        const target = e.target as HTMLElement;
+        // Optimized check: avoid deep DOM traversal by checking tag names and immediate classes first
+        const isInteractive = 
+          target.tagName === 'A' || target.tagName === 'BUTTON' || target.tagName === 'INPUT' || 
+          target.tagName === 'SELECT' || target.tagName === 'TEXTAREA' || 
+          target.getAttribute('role') === 'button' ||
+          target.classList.contains('glass-card') ||
+          !!target.closest("a, button, [role='button'], .glass-card");
+
+        if (isInteractive) {
+          hoverValue.set(1);
+        } else {
+          hoverValue.set(0);
+        }
+      });
     };
 
     const handleMouseDown = (e: MouseEvent) => {
       setClicks(prev => [...prev.slice(-4), { id: Date.now(), x: e.clientX, y: e.clientY }]);
     };
 
-    window.addEventListener("mousemove", moveCursor);
-    window.addEventListener("mouseover", handleMouseOver);
-    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", moveCursor, { passive: true });
+    window.addEventListener("mouseover", handleMouseOver, { passive: true });
+    window.addEventListener("mousedown", handleMouseDown, { passive: true });
 
     return () => {
+      cancelAnimationFrame(moveRafId);
+      cancelAnimationFrame(hoverRafId);
       window.removeEventListener("mousemove", moveCursor);
       window.removeEventListener("mouseover", handleMouseOver);
       window.removeEventListener("mousedown", handleMouseDown);

@@ -652,7 +652,7 @@ export const useUSMStore = create<USMStoreState>()(
     }),
     {
       name: "gradeflow-usm-storage",
-      storage: createJSONStorage(() => typeof window !== "undefined" ? localStorage : undefined as any),
+      storage: createJSONStorage(() => typeof window !== "undefined" ? window.localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} }),
       version: 3,
       migrate: (persistedState: any, version: number) => {
         if (version < 1) {

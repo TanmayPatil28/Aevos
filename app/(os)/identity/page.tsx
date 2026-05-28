@@ -5,21 +5,15 @@ import CareerIdentityGraph from "@/components/os/identity/CareerIdentityGraph";
 import SkillGapAnalyzer from "@/components/os/identity/SkillGapAnalyzer";
 import Link from "next/link";
 import { Briefcase, Code, ChevronRight, Fingerprint } from "lucide-react";
+import { PageHero } from "@/components/ui/PageHero";
 
 export default function IdentityDashboardPage() {
   return (
-    <div className="w-full h-full flex flex-col pt-8 pb-12 animate-in fade-in duration-500">
-      <div className="mb-10 flex items-center gap-4">
-        <div className="w-12 h-12 bg-indigo-500/20 border border-indigo-500/30 rounded-2xl flex items-center justify-center">
-          <Fingerprint className="w-6 h-6 text-indigo-400" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-1">Career Identity OS</h1>
-          <p className="text-slate-400 text-sm">
-            Continuous intelligence on your market readiness and professional positioning.
-          </p>
-        </div>
-      </div>
+    <div className="w-full h-full flex flex-col pt-24 pb-32 max-w-7xl mx-auto px-6 animate-in fade-in duration-500">
+      <PageHero 
+        headline={<>Build your brand.<br/>Automate your professional profile.</>}
+        description="Generate high-conversion LinkedIn summaries and structured GitHub READMEs in seconds. Ensure your digital footprint perfectly aligns with your academic achievements and targeted career paths."
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2">

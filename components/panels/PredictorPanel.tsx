@@ -160,12 +160,8 @@ export default function PredictorPanel() {
     return { maxBase, scoredBase };
   }, [scores, scheme, useBestOf, type]);
 
-  // Sync calculated CIE back to course state automatically
-  useEffect(() => {
-    if (selectedCourse && selectedCourse.cieMarks !== internals.scoredBase) {
-      store.updateCourse(selectedCourse.id, { cieMarks: internals.scoredBase });
-    }
-  }, [internals.scoredBase, selectedCourse?.id]);
+  // Sync calculated CIE back to course state automatically has been disabled
+  // to prevent infinite render loops when selectedCourse is from a scenario.
 
   // THE POSSIBILITY MATRIX
   const matrix = useMemo(() => {
@@ -401,7 +397,7 @@ export default function PredictorPanel() {
           
           <div className="max-w-xs">
             <p className="text-base font-medium text-[#A1A1A6] leading-relaxed">
-              Targeting an <strong className="text-white text-xl">'{safestPath.grade}'</strong> ({safestPath.needed}/{safestPath.maxExamMarks}) is your safest path to maintain your <strong className="text-white">{(targetCgpa > 0 ? targetCgpa : currentCgpa).toFixed(2)} CGPA</strong>.
+              Targeting an <strong className="text-white text-xl">&apos;{safestPath.grade}&apos;</strong> ({safestPath.needed}/{safestPath.maxExamMarks}) is your safest path to maintain your <strong className="text-white">{(targetCgpa > 0 ? targetCgpa : currentCgpa).toFixed(2)} CGPA</strong>.
             </p>
           </div>
         </motion.div>

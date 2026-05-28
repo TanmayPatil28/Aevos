@@ -8,6 +8,8 @@ import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 import { COPY } from "@/lib/os/constants/copy";
 import { useOSMode } from "@/contexts/OSModeContext";
 
+import { PageHero } from "@/components/ui/PageHero";
+
 // Placeholders for components that might not exist yet but were specified in the plan
 function PlacementHealthWidget() {
   return (
@@ -96,21 +98,14 @@ export default function OverviewCanvas() {
   }, [terms, courses, hasData]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col pt-12 pb-32 selection:bg-indigo-500/30 px-6">
+    <div className="w-full max-w-4xl mx-auto flex flex-col pt-24 pb-32 selection:bg-indigo-500/30 px-6">
       
-      {/* 1. The Human Header */}
-      <section className="mb-16 flex flex-col gap-2 animate-fade-in duration-700 ease-os-smooth">
-        <h1 className="text-4xl sm:text-5xl font-medium tracking-tight text-slate-100 leading-tight">
-          {COPY.OVERVIEW.GREETING}
-        </h1>
-        {mode !== "career" && (
-          <div className="text-xl text-slate-400">
-            {hasData 
-              ? `Your CGPA is ${cgpa} ${COPY.OVERVIEW.STATUS_ON_TRACK}` 
-              : COPY.OVERVIEW.STATUS_SETUP}
-          </div>
-        )}
-      </section>
+      <PageHero 
+        headline={
+          <>Complete Visibility.<br/>Your academic command center.</>
+        }
+        description="Get an instant pulse on your entire academic and career trajectory. Track current progress, monitor critical alerts, and seamlessly launch your active modules from one central intelligence hub."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         

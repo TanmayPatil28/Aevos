@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useDeferredValue } from "react";
 import Link from "next/link";
 import { Plus, Save, ArrowRight, RotateCcw, Activity, Calculator, ChevronDown, CheckCircle2, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -94,6 +94,7 @@ export default function CalculatorPage() {
 
   const [simulatedCourses, setSimulatedCourses] = useState<SimulatedCourse[]>(context.activeCourses);
   const [hasChanges, setHasChanges] = useState(false);
+  const deferredSimulatedCourses = useDeferredValue(simulatedCourses);
 
   // Performance Tracking
   if (process.env.NODE_ENV === "development") {
@@ -170,7 +171,7 @@ export default function CalculatorPage() {
   };
 
   const derivationSubjects = useMemo(() => {
-    return simulatedCourses
+    return deferredSimulatedCourses
       .filter(c => c.grade && c.grade !== "F")
       .map(c => ({
         name: c.name,
@@ -178,7 +179,7 @@ export default function CalculatorPage() {
         grade: c.grade!,
         gradePoint: convertLetterGradeToGradePoint(c.grade!, preset!)
       }));
-  }, [simulatedCourses, preset]);
+  }, [deferredSimulatedCourses, preset]);
 
   const openPanel = useUSMStore(state => state.openPanel);
   

@@ -29,6 +29,7 @@ export default function AnimatedCounter({
 
     const startTime = performance.now();
     const startValue = count;
+    let animationFrameId: number;
 
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime;
@@ -38,14 +39,19 @@ export default function AnimatedCounter({
       const eased = 1 - Math.pow(1 - progress, 3);
       const current = startValue + (target - startValue) * eased;
 
-      setCount(current);
+      // Handle NaN target gracefully
+      if (!isNaN(current)) {
+        setCount(current);
+      }
 
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
       }
     };
 
-    requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
   }, [isInView, target, duration]);
 
   return (

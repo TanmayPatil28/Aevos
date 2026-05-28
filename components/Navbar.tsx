@@ -18,10 +18,37 @@ import NavbarMobileDrawer from "./NavbarMobileDrawer";
 export const MAIN_LINKS = [
   { name: "Home", href: "/", icon: Home },
   { name: "Command Center", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Calculator", href: "/calculator", icon: Calculator },
-  { name: "Planner", href: "/planner", icon: CalendarDays },
-  { name: "Timeline", href: "/timeline", icon: Compass },
-  { name: "Multi-Semester", href: "/multi-semester", icon: Target },
+];
+
+export const INTELLIGENCE_MODULES = [
+  {
+    category: "Academic Predictors",
+    items: [
+      { name: "CGPA Calculator", href: "/calculator", icon: Calculator, desc: "Real-time active semester calculation" },
+      { name: "Semester Planner", href: "/planner", icon: CalendarDays, desc: "Strategic target setting & scenarios" },
+      { name: "CGPA Forecast", href: "/forecast", icon: Flame, desc: "Long-term AI trajectory forecasting" }
+    ]
+  },
+  {
+    category: "Survival & Recovery",
+    items: [
+      { name: "Attendance Engine", href: "/attendance", icon: AlertTriangle, desc: "Safe-bunk & detention risk" },
+      { name: "Backlog Protocol", href: "/backlog", icon: Target, desc: "Clearance strategy & marks prediction" }
+    ]
+  },
+  {
+    category: "Career Intelligence",
+    items: [
+      { name: "Placement Predictor", href: "/placement", icon: Briefcase, desc: "Eligibility radar & skill gaps" }
+    ]
+  },
+  {
+    category: "Strategic Timelines",
+    items: [
+      { name: "Predictive Timeline", href: "/timeline", icon: Compass, desc: "Visual academic roadmap" },
+      { name: "Multi-Semester", href: "/multi-semester", icon: BookOpen, desc: "High-level multi-year trajectory" }
+    ]
+  }
 ];
 
 export default function Navbar() {
@@ -29,6 +56,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
   useEffect(() => {
@@ -97,7 +125,69 @@ export default function Navbar() {
               />
             ))}
 
-            {/* Tools dropdown has been deprecated in favor of Focus Workflows */}
+            {/* Intelligence Mega-Menu */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsToolsOpen(true)}
+              onMouseLeave={() => setIsToolsOpen(false)}
+            >
+              <button
+                className={cn(
+                  "relative z-10 px-4 py-2.5 outline-none group flex items-center gap-2 transition-all",
+                  isToolsOpen ? "text-white" : "text-white/60 hover:text-white"
+                )}
+              >
+                <Grip size={18} strokeWidth={isToolsOpen ? 2.5 : 2} className={cn("transition-colors duration-500", isToolsOpen ? "text-blue-500" : "text-white/30 group-hover:text-white/60")} />
+                <span className={cn(
+                  "text-[14px] font-black tracking-tight transition-all duration-500",
+                  isToolsOpen ? "text-white" : "text-white/50 group-hover:text-white"
+                )}>
+                  Intelligence
+                </span>
+                <ChevronDown size={14} className={cn("transition-transform duration-300", isToolsOpen && "rotate-180")} />
+              </button>
+
+              <AnimatePresence>
+                {isToolsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 15, filter: "blur(15px)" }}
+                    animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, scale: 0.95, y: 15, filter: "blur(15px)" }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[800px] bg-[#000000]/95 backdrop-blur-3xl border border-white/[0.08] rounded-[24px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.05)] overflow-hidden z-[9999]"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+                    <div className="p-6 relative z-10 grid grid-cols-2 gap-8">
+                      {INTELLIGENCE_MODULES.map((module) => (
+                        <div key={module.category} className="flex flex-col gap-3">
+                          <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 ml-2">
+                            {module.category}
+                          </h3>
+                          <div className="flex flex-col gap-1">
+                            {module.items.map((tool) => (
+                              <Link
+                                key={tool.href}
+                                href={tool.href}
+                                onClick={() => setIsToolsOpen(false)}
+                                className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group"
+                              >
+                                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-white/50 group-hover:text-blue-400 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all shadow-inner">
+                                  <tool.icon size={18} strokeWidth={2.5} />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-[14px] font-bold text-white/90 group-hover:text-white transition-colors tracking-tight">{tool.name}</span>
+                                  <span className="text-[12px] font-medium text-white/40 group-hover:text-white/60 transition-colors leading-tight">{tool.desc}</span>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </nav>
 
