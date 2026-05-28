@@ -38,6 +38,9 @@ import { UniversityProvider } from "@/components/providers/UniversityProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AcademicStateProvider } from "@/contexts/AcademicContext";
 import { AcademicHydrationBoundary } from "@/components/providers/AcademicHydrationBoundary";
+import DiagnosticOverlay from "@/components/layout/DiagnosticOverlay";
+
+import { OSModeProvider } from "@/contexts/OSModeContext";
 
 import BackgroundEffects from "@/components/BackgroundEffects";
 
@@ -62,45 +65,53 @@ export default function RootLayout({
             <ErrorBoundary>
               <AcademicStateProvider>
                 <AcademicHydrationBoundary>
-                  <Navbar />
-                  {children}
-                  <Footer />
+                  <OSModeProvider>
+                    <Navbar />
+                    {children}
+                    <Footer />
+                  </OSModeProvider>
                 </AcademicHydrationBoundary>
               </AcademicStateProvider>
             </ErrorBoundary>
             </UniversityProvider>
           </AuthProvider>
+          <DiagnosticOverlay />
           <Toaster 
-            position="top-right"
+            position="bottom-center"
             toastOptions={{
-              duration: 3000,
+              duration: 3500,
               style: {
-                background: 'var(--surface-container-high)',
-                color: 'var(--on-surface)',
-                border: '1px solid var(--outline-variant)',
-                borderRadius: '16px',
-                backdropFilter: 'blur(12px)',
-                padding: '14px 18px',
+                background: 'rgba(20, 20, 20, 0.85)',
+                color: '#f5f5f5',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '1rem',
+                backdropFilter: 'blur(24px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                padding: '16px 20px',
                 fontSize: '14px',
-                fontFamily: 'var(--font-body), Inter, sans-serif',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                fontWeight: '500',
+                fontFamily: 'var(--font-body), Inter, system-ui, sans-serif',
+                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05) inset',
+                maxWidth: '420px',
               },
               success: {
                 style: {
-                  borderLeft: '4px solid #34d399',
+                  borderLeft: '3px solid #34d399',
+                  boxShadow: '0 16px 48px rgba(0, 0, 0, 0.4), 0 0 20px rgba(52, 211, 153, 0.1)',
                 },
                 iconTheme: {
                   primary: '#34d399',
-                  secondary: 'var(--background)',
+                  secondary: '#111',
                 },
               },
               error: {
                 style: {
-                  borderLeft: '4px solid #f87171',
+                  borderLeft: '3px solid #f87171',
+                  boxShadow: '0 16px 48px rgba(0, 0, 0, 0.4), 0 0 20px rgba(248, 113, 113, 0.1)',
                 },
                 iconTheme: {
                   primary: '#f87171',
-                  secondary: 'var(--background)',
+                  secondary: '#111',
                 },
               },
             }}

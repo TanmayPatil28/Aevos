@@ -16,8 +16,13 @@ interface UIState {
   clearContextBar: () => void;
 
   // Inspector State
-  activeInspectorEntity: { type: "COURSE" | "TERM" | "INTERVENTION", id: string } | null;
+  activeInspectorEntity: { 
+    type: "COURSE" | "TERM" | "INTERVENTION" | "ROADMAP_NODE"; 
+    id: string;
+    data?: any;
+  } | null;
   setInspectorEntity: (entity: UIState["activeInspectorEntity"]) => void;
+  openInspector: (entity: UIState["activeInspectorEntity"]) => void;
   closeInspector: () => void;
 }
 
@@ -29,5 +34,6 @@ export const useUIStore = create<UIState>((set) => ({
 
   activeInspectorEntity: null,
   setInspectorEntity: (entity) => set({ activeInspectorEntity: entity }),
+  openInspector: (entity) => set({ activeInspectorEntity: entity }),
   closeInspector: () => set({ activeInspectorEntity: null }),
 }));

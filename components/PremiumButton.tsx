@@ -86,6 +86,7 @@ export default function PremiumButton({
   const borderGlow = useMotionTemplate`radial-gradient(60px circle at ${mouseX}px ${mouseY}px, ${isLight ? 'rgba(255,255,255,0.5)' : 'rgba(0,122,255,0.8)'}, transparent 100%)`;
 
   return (
+    // @ts-ignore - Supress Framer Motion type collision on onDrag
     <motion.button
       {...rest}
       ref={containerRef}

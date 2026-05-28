@@ -9,15 +9,22 @@ export interface DerivedAttendanceCourseRisk {
   courseCode: string;
   percentage: number;
   status: "PRESENT" | "ABSENT" | "CANCELLED" | "LOW_RISK" | "MED_RISK" | "HIGH_RISK";
-  detentionRisk: "LOW" | "MEDIUM" | "HIGH";
+  detentionRisk: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   safeBunks: number;
   recoveryRequired: number;
+  
+  // New Mock Data for Risk Intelligence
+  facultyStrictness: "CHILL" | "MODERATE" | "STRICT";
+  internalsImpact: number; // Potential marks lost
+  urgencyLevel: "STABLE" | "WARNING" | "CRITICAL";
 }
 
 export interface DerivedAttendanceStatus {
-  overallRisk: "LOW" | "MEDIUM" | "HIGH";
+  overallRisk: "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY";
   aggregatePercentage: number;
+  survivalScore: "STABLE" | "RISKY" | "CRITICAL" | "ACADEMIC EMERGENCY";
   courses: DerivedAttendanceCourseRisk[];
+  worstCourseId: string | null;
 }
 
 export interface DerivedRecoveryPlan {
@@ -25,6 +32,16 @@ export interface DerivedRecoveryPlan {
   requiredSgpa: number;
   explainReason: string;
 }
+
+/**
+ * Helper to generate pseudo-random strictness based on course code
+ */
+const getStrictness = (code: string): "CHILL" | "MODERATE" | "STRICT" => {
+  const hash = code.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  if (hash % 3 === 0) return "STRICT";
+  if (hash % 3 === 1) return "MODERATE";
+  return "CHILL";
+};
 
 /**
  * Attendance Risk Selector.
@@ -37,6 +54,9 @@ export const selectAttendanceRisk = createSelector((state: USMStoreState): Deriv
 
   let totalAttendedSum = 0;
   let totalConductedSum = 0;
+  
+  let worstPercentage = 100;
+  let worstCourseId: string | null = null;
 
   const courses: DerivedAttendanceCourseRisk[] = activeCourses.map((course) => {
     const conducted = course.attendanceTotal;
@@ -47,6 +67,11 @@ export const selectAttendanceRisk = createSelector((state: USMStoreState): Deriv
     totalConductedSum += conducted;
 
     const percentage = conducted > 0 ? (attended / conducted) * 100 : 100;
+    
+    if (percentage < worstPercentage) {
+      worstPercentage = percentage;
+      worstCourseId = course.id;
+    }
     
     let safeBunks = 0;
     let recoveryRequired = 0;
@@ -62,12 +87,28 @@ export const selectAttendanceRisk = createSelector((state: USMStoreState): Deriv
       recoveryRequired = Math.max(0, recoveryRequired);
     }
 
-    let detentionRisk: "LOW" | "MEDIUM" | "HIGH" = "LOW";
-    if (percentage < minAttendance) {
+    let detentionRisk: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
+    if (percentage < minAttendance - 10) {
+      detentionRisk = "CRITICAL";
+    } else if (percentage < minAttendance) {
       detentionRisk = "HIGH";
     } else if (percentage < minAttendance + 5) {
       detentionRisk = "MEDIUM";
     }
+
+    const facultyStrictness = getStrictness(course.code);
+    
+    let urgencyLevel: "STABLE" | "WARNING" | "CRITICAL" = "STABLE";
+    if (detentionRisk === "CRITICAL" || (detentionRisk === "HIGH" && facultyStrictness === "STRICT")) {
+      urgencyLevel = "CRITICAL";
+    } else if (detentionRisk === "HIGH" || detentionRisk === "MEDIUM") {
+      urgencyLevel = "WARNING";
+    }
+
+    // Mock internal marks impact calculation
+    let internalsImpact = 0;
+    if (urgencyLevel === "CRITICAL") internalsImpact = Math.floor(Math.random() * 4) + 2; // 2-5 marks
+    else if (urgencyLevel === "WARNING") internalsImpact = Math.floor(Math.random() * 2) + 1; // 1-2 marks
 
     return {
       courseId: course.id,
@@ -78,23 +119,35 @@ export const selectAttendanceRisk = createSelector((state: USMStoreState): Deriv
       detentionRisk,
       safeBunks,
       recoveryRequired,
+      facultyStrictness,
+      internalsImpact,
+      urgencyLevel
     };
   });
 
   const aggregatePercentage =
     totalConductedSum > 0 ? (totalAttendedSum / totalConductedSum) * 100 : 100;
 
-  let overallRisk: "LOW" | "MEDIUM" | "HIGH" = "LOW";
-  if (aggregatePercentage < minAttendance) {
+  let overallRisk: "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY" = "LOW";
+  let survivalScore: "STABLE" | "RISKY" | "CRITICAL" | "ACADEMIC EMERGENCY" = "STABLE";
+
+  if (aggregatePercentage < minAttendance - 10) {
+    overallRisk = "EMERGENCY";
+    survivalScore = "ACADEMIC EMERGENCY";
+  } else if (aggregatePercentage < minAttendance) {
     overallRisk = "HIGH";
+    survivalScore = "CRITICAL";
   } else if (aggregatePercentage < minAttendance + 5) {
     overallRisk = "MEDIUM";
+    survivalScore = "RISKY";
   }
 
   return {
     overallRisk,
     aggregatePercentage: parseFloat(aggregatePercentage.toFixed(1)),
+    survivalScore,
     courses,
+    worstCourseId
   };
 });
 
@@ -148,3 +201,4 @@ export const selectRecoveryDifficulty = createSelector((state: USMStoreState): D
     explainReason,
   };
 });
+

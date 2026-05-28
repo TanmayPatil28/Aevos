@@ -42,10 +42,10 @@ export default function MultiSemesterPage() {
     if (context.identity.hasAuthoritativeData && context.semesterHistory.length > 0) {
       const mapped = context.semesterHistory.map((sh: any, idx: number) => ({
         id: `sh-${idx}`,
-        name: sh.term,
-        credits: sh.totalCredits.toString(),
-        sgpa: sh.sgpa.toString(),
-        whatIfSgpa: sh.sgpa.toString()
+        name: sh.term || `Semester ${sh.semester}`,
+        credits: (sh.totalCredits || sh.credits || 0).toString(),
+        sgpa: (sh.sgpa || 0).toString(),
+        whatIfSgpa: (sh.sgpa || 0).toString()
       }));
       setSemesters(mapped);
     } else {

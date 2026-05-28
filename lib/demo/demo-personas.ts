@@ -94,6 +94,10 @@ export const demoPersonas: Record<string, DemoPersona> = {
       targetCompanies: ["faang", "tcs", "cognizant"],
       wesGpaEquivalent: 3.9,
       ectsStandingBand: "A",
+      branch: "Computer Science",
+      skills: ["Java", "Python", "React", "DSA"],
+      targetRole: "Software Development Engineer",
+      targetPackage: "Product (15LPA+)"
     },
     risk: {
       attendanceRisk: "LOW",
@@ -173,6 +177,10 @@ export const demoPersonas: Record<string, DemoPersona> = {
       targetCompanies: ["tcs", "cognizant"],
       wesGpaEquivalent: 3.1,
       ectsStandingBand: "C",
+      branch: "Computer Science",
+      skills: ["Java", "HTML", "CSS"],
+      targetRole: "Frontend Developer",
+      targetPackage: "Service (3-6LPA)"
     },
     risk: {
       attendanceRisk: "MEDIUM",
@@ -251,6 +259,10 @@ export const demoPersonas: Record<string, DemoPersona> = {
       targetCompanies: ["cognizant"],
       wesGpaEquivalent: 2.5,
       ectsStandingBand: "E",
+      branch: "Computer Science",
+      skills: ["HTML"],
+      targetRole: "Frontend Developer",
+      targetPackage: "Service (3-6LPA)"
     },
     risk: {
       attendanceRisk: "HIGH",

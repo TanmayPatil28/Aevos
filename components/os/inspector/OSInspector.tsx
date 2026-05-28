@@ -3,6 +3,7 @@
 import { useUIStore } from "@/stores/os/uiStore";
 import { useEffect } from "react";
 import CourseInspectorContent from "./CourseInspectorContent";
+import RoadmapNodeContent from "./RoadmapNodeContent";
 
 export default function OSInspector() {
   const { activeInspectorEntity, closeInspector } = useUIStore();
@@ -50,7 +51,8 @@ export default function OSInspector() {
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-100">
-            {activeInspectorEntity.type === "COURSE" ? "Course Details" : "Details"}
+            {activeInspectorEntity.type === "COURSE" ? "Course Details" : 
+             activeInspectorEntity.type === "ROADMAP_NODE" ? activeInspectorEntity.data?.nodeData?.label : "Details"}
           </h2>
           <button 
             onClick={closeInspector}
@@ -64,6 +66,12 @@ export default function OSInspector() {
         <div className="flex-1 overflow-y-auto p-6">
           {activeInspectorEntity.type === "COURSE" && (
             <CourseInspectorContent courseId={activeInspectorEntity.id} />
+          )}
+          {activeInspectorEntity.type === "ROADMAP_NODE" && (
+            <RoadmapNodeContent 
+              roadmapId={activeInspectorEntity.data?.roadmapId} 
+              nodeData={activeInspectorEntity.data?.nodeData} 
+            />
           )}
         </div>
       </div>

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowRight } from "lucide-react";
+import { X, ArrowRight, GraduationCap, Home, Calculator, CalendarDays, LayoutDashboard, Compass, Target, Briefcase, Flame, BookOpen } from "lucide-react";
 import { cn } from "@/lib/cn";
 import UniversitySelector from "@/components/UniversitySelector";
 import { MAIN_LINKS, ADVANCED_TOOLS } from "./Navbar";
@@ -22,11 +23,11 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen }: NavbarMobileDr
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)} className="fixed inset-0 bg-[#000]/80 backdrop-blur-[15px] z-[100000]" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-[15px] z-[100000]" />
           <motion.div
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 w-[300px] h-full bg-[#000000]/98 backdrop-blur-[50px] border-l border-white/[0.05] z-[100001] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
+            className="fixed top-0 right-0 w-[300px] h-full bg-black/98 backdrop-blur-[50px] border-l border-white/5 z-[100001] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
           >
             <div className="flex items-center justify-between mb-8">
               <span className="font-headline font-black text-2xl text-white tracking-widest">GF.OS</span>
@@ -38,7 +39,7 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen }: NavbarMobileDr
             {/* Mobile University Selector */}
             <UniversitySelector variant="mobile" />
 
-            <div className="flex flex-col gap-2 flex-1">
+            <div className="flex flex-col gap-2 flex-1 mt-6">
               {MAIN_LINKS.map((link, i) => (
                 <motion.div key={link.href} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 + i * 0.05 }}>
                   <Link
@@ -46,7 +47,7 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen }: NavbarMobileDr
                     onClick={() => setIsOpen(false)}
                     className={cn(
                       "flex items-center gap-4 p-4 rounded-2xl text-[17px] font-black transition-all",
-                      pathname === link.href ? "bg-[#4F8EF7]/10 text-[#4F8EF7]" : "text-white/40 hover:text-white"
+                      pathname === link.href ? "bg-blue-500/10 text-blue-500" : "text-white/40 hover:text-white"
                     )}
                   >
                     <link.icon size={22} strokeWidth={3} />
@@ -55,7 +56,7 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen }: NavbarMobileDr
                 </motion.div>
               ))}
 
-              <div className="h-[1px] bg-white/[0.03] my-6" />
+              <div className="h-[1px] bg-white/5 my-6" />
 
               {ADVANCED_TOOLS.map((tool, i) => (
                 <motion.div key={tool.panelKey} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 + i * 0.05 }}>
@@ -77,12 +78,6 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen }: NavbarMobileDr
                 </motion.div>
               ))}
             </div>
-
-            <Link href="/calculator" className="mt-auto" onClick={() => setIsOpen(false)}>
-              <button className="w-full bg-gradient-to-br from-[#4F8EF7] to-[#7C3AED] text-white py-5 rounded-[22px] font-black text-lg flex items-center justify-center gap-3 shadow-premium">
-                Get Started <ArrowRight size={20} strokeWidth={3} />
-              </button>
-            </Link>
           </motion.div>
         </>
       )}

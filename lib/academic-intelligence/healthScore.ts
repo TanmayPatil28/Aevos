@@ -21,7 +21,7 @@ export interface HealthScoreBreakdown {
 export interface HealthScoreResult {
   score: number;
   breakdown: HealthScoreBreakdown;
-  status: "CRITICAL" | "CAUTION" | "EXCELLENT";
+  status: "ELITE STABILITY" | "RECOVERABLE INSTABILITY" | "ACADEMIC DANGER" | "COLLAPSE RISK";
   reasons: string[];
   trace: TraceMetadata;
 }
@@ -97,15 +97,17 @@ export const healthScoreEngine = {
     const totalScore = cgpaScore + attendanceScore + backlogScore + placementScore;
     const finalScore = Math.max(0, Math.min(100, Math.round(totalScore)));
 
-    let status: HealthScoreResult["status"] = "EXCELLENT";
-    if (finalScore < 60 || activeBacklogs > 0 || aggregateAttendancePercentage < 75) {
-      status = "CRITICAL";
-    } else if (finalScore < 80) {
-      status = "CAUTION";
+    let status: HealthScoreResult["status"] = "ELITE STABILITY";
+    if (finalScore < 50 || activeBacklogs > 2 || aggregateAttendancePercentage < 65) {
+      status = "COLLAPSE RISK";
+    } else if (finalScore < 70 || activeBacklogs > 0 || aggregateAttendancePercentage < 75) {
+      status = "ACADEMIC DANGER";
+    } else if (finalScore < 90) {
+      status = "RECOVERABLE INSTABILITY";
     }
 
     const hsWarnings: string[] = [];
-    if (status === "CRITICAL") {
+    if (status === "COLLAPSE RISK" || status === "ACADEMIC DANGER") {
       hsWarnings.push("Critical academic indicators detected! Take immediate corrective action on attendance or backlog clearance.");
     }
     if (aggregateAttendancePercentage < 75) {

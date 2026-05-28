@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Moon, Sun, ArrowRight } from "lucide-react";
 import UniversitySelector from "@/components/UniversitySelector";
+import OSModeSwitcher from "@/components/OSModeSwitcher";
 
 export default function NavbarActionSuite() {
   const { theme, setTheme } = useTheme();
@@ -13,6 +14,7 @@ export default function NavbarActionSuite() {
 
   return (
     <div className="hidden md:flex items-center gap-4">
+      <OSModeSwitcher />
       <UniversitySelector variant="navbar" />
 
       <button

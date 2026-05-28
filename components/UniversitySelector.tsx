@@ -190,19 +190,19 @@ export default function UniversitySelector({ variant = "navbar" }: UniversitySel
         onKeyDown={handleTriggerKeyDown}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        aria-controls={isOpen ? "preset-list" : undefined}
-        aria-label="Select university"
+        aria-controls={isOpen ? "preset-listbox" : undefined}
+        aria-label={activePreset.shortName ? `Selected university: ${activePreset.shortName}` : "Select university"}
         className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border transition-all duration-500 text-[13px] font-bold group shadow-inner outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F8EF7] focus-visible:shadow-[0_0_15px_rgba(79,142,247,0.4)] focus-visible:border-transparent",
+          "flex items-center gap-2.5 px-4 py-2 rounded-full backdrop-blur-xl border transition-all duration-500 text-[13px] font-bold group outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 shadow-[0_2px_10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)]",
           isOpen
-            ? "border-[#4F8EF7] bg-[#4F8EF7]/10 text-white"
-            : "border-white/[0.05] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-[#4F8EF7]/30"
+            ? "border-white/20 bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1),inset_0_1px_0_rgba(255,255,255,0.1)]"
+            : "border-white/[0.05] bg-white/[0.02] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-white/15"
         )}
       >
-        <School size={16} className={cn("transition-transform group-hover:scale-110", isOpen ? "text-white" : "text-[#4F8EF7]")} />
-        <span className="max-w-[120px] truncate">{activePreset.shortName || "Select Identity"}</span>
-        <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.5 }}>
-          <ChevronDown size={14} className="opacity-30" />
+        <School size={16} className={cn("transition-transform group-hover:scale-110", isOpen ? "text-white" : "text-white/50 group-hover:text-white/80")} />
+        <span className="max-w-[120px] truncate tracking-tight">{activePreset.shortName || "Select Identity"}</span>
+        <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.5, type: "spring", stiffness: 300, damping: 20 }}>
+          <ChevronDown size={14} className={cn("transition-colors", isOpen ? "text-white/70" : "text-white/30 group-hover:text-white/60")} />
         </motion.div>
       </button>
 
@@ -210,19 +210,19 @@ export default function UniversitySelector({ variant = "navbar" }: UniversitySel
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 8, filter: "blur(10px)" }}
-            animate={{ opacity: 1, scale: 1, y: 12, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 0.92, y: 8, filter: "blur(10px)" }}
-            transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="absolute top-full right-0 w-[340px] bg-[#000000]/98 backdrop-blur-[50px] border border-white/[0.08] rounded-[24px] shadow-premium p-3 z-[99999] origin-top-right select-none"
+            initial={{ opacity: 0, scale: 0.94, y: 12, filter: "blur(12px)" }}
+            animate={{ opacity: 1, scale: 1, y: 16, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 0.94, y: 12, filter: "blur(12px)" }}
+            transition={{ type: "spring", stiffness: 400, damping: 32 }}
+            className="absolute top-full right-0 w-[360px] bg-black/70 backdrop-blur-[60px] border border-white/[0.08] rounded-[24px] shadow-[0_30px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.05)] p-3.5 z-[99999] origin-top-right select-none"
             onKeyDown={handleKeyDown}
           >
-            {/* Glow border */}
-            <div className="absolute inset-0 rounded-[24px] border-[0.5px] border-gradient-to-br from-[#4F8EF7]/30 via-transparent to-[#A855F7]/30 pointer-events-none" />
+            {/* Subtle internal glow ring */}
+            <div className="absolute inset-0 rounded-[24px] pointer-events-none ring-1 ring-inset ring-white/[0.02]" />
 
             {/* Search Bar */}
-            <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+            <div className="relative mb-4 group/search">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within/search:text-white transition-colors" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -237,12 +237,12 @@ export default function UniversitySelector({ variant = "navbar" }: UniversitySel
                 aria-expanded={isOpen}
                 aria-activedescendant={focusedIndex >= 0 ? `preset-option-${focusedIndex}` : undefined}
                 placeholder="Search university..."
-                className="w-full bg-white/[0.03] border border-white/[0.06] rounded-[16px] pl-9 pr-8 py-2.5 text-[12px] font-medium text-white placeholder:text-white/20 outline-none focus:border-[#4F8EF7]/40 focus:bg-[#4F8EF7]/5 focus-visible:ring-1 focus-visible:ring-[#4F8EF7]/50 transition-all"
+                className="w-full bg-white/[0.03] border border-transparent rounded-[16px] pl-10 pr-8 py-3 text-[13px] font-medium text-white placeholder:text-white/30 outline-none focus:bg-white/[0.06] focus:border-white/10 transition-all shadow-inner"
               />
               {searchQuery && (
                 <button
                   onClick={() => { setSearchQuery(""); setFocusedIndex(-1); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/80 transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1"
                 >
                   <X size={12} />
                 </button>
@@ -250,83 +250,90 @@ export default function UniversitySelector({ variant = "navbar" }: UniversitySel
             </div>
 
             {/* Active Preset Banner */}
-            <div className="mb-3 px-3 py-2.5 bg-[#4F8EF7]/5 border border-[#4F8EF7]/15 rounded-[14px]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <GraduationCap size={14} className="text-[#4F8EF7]" />
-                  <span className="text-[11px] font-black text-[#4F8EF7] tracking-tight">{activePreset.shortName}</span>
+            <div className="mb-4 px-4 py-3.5 bg-white/[0.03] border border-white/[0.05] rounded-[16px] relative overflow-hidden group/banner">
+              {/* Subtle background glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent opacity-0 group-hover/banner:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                    <GraduationCap size={14} className="text-white" />
+                  </div>
+                  <span className="text-[13px] font-semibold text-white tracking-tight">{activePreset.shortName}</span>
                 </div>
                 <EvalBadge model={activePreset.evaluationModel} />
               </div>
-              <div className="flex items-center gap-2 mt-1.5">
-                <span className="text-[9px] text-white/30 font-medium">{activePreset.gradingSystem}</span>
+              <div className="relative z-10 flex items-center gap-2 mt-2 ml-9">
+                <span className="text-[11px] text-white/40 font-medium tracking-wide">{activePreset.gradingSystem}</span>
                 {activePreset.sgpaToPercentage && (
                   <>
                     <span className="text-white/10">·</span>
-                    <span className="text-[9px] text-white/20 font-mono">{activePreset.sgpaToPercentage}</span>
+                    <span className="text-[11px] text-white/40 font-mono tracking-wider">{activePreset.sgpaToPercentage}</span>
                   </>
                 )}
               </div>
             </div>
 
-            {/* Grouped Preset List */}
-            <div
-              ref={listRef}
-              id="preset-list"
+            {/* List Body */}
+            <div 
+              className="p-2 max-h-[320px] overflow-y-auto custom-scrollbar"
               role="listbox"
-              aria-label="Available university presets"
-              className="max-h-[340px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent overscroll-contain touch-pan-y"
+              id="preset-listbox"
             >
               {groups.map((group) => (
-                <div key={group.label} role="group" aria-label={group.label}>
-                  <div className="px-3 pt-3 pb-1 text-[9px] font-black uppercase tracking-[0.2em] text-white/15 flex items-center gap-2">
-                    <Building2 size={10} />
+                <div key={group.label} className="mb-4 last:mb-0">
+                  <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/30 mb-1">
                     {group.label}
                   </div>
-                  {group.presets.map((uni) => {
-                    const globalIdx = flatPresets.indexOf(uni);
-                    const isActive = activePreset.id === uni.id;
-                    const isFocused = focusedIndex === globalIdx;
+                  <div className="space-y-1">
+                    {group.presets.map((uni) => {
+                      const globalIdx = flatPresets.findIndex(p => p.id === uni.id);
+                      const isFocused = globalIdx === focusedIndex;
+                      const isActive = activePreset.id === uni.id;
 
-                    return (
-                      <button
-                        key={uni.id}
-                        id={`preset-option-${globalIdx}`}
-                        role="option"
-                        aria-selected={isActive}
-                        tabIndex={-1}
-                        data-index={globalIdx}
-                        onClick={() => handleSelect(uni.id)}
-                        className={cn(
-                          "w-full flex items-center justify-between p-2.5 rounded-[14px] transition-all duration-200 group text-left outline-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#4F8EF7]/50",
-                          isActive ? "bg-white/[0.04]" : "",
-                          isFocused ? "bg-white/[0.06] ring-1 ring-[#4F8EF7]/30" : "hover:bg-white/[0.02]"
-                        )}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
+                      return (
+                        <button
+                          key={uni.id}
+                          id={`preset-option-${globalIdx}`}
+                          role="option"
+                          aria-selected={isActive}
+                          tabIndex={-1}
+                          data-index={globalIdx}
+                          onClick={() => handleSelect(uni.id)}
+                          className={cn(
+                            "w-full flex items-center justify-between p-2.5 rounded-[16px] transition-all duration-300 group/item text-left outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 relative overflow-hidden",
+                            (isActive || isFocused) ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
+                          )}
+                        >
+                          {/* Hover & Active Background Layers for smooth transitions */}
+                          <div 
+                            className={cn("absolute inset-0 rounded-[16px] transition-opacity duration-300", 
+                              isActive ? "opacity-100 bg-white/[0.08]" : (isFocused ? "opacity-100 bg-white/[0.04]" : "opacity-0 group-hover/item:opacity-100 group-hover/item:bg-white/[0.02]")
+                            )}
+                          />
+                          <div className="flex items-center gap-3.5 min-w-0 relative z-10">
                           <div className={cn(
-                            "w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 transition-all",
+                            "w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0 transition-all duration-300",
                             isActive
-                              ? "bg-[#4F8EF7] text-white shadow-[0_0_12px_rgba(79,142,247,0.3)]"
-                              : "bg-white/5 text-white/30 group-hover:bg-white/10 group-hover:text-white/50"
+                              ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+                              : "bg-white/[0.03] text-white/40 border border-white/[0.05] group-hover/item:bg-white/[0.08] group-hover/item:text-white group-hover/item:border-white/10"
                           )}>
                             {uni.shortName[0]}
                           </div>
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex flex-col justify-center">
                             <div className={cn(
-                              "text-[12px] font-bold tracking-tight truncate",
-                              isActive ? "text-white" : "text-white/50 group-hover:text-white/80"
+                              "text-[13px] font-semibold tracking-tight truncate transition-colors duration-300",
+                              isActive ? "text-white" : "text-white/60 group-hover/item:text-white"
                             )}>
                               {uni.name}
                             </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[9px] text-white/20 font-medium">{uni.state}</span>
-                              <span className="text-white/[0.06]">·</span>
+                            <div className="flex items-center gap-1.5 mt-0.5 opacity-60 group-hover/item:opacity-100 transition-opacity duration-300">
+                              <span className="text-[10px] text-white/50 font-medium tracking-wide">{uni.state}</span>
+                              <span className="text-white/20">·</span>
                               <span className={cn(
-                                "text-[9px] font-bold",
-                                uni.evaluationModel === "relative" ? "text-amber-400/60" :
-                                uni.evaluationModel === "hybrid" ? "text-blue-400/60" :
-                                "text-emerald-400/60"
+                                "text-[10px] font-bold uppercase tracking-wider",
+                                uni.evaluationModel === "relative" ? "text-amber-400" :
+                                uni.evaluationModel === "hybrid" ? "text-blue-400" :
+                                "text-emerald-400"
                               )}>
                                 {uni.evaluationModel}
                               </span>
@@ -334,28 +341,29 @@ export default function UniversitySelector({ variant = "navbar" }: UniversitySel
                           </div>
                         </div>
                         {isActive && (
-                          <Check size={14} className="text-[#4F8EF7] shrink-0" />
+                          <Check size={16} className="text-white shrink-0 relative z-10 mr-1 shadow-black drop-shadow-md" />
                         )}
                       </button>
                     );
                   })}
                 </div>
-              ))}
+              </div>
+            ))}
 
               {filteredPresets.length === 0 && (
-                <div className="py-8 text-center" role="presentation">
-                  <Search size={20} className="text-white/10 mx-auto mb-2" />
-                  <p className="text-[11px] text-white/20 font-medium">No universities found</p>
+                <div className="py-12 text-center" role="presentation">
+                  <Search size={24} className="text-white/10 mx-auto mb-3" />
+                  <p className="text-[12px] text-white/30 font-medium tracking-wide">No universities found</p>
                 </div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="mt-3 pt-2 border-t border-white/[0.04] flex items-center justify-between px-2">
-              <span className="text-[9px] text-white/10 font-medium">{UNI_PRESETS.length} institutions</span>
-              <div className="flex items-center gap-1 text-[9px] text-white/10">
-                <Zap size={8} />
-                <span className="font-medium">Adaptive Engine</span>
+            <div className="mt-3 pt-3 border-t border-white/[0.04] flex items-center justify-between px-3">
+              <span className="text-[10px] text-white/20 font-medium tracking-wide">{UNI_PRESETS.length} institutions</span>
+              <div className="flex items-center gap-1.5 text-[10px] text-white/20">
+                <Zap size={10} className="text-white/30" />
+                <span className="font-medium tracking-wide">Adaptive Engine</span>
               </div>
             </div>
           </motion.div>

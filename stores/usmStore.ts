@@ -25,6 +25,35 @@ export interface CourseState {
   attendanceBunked: number;
 }
 
+export interface TimetableEntry {
+  id: string;
+  courseId: string;
+  type: "LECTURE" | "PRACTICAL" | "LAB" | "TUTORIAL";
+  startTime: string; // e.g. "09:00"
+  endTime: string;   // e.g. "10:00"
+  room?: string;     // e.g. "B-218", "MAC Lab"
+  batch?: string;    // e.g. "H1", "H2", "H3", "ALL"
+  faculty?: string;  // e.g. "Dr. Prashant Metri"
+}
+
+export interface TimetableState {
+  monday: TimetableEntry[];
+  tuesday: TimetableEntry[];
+  wednesday: TimetableEntry[];
+  thursday: TimetableEntry[];
+  friday: TimetableEntry[];
+  saturday: TimetableEntry[];
+  sunday: TimetableEntry[];
+}
+
+export interface AttendanceHistoryEvent {
+  id: string;
+  dateStr: string; // e.g. "2026-05-28"
+  timestamp: number;
+  courseId: string;
+  action: "ATTENDED" | "BUNKED";
+}
+
 import { SimulationScenario } from "../lib/academic-intelligence/types";
 
 export interface SimulationState {
@@ -59,6 +88,11 @@ export interface CareerState {
   targetCompanies: string[];
   wesGpaEquivalent: number;
   ectsStandingBand: string;
+  // New Intelligence Fields
+  branch: string;
+  skills: string[];
+  targetRole: string;
+  targetPackage: string;
 }
 
 export interface WorkspaceState {
@@ -76,6 +110,14 @@ export interface SemesterHistoryEntry {
   earnedCredits: number;
 }
 
+export interface AcademicEvent {
+  id: string;
+  name: string;
+  startDate: string; // YYYY-MM-DD
+  endDate?: string;  // YYYY-MM-DD
+  type: "EXAM" | "HOLIDAY" | "EVENT" | "FEST" | "OTHER";
+}
+
 export interface USMStoreState {
   // Identity & Preset
   presetId: string; // e.g. "sppu", "vtu", "jntuh"
@@ -89,12 +131,22 @@ export interface USMStoreState {
   career: CareerState;
   sync: OfflineSyncState;
   workspaceUi: WorkspaceState;
+  timetable: TimetableState;
+  attendanceHistory: AttendanceHistoryEvent[];
+  holidays: string[]; // YYYY-MM-DD strings
+  academicCalendar: AcademicEvent[];
 
   // Actions
   setPresetId: (presetId: string) => void;
   setAcademic: (academic: Partial<AcademicState>) => void;
   setCourses: (courses: CourseState[]) => void;
   updateCourse: (courseId: string, updates: Partial<CourseState>) => void;
+  setTimetable: (timetable: Partial<TimetableState>) => void;
+  setAcademicCalendar: (events: AcademicEvent[]) => void;
+  addAttendanceHistoryEvent: (event: Omit<AttendanceHistoryEvent, "id" | "timestamp">) => void;
+  undoAttendanceHistoryEvent: (eventId: string) => void;
+  addHoliday: (dateStr: string) => void;
+  removeHoliday: (dateStr: string) => void;
   
   // Simulation Actions
   addSimulationScenario: (scenario: SimulationScenario) => void;
@@ -167,6 +219,10 @@ const initialCareer: CareerState = {
   targetCompanies: ["tcs", "cognizant"],
   wesGpaEquivalent: 3.5,
   ectsStandingBand: "B",
+  branch: "Computer Science",
+  skills: [],
+  targetRole: "Frontend Developer",
+  targetPackage: "Service (3-6LPA)"
 };
 
 const initialSync: OfflineSyncState = {
@@ -179,6 +235,16 @@ const initialWorkspaceUi: WorkspaceState = {
   globalTargetCgpa: null,
   mode: "DEFAULT",
   preferredDensity: "COMFORTABLE",
+};
+
+const initialTimetable: TimetableState = {
+  monday: [],
+  tuesday: [],
+  wednesday: [],
+  thursday: [],
+  friday: [],
+  saturday: [],
+  sunday: [],
 };
 
 // ─── Store Creation ──────────────────────────────────────────────────────────
@@ -195,6 +261,10 @@ export const useUSMStore = create<USMStoreState>()(
       career: initialCareer,
       sync: initialSync,
       workspaceUi: initialWorkspaceUi,
+      timetable: initialTimetable,
+      attendanceHistory: [],
+      holidays: [],
+      academicCalendar: [],
       
       interventions: [],
       workspaceContexts: ["DEFAULT"],
@@ -300,6 +370,86 @@ export const useUSMStore = create<USMStoreState>()(
         });
 
         get().queueSyncAction("ATTENDANCE_EDIT", { courseId, updates });
+      },
+
+      setTimetable: (updates) => {
+        set((state) => ({
+          timetable: { ...state.timetable, ...updates }
+        }));
+      },
+
+      setAcademicCalendar: (events) => {
+        set((state) => {
+          // Auto-sync HOLIDAY and VACATION events to holidays array
+          const newHolidays = new Set(state.holidays);
+          
+          events.forEach(evt => {
+            if (evt.type === "HOLIDAY" || evt.name.toLowerCase().includes("vacation") || evt.name.toLowerCase().includes("break")) {
+              if (evt.startDate) newHolidays.add(evt.startDate);
+              
+              // If there's an end date, fill all dates in between
+              if (evt.startDate && evt.endDate) {
+                let current = new Date(evt.startDate);
+                const end = new Date(evt.endDate);
+                while (current <= end) {
+                  newHolidays.add(current.toISOString().split('T')[0]);
+                  current.setDate(current.getDate() + 1);
+                }
+              }
+            }
+          });
+
+          return {
+            academicCalendar: events,
+            holidays: Array.from(newHolidays)
+          };
+        });
+      },
+
+      addAttendanceHistoryEvent: (event) => {
+        set((state) => ({
+          attendanceHistory: [{
+            ...event,
+            id: `hist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: Date.now()
+          }, ...state.attendanceHistory]
+        }));
+      },
+
+      undoAttendanceHistoryEvent: (eventId) => {
+        set((state) => {
+          const event = state.attendanceHistory.find(e => e.id === eventId);
+          if (!event) return state;
+
+          // Revert course totals
+          const updatedCourses = state.courses.map(c => {
+            if (c.id === event.courseId) {
+              return {
+                ...c,
+                attendanceTotal: Math.max(0, c.attendanceTotal - 1),
+                attendanceBunked: Math.max(0, c.attendanceBunked - (event.action === "BUNKED" ? 1 : 0))
+              };
+            }
+            return c;
+          });
+
+          return {
+            courses: updatedCourses,
+            attendanceHistory: state.attendanceHistory.filter(e => e.id !== eventId)
+          };
+        });
+      },
+
+      addHoliday: (dateStr) => {
+        set((state) => ({
+          holidays: Array.from(new Set([...state.holidays, dateStr]))
+        }));
+      },
+
+      removeHoliday: (dateStr) => {
+        set((state) => ({
+          holidays: state.holidays.filter(h => h !== dateStr)
+        }));
       },
 
       addSimulationScenario: (scenario) => {
@@ -409,6 +559,10 @@ export const useUSMStore = create<USMStoreState>()(
           career: initialCareer,
           sync: initialSync,
           workspaceUi: initialWorkspaceUi,
+          timetable: initialTimetable,
+          attendanceHistory: [],
+          holidays: [],
+          academicCalendar: [],
         });
       },
 
@@ -487,7 +641,11 @@ export const useUSMStore = create<USMStoreState>()(
                 sourceInstitution: snapshot.sourceInstitution,
                 importedAt: snapshot.createdAt,
               }
-            }
+            },
+            timetable: profile.timetable || state.timetable || initialTimetable,
+            attendanceHistory: profile.attendanceHistory || state.attendanceHistory || [],
+            holidays: profile.holidays || state.holidays || [],
+            academicCalendar: profile.academicCalendar || state.academicCalendar || []
           };
         });
       },
@@ -508,6 +666,10 @@ export const useUSMStore = create<USMStoreState>()(
             career: initialCareer,
             sync: initialSync,
             workspaceUi: initialWorkspaceUi,
+            timetable: initialTimetable,
+            attendanceHistory: [],
+            holidays: [],
+            academicCalendar: [],
           };
         }
         if (version < 2) {
@@ -545,6 +707,10 @@ export const useUSMStore = create<USMStoreState>()(
             hydratedState.career = { ...initialCareer };
             hydratedState.sync = { ...initialSync };
             hydratedState.workspaceUi = { ...initialWorkspaceUi };
+            hydratedState.timetable = { ...initialTimetable };
+            hydratedState.attendanceHistory = [];
+            hydratedState.holidays = [];
+            hydratedState.academicCalendar = [];
           }
           // Ensure new fields exist for v1/v2 hydrations
           if (!Array.isArray(hydratedState.semesterHistory)) {
@@ -552,6 +718,18 @@ export const useUSMStore = create<USMStoreState>()(
           }
           if (!hydratedState.identity) {
             hydratedState.identity = { ...initialIdentity };
+          }
+          if (!hydratedState.timetable) {
+            hydratedState.timetable = { ...initialTimetable };
+          }
+          if (!Array.isArray(hydratedState.attendanceHistory)) {
+            hydratedState.attendanceHistory = [];
+          }
+          if (!Array.isArray(hydratedState.holidays)) {
+            hydratedState.holidays = [];
+          }
+          if (!Array.isArray(hydratedState.academicCalendar)) {
+            hydratedState.academicCalendar = [];
           }
         };
       },

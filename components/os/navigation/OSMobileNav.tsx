@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { name: "Ledger", href: "/ledger", icon: "table_chart" },
   { name: "Forecast", href: "/forecasting", icon: "timeline" },
   { name: "Records", href: "/records", icon: "inventory_2" },
+  { name: "Career", href: "/career", icon: "work" },
 ];
 
 export default function OSMobileNav() {

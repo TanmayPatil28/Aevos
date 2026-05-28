@@ -2,14 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useUSMStore } from "@/stores/usmStore";
 import { selectActiveCourses, selectDerivedGPA, selectSemesterCredits } from "@/stores/selectors/academic";
 import ExpandableTrustPanel from "@/components/dashboard/ExpandableTrustPanel";
 import AcademicTimeline from "@/components/dashboard/AcademicTimeline";
-import { AlertCircle, Target, TrendingUp, Activity, Compass, ArrowRight } from "lucide-react";
+import { AlertCircle, Target, TrendingUp, Activity, Compass, ArrowRight, Briefcase, ShieldCheck, LineChart, LayoutGrid } from "lucide-react";
 import { AcademicIdentityBar } from "@/components/dashboard/identity/AcademicIdentityBar";
 import WorkspaceContent from "@/components/layout/WorkspaceContent";
 import WorkspaceSection from "@/components/layout/WorkspaceSection";
+import CalendarManager from "@/components/dashboard/CalendarManager";
 import dynamic from "next/dynamic";
 
 const DataSyncDrawer = dynamic(() => import("@/components/dashboard/sync/DataSyncDrawer").then(mod => mod.DataSyncDrawer), { ssr: false });
@@ -292,10 +294,16 @@ export default function DashboardClient({
                   <p className="text-sm text-slate-300 mb-4">{inv.description}</p>
                   
                   {inv.actionTrigger && (
-                    <button className="flex items-center gap-1.5 text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded transition-colors">
-                      {inv.actionTrigger.includes("backlog") ? "View Next Steps" : "Explore Options"}
+                    <Link href={
+                      inv.actionTrigger.toLowerCase().includes("backlog") ? "/backlog" :
+                      inv.actionTrigger.toLowerCase().includes("placement") ? "/placement" :
+                      inv.actionTrigger.toLowerCase().includes("attendance") ? "/attendance" :
+                      inv.actionTrigger.toLowerCase().includes("forecast") ? "/forecast" :
+                      "/planner"
+                    } className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded transition-colors w-max mt-2">
+                      {inv.actionTrigger.toLowerCase().includes("backlog") ? "View Next Steps" : "Explore Options"}
                       <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    </Link>
                   )}
 
                   <ExpandableTrustPanel explanation={inv.explanation} />
@@ -304,6 +312,56 @@ export default function DashboardClient({
             })}
           </div>
         </div>
+      )}
+
+      {/* App Grid / Focus Modes */}
+      {!isSimulation && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <LayoutGrid className="w-5 h-5 text-blue-400" />
+            Focus Workflows
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <Link href="/backlog" className="p-5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-colors group">
+              <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <AlertCircle className="w-5 h-5 text-rose-400" />
+              </div>
+              <h3 className="font-bold text-white mb-1">Backlog Recovery</h3>
+              <p className="text-xs text-slate-400">Clear fails safely.</p>
+            </Link>
+
+            <Link href="/placement" className="p-5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-colors group">
+              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Briefcase className="w-5 h-5 text-indigo-400" />
+              </div>
+              <h3 className="font-bold text-white mb-1">Placement Engine</h3>
+              <p className="text-xs text-slate-400">Check eligibility.</p>
+            </Link>
+
+            <Link href="/attendance" className="p-5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-colors group">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              </div>
+              <h3 className="font-bold text-white mb-1">Attendance SafeZone</h3>
+              <p className="text-xs text-slate-400">Bunk responsibly.</p>
+            </Link>
+
+            <Link href="/forecast" className="p-5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-colors group">
+              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <LineChart className="w-5 h-5 text-blue-400" />
+              </div>
+              <h3 className="font-bold text-white mb-1">Grade Forecaster</h3>
+              <p className="text-xs text-slate-400">Predict end outcomes.</p>
+            </Link>
+
+          </div>
+        </div>
+      )}
+
+      {/* Academic Calendar / Upcoming Events */}
+      {!isSimulation && (
+        <CalendarManager />
       )}
 
       {/* KPI Grid & Timeline */}

@@ -23,6 +23,7 @@ export interface AcademicIdentityState {
   regulation?: string;
   academic?: {
     programme?: string;
+    branch?: string;
     batchYear?: number;
   };
 }

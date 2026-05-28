@@ -11,10 +11,10 @@ export default function Footer() {
           </div>
         </div>
         <div className="flex flex-wrap justify-center gap-8 font-body text-sm tracking-wide">
-          <Link className="text-on-surface/50 hover:text-secondary transition-colors cursor-pointer" href="#">Privacy Policy</Link>
-          <Link className="text-on-surface/50 hover:text-secondary transition-colors cursor-pointer" href="#">Terms of Service</Link>
-          <Link className="text-on-surface/50 hover:text-secondary transition-colors cursor-pointer" href="#">Help Center</Link>
-          <Link className="text-on-surface/50 hover:text-secondary transition-colors cursor-pointer" href="#">API Documentation</Link>
+          <Link className="text-on-surface/50 hover:text-secondary transition-colors cursor-pointer" href="/">Privacy Policy</Link>
+          <Link className="text-on-surface/50 hover:text-secondary transition-colors cursor-pointer" href="/">Terms of Service</Link>
+          <Link className="text-on-surface/50 hover:text-secondary transition-colors cursor-pointer" href="/">Help Center</Link>
+          <Link className="text-on-surface/50 hover:text-secondary transition-colors cursor-pointer" href="/">API Documentation</Link>
         </div>
       </div>
     </footer>

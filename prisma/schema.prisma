@@ -51,6 +51,7 @@ model User {
   enrollments       Enrollment[]
   plans             Plan[]
   sessions          Session[]
+  skillProgress     SkillProgress[]
 
   @@map("users")
 }
@@ -153,4 +154,30 @@ model AcademicSnapshot {
 
   @@index([userId, createdAt(sort: Desc)])
   @@map("academic_snapshots")
+}
+
+model SkillProgress {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  roadmapId   String    @map("roadmap_id") 
+  nodeId      String    @map("node_id")    
+  status      String    @default("in_progress")
+  completedAt DateTime? @map("completed_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones  MilestoneProgress[]
+
+  @@unique([userId, roadmapId, nodeId])
+  @@map("skill_progress")
+}
+
+model MilestoneProgress {
+  id              String        @id @default(cuid())
+  skillProgressId String        @map("skill_progress_id")
+  milestoneId     String        @map("milestone_id")
+  completed       Boolean       @default(false)
+  completedAt     DateTime?     @map("completed_at")
+  skillProgress   SkillProgress @relation(fields: [skillProgressId], references: [id], onDelete: Cascade)
+
+  @@unique([skillProgressId, milestoneId])
+  @@map("milestone_progress")
 }

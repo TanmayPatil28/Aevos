@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { name: "Overview", href: "/overview", icon: "dashboard" },
+  { name: "Identity", href: "/identity", icon: "badge" },
   { name: "Ledger", href: "/ledger", icon: "table_chart" },
   { name: "Forecasting", href: "/forecasting", icon: "timeline" },
   { name: "Records", href: "/records", icon: "inventory_2" },
+  { name: "Career", href: "/career", icon: "work" },
 ];
 
 export default function OSNavbar() {

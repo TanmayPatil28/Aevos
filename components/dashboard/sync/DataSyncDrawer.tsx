@@ -33,7 +33,7 @@ export function DataSyncDrawer({ isOpen, onClose }: DataSyncDrawerProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
 
           {/* Drawer */}
@@ -42,7 +42,7 @@ export function DataSyncDrawer({ isOpen, onClose }: DataSyncDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-2xl bg-[#0B0F19] border-l border-white/10 z-50 overflow-y-auto shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 h-full w-full max-w-2xl bg-[#0B0F19] border-l border-white/10 z-[101] overflow-y-auto shadow-2xl flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/5 sticky top-0 bg-[#0B0F19]/80 backdrop-blur-md z-10">

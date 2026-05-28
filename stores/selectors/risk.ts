@@ -81,8 +81,8 @@ export const selectCompositeRisk = createSelector((state: USMStoreState): RiskSt
   const backlogs = state.academic.activeBacklogsCount;
   const { overallStatus: placementOverall } = selectPlacementEligibility(state);
 
-  // Attendance Risk: directly from attendance selector
-  const attendanceRisk = attendanceOverallRisk;
+  // Attendance Risk: map EMERGENCY to HIGH if present
+  const attendanceRisk: "LOW" | "MEDIUM" | "HIGH" = attendanceOverallRisk === "EMERGENCY" ? "HIGH" : attendanceOverallRisk;
 
   // Backlog Risk: 0 = LOW, 1 = MEDIUM, 2+ = HIGH
   let backlogRisk: "LOW" | "MEDIUM" | "HIGH" = "LOW";
