@@ -80,10 +80,10 @@ export default function CalculationBreakdown({
       {/* Main Breakdown Dashboard - Apple Tech Specs Aesthetic */}
       <div 
         id="print-proof-container"
-        className="rounded-[32px] bg-[#0A0D14]/60 backdrop-blur-[64px] border border-white/[0.08] p-8 md:p-10 flex flex-col gap-10 relative shadow-[0_40px_80px_-20px_rgba(0,0,0,0.9)] overflow-hidden"
+        className="rounded-[32px] bg-[#1D1D1F] border border-white/5 p-8 md:p-10 flex flex-col gap-10 relative overflow-hidden"
       >
         {/* Section 1: Institution Header & Verification Badge */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/[0.06] relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/20 relative z-10">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#86868b]">Academic Trust Tracer</span>
@@ -181,7 +181,7 @@ export default function CalculationBreakdown({
           </div>
 
           {/* Right: Massive Typography Output (Replacing Ring) */}
-          <div className="flex flex-col justify-center gap-4 shrink-0 pl-0 lg:pl-12 lg:border-l border-white/[0.06] relative">
+          <div className="flex flex-col justify-center gap-4 shrink-0 pl-0 lg:pl-12 lg:border-l border-white/20 relative">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#86868b]">Tracer Output</span>
             
             <div className="relative group w-fit">
@@ -194,7 +194,7 @@ export default function CalculationBreakdown({
               </div>
             </div>
 
-            <div className="w-full max-w-[220px] flex justify-between text-xs font-mono mt-1 pt-3 border-t border-white/[0.04]">
+            <div className="w-full max-w-[220px] flex justify-between text-xs font-mono mt-1 pt-3 border-t border-white/20">
               <span className="text-[#86868b]">Weighted: <span className="text-white font-semibold">{totalWeightedPoints.toFixed(2)}</span></span>
               <span className="text-[#86868b]">Earned: <span className="text-white font-semibold">{totalCredits}</span></span>
             </div>
@@ -207,7 +207,7 @@ export default function CalculationBreakdown({
           
           <div className="w-full flex flex-col">
             {/* Grid Header (Flex) */}
-            <div className="flex items-center w-full pb-2.5 border-b border-white/[0.08] text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-[#86868b]">
+            <div className="flex items-center w-full pb-2.5 border-b border-white/20 text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-[#86868b]">
               <div className="flex-[3] min-w-0 pr-3">Course / Element Name</div>
               <div className="flex-1 min-w-[50px] text-center truncate">{preset.creditType === "units" ? "Units" : "Credits"}</div>
               <div className="flex-1 min-w-[50px] text-center truncate">Grade</div>
@@ -219,7 +219,7 @@ export default function CalculationBreakdown({
             <div className="flex flex-col w-full">
               {type === "sgpa" && sgpaTrace ? (
                 sgpaTrace.courses.map((course, idx) => (
-                  <div key={idx} className="flex items-center w-full py-2.5 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors text-xs md:text-sm">
+                  <div key={idx} className="flex items-center w-full py-2.5 border-b border-white/20 hover:bg-white/[0.02] transition-colors text-xs md:text-sm">
                     <div className="flex-[3] min-w-0 pr-3 font-semibold text-white truncate" title={course.name}>{course.name}</div>
                     <div className="flex-1 min-w-[50px] text-center font-mono text-[#86868b]">{course.credits}</div>
                     <div className="flex-1 min-w-[50px] text-center flex justify-center">
@@ -231,7 +231,7 @@ export default function CalculationBreakdown({
                 ))
               ) : cgpaTrace ? (
                 cgpaTrace.semesters.map((sem, idx) => (
-                  <div key={idx} className="flex items-center w-full py-2.5 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors text-xs md:text-sm">
+                  <div key={idx} className="flex items-center w-full py-2.5 border-b border-white/20 hover:bg-white/[0.02] transition-colors text-xs md:text-sm">
                     <div className="flex-[3] min-w-0 pr-3 font-semibold text-white truncate" title={sem.semesterName}>{sem.semesterName}</div>
                     <div className="flex-1 min-w-[50px] text-center font-mono text-[#86868b]">{sem.credits}</div>
                     <div className="flex-1 min-w-[50px] text-center flex justify-center">
@@ -247,7 +247,7 @@ export default function CalculationBreakdown({
         </div>
 
         {/* Section 4 & 5: Percentage & Statutory Rationale */}
-        <div className="flex flex-col md:flex-row gap-6 md:gap-12 relative z-10 pt-4 border-t border-white/[0.06]">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-12 relative z-10 pt-4 border-t border-white/20">
           <div className="flex-1 flex flex-col gap-1.5">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#86868b] flex items-center gap-2">
               <Percent size={12} /> Percentage Equivalency
@@ -278,7 +278,7 @@ export default function CalculationBreakdown({
         </div>
 
         {/* Footer verification stamp */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 text-[9px] font-bold uppercase tracking-widest text-[#86868b] pt-6 mt-2 border-t border-white/[0.06] relative z-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 text-[9px] font-bold uppercase tracking-widest text-[#86868b] pt-6 mt-2 border-t border-white/20 relative z-10">
           <span>GradeFlow Trust Engine — VERIFIED</span>
           <span className="no-print opacity-50">{new Date().toISOString().split("T")[0]}</span>
         </div>

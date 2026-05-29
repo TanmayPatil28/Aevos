@@ -40,7 +40,7 @@ export default function TrendChartSection({ data }: TrendChartSectionProps) {
   const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
-        <div className="glass-card bg-surface-container-low border border-primary/20 p-4 rounded-2xl shadow-2xl backdrop-blur-3xl">
+        <div className="bg-[#1D1D1F] border border-white/5 p-4 rounded-[32px]">
           <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1">{label}</p>
           <div className="space-y-1">
             <p className="text-sm font-bold text-primary flex items-center justify-between gap-4">

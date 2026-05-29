@@ -104,7 +104,7 @@ export default function CalendarManager() {
   };
 
   return (
-    <div className="w-full bg-black/60 backdrop-blur-3xl border border-white/[0.05] rounded-[2rem] p-6 md:p-8 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] relative overflow-hidden">
+    <div className="w-full bg-[#1D1D1F] border border-white/5 rounded-[32px] p-6 md:p-8 relative overflow-hidden">
       {/* Ambient Glows */}
       <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#4F8EF7]/10 rounded-full blur-3xl pointer-events-none" />
       

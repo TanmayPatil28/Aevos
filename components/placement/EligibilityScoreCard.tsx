@@ -55,7 +55,7 @@ export default function EligibilityScoreCard({ result }: { result: IntelligenceR
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden bg-black/40 border-t border-white/[0.05]"
+            className="overflow-hidden bg-black/40 border-t border-white/20"
           >
             <div className="p-6 md:p-8">
               <h5 className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em] mb-6">Eligibility Breakdown</h5>

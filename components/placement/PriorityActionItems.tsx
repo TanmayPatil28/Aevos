@@ -47,8 +47,7 @@ export default function PriorityActionItems({
   }
 
   return (
-    <div className="bg-[#0a0a0a]/40 border border-white/[0.05] rounded-[32px] p-6 md:p-8 relative overflow-hidden h-full backdrop-blur-[45px] shadow-[inset_0_0_80px_rgba(255,255,255,0.01)]">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[50px] rounded-full" />
+    <div className="bg-[#1D1D1F] border border-white/5 rounded-[32px] p-6 md:p-8 relative overflow-hidden h-full shadow-none">
       
       <div className="flex items-center gap-2 mb-6">
         <PlayCircle className="w-5 h-5 text-purple-400" />
@@ -59,9 +58,9 @@ export default function PriorityActionItems({
         {actions.slice(0, 3).map((action, i) => (
           <div key={i} className="flex items-start gap-4 p-4 rounded-[20px] bg-white/[0.02] border border-white/[0.03] hover:bg-white/[0.05] hover:border-white/[0.08] transition-all duration-300">
             <div className="mt-1">
-              {action.type === "critical" && <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_10px_#f43f5e]" />}
-              {action.type === "warning" && <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_10px_#f59e0b]" />}
-              {action.type === "info" && <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]" />}
+              {action.type === "critical" && <div className="w-2 h-2 rounded-full bg-rose-500 shadow-none" />}
+              {action.type === "warning" && <div className="w-2 h-2 rounded-full bg-amber-500 shadow-none" />}
+              {action.type === "info" && <div className="w-2 h-2 rounded-full bg-blue-500 shadow-none" />}
             </div>
             <div>
               <h4 className="text-white font-bold text-sm mb-1">{action.title}</h4>

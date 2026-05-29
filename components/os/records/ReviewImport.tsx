@@ -36,7 +36,7 @@ export default function ReviewImport({
   };
 
   return (
-    <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+    <div className="w-full bg-[#1D1D1F] border border-white/5 rounded-[32px] overflow-hidden">
       
       {/* Review Header */}
       <div className="p-6 border-b border-slate-800 bg-slate-800/20">

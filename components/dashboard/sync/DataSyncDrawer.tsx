@@ -42,10 +42,10 @@ export function DataSyncDrawer({ isOpen, onClose }: DataSyncDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-2xl bg-[#0B0F19] border-l border-white/10 z-[101] overflow-y-auto shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 h-full w-full max-w-2xl bg-[#0B0F19] border-l border-white/20 z-[101] overflow-y-auto shadow-2xl flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/5 sticky top-0 bg-[#0B0F19]/80 backdrop-blur-md z-10">
+            <div className="flex items-center justify-between p-6 border-b border-white/20 sticky top-0 bg-[#0B0F19]/80 backdrop-blur-md z-10">
               <div>
                 <h2 className="text-xl font-bold text-white">Academic Data Sync</h2>
                 <p className="text-sm text-slate-400">Import and update your official records</p>

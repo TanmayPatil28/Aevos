@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import {
   GraduationCap, Home, Calculator, CalendarDays,
   LayoutDashboard, Grip, ChevronDown, AlertTriangle,
-  Target, Menu, Compass, Flame, Briefcase, Calendar, BookOpen
+  Target, Menu, Compass, Flame, Briefcase, BookOpen, Search
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { useUSMStore } from "@/stores/usmStore";
-import NavbarActionSuite from "./NavbarActionSuite";
+import NavbarActionSuite, { ActiveMenu } from "./NavbarActionSuite";
+import { UniversityContent } from "./UniversitySelector";
+import { OSModeContent } from "./OSModeSwitcher";
 import NavbarMobileDrawer from "./NavbarMobileDrawer";
 
 // --- Navigation Links ---
@@ -23,30 +24,34 @@ export const MAIN_LINKS = [
 export const INTELLIGENCE_MODULES = [
   {
     category: "Academic Predictors",
+    accent: { headerDot: "bg-blue-400", hoverIcon: "group-hover:bg-blue-500/10 group-hover:border-blue-500/20 group-hover:text-blue-400" },
     items: [
-      { name: "CGPA Calculator", href: "/calculator", icon: Calculator, desc: "Real-time active semester calculation" },
-      { name: "Semester Planner", href: "/planner", icon: CalendarDays, desc: "Strategic target setting & scenarios" },
-      { name: "CGPA Forecast", href: "/forecast", icon: Flame, desc: "Long-term AI trajectory forecasting" }
+      { name: "Grade Calculator", href: "/calculator", icon: Calculator, desc: "Calculate SGPA & CGPA in real-time" },
+      { name: "Target Planner", href: "/planner", icon: CalendarDays, desc: "Set grade targets & simulate scenarios" },
+      { name: "Future Forecast", href: "/forecast", icon: Flame, desc: "AI-powered trajectory prediction" }
     ]
   },
   {
     category: "Survival & Recovery",
+    accent: { headerDot: "bg-amber-400", hoverIcon: "group-hover:bg-amber-500/10 group-hover:border-amber-500/20 group-hover:text-amber-400" },
     items: [
-      { name: "Attendance Engine", href: "/attendance", icon: AlertTriangle, desc: "Safe-bunk & detention risk" },
-      { name: "Backlog Protocol", href: "/backlog", icon: Target, desc: "Clearance strategy & marks prediction" }
+      { name: "Bunk Calculator", href: "/attendance", icon: AlertTriangle, desc: "Safe-bunk limits & detention risk" },
+      { name: "Backlog Recovery", href: "/backlog", icon: Target, desc: "Clearance strategy & marks needed" }
     ]
   },
   {
     category: "Career Intelligence",
+    accent: { headerDot: "bg-purple-400", hoverIcon: "group-hover:bg-purple-500/10 group-hover:border-purple-500/20 group-hover:text-purple-400" },
     items: [
-      { name: "Placement Predictor", href: "/placement", icon: Briefcase, desc: "Eligibility radar & skill gaps" }
+      { name: "Placement Radar", href: "/placement", icon: Briefcase, desc: "Eligibility check & skill gap analysis" }
     ]
   },
   {
     category: "Strategic Timelines",
+    accent: { headerDot: "bg-emerald-400", hoverIcon: "group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 group-hover:text-emerald-400" },
     items: [
-      { name: "Predictive Timeline", href: "/timeline", icon: Compass, desc: "Visual academic roadmap" },
-      { name: "Multi-Semester", href: "/multi-semester", icon: BookOpen, desc: "High-level multi-year trajectory" }
+      { name: "Academic Timeline", href: "/timeline", icon: Compass, desc: "Visual semester-by-semester roadmap" },
+      { name: "Semester Roadmap", href: "/multi-semester", icon: BookOpen, desc: "Multi-year trajectory overview" }
     ]
   }
 ];
@@ -56,8 +61,14 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isToolsOpen, setIsToolsOpen] = useState(false);
+  
+  // Dynamic Island States
+  const [activeMenu, setActiveMenu] = useState<ActiveMenu>(null);
+  const [isIslandHovered, setIsIslandHovered] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+
+  // The island expands if we are at the top, if we hover it, or if a menu is open
+  const isExpanded = !isScrolled || isIslandHovered || activeMenu !== null;
 
   useEffect(() => {
     setMounted(true);
@@ -70,140 +81,237 @@ export default function Navbar() {
     const handleEvents = (e: MouseEvent | globalThis.KeyboardEvent) => {
       if (e instanceof KeyboardEvent && e.key === "Escape") {
         setIsMobileOpen(false);
+        setActiveMenu(null);
       }
     };
     document.addEventListener("keydown", handleEvents);
-    return () => {
-      document.removeEventListener("keydown", handleEvents);
-    };
+    return () => document.removeEventListener("keydown", handleEvents);
   }, []);
 
   useEffect(() => {
     setIsMobileOpen(false);
+    setActiveMenu(null);
   }, [pathname]);
 
   if (!mounted) return null;
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-[9999] transition-all duration-700 flex justify-center px-4 md:px-8 antialiased font-body",
-        isScrolled
-          ? "h-14 mt-0 bg-black/50 backdrop-blur-[45px] shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8),0_0_80px_-20px_rgba(79,142,247,0.15)]"
-          : "h-16 mt-0 bg-transparent"
-      )}
-    >
-      <div className="w-full max-w-[1600px] flex items-center justify-between relative z-[9999] border-b border-white/[0.03]">
-
-        {/* LEFT: LOGO */}
-        <Link href="/" className="flex items-center gap-2 group outline-none">
+    <>
+      {/* CINEMATIC BACKDROP */}
+      <AnimatePresence>
+        {activeMenu && (
           <motion.div
-            whileHover={{ scale: 1.1, rotate: -3 }}
-            className="text-blue-500 flex items-center justify-center p-1 relative"
-          >
-            <GraduationCap size={24} strokeWidth={2.5} className="z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-            <motion.div initial={{ scale: 0 }} whileHover={{ scale: 1.5 }} className="absolute -z-10 w-full h-full bg-blue-500/10 blur-xl rounded-full" />
-          </motion.div>
-          <span className="font-headline text-[20px] font-bold tracking-tight select-none">
-            <span className="text-white drop-shadow-sm font-black">Grade</span>
-            <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent font-black">Flow</span>
-          </span>
-        </Link>
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} // Apple ease-out
+            className="fixed inset-0 z-40 bg-black/40 pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
 
-        {/* CENTER: CONTEXTUAL NAV */}
-        <nav className="hidden md:flex items-center">
-          <div className="bg-black/40 border border-white/5 rounded-full p-1.5 flex items-center gap-1 shadow-2xl backdrop-blur-3xl relative transition-all duration-500">
-            {MAIN_LINKS.map((link) => (
-              <LiquidNavItem
-                key={link.href}
-                href={link.href}
-                icon={link.icon}
-                label={link.name}
-                isActive={pathname === link.href || (pathname === '/' && link.href === '/overview')}
-                isHovered={hoveredPath === link.href}
-                onHover={setHoveredPath}
-              />
-            ))}
-
-            {/* Intelligence Mega-Menu */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setIsToolsOpen(true)}
-              onMouseLeave={() => setIsToolsOpen(false)}
-            >
-              <button
-                className={cn(
-                  "relative z-10 px-4 py-2.5 outline-none group flex items-center gap-2 transition-all",
-                  isToolsOpen ? "text-white" : "text-white/60 hover:text-white"
-                )}
+      <header className={cn(
+        "fixed left-0 right-0 z-[9999] transition-all duration-700 flex justify-center px-4 antialiased font-body pointer-events-none",
+        isScrolled ? "top-4" : "top-6"
+      )}>
+        <motion.div
+          layout
+          layoutRoot
+          onMouseEnter={() => setIsIslandHovered(true)}
+          onMouseLeave={() => {
+            setIsIslandHovered(false);
+            setActiveMenu(null);
+          }}
+          transition={{ type: "spring", stiffness: 450, damping: 40, mass: 1 }}
+          className={cn(
+            "bg-[#1D1D1F]/90 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl pointer-events-auto relative flex flex-col",
+            // The island radius shrinks slightly when it stretches down
+            activeMenu ? "rounded-[32px]" : "rounded-full"
+          )}
+        >
+        {/* TOP ROW: LOGO, NAV, ACTIONS */}
+        <motion.div layout className="flex items-center justify-between p-2 gap-4">
+          
+          {/* LEFT: LOGO */}
+          <motion.div layout className="shrink-0 flex items-center pl-2">
+            <Link href="/" className="flex items-center gap-2 group outline-none">
+              <motion.div
+                layout
+                whileHover={{ scale: 1.1, rotate: -3 }}
+                className="text-blue-500 flex items-center justify-center p-1 relative"
               >
-                <Grip size={18} strokeWidth={isToolsOpen ? 2.5 : 2} className={cn("transition-colors duration-500", isToolsOpen ? "text-blue-500" : "text-white/30 group-hover:text-white/60")} />
-                <span className={cn(
-                  "text-[14px] font-black tracking-tight transition-all duration-500",
-                  isToolsOpen ? "text-white" : "text-white/50 group-hover:text-white"
-                )}>
-                  Intelligence
-                </span>
-                <ChevronDown size={14} className={cn("transition-transform duration-300", isToolsOpen && "rotate-180")} />
-              </button>
-
+                <GraduationCap size={24} strokeWidth={2.5} className="z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                <motion.div initial={{ scale: 0 }} whileHover={{ scale: 1.5 }} className="absolute -z-10 w-full h-full bg-blue-500/10 blur-xl rounded-full" />
+              </motion.div>
               <AnimatePresence>
-                {isToolsOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 15, filter: "blur(15px)" }}
-                    animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, scale: 0.95, y: 15, filter: "blur(15px)" }}
-                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[800px] bg-[#000000]/95 backdrop-blur-3xl border border-white/[0.08] rounded-[24px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.05)] overflow-hidden z-[9999]"
+                {isExpanded && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="font-headline text-[18px] font-bold tracking-tight select-none overflow-hidden whitespace-nowrap"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
-                    <div className="p-6 relative z-10 grid grid-cols-2 gap-8">
-                      {INTELLIGENCE_MODULES.map((module) => (
-                        <div key={module.category} className="flex flex-col gap-3">
-                          <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 ml-2">
-                            {module.category}
-                          </h3>
-                          <div className="flex flex-col gap-1">
-                            {module.items.map((tool) => (
-                              <Link
-                                key={tool.href}
-                                href={tool.href}
-                                onClick={() => setIsToolsOpen(false)}
-                                className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group"
-                              >
-                                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-white/50 group-hover:text-blue-400 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all shadow-inner">
-                                  <tool.icon size={18} strokeWidth={2.5} />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-[14px] font-bold text-white/90 group-hover:text-white transition-colors tracking-tight">{tool.name}</span>
-                                  <span className="text-[12px] font-medium text-white/40 group-hover:text-white/60 transition-colors leading-tight">{tool.desc}</span>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
+                    <span className="text-white drop-shadow-sm font-black ml-1">Grade</span>
+                    <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent font-black">Flow</span>
+                  </motion.span>
                 )}
               </AnimatePresence>
+            </Link>
+          </motion.div>
+
+          {/* CENTER: CONTEXTUAL NAV */}
+          <AnimatePresence mode="popLayout">
+            {isExpanded && (
+              <motion.nav
+                layout
+                initial={{ opacity: 0, filter: "blur(8px)", scale: 0.95 }}
+                animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, filter: "blur(8px)", scale: 0.95, transition: { duration: 0.15 } }}
+                transition={{ type: "spring", stiffness: 450, damping: 40, mass: 1 }}
+                className="hidden md:flex items-center gap-1 shrink-0"
+              >
+                {MAIN_LINKS.map((link) => (
+                  <LiquidNavItem
+                    key={link.href}
+                    href={link.href}
+                    icon={link.icon}
+                    label={link.name}
+                    isActive={pathname === link.href || (pathname === '/' && link.href === '/overview')}
+                    isHovered={hoveredPath === link.href}
+                    onHover={setHoveredPath}
+                  />
+                ))}
+
+                {/* Intelligence Trigger */}
+                <button
+                  onMouseEnter={() => setActiveMenu("intelligence")}
+                  onClick={() => setActiveMenu(activeMenu === "intelligence" ? null : "intelligence")}
+                  className={cn(
+                    "relative z-10 px-4 py-2.5 outline-none group flex items-center gap-2 transition-all rounded-full",
+                    activeMenu === "intelligence" ? "bg-white/10 text-white shadow-inner" : "text-white/60 hover:text-white"
+                  )}
+                >
+                  <Grip size={18} strokeWidth={activeMenu === "intelligence" ? 2.5 : 2} className={cn("transition-colors duration-500", activeMenu === "intelligence" ? "text-blue-500" : "text-white/30 group-hover:text-white/60")} />
+                  <span className={cn(
+                    "text-[14px] font-black tracking-tight transition-all duration-500",
+                    activeMenu === "intelligence" ? "text-white" : "text-white/50 group-hover:text-white"
+                  )}>
+                    Intelligence
+                  </span>
+                  <ChevronDown size={14} className={cn("transition-transform duration-300", activeMenu === "intelligence" && "rotate-180")} />
+                </button>
+              </motion.nav>
+            )}
+          </AnimatePresence>
+
+          {/* RIGHT: ACTION SUITE & COMPACT MENU TRIGGER */}
+          <motion.div layout className="shrink-0 flex items-center justify-end pr-1">
+            <AnimatePresence mode="wait">
+              {isExpanded ? (
+                <motion.div
+                  key="full-actions"
+                  layout
+                  initial={{ opacity: 0, filter: "blur(8px)", scale: 0.95 }}
+                  animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                  exit={{ opacity: 0, filter: "blur(8px)", scale: 0.95, transition: { duration: 0.15 } }}
+                  transition={{ type: "spring", stiffness: 450, damping: 40, mass: 1 }}
+                >
+                  <NavbarActionSuite activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="compact-menu"
+                  layout
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.1 } }}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all ml-2"
+                >
+                  <Search size={18} strokeWidth={2.5} />
+                </motion.button>
+              )}
+            </AnimatePresence>
+
+            {/* MOBILE TRIGGER */}
+            <div className="flex md:hidden items-center group ml-2">
+              <button onClick={() => setIsMobileOpen(true)} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white active:scale-90 transition-all">
+                <Menu size={20} className="group-hover:text-blue-500 transition-colors" />
+              </button>
             </div>
-          </div>
-        </nav>
+          </motion.div>
 
-        {/* RIGHT: ACTION SUITE */}
-        <NavbarActionSuite />
+        </motion.div>
 
-        {/* MOBILE TRIGGER */}
-        <div className="flex md:hidden items-center group">
-          <button onClick={() => setIsMobileOpen(true)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 text-white active:scale-90 transition-all">
-            <Menu size={22} className="group-hover:text-blue-500 transition-colors" />
-          </button>
-        </div>
-      </div>
+        {/* BOTTOM ROW: DYNAMIC MENUS (PHYSICAL ENCAPSULATION) */}
+        <AnimatePresence mode="wait">
+          {activeMenu && (
+              <motion.div
+              key={activeMenu}
+              layout
+              initial={{ height: 0, opacity: 0, filter: "blur(12px)", scale: 0.98 }}
+              animate={{ height: "auto", opacity: 1, filter: "blur(0px)", scale: 1 }}
+              exit={{ height: 0, opacity: 0, filter: "blur(12px)", scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 450, damping: 40, mass: 1 }} // Apple Dynamic Island Physics
+              className="w-[800px] overflow-hidden self-center"
+            >
+              {activeMenu === "intelligence" && (
+                <div className="px-6 pb-6 pt-4 grid grid-cols-4 gap-4 border-t border-white/20 mt-2">
+                  {INTELLIGENCE_MODULES.map((module) => (
+                    <div key={module.category} className="flex flex-col gap-2.5">
+                      {/* Category Header with colored dot */}
+                      <div className="flex items-center gap-2 px-2 mb-1">
+                        <div className={cn("w-1.5 h-1.5 rounded-full", module.accent.headerDot)} />
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40">
+                          {module.category}
+                        </h3>
+                      </div>
+                      {/* Items */}
+                      <div className="flex flex-col gap-1">
+                        {module.items.map((tool) => (
+                          <Link
+                            key={tool.href}
+                            href={tool.href}
+                            onClick={() => setActiveMenu(null)}
+                            className="flex items-start gap-2.5 p-2.5 rounded-xl hover:bg-white/[0.04] transition-all group"
+                          >
+                            <div className={cn(
+                              "flex-shrink-0 w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300",
+                              "bg-white/[0.02] border-white/[0.05] text-white/40",
+                              module.accent.hoverIcon
+                            )}>
+                              <tool.icon size={16} strokeWidth={2.5} />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[13px] font-bold text-white/80 group-hover:text-white transition-colors tracking-tight">{tool.name}</span>
+                              <span className="text-[11px] font-medium text-white/30 group-hover:text-white/50 transition-colors leading-snug">{tool.desc}</span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {activeMenu === "university" && (
+                <div className="border-t border-white/20 mt-2 pt-4">
+                  <UniversityContent onClose={() => setActiveMenu(null)} />
+                </div>
+              )}
+
+              {activeMenu === "os" && (
+                <div className="border-t border-white/20 mt-2 pt-4">
+                  <OSModeContent onClose={() => setActiveMenu(null)} />
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
       
       <NavbarMobileDrawer isOpen={isMobileOpen} setIsOpen={setIsMobileOpen} />
-    </header>
+      </header>
+    </>
   );
 }
 
@@ -237,10 +345,10 @@ function LiquidNavItem({
         mouseY.set(0);
         onHover(null);
       }}
-      className="relative z-10 px-4 py-2.5 outline-none group"
+      className="relative z-10 px-4 py-2.5 outline-none group rounded-full"
     >
       <motion.div style={{ x: springX, y: springY }} className="flex items-center gap-2.5 relative z-[2]">
-        <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={cn("transition-colors duration-500", isActive ? "text-blue-500" : "text-white/30 group-hover:text-white/60")} />
+        <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={cn("transition-colors duration-500", isActive ? "text-white" : "text-white/30 group-hover:text-white/60")} />
         <span className={cn(
           "text-[14px] font-black tracking-tight transition-all duration-500",
           isActive ? "text-white" : "text-white/50 group-hover:text-white"
@@ -252,20 +360,11 @@ function LiquidNavItem({
         {(isActive || isHovered) && (
           <motion.div
             layoutId="liquid-pill"
-            className="absolute inset-0 bg-blue-500/10 rounded-full z-[1] shadow-[0_0_20px_rgba(59,130,246,0.1),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            className="absolute inset-0 bg-[#0071e3] rounded-full z-[1] shadow-[0_0_15px_rgba(0,113,227,0.5),inset_0_1px_0_rgba(255,255,255,0.2)]"
             transition={{ type: "spring", stiffness: 300, damping: 28, mass: 0.8 }}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {(isActive || isHovered) && (
-          <motion.div
-            layoutId="liquid-aura"
-            className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-blue-500 rounded-full blur-[1px] z-[20]"
           />
         )}
       </AnimatePresence>
     </Link>
   );
 }
-

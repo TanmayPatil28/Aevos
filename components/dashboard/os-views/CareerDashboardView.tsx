@@ -42,7 +42,7 @@ export default function CareerDashboardView() {
               <Award className="w-3.5 h-3.5" /> High Probability (Tier 1)
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-white/5 flex justify-between text-xs font-bold text-slate-400">
+          <div className="mt-4 pt-4 border-t border-white/20 flex justify-between text-xs font-bold text-slate-400">
             <span>CGPA: {cgpa.toFixed(2)}</span>
             <span>Backlogs: {backlogs}</span>
           </div>

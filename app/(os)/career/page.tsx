@@ -62,7 +62,7 @@ export default function CareerOSPage() {
         {tracks.map((track) => (
           track.active ? (
             <Link href={`/career/${track.id}`} key={track.id} className="block group">
-              <div className={`h-full rounded-2xl border ${track.border} bg-slate-900/50 backdrop-blur-sm p-6 transition-all duration-300 hover:bg-slate-900 hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden`}>
+              <div className={`h-full rounded-[32px] border border-white/5 bg-[#1D1D1F] p-6 transition-all duration-300 hover:bg-[#28282B] hover:-translate-y-1 relative overflow-hidden`}>
                 <div className={`absolute inset-0 bg-gradient-to-br ${track.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
                 <div className="relative z-10">
                   <div className="w-14 h-14 rounded-xl bg-slate-800 flex items-center justify-center mb-6 shadow-inner">
@@ -81,7 +81,7 @@ export default function CareerOSPage() {
               </div>
             </Link>
           ) : (
-            <div key={track.id} className={`h-full rounded-2xl border ${track.border} bg-slate-900/30 p-6 relative overflow-hidden opacity-60`}>
+            <div key={track.id} className={`h-full rounded-[32px] border border-white/5 bg-[#1D1D1F] p-6 relative overflow-hidden opacity-60`}>
               <div className="relative z-10">
                 <div className="w-14 h-14 rounded-xl bg-slate-800 flex items-center justify-center mb-6">
                   {track.icon}

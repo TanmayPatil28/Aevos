@@ -118,8 +118,7 @@ export default function AttendancePage() {
             <div className="flex-[2] min-w-[320px] flex flex-col gap-10 relative z-10 w-full">
               
               {/* Strategy Selector Container */}
-              <div className="bg-black/60 backdrop-blur-3xl border border-white/[0.05] px-6 py-6 rounded-[2rem] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] relative overflow-hidden group">
-                <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#A855F7]/10 rounded-full blur-3xl pointer-events-none transition-colors duration-500" />
+              <div className="bg-[#1D1D1F] border border-white/5 px-6 py-6 rounded-[32px] relative overflow-hidden group">
                 <div className="relative z-10">
                   <StrategySelector currentStrategy={strategy} onStrategyChange={setStrategy} />
                 </div>
@@ -152,7 +151,7 @@ export default function AttendancePage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center p-12 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl"
+                        className="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center p-12 bg-[#1D1D1F] border border-dashed border-white/10 rounded-[24px]"
                       >
                         <AlertTriangle className="w-8 h-8 text-white/20 mb-4" />
                         <h3 className="text-white font-bold text-lg mb-2">No courses registered</h3>
@@ -189,109 +188,76 @@ export default function AttendancePage() {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
                             transition={{ delay: idx * 0.05, type: "spring", stiffness: 300, damping: 25 }}
-                            className={`relative bg-black border border-white/[0.08] rounded-[2rem] p-5 flex flex-col h-full min-h-[160px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] transition-all duration-500 group hover:border-white/[0.15] hover:bg-[#050505] hover:-translate-y-1 ${
-                              isCritical ? 'ring-1 ring-rose-500/20' : isWarning ? 'ring-1 ring-amber-500/20' : ''
+                            className={`relative bg-[#111111] border border-white/5 rounded-[24px] p-6 flex flex-col h-full min-h-[180px] transition-all duration-500 group overflow-hidden ${
+                              isCritical ? 'hover:border-rose-500/30' : isWarning ? 'hover:border-amber-500/30' : 'hover:border-white/15'
                             }`}
                           >
-                            {/* Ambient Glow */}
-                            {isCritical && <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 blur-2xl rounded-full pointer-events-none" />}
-                            
-                            {/* Top Row: Code & Urgency */}
-                            <div className="flex justify-between items-start mb-3 gap-2 relative z-10">
-                              <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase bg-white/[0.04] px-2.5 py-1 rounded-md border border-white/[0.08] group-hover:border-white/20 transition-colors">
-                                {courseRisk.courseCode}
-                              </span>
-                              <span className={`text-[9px] px-2 py-1 rounded-md font-mono uppercase font-bold border flex items-center gap-1 ${
-                                isCritical ? "text-rose-400 bg-rose-500/10 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.1)]" : 
-                                isWarning ? "text-amber-400 bg-amber-500/10 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]" :
-                                "text-emerald-400 bg-emerald-500/10 border-emerald-500/30"
-                              }`}>
-                                {courseRisk.urgencyLevel}
-                              </span>
-                            </div>
-
-                            {/* Middle Row: Name & Percentage */}
-                            <div className="relative z-10 flex-1 mb-4">
-                              <h3 className="text-sm font-bold text-white/95 leading-snug line-clamp-2 pr-2 mb-2 group-hover:text-white transition-colors">
+                            {/* Top Row: Code & Name */}
+                            <div className="flex flex-col mb-4 relative z-10">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-[10px] font-mono font-semibold text-white/40 tracking-widest uppercase">
+                                  {courseRisk.courseCode}
+                                </span>
+                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-mono uppercase font-bold flex items-center gap-1 ${
+                                  isCritical ? "text-rose-400 bg-rose-500/10 border border-rose-500/20" : 
+                                  isWarning ? "text-amber-400 bg-amber-500/10 border border-amber-500/20" :
+                                  "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+                                }`}>
+                                  {courseRisk.urgencyLevel}
+                                </span>
+                              </div>
+                              <h3 className="text-sm font-semibold text-white/90 leading-snug line-clamp-2 pr-2">
                                 {courseRisk.courseName}
                               </h3>
-                              <div className="flex items-baseline gap-1">
-                                <AnimatedCounter target={courseRisk.percentage} decimals={1} className={`text-3xl font-semibold tracking-tighter ${
-                                  courseRisk.percentage >= minAttendance ? "text-white" : "text-rose-400"
-                                }`} />
-                                <span className={`text-sm font-bold ${courseRisk.percentage >= minAttendance ? "text-white/40" : "text-rose-400/50"}`}>%</span>
-                              </div>
                             </div>
 
-                            {/* Bottom Row: Stats */}
-                            <div className="mt-auto space-y-2 pt-3 border-t border-white/[0.08] group-hover:border-white/[0.15] relative z-10 transition-colors">
+                            {/* Middle Row: Massive Percentage */}
+                            <div className="relative z-10 flex-1 flex flex-col justify-center mb-6 mt-2">
+                              <div className="flex items-baseline gap-1">
+                                <AnimatedCounter target={courseRisk.percentage} decimals={1} className={`text-5xl font-semibold tracking-tighter ${
+                                  courseRisk.percentage >= minAttendance ? "text-white" : "text-rose-400"
+                                }`} />
+                                <span className={`text-xl font-bold ${courseRisk.percentage >= minAttendance ? "text-white/30" : "text-rose-400/40"}`}>%</span>
+                              </div>
                               {courseRisk.internalsImpact > 0 && (
-                                <div className="flex items-center justify-between text-[11px] py-1.5 px-2.5 rounded-lg bg-rose-500/5 border border-rose-500/10 mb-2">
-                                  <span className="text-rose-400 flex items-center gap-1.5 font-medium">
-                                    <TrendingDown className="w-3.5 h-3.5" />
-                                    Internal Impact
-                                  </span>
-                                  <span className="text-rose-400 font-bold font-mono">-{courseRisk.internalsImpact} marks</span>
+                                <div className="mt-2 flex items-center gap-1.5">
+                                  <TrendingDown className="w-3.5 h-3.5 text-rose-400/80" />
+                                  <span className="text-[10px] text-rose-400/80 font-medium">Internal Impact: -{courseRisk.internalsImpact}</span>
                                 </div>
                               )}
-                              
-                              <div className="flex justify-between text-[11px]">
-                                <span className="text-white/40 font-medium">Attended / Conducted</span>
-                                <span className="text-white/80 font-bold font-mono">
+                            </div>
+
+                            {/* Bottom Row: Minimalist Stats */}
+                            <div className="flex items-center justify-between pt-4 border-t border-white/20 relative z-10">
+                              <div className="flex flex-col">
+                                <span className="text-[9px] uppercase tracking-widest text-white/30 font-semibold mb-1">Attended</span>
+                                <span className="text-xs font-mono font-medium text-white/60">
                                   {matchingCourse.attended} / {matchingCourse.conducted}
                                 </span>
                               </div>
-
-                              {courseRisk.percentage >= minAttendance ? (
-                                <div className="flex justify-between text-[11px]">
-                                  <span className="text-white/40 font-medium">Strategy Margin</span>
-                                  <span className="text-emerald-400 font-bold font-mono">
-                                    {safeBunks} safe
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="flex justify-between text-[11px]">
-                                  <span className="text-white/40 font-medium">Strategy Deficit</span>
-                                  <span className="text-rose-400 font-bold font-mono">
-                                    {recoveryRequired} needed
-                                  </span>
-                                </div>
-                              )}
+                              <div className="flex flex-col items-end">
+                                <span className="text-[9px] uppercase tracking-widest text-white/30 font-semibold mb-1">
+                                  {courseRisk.percentage >= minAttendance ? 'Safe' : 'Needed'}
+                                </span>
+                                <span className={`text-xs font-mono font-medium ${courseRisk.percentage >= minAttendance ? 'text-emerald-400/80' : 'text-rose-400/80'}`}>
+                                  {courseRisk.percentage >= minAttendance ? `${safeBunks} bunks` : `${recoveryRequired} classes`}
+                                </span>
+                              </div>
                             </div>
 
-                            {/* Decorative Historical Trend Sparkline (Mocked for UI) */}
-                            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-40 pointer-events-none transition-opacity group-hover:opacity-10 rounded-b-[2rem] overflow-hidden">
-                              <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full">
-                                <path 
-                                  d="M0,30 Q10,15 20,20 T40,10 T60,15 T80,5 T100,20 L100,30 L0,30 Z" 
-                                  fill="currentColor" 
-                                  className={isCritical ? "text-rose-500/20" : isWarning ? "text-amber-500/20" : "text-emerald-500/20"}
-                                />
-                                <path 
-                                  d="M0,30 Q10,15 20,20 T40,10 T60,15 T80,5 T100,20" 
-                                  fill="none" 
-                                  stroke="currentColor" 
-                                  className={isCritical ? "text-rose-500" : isWarning ? "text-amber-500" : "text-emerald-500"}
-                                  strokeWidth="1.5" 
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </div>
-
-                            {/* Hover Quick Actions */}
-                            <div className="absolute -bottom-4 left-0 right-0 flex justify-center gap-2 opacity-0 group-hover:opacity-100 group-hover:bottom-4 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20 px-4">
+                            {/* Glassmorphic Quick Actions Overlay */}
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 flex flex-col items-center justify-center gap-3 p-6 pointer-events-none group-hover:pointer-events-auto">
                               <button 
                                 onClick={() => storeState.updateCourse(courseRisk.courseId, { attendanceTotal: matchingCourse.conducted + 1, attendanceBunked: matchingCourse.bunked })}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-[10px] font-bold rounded-xl border border-emerald-500/30 backdrop-blur-md transition-colors"
+                                className="w-full flex items-center justify-center gap-2 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-[14px] transition-colors shadow-[0_0_20px_rgba(255,255,255,0.05)] border border-white/10 hover:border-white/20"
                               >
-                                <Check className="w-3 h-3" /> Attended
+                                <Check className="w-4 h-4 text-emerald-400" /> Mark Attended
                               </button>
                               <button 
                                 onClick={() => storeState.updateCourse(courseRisk.courseId, { attendanceTotal: matchingCourse.conducted + 1, attendanceBunked: matchingCourse.bunked + 1 })}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-[10px] font-bold rounded-xl border border-rose-500/30 backdrop-blur-md transition-colors"
+                                className="w-full flex items-center justify-center gap-2 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-100 text-xs font-bold rounded-[14px] transition-colors shadow-[0_0_20px_rgba(244,63,94,0.05)] border border-rose-500/20 hover:border-rose-500/40"
                               >
-                                <X className="w-3 h-3" /> Bunked
+                                <X className="w-4 h-4 text-rose-400" /> Mark Bunked
                               </button>
                             </div>
                           </motion.div>
@@ -325,7 +291,7 @@ export default function AttendancePage() {
                 </div>
               </div>
 
-              <div className="flex flex-col w-full border-t border-white/[0.08] pt-8 gap-8 mt-2">
+              <div className="flex flex-col w-full border-t border-white/20 pt-8 gap-8 mt-2">
                 <div className="flex flex-col">
                   <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Current Aggregate</span>
                   <div className="flex items-baseline gap-1">
@@ -334,7 +300,7 @@ export default function AttendancePage() {
                   </div>
                 </div>
                 
-                <div className="w-full h-px bg-white/[0.08]" />
+                <div className="w-full h-px bg-white/20" />
 
                 <div className="flex flex-col">
                   <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Strategy Target</span>
@@ -345,7 +311,7 @@ export default function AttendancePage() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-8 border-t border-white/[0.08]">
+              <div className="mt-4 pt-8 border-t border-white/20">
                 <AssignmentIntelligence />
               </div>
 
@@ -355,10 +321,10 @@ export default function AttendancePage() {
 
           {/* SIMULATOR ROW */}
           {schedulerCourses.length > 0 && (
-            <div className="mt-24 pt-16 border-t border-white/[0.05] flex flex-col gap-12">
+            <div className="mt-24 pt-16 border-t border-white/20 flex flex-col gap-12">
               <TimetableManager />
 
-              <div className="border-t border-white/[0.05] pt-12">
+              <div className="border-t border-white/20 pt-12">
                 <div className="mb-10">
                   <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
                     <motion.span 

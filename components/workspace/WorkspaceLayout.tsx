@@ -56,10 +56,10 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
                 opacity: 0 
               }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed lg:right-0 bottom-0 lg:top-0 w-full lg:w-[420px] h-[85vh] lg:h-full bg-[#0A0F1C]/95 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/10 z-[100] flex flex-col shadow-2xl rounded-t-3xl lg:rounded-none"
+              className="fixed lg:right-0 bottom-0 lg:top-0 w-full lg:w-[420px] h-[85vh] lg:h-full bg-[#0A0F1C]/95 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/20 z-[100] flex flex-col shadow-2xl rounded-t-3xl lg:rounded-none"
             >
               {/* Panel Header */}
-              <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-white/[0.02]">
+              <div className="h-16 border-b border-white/20 flex items-center justify-between px-6 bg-white/[0.02]">
                 <div className="flex items-center gap-3 text-white font-bold text-sm tracking-wide">
                   {activePanel === "PREDICTOR" && <><Calculator className="w-4 h-4 text-indigo-400" /> Target Predictor</>}
                   {activePanel === "STRATEGY" && <><Target className="w-4 h-4 text-emerald-400" /> Strategy Allocator</>}

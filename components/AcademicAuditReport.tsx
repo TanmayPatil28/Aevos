@@ -102,7 +102,7 @@ export default function AcademicAuditReport({
             {/* Ambient Background Glows */}
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.05] relative z-10">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/20 relative z-10">
               <div className="flex items-center gap-3">
                 <Landmark size={20} className="text-[#4F8EF7]" />
                 <div>
@@ -239,7 +239,7 @@ export default function AcademicAuditReport({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Grid 1: Academic Pass Rules */}
                   <div className="rounded-2xl bg-white/[0.01] border border-white/[0.03] p-5 flex flex-col gap-3">
-                    <h5 className="text-xs font-black text-white uppercase tracking-wider border-b border-white/[0.04] pb-2 flex items-center justify-between">
+                    <h5 className="text-xs font-black text-white uppercase tracking-wider border-b border-white/20 pb-2 flex items-center justify-between">
                       <span>Passing Standards</span>
                       <span className="text-[9px] font-mono text-[#4F8EF7]">Min Thresholds</span>
                     </h5>
@@ -273,7 +273,7 @@ export default function AcademicAuditReport({
 
                   {/* Grid 2: Backlog ATKT & Retake Detention Policy */}
                   <div className="rounded-2xl bg-white/[0.01] border border-white/[0.03] p-5 flex flex-col gap-3">
-                    <h5 className="text-xs font-black text-white uppercase tracking-wider border-b border-white/[0.04] pb-2 flex items-center justify-between">
+                    <h5 className="text-xs font-black text-white uppercase tracking-wider border-b border-white/20 pb-2 flex items-center justify-between">
                       <span>Backlog & ATKT Detention Policy</span>
                       <span className="text-[9px] font-mono text-[#A855F7]">Progression rules</span>
                     </h5>
@@ -296,7 +296,7 @@ export default function AcademicAuditReport({
                           {preset.backlogPolicy?.retakePenalty || "Direct credit replacement"}
                         </span>
                       </div>
-                      <div className="flex items-start justify-between text-xs gap-3 pt-1.5 border-t border-white/[0.03]">
+                      <div className="flex items-start justify-between text-xs gap-3 pt-1.5 border-t border-white/20">
                         <p className="text-[10px] text-white/30 leading-snug">
                           {preset.backlogPolicy?.description || "Student progression is based strictly on credit accumulation limits per academic year."}
                         </p>
@@ -306,7 +306,7 @@ export default function AcademicAuditReport({
 
                   {/* Grid 3: Assessment Schemes & Split Weights */}
                   <div className="rounded-2xl bg-white/[0.01] border border-white/[0.03] p-5 flex flex-col gap-3">
-                    <h5 className="text-xs font-black text-white uppercase tracking-wider border-b border-white/[0.04] pb-2 flex items-center justify-between">
+                    <h5 className="text-xs font-black text-white uppercase tracking-wider border-b border-white/20 pb-2 flex items-center justify-between">
                       <span>Assessment Weight Schemes</span>
                       <span className="text-[9px] font-mono text-[#4F8EF7]">Component split</span>
                     </h5>
@@ -336,7 +336,7 @@ export default function AcademicAuditReport({
 
                   {/* Grid 4: Grading Scale & Curve Framework */}
                   <div className="rounded-2xl bg-white/[0.01] border border-white/[0.03] p-5 flex flex-col gap-3">
-                    <h5 className="text-xs font-black text-white uppercase tracking-wider border-b border-white/[0.04] pb-2 flex items-center justify-between">
+                    <h5 className="text-xs font-black text-white uppercase tracking-wider border-b border-white/20 pb-2 flex items-center justify-between">
                       <span>Grading Curve Framework</span>
                       <span className="text-[9px] font-mono text-[#A855F7]">{preset.evaluationModel.toUpperCase()} MODEL</span>
                     </h5>
@@ -354,7 +354,7 @@ export default function AcademicAuditReport({
                             <span className="text-white/80 font-bold font-mono">{preset.relativeGrading.absoluteFloorValue} Marks</span>
                           </div>
                         )}
-                        <p className="text-[10px] text-white/40 leading-snug mt-1 pt-1.5 border-t border-white/[0.03]">
+                        <p className="text-[10px] text-white/40 leading-snug mt-1 pt-1.5 border-t border-white/20">
                           {preset.relativeGrading?.curveDescription || "Grades are curved based on section/cohort averages with statistical deviation mapping."}
                         </p>
                       </div>
@@ -368,7 +368,7 @@ export default function AcademicAuditReport({
                           <span className="text-white/40">Grade Bands Count:</span>
                           <span className="text-white/80 font-mono font-bold">{preset.gradeScale.length} standard brackets</span>
                         </div>
-                        <p className="text-[10px] text-white/40 leading-snug mt-1 pt-1.5 border-t border-white/[0.03]">
+                        <p className="text-[10px] text-white/40 leading-snug mt-1 pt-1.5 border-t border-white/20">
                           This university uses standard credit grading with absolute lower-bound percentage thresholds to determine grades directly.
                         </p>
                       </div>
@@ -397,7 +397,7 @@ export default function AcademicAuditReport({
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t border-white/[0.05] px-6 py-4 bg-black/20 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10 text-[10px] text-white/20 font-mono">
+            <div className="border-t border-white/20 px-6 py-4 bg-black/20 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10 text-[10px] text-white/20 font-mono">
               <div className="flex items-center gap-1.5">
                 <AlertCircle size={10} className="text-[#4F8EF7]" />
                 <span>UGC Framework & University Ordinance Compliant Abstraction System</span>

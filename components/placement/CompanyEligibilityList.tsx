@@ -127,13 +127,13 @@ export default function CompanyEligibilityList({
 
                   <div className="space-y-3 flex-grow">
                     <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div className="bg-slate-900/30 p-2.5 rounded-lg border border-white/5">
+                      <div className="bg-[#1D1D1F] p-2.5 rounded-lg border border-white/5">
                         <span className="text-[10px] text-slate-400 block mb-0.5">Min CGPA</span>
                         <span className="font-semibold text-white font-mono text-sm">
                           {company.cgpaCutoff.toFixed(2)}
                         </span>
                       </div>
-                      <div className="bg-slate-900/30 p-2.5 rounded-lg border border-white/5">
+                      <div className="bg-[#1D1D1F] p-2.5 rounded-lg border border-white/5">
                         <span className="text-[10px] text-slate-400 block mb-0.5">Max Backlogs</span>
                         <span className="font-semibold text-white font-mono text-sm">
                           {company.maxBacklogs}
@@ -141,14 +141,14 @@ export default function CompanyEligibilityList({
                       </div>
                     </div>
 
-                    <div className="text-xs text-slate-300 bg-slate-900/40 p-3 rounded-lg border border-white/5 flex items-start gap-2 leading-relaxed min-h-[56px]">
+                    <div className="text-xs text-slate-300 bg-[#1D1D1F] p-3 rounded-lg border border-white/5 flex items-start gap-2 leading-relaxed min-h-[56px]">
                       <ShieldAlert className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                       <span>{company.explanation}</span>
                     </div>
                   </div>
 
                   {isCustom && (
-                    <div className="mt-4 pt-3 border-t border-white/5 flex justify-end">
+                    <div className="mt-4 pt-3 border-t border-white/20 flex justify-end">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

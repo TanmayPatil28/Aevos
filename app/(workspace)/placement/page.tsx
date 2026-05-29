@@ -108,7 +108,7 @@ export default function CareerIntelligencePage() {
             <div className="flex items-center justify-center gap-4 mb-8">
                <button 
                 onClick={() => setIsSandbox(!isSandbox)}
-                className={cn("flex items-center gap-2 px-8 py-4 rounded-full text-sm font-bold border transition-all duration-500 backdrop-blur-[45px]", isSandbox ? "bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-[0_0_40px_rgba(59,130,246,0.2)]" : "bg-white/5 text-white/60 border-white/10 hover:text-white hover:bg-white/10")}
+                className={cn("flex items-center gap-2 px-8 py-4 rounded-full text-sm font-bold border transition-all duration-500", isSandbox ? "bg-blue-500 text-white border-blue-500 shadow-none" : "bg-[#1D1D1F] text-white/60 border-white/10 hover:text-white hover:border-white/20")}
               >
                 <Beaker size={18} className={isSandbox ? "text-blue-400" : ""} />
                 {isSandbox ? "Exit Sandbox Mode" : "Enter Sandbox Mode"}
@@ -124,9 +124,7 @@ export default function CareerIntelligencePage() {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="w-full overflow-hidden"
                 >
-                  <div className="p-8 md:p-10 rounded-[32px] border border-blue-500/30 bg-black/40 backdrop-blur-[45px] shadow-[inset_0_0_80px_rgba(59,130,246,0.1)] flex flex-col md:flex-row gap-12 items-center relative overflow-hidden">
-                    <div className="absolute top-0 left-1/4 w-1/2 h-full bg-blue-500/10 blur-[100px] pointer-events-none" />
-                    
+                  <div className="p-8 md:p-10 rounded-[32px] border border-blue-500/30 bg-[#1D1D1F] flex flex-col md:flex-row gap-12 items-center relative overflow-hidden">
                     <div className="flex-1 w-full relative z-10">
                       <label className="flex justify-between text-sm font-bold text-blue-300 mb-4 uppercase tracking-[0.15em]">
                         <span>Simulate CGPA</span>
@@ -165,7 +163,7 @@ export default function CareerIntelligencePage() {
         <div className="flex flex-col md:flex-row items-center gap-4">
           <motion.div 
             layout
-            className="relative overflow-hidden flex items-center p-1.5 bg-black/80 border border-white/[0.08] rounded-full backdrop-blur-[45px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]"
+            className="relative overflow-hidden flex items-center p-1.5 bg-[#1D1D1F] border border-white/5 rounded-full"
           >
             <div 
               className="absolute top-1.5 bottom-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 transition-all duration-500 ease-in-out z-0"

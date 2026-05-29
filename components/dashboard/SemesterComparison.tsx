@@ -45,7 +45,7 @@ export default function SemesterComparison({ data }: { data: ComparisonData[] })
       <div className="overflow-x-auto">
         <table className="w-full text-left min-w-[600px]">
           <thead>
-            <tr className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] border-b border-white/[0.05]">
+            <tr className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] border-b border-white/20">
               <th className="pb-4 px-4 whitespace-nowrap">Semester</th>
               <th className="pb-4 px-4 whitespace-nowrap">Date</th>
               <th className="pb-4 px-4 whitespace-nowrap">Subjects</th>

@@ -363,7 +363,7 @@ export default function PredictorPanel() {
         </div>
 
         {/* Current Internal Base */}
-        <div className="pt-4 flex items-center justify-between border-t border-white/5 relative z-10">
+        <div className="pt-4 flex items-center justify-between border-t border-white/20 relative z-10">
           <span className="text-sm font-semibold tracking-tight text-[#86868B] flex items-center gap-2">
             <Calculator className="w-4 h-4" /> Base Score
           </span>

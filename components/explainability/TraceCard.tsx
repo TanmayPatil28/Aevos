@@ -52,7 +52,7 @@ export default function TraceCard({
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="p-4 pt-0 space-y-4 border-t border-white/[0.03] bg-black/10">
+        <div className="p-4 pt-0 space-y-4 border-t border-white/20 bg-black/10">
           {/* Formula */}
           <div className="space-y-1.5 mt-4">
             <h5 className="text-[10px] font-black uppercase tracking-wider text-white/30">Equation Applied</h5>
@@ -71,7 +71,7 @@ export default function TraceCard({
 
           {/* Warnings / Assumptions / Fallback Conditions */}
           {hasExtraInfo && (
-            <div className="grid grid-cols-1 gap-3 border-t border-white/[0.03] pt-4">
+            <div className="grid grid-cols-1 gap-3 border-t border-white/20 pt-4">
               {/* Warnings */}
               {trace.warnings && trace.warnings.length > 0 && (
                 <div className="space-y-1.5">

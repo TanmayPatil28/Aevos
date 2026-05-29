@@ -124,7 +124,7 @@ export default function PresetInfoCard({ compact = false }: { compact?: boolean 
         )}
 
         {/* Header with Title and Badges */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-white/[0.04] relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-white/20 relative z-10">
           <div className="flex items-center gap-3">
             <div className={clsx(
               "w-10 h-10 rounded-2xl border flex items-center justify-center shrink-0",
@@ -241,7 +241,7 @@ export default function PresetInfoCard({ compact = false }: { compact?: boolean 
 
         {/* Regulation/Pattern Swapper Selector */}
         {siblingPresets.length > 1 && !isIsolatedFallback && (
-          <div className="mt-4 border-t border-white/[0.04] pt-4 relative z-10">
+          <div className="mt-4 border-t border-white/20 pt-4 relative z-10">
             <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/15 mb-2 flex items-center justify-between">
               <span className="flex items-center gap-1">
                 <Layers size={10} className="text-white/20" />

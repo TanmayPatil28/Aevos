@@ -177,30 +177,29 @@ export default function ManualCalculator() {
               <div className="w-full flex flex-col gap-6">
 
                 {/* Header Toolbar */}
-                <div className="relative overflow-hidden bg-black/60 backdrop-blur-3xl border border-white/[0.05] px-6 py-5 rounded-[2rem] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] shrink-0 flex justify-between items-center group">
-                  <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#4F8EF7]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#4F8EF7]/15 transition-colors duration-500" />
+                <div className="relative overflow-hidden bg-[#1D1D1F] border border-white/5 px-6 py-5 rounded-[32px] shrink-0 flex justify-between items-center group shadow-none">
                   
                   <div className="flex items-center gap-3 relative z-10">
-                    <Calculator className="text-[#4F8EF7] w-5 h-5 drop-shadow-[0_0_8px_rgba(79,142,247,0.5)]" />
-                    <span className="font-bold text-white tracking-tight text-lg">Manual Sandbox</span>
+                    <Calculator className="text-[#4F8EF7] w-5 h-5" />
+                    <span className="font-bold text-[#F5F5F7] tracking-tight text-lg">Manual Sandbox</span>
                   </div>
 
                   <div className="flex items-center gap-3 relative z-10">
                     {/* Mode Toggle */}
-                    <div className="flex bg-white/[0.03] p-1 rounded-full relative border border-white/[0.05]">
+                    <div className="flex bg-[#2c2c2e] p-1 rounded-full relative">
                       <div
                         className="absolute inset-y-1 bg-[#4F8EF7] rounded-full transition-all duration-300 ease-out z-0"
                         style={{ width: 'calc(50% - 4px)', left: usePercentage ? '4px' : 'calc(50%)' }}
                       />
                       <button
                         onClick={() => setUsePercentage(true)}
-                        className={`relative z-10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 ${usePercentage ? 'text-white' : 'text-white/40 hover:text-white'}`}
+                        className={`relative z-10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 ${usePercentage ? 'text-white' : 'text-[#86868b] hover:text-[#F5F5F7]'}`}
                       >
                         Percent
                       </button>
                       <button
                         onClick={() => setUsePercentage(false)}
-                        className={`relative z-10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 ${!usePercentage ? 'text-white' : 'text-white/40 hover:text-white'}`}
+                        className={`relative z-10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 ${!usePercentage ? 'text-white' : 'text-[#86868b] hover:text-[#F5F5F7]'}`}
                       >
                         Grades
                       </button>
@@ -209,7 +208,7 @@ export default function ManualCalculator() {
                     <button
                       onClick={handleReset}
                       title="Reset Sandbox"
-                      className="text-white/50 bg-white/[0.03] p-2.5 rounded-full hover:bg-white/[0.08] hover:text-white border border-transparent hover:border-white/10 transition-all flex items-center justify-center shadow-sm"
+                      className="text-[#86868b] bg-[#2c2c2e] p-2.5 rounded-full hover:bg-[#3a3a3c] hover:text-[#F5F5F7] transition-colors flex items-center justify-center"
                     >
                       <RotateCcw size={14} />
                     </button>
@@ -234,17 +233,17 @@ export default function ManualCalculator() {
                       
                       // Dynamic Glow logic
                       const ringClass = hasValidScore 
-                        ? (isPassing ? "focus-within:ring-green-500/30 border-green-500/20" : "focus-within:ring-red-500/30 border-red-500/20") 
-                        : "focus-within:ring-[#4F8EF7]/30 hover:border-white/10";
+                        ? (isPassing ? "focus-within:border-green-500/50 border-green-500/20" : "focus-within:border-red-500/50 border-red-500/20") 
+                        : "focus-within:border-[#4F8EF7]/50 hover:border-white/10";
 
                       return (
                         <motion.div
                           key={course.id}
-                          initial={{ opacity: 0, x: -20, backgroundColor: "rgba(255,255,255,0)" }}
-                          animate={{ opacity: 1, x: 0, backgroundColor: "rgba(255,255,255,0.02)" }}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
                           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                          className={`relative flex items-center bg-black/40 border border-white/[0.05] rounded-[1.25rem] p-2 md:p-3 shadow-sm transition-all duration-300 group ring-1 ring-transparent ${ringClass}`}
+                          className={`relative flex items-center bg-[#1D1D1F] border border-white/5 rounded-[32px] p-2 md:p-3 shadow-none transition-all duration-300 group ${ringClass}`}
                         >
                           {/* Course Name */}
                           <div className="flex-1 relative">
@@ -334,14 +333,14 @@ export default function ManualCalculator() {
                 <span className="text-white/40 font-medium text-lg mt-6 tracking-tight">out of {preset.gradeScale[0]?.points || 10}.0 maximum scale.</span>
               </div>
 
-              <div className="flex flex-col w-full border-t border-white/[0.08] pt-8 gap-8 mt-2">
+              <div className="flex flex-col w-full border-t border-white/20 pt-8 gap-8 mt-2">
                 <div className="flex flex-col">
                   <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Total Credits</span>
                   <AnimatedCounter target={totalCredits} className="text-4xl font-semibold tracking-tighter text-white" />
                 </div>
               </div>
 
-              <div className="mt-6 pt-8 border-t border-white/[0.08]">
+              <div className="mt-6 pt-8 border-t border-white/20">
                 <button onClick={handleSave} disabled={isSaving} className="group w-full flex items-center justify-center gap-3 bg-white text-black font-bold py-5 rounded-full hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-95 transition-all duration-300 ease-out disabled:opacity-50 disabled:hover:scale-100">
                   {isSaving ? (
                      <svg className="animate-spin h-5 w-5 text-black" fill="none" viewBox="0 0 24 24">
@@ -424,7 +423,7 @@ export default function ManualCalculator() {
                     />
                   </motion.div>
                 ) : (
-                  <div className="h-64 flex items-center justify-center border border-white/5 bg-black/40 rounded-[32px] text-white/30 font-medium">
+                  <div className="h-64 flex items-center justify-center border border-white/5 bg-[#1D1D1F] rounded-[32px] text-white/30 font-medium">
                     Add valid subjects to view the statutory breakdown.
                   </div>
                 )}
@@ -440,7 +439,7 @@ export default function ManualCalculator() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mt-12 relative overflow-hidden bg-gradient-to-r from-purple-500/10 to-[#4F8EF7]/10 border border-purple-500/20 hover:border-[#4F8EF7]/40 rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 group transition-colors duration-500"
+            className="mt-12 relative overflow-hidden bg-[#1D1D1F] border border-white/5 hover:border-white/10 rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 group transition-colors duration-500"
           >
             <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             

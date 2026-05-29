@@ -60,7 +60,7 @@ export default function ScenarioSimulator(props: ScenarioSimulatorProps) {
     setActiveScenario(id);
   };
   return (
-    <Card padding="lg" className="border border-white/10 bg-black/40 relative overflow-hidden group">
+    <Card padding="lg" className="border border-white/10 bg-[#1D1D1F] relative overflow-hidden group">
       <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent pointer-events-none" />
       
       <div className="flex items-center gap-3 mb-6 relative z-10">

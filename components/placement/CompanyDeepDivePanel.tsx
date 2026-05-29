@@ -31,7 +31,7 @@ export default function CompanyDeepDivePanel({ company, isOpen, onClose }: Compa
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
+            className="fixed inset-0 bg-black/60 z-[200]"
           />
           
           {/* Panel */}
@@ -40,10 +40,10 @@ export default function CompanyDeepDivePanel({ company, isOpen, onClose }: Compa
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-black/90 border-l border-white/10 z-[210] overflow-y-auto shadow-2xl"
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-[#1D1D1F] border-l border-white/20 z-[210] overflow-y-auto shadow-none"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-black/80 backdrop-blur-xl border-b border-white/5 p-6 z-10 flex items-start justify-between">
+            <div className="sticky top-0 bg-[#1D1D1F] border-b border-white/20 p-6 z-10 flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <div className={cn("px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border", statusBg, statusColor)}>
@@ -109,7 +109,7 @@ export default function CompanyDeepDivePanel({ company, isOpen, onClose }: Compa
                 <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest flex items-center gap-2">
                   <Users size={14} /> Selection Process (Mock)
                 </h3>
-                <div className="relative pl-6 border-l border-white/10 space-y-6">
+                <div className="relative pl-6 border-l border-white/20 space-y-6">
                   <div className="relative">
                     <div className="absolute -left-[29px] top-1 w-3 h-3 bg-black border-2 border-white/20 rounded-full" />
                     <h4 className="text-sm font-bold text-white">Round 1: Online Assessment</h4>

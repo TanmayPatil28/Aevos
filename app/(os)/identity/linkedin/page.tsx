@@ -41,7 +41,7 @@ export default function LinkedInOptimizerPage() {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Weak Profile Detector */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-3xl border border-rose-500/20 p-6 relative overflow-hidden">
+          <div className="bg-[#1D1D1F] rounded-[32px] border border-white/5 p-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-2xl pointer-events-none" />
             <div className="flex items-center gap-2 mb-4">
               <Search className="w-5 h-5 text-rose-400" />
@@ -69,7 +69,7 @@ export default function LinkedInOptimizerPage() {
           </div>
 
           {/* Dynamic Headline Modes */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-3xl border border-slate-700/50 p-6">
+          <div className="bg-[#1D1D1F] rounded-[32px] border border-white/5 p-6">
             <h3 className="text-lg font-bold text-white mb-4">Dynamic Headline Modes</h3>
             
             <div className="flex gap-2 overflow-x-auto pb-4 custom-scrollbar">

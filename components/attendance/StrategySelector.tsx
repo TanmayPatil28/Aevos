@@ -15,28 +15,28 @@ const strategies: { id: BurnoutStrategy; label: string; icon: React.ElementType;
     id: "SAFE",
     label: "Safe Mode",
     icon: Shield,
-    color: "text-emerald-400 border-emerald-500/30 ring-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]",
+    color: "text-emerald-400 border-emerald-500/30 ring-emerald-500/20 shadow-none",
     desc: "Maintain 80%+ buffer for zero detention risk."
   },
   {
     id: "BALANCED",
     label: "Balanced",
     icon: Scale,
-    color: "text-blue-400 border-blue-500/30 ring-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]",
+    color: "text-blue-400 border-blue-500/30 ring-blue-500/20 shadow-none",
     desc: "Target exactly the minimum requirement (e.g. 75%)."
   },
   {
     id: "SURVIVAL",
     label: "Survival Mode",
     icon: Activity,
-    color: "text-amber-400 border-amber-500/30 ring-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)]",
+    color: "text-amber-400 border-amber-500/30 ring-amber-500/20 shadow-none",
     desc: "Focus only on strict faculty. Low effort elsewhere."
   },
   {
     id: "PLACEMENT",
     label: "Placement Prep",
     icon: Briefcase,
-    color: "text-indigo-400 border-indigo-500/30 ring-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.15)]",
+    color: "text-indigo-400 border-indigo-500/30 ring-indigo-500/20 shadow-none",
     desc: "Sacrifice theory subjects to maximize prep time."
   }
 ];
@@ -59,13 +59,10 @@ export default function StrategySelector({ currentStrategy, onStrategyChange }: 
               onClick={() => onStrategyChange(strategy.id)}
               className={`p-4 rounded-2xl border text-left transition-all duration-500 flex flex-col gap-3 group relative overflow-hidden ${
                 isActive 
-                  ? `bg-black ${strategy.color} ring-1 scale-[1.02] border-white/20` 
-                  : "bg-white/[0.02] border-white/5 text-white/50 hover:bg-white/[0.04] hover:border-white/10"
+                  ? `bg-[#1D1D1F] ${strategy.color} ring-1 scale-[1.02] border-white/20` 
+                  : "bg-[#1D1D1F] border-white/5 text-white/50 hover:border-white/10"
               }`}
             >
-              {isActive && (
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-              )}
               <div className="flex items-center gap-2 relative z-10">
                 <Icon className={`w-4 h-4 ${isActive ? "" : "text-white/40 group-hover:text-white/60 transition-colors"}`} />
                 <span className={`font-bold text-[13px] tracking-wide ${isActive ? "text-white" : "text-white/70 group-hover:text-white transition-colors"}`}>

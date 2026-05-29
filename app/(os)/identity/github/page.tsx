@@ -39,7 +39,7 @@ export default function GitHubOptimizerPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* README Intelligence Engine */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-3xl border border-slate-700/50 p-6">
+          <div className="bg-[#1D1D1F] rounded-[32px] border border-white/5 p-6">
             <div className="flex items-center gap-2 mb-4">
               <LayoutTemplate className="w-5 h-5 text-indigo-400" />
               <h3 className="text-xl font-bold text-white">README Intelligence Engine</h3>
@@ -80,7 +80,7 @@ export default function GitHubOptimizerPage() {
             <RepoCredibilityMeter />
             
             {/* Portfolio Worthy Detector */}
-            <div className="bg-slate-900/50 backdrop-blur-md rounded-3xl border border-amber-500/20 p-6 relative overflow-hidden">
+            <div className="bg-[#1D1D1F] rounded-[32px] border border-white/5 p-6 relative overflow-hidden">
                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
                <div className="flex items-center gap-2 mb-4">
                  <Star className="w-5 h-5 text-amber-400" />

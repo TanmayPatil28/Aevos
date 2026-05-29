@@ -84,7 +84,7 @@ export default function ScenarioSelector({
             </div>
 
             {/* Metrics */}
-            <div className="pt-3 border-t border-white/5 flex flex-col gap-2">
+            <div className="pt-3 border-t border-white/20 flex flex-col gap-2">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-white/40">Assumed SGPA:</span>
                 <span className="font-bold text-white">{scenario.assumedSgpa.toFixed(2)}</span>

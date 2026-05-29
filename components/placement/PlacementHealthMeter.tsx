@@ -23,13 +23,9 @@ export default function PlacementHealthMeter({ readinessScore, averageEligibilit
   const colors = getRiskColors();
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center pt-8 pb-12 px-6 bg-[#0a0a0a]/40 border border-white/[0.05] rounded-[32px] relative overflow-hidden group backdrop-blur-[45px] shadow-[inset_0_0_80px_rgba(255,255,255,0.01)]">
+    <div className="w-full h-full flex flex-col items-center justify-center pt-8 pb-12 px-6 bg-[#1D1D1F] border border-white/5 rounded-[32px] relative overflow-hidden group shadow-none">
       
-      {/* Ambient Glow */}
-      <div className={cn("absolute inset-0 blur-[100px] transition-colors duration-1000 z-0", colors.glow, "opacity-30 group-hover:opacity-60")} />
       
-      {/* Subtle Grid Background */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] mix-blend-overlay z-0 pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center text-center">
         <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-white/40 mb-8">
@@ -47,7 +43,7 @@ export default function PlacementHealthMeter({ readinessScore, averageEligibilit
         </div>
 
         <div className={cn("px-5 py-2 rounded-full border backdrop-blur-md flex items-center gap-2", colors.border, "bg-black/40")}>
-          <div className={cn("w-2 h-2 rounded-full", colors.text, "shadow-[0_0_10px_currentColor]")} />
+          <div className={cn("w-2 h-2 rounded-full", colors.text, "shadow-none")} />
           <span className={cn("text-xs font-bold tracking-widest uppercase", colors.text)}>
             {readinessScore}
           </span>
@@ -60,7 +56,7 @@ export default function PlacementHealthMeter({ readinessScore, averageEligibilit
               mod.toast.success("Trajectory graphic generated and copied to clipboard!");
             });
           }}
-          className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-colors text-xs font-bold shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+          className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-colors text-xs font-bold shadow-none"
         >
           <Share2 className="w-4 h-4" /> Share My Trajectory
         </button>

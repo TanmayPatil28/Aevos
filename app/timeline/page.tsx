@@ -255,7 +255,7 @@ export default function AcademicTimeline() {
                     </div>
 
                     {/* Call to Action */}
-                    <div className="pt-8 border-t border-white/5 flex gap-4">
+                    <div className="pt-8 border-t border-white/20 flex gap-4">
                       <Link href="/calculator" className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 text-white font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2">
                         Calculate Target
                         <ArrowUpRight size={14} />

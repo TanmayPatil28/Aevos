@@ -16,7 +16,7 @@ export default function ExpandableTrustPanel({ explanation }: ExpandableTrustPan
     explanation.confidence === "MEDIUM" ? "text-amber-400" : "text-rose-400";
 
   return (
-    <div className="mt-4 border border-white/10 rounded-lg overflow-hidden bg-slate-900/50">
+    <div className="mt-4 border border-white/10 rounded-lg overflow-hidden bg-[#1D1D1F]">
       <button 
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between p-3 text-xs text-slate-300 hover:bg-white/5 transition-colors"
@@ -36,7 +36,7 @@ export default function ExpandableTrustPanel({ explanation }: ExpandableTrustPan
       </button>
 
       {expanded && (
-        <div className="p-4 border-t border-white/10 space-y-4 text-xs text-slate-400">
+        <div className="p-4 border-t border-white/20 space-y-4 text-xs text-slate-400">
           
           {/* Projected Impact */}
           <div>

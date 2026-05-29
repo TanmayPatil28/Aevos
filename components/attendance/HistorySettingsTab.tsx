@@ -144,7 +144,7 @@ export default function HistorySettingsTab() {
             </button>
           </div>
           
-          <div className="mt-4 pt-4 border-t border-white/5">
+          <div className="mt-4 pt-4 border-t border-white/20">
             <textarea
               value={importJson}
               onChange={(e) => setImportJson(e.target.value)}

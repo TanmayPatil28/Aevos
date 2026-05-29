@@ -24,8 +24,8 @@ export default function CompanyLedgerRow({ result, isPinned, onPinToggle }: Comp
 
   return (
     <div className={cn(
-      "group flex flex-col rounded-[24px] border transition-all duration-300 backdrop-blur-[45px] overflow-hidden",
-      isPinned ? "bg-[#a855f7]/10 border-[#a855f7]/30 shadow-[inset_0_0_60px_rgba(168,85,247,0.1)]" : "bg-[#0a0a0a]/60 border-white/[0.05] hover:bg-white/[0.03] shadow-[inset_0_0_60px_rgba(255,255,255,0.01)]"
+      "group flex flex-col rounded-[24px] border transition-all duration-300 overflow-hidden",
+      isPinned ? "bg-[#1D1D1F] border-[#a855f7]/30 shadow-none ring-1 ring-[#a855f7]/50" : "bg-[#1D1D1F] border-white/5 hover:border-white/10 shadow-none"
     )}>
       {/* Main Row Header */}
       <div 
@@ -102,7 +102,7 @@ export default function CompanyLedgerRow({ result, isPinned, onPinToggle }: Comp
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden bg-black/40 border-t border-white/[0.05]"
+            className="overflow-hidden bg-[#222224] border-t border-white/20"
           >
             <div className="p-6 md:p-8">
               <h3 className="text-xs font-bold text-white/50 uppercase tracking-[0.2em] flex items-center gap-2 mb-6">

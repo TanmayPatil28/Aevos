@@ -23,11 +23,11 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen }: NavbarMobileDr
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-[15px] z-[100000]" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)} className="fixed inset-0 bg-[#000000]/80 z-[100000]" />
           <motion.div
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 w-[300px] h-full bg-black/98 backdrop-blur-[50px] border-l border-white/5 z-[100001] p-8 flex flex-col shadow-[-20px_0_100px_rgba(0,0,0,0.9)]"
+            className="fixed top-0 right-0 w-[300px] h-full bg-[#1D1D1F] border-l border-white/20 z-[100001] p-8 flex flex-col"
           >
             <div className="flex items-center justify-between mb-8">
               <span className="font-headline font-black text-2xl text-white tracking-widest">GF.OS</span>
@@ -70,7 +70,10 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen }: NavbarMobileDr
                           onClick={() => setIsOpen(false)}
                           className="w-full text-left flex items-center gap-4 p-3 rounded-2xl group active:bg-white/5 transition-colors"
                         >
-                          <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-white/50 group-hover:text-blue-400 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all shadow-inner">
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-white/50 transition-all shadow-inner",
+                            module.accent.hoverIcon
+                          )}>
                             <tool.icon size={18} strokeWidth={2.5} />
                           </div>
                           <div className="flex flex-col">

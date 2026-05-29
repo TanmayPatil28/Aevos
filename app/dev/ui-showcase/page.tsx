@@ -45,7 +45,7 @@ export default function UIShowcasePage() {
       <PageContainer className="pt-24 pb-32 max-w-7xl">
         
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-white/5 pb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-white/20 pb-10">
           <div className="space-y-4">
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
@@ -237,7 +237,7 @@ export default function UIShowcasePage() {
                 </div>
 
                 {/* Badge Variants */}
-                <div className="space-y-4 pt-4 border-t border-white/5">
+                <div className="space-y-4 pt-4 border-t border-white/20">
                   <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Status Badge Indicators</label>
                   <div className="flex flex-wrap gap-3">
                     <Badge variant="neutral">Neutral</Badge>
@@ -293,7 +293,7 @@ export default function UIShowcasePage() {
               </div>
 
               {/* Spacing Spreads */}
-              <div className="space-y-3 pt-6 border-t border-white/5">
+              <div className="space-y-3 pt-6 border-t border-white/20">
                 <p className="text-[10px] text-[#4F8EF7] font-black uppercase tracking-widest">Section Spacers</p>
                 <div className="space-y-4 text-xs text-white/50 leading-relaxed italic">
                   <div className="flex gap-4 items-center">

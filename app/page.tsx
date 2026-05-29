@@ -9,7 +9,7 @@ import { Play, Pause, ChevronRight, Zap, Target, Briefcase, RefreshCw, Cpu, Acti
 
 function SidebarMockup() {
   return (
-    <div className="w-64 border-r border-white/10 bg-[#0A0A0A] p-6 flex flex-col gap-8 flex-shrink-0">
+    <div className="w-64 border-r border-white/20 bg-[#0A0A0A] p-6 flex flex-col gap-8 flex-shrink-0">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-blue-500" />
         <span className="text-white font-semibold text-lg tracking-tight">GradeFlow</span>
@@ -32,7 +32,7 @@ function SidebarMockup() {
 
 function TopbarMockup() {
   return (
-    <div className="h-16 border-b border-white/10 bg-[#0A0A0A]/80 backdrop-blur flex items-center justify-between px-8 flex-shrink-0">
+    <div className="h-16 border-b border-white/20 bg-[#0A0A0A]/80 backdrop-blur flex items-center justify-between px-8 flex-shrink-0">
       <div className="bg-[#1D1D1F] px-4 py-1.5 rounded-full text-xs font-semibold text-white flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-emerald-500" /> All systems operational
       </div>
@@ -95,7 +95,7 @@ function AcademicDashboardMockup() {
 function CareerDashboardMockup() {
   return (
     <div className="flex w-full h-full bg-black rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl font-sans">
-      <div className="w-64 border-r border-white/10 bg-[#050505] p-6 flex flex-col gap-8 flex-shrink-0">
+      <div className="w-64 border-r border-white/20 bg-[#050505] p-6 flex flex-col gap-8 flex-shrink-0">
          <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-blue-500" />
           <span className="text-white font-semibold text-lg tracking-tight">GradeFlow</span>
@@ -348,7 +348,7 @@ function IntelligenceBento() {
             <h3 className="text-5xl font-semibold text-white tracking-tight mb-6">AI Forecast</h3>
             <p className="text-[#86868B] text-2xl font-medium">Multi-scenario trajectory projection.</p>
           </div>
-          <div className="w-full h-64 flex items-end gap-3 border-b border-white/10 pb-4 relative">
+          <div className="w-full h-64 flex items-end gap-3 border-b border-white/20 pb-4 relative">
              <div className="absolute top-10 left-0 right-0 border-t border-dashed border-emerald-500/50" />
              <div className="absolute top-4 right-0 text-emerald-400 text-sm font-semibold">Target: 9.0</div>
             {[6.5, 7.2, 7.8, 8.4, 8.8, 9.2, 9.5].map((v, i) => (
@@ -363,7 +363,7 @@ function IntelligenceBento() {
 
 function SpecsBento() {
   return (
-    <section className="bg-black py-40 px-6 border-t border-white/[0.05]">
+    <section className="bg-black py-40 px-6 border-t border-white/20">
       <div className="max-w-[1400px] mx-auto">
         <h2 className="text-5xl md:text-7xl font-semibold text-white tracking-tight mb-20 text-center">Engineered for dominance.</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -391,7 +391,7 @@ function SpecsBento() {
 function DeepDivePills({ items }: { items: { title: string, desc: string }[] }) {
   const [active, setActive] = useState(0);
   return (
-    <div className="py-24 bg-black flex flex-col items-center text-center px-6 border-b border-white/[0.05]">
+    <div className="py-24 bg-black flex flex-col items-center text-center px-6 border-b border-white/20">
        <div className="h-40 max-w-4xl mb-12">
          <AnimatePresence mode="wait">
            <motion.div key={active} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
@@ -487,7 +487,7 @@ export default function Home() {
 
 function LocalNav() {
   return (
-    <div className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-3xl border-b border-white/[0.06]">
+    <div className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-3xl border-b border-white/20">
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-white/90 font-semibold tracking-tight">GradeFlow OS</span>

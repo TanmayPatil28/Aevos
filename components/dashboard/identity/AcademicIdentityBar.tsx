@@ -17,7 +17,7 @@ export function AcademicIdentityBar({ onSyncClick }: AcademicIdentityBarProps) {
   const { studentIdentity = {}, institution, academic, hasAuthoritativeData } = context.identity;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-[#0B0F19]/80 to-[#1A1F33]/80 backdrop-blur-xl p-6 shadow-2xl group">
+    <div className="relative overflow-hidden rounded-[32px] border border-white/5 bg-[#1D1D1F] p-6 shadow-none group">
       {/* Background glow */}
       
       <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -61,7 +61,7 @@ export function AcademicIdentityBar({ onSyncClick }: AcademicIdentityBarProps) {
         </div>
 
         {/* Right: Quick Stats & Sync */}
-        <div className="flex items-center gap-8 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-8 w-full md:w-auto">
+        <div className="flex items-center gap-8 border-t md:border-t-0 md:border-l border-white/20 pt-4 md:pt-0 md:pl-8 w-full md:w-auto">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Current CGPA</span>
             <span className="text-3xl font-black font-mono text-white leading-none">

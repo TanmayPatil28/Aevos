@@ -63,7 +63,7 @@ export default function ForecastingCanvas() {
 
       {/* 2. Scenario Sandbox */}
       <section className="mb-12 animate-fade-in duration-700 delay-150 fill-mode-both ease-os-smooth">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col gap-os-section shadow-sm">
+        <div className="bg-[#1D1D1F] border border-white/5 rounded-[32px] p-6 sm:p-8 flex flex-col gap-os-section">
           
           {/* Target Slider Area */}
           <div className="space-y-6">

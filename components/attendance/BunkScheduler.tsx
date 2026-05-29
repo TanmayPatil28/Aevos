@@ -85,7 +85,7 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
   // If no course is available, render empty state
   if (!activeCourse) {
     return (
-      <div className="bg-black/60 backdrop-blur-3xl border border-white/[0.05] text-center py-12 rounded-[2rem] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] relative overflow-hidden group">
+      <div className="bg-[#1D1D1F] border border-white/[0.05] text-center py-12 rounded-[2rem] shadow-none relative overflow-hidden group">
         <AlertCircle className="w-8 h-8 text-white/20 mx-auto mb-3" />
         <h3 className="text-white font-bold text-lg">No Active Courses Found</h3>
         <p className="text-sm text-white/40 mt-1">Please register courses in the planner or import an academic JSON first.</p>
@@ -218,7 +218,7 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
       
       {/* Simulation Controllers (Left Panel) */}
       <div className="lg:col-span-1 space-y-6">
-        <div className="bg-black/60 backdrop-blur-3xl border border-white/[0.05] p-6 rounded-[2rem] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] space-y-8 relative overflow-hidden group">
+        <div className="bg-[#1D1D1F] border border-white/[0.05] p-6 rounded-[2rem] shadow-none space-y-8 relative overflow-hidden group">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#4F8EF7]/10 rounded-full blur-3xl pointer-events-none transition-colors duration-500" />
           
           <div className="relative z-10">
@@ -307,7 +307,7 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
           </div>
 
           {/* 14-Day Interactive Calendar Ribbon */}
-          <div className="space-y-3 relative z-10 pt-4 border-t border-white/[0.05]">
+          <div className="space-y-3 relative z-10 pt-4 border-t border-white/20">
             <div className="flex justify-between items-center">
               <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider">14-Day Calendar Timeline</span>
               <span className="text-[9px] text-white/30">Click to cycle: Attend → Bunk → Clear</span>
@@ -335,7 +335,7 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
             )}
             
             {/* AI Auto-Pilot */}
-            <div className="mt-4 pt-4 border-t border-white/[0.05]">
+            <div className="mt-4 pt-4 border-t border-white/20">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex-1">
                   {aiMessage ? (
@@ -380,7 +380,7 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
 
       {/* Math Projection Visualization & Outcome (Right Panel) */}
       <div className="lg:col-span-2 space-y-6">
-        <div className="bg-black/60 backdrop-blur-3xl border border-white/[0.05] p-6 rounded-[2rem] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] space-y-8 relative overflow-hidden h-full">
+        <div className="bg-[#1D1D1F] border border-white/[0.05] p-6 rounded-[2rem] shadow-none space-y-8 relative overflow-hidden h-full">
           
           <h3 className="text-base font-bold text-white tracking-wide relative z-10">
             Simulated Math Outcome Projections
@@ -389,7 +389,7 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
             
             {/* Visual Gauge Comparison */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex flex-col justify-between items-center text-center space-y-6">
+            <div className="bg-[#222224] border border-white/5 rounded-2xl p-6 flex flex-col justify-between items-center text-center space-y-6">
               <span className="text-xs text-white/50 font-medium uppercase tracking-widest">Compliance Delta</span>
               
               <div className="relative flex items-center justify-center">

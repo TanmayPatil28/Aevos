@@ -89,7 +89,7 @@ export default function AttendanceIntelligenceModule({ preset }: AttendanceProps
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="pt-6 border-t border-white/5 space-y-8">
+              <div className="pt-6 border-t border-white/20 space-y-8">
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <Input 

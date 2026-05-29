@@ -39,7 +39,7 @@ export default function CourseDataGrid({ termId, initialCourses }: { termId: str
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-x-auto overflow-y-hidden shadow-sm">
+    <div className="bg-[#1D1D1F] border border-white/5 rounded-[24px] overflow-x-auto overflow-y-hidden">
       <table className="w-full text-left text-sm whitespace-nowrap min-w-[600px]">
         <thead className="bg-slate-800/50 text-slate-400 border-b border-slate-800 text-xs uppercase tracking-wider">
           <tr>

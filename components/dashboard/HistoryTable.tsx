@@ -68,7 +68,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
       <div className="overflow-x-auto relative z-10">
         <table className="w-full text-left min-w-[600px]">
           <thead>
-            <tr className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] border-b border-white/[0.05]">
+            <tr className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] border-b border-white/20">
               <th className="pb-4 px-4 whitespace-nowrap">Index</th>
               <th className="pb-4 px-4 whitespace-nowrap">Date</th>
               <th className="pb-4 px-4 whitespace-nowrap">Semester</th>
@@ -78,7 +78,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
               <th className="pb-4 px-4 text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/[0.03]">
+          <tbody className="divide-y divide-white/20">
             <AnimatePresence mode="popLayout">
               {filteredCalculations.map((calc, index) => (
                 <motion.tr
@@ -161,7 +161,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
         )}
       </div>
 
-      <div className="mt-10 pt-6 border-t border-white/[0.05] flex items-center justify-between text-[10px] font-black text-white/20 uppercase tracking-[0.3em] relative z-10">
+      <div className="mt-10 pt-6 border-t border-white/20 flex items-center justify-between text-[10px] font-black text-white/20 uppercase tracking-[0.3em] relative z-10">
         <p>Telemetry: {filteredCalculations.length} of {calculations.length} Frames</p>
         <div className="flex items-center gap-4">
           <button className="px-5 py-2 rounded-full border border-white/[0.05] opacity-30 cursor-not-allowed">Previous</button>
@@ -188,7 +188,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 200, mass: 0.8 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-[#000000]/80 backdrop-blur-[100px] border-l border-white/[0.08] z-[101] shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-y-auto custom-scrollbar"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-[#000000]/80 backdrop-blur-[100px] border-l border-white/20 z-[101] shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-y-auto custom-scrollbar"
             >
               {/* Refractive Inner Borders */}
               <div className="absolute inset-y-0 left-0 w-[0.5px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />

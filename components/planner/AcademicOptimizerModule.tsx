@@ -118,7 +118,7 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
       
       <div className="relative z-10 space-y-12">
         {/* Header section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/20 pb-8">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center border border-blue-500/20">
               <BrainCircuit className="text-blue-400" size={28} />
@@ -129,7 +129,7 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
             </div>
           </div>
 
-          <div className={`px-4 py-2 rounded-xl border flex flex-col items-end ${risk.color} bg-black/40`}>
+          <div className={`px-4 py-2 rounded-xl border flex flex-col items-end ${risk.color} bg-[#1D1D1F]`}>
             <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">Risk Prediction</span>
             <span className="font-black text-lg">{risk.level}</span>
           </div>
@@ -172,7 +172,7 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
                 key={path.id}
                 onClick={() => setExpandedPath(expandedPath === path.id ? null : path.id)}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col h-full ${
-                  expandedPath === path.id ? "bg-white/10 border-white/30" : "bg-black/40 border-white/5 hover:bg-white/5 hover:border-white/20"
+                  expandedPath === path.id ? "bg-white/10 border-white/30" : "bg-[#1D1D1F] border-white/5 hover:bg-white/5 hover:border-white/20"
                 } ${path.isRecommended ? "ring-1 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : ""}`}
               >
                 <div className={`w-8 h-8 rounded-full mb-4 flex items-center justify-center border ${path.color}`}>
@@ -206,10 +206,10 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
                   <p className="text-sm text-white/70 mb-6">{paths.find(p => p.id === expandedPath)?.description}</p>
                   
                   {/* Tradeoff Visualization Map */}
-                  <div className="mt-6 border-t border-white/10 pt-4">
+                  <div className="mt-6 border-t border-white/20 pt-4">
                     <h5 className="text-xs uppercase tracking-widest text-on-surface-variant font-bold mb-4">Tradeoff Analysis</h5>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-xl bg-black/30 border border-white/5">
+                      <div className="p-4 rounded-xl bg-[#1D1D1F] border border-white/5">
                         <div className="text-[10px] text-white/40 uppercase font-bold mb-2 tracking-wider flex items-center gap-1">
                           <Target size={12} /> The Choice
                         </div>
@@ -249,7 +249,7 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
         </div>
 
         {/* Statutory Matrix Component integrated seamlessly */}
-        <div className="pt-8 border-t border-white/10">
+        <div className="pt-8 border-t border-white/20">
           <CalculationBreakdown 
             preset={preset}
             type="cgpa"

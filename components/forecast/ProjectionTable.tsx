@@ -24,7 +24,7 @@ export default function ProjectionTable({ projections, targetCgpa }: ProjectionT
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-white/5 bg-white/[0.02] text-[10px] text-white/40 uppercase font-semibold tracking-wider">
+            <tr className="border-b border-white/20 bg-white/[0.02] text-[10px] text-white/40 uppercase font-semibold tracking-wider">
               <th className="py-4 px-6">Semester</th>
               <th className="py-4 px-6 text-center">Assumed SGPA</th>
               <th className="py-4 px-6 text-center">Cumulative Credits</th>
@@ -33,7 +33,7 @@ export default function ProjectionTable({ projections, targetCgpa }: ProjectionT
               <th className="py-4 px-6 text-right">Goal Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 text-xs text-white/80">
+          <tbody className="divide-y divide-white/20 text-xs text-white/80">
             {projections.map((proj) => {
               const meetsTarget = proj.projectedCgpa >= targetCgpa;
 

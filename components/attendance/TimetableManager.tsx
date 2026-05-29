@@ -198,17 +198,14 @@ export default function TimetableManager() {
   const filteredTotal = DAYS_OF_WEEK.reduce((acc, day) => acc + getFilteredEntries(day).length, 0);
 
   return (
-    <div className="w-full bg-black/60 backdrop-blur-3xl border border-white/[0.05] rounded-[2rem] p-6 md:p-8 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] relative overflow-hidden">
-      {/* Ambient Glows */}
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#A855F7]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -left-32 w-48 h-48 bg-[#4F8EF7]/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="w-full bg-[#1D1D1F] border border-white/5 rounded-[2rem] p-6 md:p-8 shadow-none relative overflow-hidden">
       
       {/* Header */}
       <div className="relative z-10 flex flex-col gap-6 mb-8">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
             <h3 className="text-xl font-bold text-white tracking-wide flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#A855F7] drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+              <Calendar className="w-5 h-5 text-[#A855F7]" />
               Timetable Intelligence
             </h3>
             <p className="text-xs text-white/40 mt-1.5 max-w-lg leading-relaxed">
@@ -292,7 +289,7 @@ export default function TimetableManager() {
                 <div className="flex flex-col md:flex-row gap-6 bg-white/[0.015] border border-white/[0.05] rounded-2xl overflow-hidden min-h-[400px]">
                   
                   {/* LEFT PANE: Days List */}
-                  <div className="w-full md:w-[220px] shrink-0 border-b md:border-b-0 md:border-r border-white/[0.05] bg-black/20 p-4 space-y-1">
+                  <div className="w-full md:w-[220px] shrink-0 border-b md:border-b-0 md:border-r border-white/20 bg-black/20 p-4 space-y-1">
                     {DAYS_OF_WEEK.map(day => {
                       const count = getFilteredEntries(day).length;
                       const isActive = selectedDay === day;
@@ -561,7 +558,7 @@ export default function TimetableManager() {
 
               {/* Pre-built Prompt Preview */}
               <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden">
-                <div className="flex justify-between items-center px-4 py-3 border-b border-white/[0.05] bg-white/[0.02]">
+                <div className="flex justify-between items-center px-4 py-3 border-b border-white/20 bg-white/[0.02]">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Generated Prompt Preview</span>
                   <span className="text-[9px] font-mono text-white/30">{courses.length} courses detected</span>
                 </div>

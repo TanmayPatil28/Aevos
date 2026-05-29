@@ -71,7 +71,7 @@ export default function BacklogRecoveryModule(props: BacklogProps) {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="pt-6 border-t border-white/5 space-y-8">
+              <div className="pt-6 border-t border-white/20 space-y-8">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input 
@@ -116,7 +116,7 @@ export default function BacklogRecoveryModule(props: BacklogProps) {
                       </div>
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-black/40 border border-white/5">
+                    <div className="p-5 rounded-2xl bg-[#1D1D1F] border border-white/5">
                       <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
                         <RefreshCcw size={16} className="text-amber-400" />
                         Recommended Clearance Roadmap

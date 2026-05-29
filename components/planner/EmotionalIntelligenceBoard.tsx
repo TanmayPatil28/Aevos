@@ -74,7 +74,7 @@ export default function EmotionalIntelligenceBoard({ currentCgpa, targetCgpa, re
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-12">
       {/* Confidence Meter */}
-      <Card className="flex flex-col p-5 bg-[#2A2A2D]/40 backdrop-blur-md border border-white/5 relative overflow-hidden group">
+      <Card className="flex flex-col p-5 bg-[#1D1D1F] border border-white/5 relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 opacity-50" />
         <div className="flex items-center gap-2 mb-2">
           <Target size={16} className="text-emerald-400" />
@@ -95,7 +95,7 @@ export default function EmotionalIntelligenceBoard({ currentCgpa, targetCgpa, re
       </Card>
 
       {/* Stress Indicator */}
-      <Card className="flex flex-col p-5 bg-[#2A2A2D]/40 backdrop-blur-md border border-white/5 relative overflow-hidden group">
+      <Card className="flex flex-col p-5 bg-[#1D1D1F] border border-white/5 relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-400 to-rose-600 opacity-50" />
         <div className="flex items-center gap-2 mb-2">
           <Activity size={16} className="text-rose-400" />
@@ -116,7 +116,7 @@ export default function EmotionalIntelligenceBoard({ currentCgpa, targetCgpa, re
       </Card>
 
       {/* Momentum Score */}
-      <Card className="flex flex-col p-5 bg-[#2A2A2D]/40 backdrop-blur-md border border-white/5 relative overflow-hidden group">
+      <Card className="flex flex-col p-5 bg-[#1D1D1F] border border-white/5 relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-cyan-600 opacity-50" />
         <div className="flex items-center gap-2 mb-2">
           <Zap size={16} className="text-cyan-400" />
@@ -137,7 +137,7 @@ export default function EmotionalIntelligenceBoard({ currentCgpa, targetCgpa, re
       </Card>
 
       {/* Recovery Hope Indicator */}
-      <Card className="flex flex-col p-5 bg-[#2A2A2D]/40 backdrop-blur-md border border-white/5 relative overflow-hidden group">
+      <Card className="flex flex-col p-5 bg-[#1D1D1F] border border-white/5 relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-purple-600 opacity-50" />
         <div className="flex items-center gap-2 mb-2">
           <ShieldAlert size={16} className="text-purple-400" />

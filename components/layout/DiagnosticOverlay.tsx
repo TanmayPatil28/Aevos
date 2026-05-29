@@ -40,7 +40,7 @@ export default function DiagnosticOverlay() {
       {isOpen && (
         <div className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#131C31] border border-white/20 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
-            <div className="flex justify-between items-center p-4 border-b border-white/10">
+            <div className="flex justify-between items-center p-4 border-b border-white/20">
               <h2 className="text-white font-mono font-bold">Diagnostics Dump</h2>
               <button onClick={() => setIsOpen(false)} className="text-white/50 hover:text-white">✕</button>
             </div>

@@ -38,7 +38,7 @@ export default function UnifiedCalculatorPage() {
       </motion.div>
 
       {/* Header and Content Container */}
-      <div className="relative z-10 w-full px-4 md:px-8 max-w-[1400px] mx-auto pt-24 md:pt-32 pb-4 flex flex-col xl:flex-row justify-between items-start gap-8">
+      <div className="relative z-10 w-full px-4 md:px-8 max-w-[1400px] mx-auto pt-12 md:pt-16 pb-4 flex flex-col xl:flex-row justify-between items-start gap-8">
         
         {/* Left Side: Hero Text */}
         <div className="flex-1 max-w-4xl z-10">
@@ -54,7 +54,7 @@ export default function UnifiedCalculatorPage() {
         <div className="pointer-events-auto">
           <motion.div 
             layout
-            className="relative overflow-hidden flex items-center p-1.5 bg-black/60 border border-white/[0.08] rounded-full backdrop-blur-3xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]"
+            className="relative overflow-hidden flex items-center p-1.5 bg-[#1D1D1F] border border-white/5 rounded-full"
           >
             {/* Active Highlight Background */}
             <div 
@@ -93,7 +93,7 @@ export default function UnifiedCalculatorPage() {
       </div>
 
       {/* Calculator Content Area */}
-      <div className="relative z-10 w-full px-4 md:px-8 max-w-[1400px] mx-auto mt-4 xl:mt-4">
+      <div className="relative z-10 w-full px-4 md:px-8 max-w-[1400px] mx-auto mt-8 xl:mt-12">
         <AnimatePresence mode="wait">
           <motion.div
             key={mode}

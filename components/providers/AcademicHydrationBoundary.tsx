@@ -64,7 +64,7 @@ function BootSequence() {
            {/* Scanline effect */}
            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[length:100%_4px] pointer-events-none" />
            
-           <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 relative z-10">
+           <div className="flex justify-between items-center mb-6 border-b border-white/20 pb-4 relative z-10">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#4F8EF7] flex items-center gap-3">
                  <div className="w-2 h-2 bg-[#4F8EF7] rounded-full animate-pulse shadow-[0_0_10px_#4F8EF7]" />
                  GradeFlow OS

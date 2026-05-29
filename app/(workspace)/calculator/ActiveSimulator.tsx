@@ -222,26 +222,25 @@ export default function CalculatorPage() {
             ======================================= */}
               <div className="w-full flex flex-col gap-6">
 
-                <div className="relative overflow-hidden bg-black/60 backdrop-blur-3xl border border-white/[0.05] px-6 py-5 rounded-[2rem] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] shrink-0 mt-2 flex justify-between items-center group">
-                  <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#4F8EF7]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#4F8EF7]/15 transition-colors duration-500" />
+                <div className="relative overflow-hidden bg-[#1D1D1F] border border-white/5 px-6 py-5 rounded-[32px] shrink-0 mt-2 flex justify-between items-center group shadow-none">
 
                   <div className="flex items-center gap-3 relative z-10">
-                    <Calculator className="text-[#4F8EF7] w-5 h-5 drop-shadow-[0_0_8px_rgba(79,142,247,0.5)]" />
-                    <span className="font-bold text-white tracking-tight text-lg">Course Ledger Overview</span>
+                    <Calculator className="text-[#4F8EF7] w-5 h-5" />
+                    <span className="font-bold text-[#F5F5F7] tracking-tight text-lg">Course Ledger Overview</span>
                   </div>
 
                   <div className="flex items-center gap-3 relative z-10">
                     {hasChanges && (
                       <button
                         onClick={handleReset}
-                        className="text-[10px] font-black uppercase tracking-widest text-white/50 bg-white/[0.03] px-4 py-2 rounded-xl hover:bg-white/[0.08] hover:text-white border border-transparent hover:border-white/10 transition-all flex items-center gap-1.5 shadow-sm"
+                        className="text-[10px] font-black uppercase tracking-widest text-[#86868b] bg-[#2c2c2e] px-4 py-2 rounded-xl hover:bg-[#3a3a3c] hover:text-[#F5F5F7] transition-colors flex items-center gap-1.5"
                       >
                         <RotateCcw size={12} /> Reset
                       </button>
                     )}
                     <button
                       onClick={handleAddTemporary}
-                      className="text-[10px] font-black uppercase tracking-widest text-[#4F8EF7] bg-[#4F8EF7]/10 px-4 py-2 rounded-xl hover:bg-[#4F8EF7]/20 border border-[#4F8EF7]/30 hover:border-[#4F8EF7]/50 hover:shadow-[0_0_15px_rgba(79,142,247,0.2)] transition-all flex items-center gap-1.5"
+                      className="text-[10px] font-black uppercase tracking-widest text-[#4F8EF7] bg-[#4F8EF7]/10 px-4 py-2 rounded-xl hover:bg-[#4F8EF7]/20 transition-colors flex items-center gap-1.5"
                     >
                       <Plus size={12} /> Add Course
                     </button>
@@ -376,13 +375,13 @@ export default function CalculatorPage() {
                 <span className="text-white/40 font-medium text-lg mt-6 tracking-tight">out of {preset?.gradeScale[0]?.points || 10}.0 maximum scale.</span>
               </div>
 
-              <div className="flex flex-col w-full border-t border-white/[0.08] pt-8 gap-8 mt-2">
+              <div className="flex flex-col w-full border-t border-white/20 pt-8 gap-8 mt-2">
                 <div className="flex flex-col">
                   <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Projected CGPA</span>
                   <AnimatedCounter target={projectedCGPA} decimals={2} className="text-4xl font-semibold tracking-tighter text-white" />
                 </div>
                 
-                <div className="w-full h-px bg-white/[0.08]" />
+                <div className="w-full h-px bg-white/20" />
 
                 <div className="flex flex-col">
                   <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Current Standing</span>
@@ -390,7 +389,7 @@ export default function CalculatorPage() {
                 </div>
               </div>
 
-              <div className="mt-6 pt-8 border-t border-white/[0.08]">
+              <div className="mt-6 pt-8 border-t border-white/20">
                 <div className="flex gap-3">
                   {hasChanges && (
                     <button
@@ -537,7 +536,7 @@ export default function CalculatorPage() {
                 />
 
                 {/* Apple-style statutory footnotes */}
-                <div className="mt-10 pt-8 border-t border-white/5 flex flex-col gap-3">
+                <div className="mt-10 pt-8 border-t border-white/20 flex flex-col gap-3">
                   <p className="text-[11px] md:text-xs text-gray-500 leading-relaxed font-medium">
                     <span className="text-gray-400">1. Projections vs Official Records:</span> These projections are highly accurate planning tools based on official formulas. However, they are for your personal guidance and do not serve as official or legally binding academic records.
                   </p>

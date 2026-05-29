@@ -78,7 +78,7 @@ export default function ProfileOptimizerModule(props: ProfileProps) {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="pt-6 border-t border-white/5 space-y-6">
+              <div className="pt-6 border-t border-white/20 space-y-6">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* LinkedIn Section */}
@@ -95,7 +95,7 @@ export default function ProfileOptimizerModule(props: ProfileProps) {
                             {copiedSection === 'headline' ? <CheckCircle size={14} /> : <Copy size={14} />}
                           </button>
                         </div>
-                        <div className="p-3 rounded-lg bg-black/40 border border-[#0077b5]/20 text-xs text-white/80 font-mono leading-relaxed">
+                        <div className="p-3 rounded-lg bg-[#1D1D1F] border border-[#0077b5]/20 text-xs text-white/80 font-mono leading-relaxed">
                           {linkedinHeadline}
                         </div>
                       </div>
@@ -107,7 +107,7 @@ export default function ProfileOptimizerModule(props: ProfileProps) {
                             {copiedSection === 'about' ? <CheckCircle size={14} /> : <Copy size={14} />}
                           </button>
                         </div>
-                        <div className="p-3 rounded-lg bg-black/40 border border-[#0077b5]/20 text-xs text-white/80 font-mono leading-relaxed whitespace-pre-wrap">
+                        <div className="p-3 rounded-lg bg-[#1D1D1F] border border-[#0077b5]/20 text-xs text-white/80 font-mono leading-relaxed whitespace-pre-wrap">
                           {linkedinAbout}
                         </div>
                       </div>
@@ -128,7 +128,7 @@ export default function ProfileOptimizerModule(props: ProfileProps) {
                             {copiedSection === 'github' ? <CheckCircle size={14} /> : <Copy size={14} />}
                           </button>
                         </div>
-                        <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-white/80 font-mono leading-relaxed whitespace-pre-wrap flex-1 overflow-y-auto max-h-[200px]">
+                        <div className="p-3 rounded-lg bg-[#1D1D1F] border border-white/10 text-xs text-white/80 font-mono leading-relaxed whitespace-pre-wrap flex-1 overflow-y-auto max-h-[200px]">
                           {githubReadme}
                         </div>
                       </div>

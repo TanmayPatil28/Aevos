@@ -42,7 +42,7 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 opacity-50" />
       
       <div className="relative z-10 space-y-12">
-        <div className="flex items-center gap-4 border-b border-white/10 pb-8">
+        <div className="flex items-center gap-4 border-b border-white/20 pb-8">
           <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/20">
             <Briefcase className="text-indigo-400" size={28} />
           </div>
@@ -94,13 +94,13 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-white/5 bg-black/40"
+                        className="border-t border-white/20 bg-[#1D1D1F]"
                       >
                         <div className="p-5 space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Criteria vs Reality</span>
-                              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                              <div className="flex items-center justify-between p-3 rounded-xl bg-[#252527] border border-white/5">
                                 <span className="text-sm text-white/70">Min CGPA</span>
                                 <span className={`font-bold font-mono ${projectedCgpa >= company.cgpaCutoff ? 'text-emerald-400' : 'text-red-400'}`}>
                                   {projectedCgpa.toFixed(2)} / {company.cgpaCutoff.toFixed(1)}
@@ -141,7 +141,7 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
         </div>
 
         {/* Skill Roadmap Engine */}
-        <div className="pt-8 border-t border-white/10 space-y-6">
+        <div className="pt-8 border-t border-white/20 space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
               <Map size={16} /> Skill Roadmap Engine

@@ -5,17 +5,30 @@ import { useTheme } from "next-themes";
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Moon, Sun, ArrowRight } from "lucide-react";
-import UniversitySelector from "@/components/UniversitySelector";
-import OSModeSwitcher from "@/components/OSModeSwitcher";
+import { UniversityTrigger } from "@/components/UniversitySelector";
+import { OSModeTrigger } from "@/components/OSModeSwitcher";
 
-export default function NavbarActionSuite() {
+export type ActiveMenu = "intelligence" | "university" | "os" | null;
+
+interface NavbarActionSuiteProps {
+  activeMenu: ActiveMenu;
+  setActiveMenu: (menu: ActiveMenu) => void;
+}
+
+export default function NavbarActionSuite({ activeMenu, setActiveMenu }: NavbarActionSuiteProps) {
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
 
   return (
-    <div className="hidden md:flex items-center gap-4">
-      <OSModeSwitcher />
-      <UniversitySelector variant="navbar" />
+    <div className="hidden md:flex items-center gap-2">
+      <OSModeTrigger 
+        isOpen={activeMenu === "os"} 
+        onClick={() => setActiveMenu(activeMenu === "os" ? null : "os")} 
+      />
+      <UniversityTrigger 
+        isOpen={activeMenu === "university"} 
+        onClick={() => setActiveMenu(activeMenu === "university" ? null : "university")} 
+      />
 
       <button
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

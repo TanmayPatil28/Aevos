@@ -80,12 +80,12 @@ const MODULES = [
 ];
 
 const FetchedDisplay = ({ label, value, decimals = 1, showFetched = true }: { label: string; value: number; decimals?: number, showFetched?: boolean }) => (
-  <div className="flex flex-col relative p-5 bg-white/[0.01] border border-white/[0.03] rounded-[1.5rem] shadow-inner opacity-70 cursor-not-allowed">
-    <span className="font-bold tracking-[0.2em] text-[10px] uppercase mb-2 text-white/30 flex items-center justify-between">
+  <div className="flex flex-col relative p-5 bg-[#1D1D1F] border border-white/5 rounded-[1.5rem] shadow-none cursor-not-allowed">
+    <span className="font-bold tracking-[0.2em] text-[10px] uppercase mb-2 text-white/40 flex items-center justify-between">
       {label}
-      {showFetched && <span className="text-[9px] bg-blue-500/10 text-blue-400/60 px-2 py-0.5 rounded-full tracking-wider border border-blue-500/20">FETCHED</span>}
+      {showFetched && <span className="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full tracking-wider border border-blue-500/20">FETCHED</span>}
     </span>
-    <div className="text-4xl md:text-5xl font-black text-white/50 tracking-tighter">
+    <div className="text-4xl md:text-5xl font-black text-white/60 tracking-tighter">
       {value.toFixed(decimals)}
     </div>
   </div>
@@ -93,7 +93,7 @@ const FetchedDisplay = ({ label, value, decimals = 1, showFetched = true }: { la
 
 const ManualNumberInput = ({ label, value, onChange, min, max, step, decimals = 2 }: any) => {
   return (
-    <div className="flex flex-col relative p-5 bg-white/[0.04] border border-white/[0.1] hover:border-white/[0.2] transition-colors rounded-[1.5rem] shadow-inner focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.02]">
+    <div className="flex flex-col relative p-5 bg-[#1D1D1F] border border-white/10 hover:border-white/20 transition-colors rounded-[1.5rem] shadow-none focus-within:border-blue-500/50">
       <span className="font-bold tracking-[0.2em] text-[10px] uppercase mb-2 text-blue-400 flex items-center justify-between">
         {label}
         <span className="material-symbols-outlined text-[14px]">edit</span>
@@ -217,7 +217,7 @@ export default function PlannerPage() {
             </p>
           </motion.div>
 
-          <div className="flex flex-col gap-10 border-t border-white/[0.08] pt-10">
+          <div className="flex flex-col gap-10 border-t border-white/20 pt-10">
             {/* Context */}
             <motion.div 
               className="flex flex-col gap-6"
@@ -270,7 +270,7 @@ export default function PlannerPage() {
         </div>
 
         {/* RIGHT COLUMN: Results Sticky */}
-        <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-32 h-fit relative z-10 w-full pt-10 border-t border-white/[0.08] lg:border-t-0 lg:pt-0">
+        <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-32 h-fit relative z-10 w-full pt-10 border-t border-white/20 lg:border-t-0 lg:pt-0">
           <AnimatePresence mode="wait">
             {!isValidTarget || !result ? (
               <motion.div 
@@ -298,13 +298,13 @@ export default function PlannerPage() {
                 <AnimatedCounter target={result.requiredGPA} decimals={2} className={`text-[6rem] lg:text-[7rem] xl:text-[9rem] font-semibold tracking-tighter leading-[0.8] ${result.isImpossible ? 'text-red-500' : 'text-white'}`} />
                 <span className="text-white/40 font-medium text-lg mt-6 tracking-tight">out of {maxGradePoint}.0 maximum scale.</span>
               
-              <div className="flex flex-col w-full border-t border-white/[0.08] pt-8 gap-8 mt-12">
+              <div className="flex flex-col w-full border-t border-white/20 pt-8 gap-8 mt-12">
                 <div className="flex flex-col">
                   <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">CGPA Gap</span>
                   <AnimatedCounter target={result.gap} decimals={2} className="text-4xl font-semibold tracking-tighter text-white" />
                 </div>
                 
-                <div className="w-full h-px bg-white/[0.08]" />
+                <div className="w-full h-px bg-white/20" />
 
                 <div className="flex flex-col">
                   <span className="text-white/40 font-bold tracking-[0.2em] text-[10px] mb-3 uppercase">Difficulty</span>
@@ -319,7 +319,7 @@ export default function PlannerPage() {
 
       {/* PHASE 2: APPLE PILL EXPLORER */}
       <motion.div 
-        className="max-w-[1400px] mx-auto w-full mt-40 border-t border-white/[0.08] pt-32 mb-32"
+        className="max-w-[1400px] mx-auto w-full mt-40 border-t border-white/20 pt-32 mb-32"
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
@@ -448,7 +448,7 @@ export default function PlannerPage() {
                     ease: [0.32, 0.72, 0, 1],
                     filter: { duration: 0.3 }
                   }}
-                  className="w-full h-full absolute inset-0 bg-[#0a0a0a] border border-white/[0.08] rounded-[2rem] p-8 overflow-hidden flex flex-col shadow-2xl"
+                  className="w-full h-full absolute inset-0 bg-[#0a0a0a] border border-white/20 rounded-[2rem] p-8 overflow-hidden flex flex-col shadow-2xl"
                 >
                   {MODULES.map((mod) => (
                     activeModule === mod.id && (

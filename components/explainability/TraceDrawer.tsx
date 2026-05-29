@@ -51,13 +51,13 @@ export default function TraceDrawer({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 220 }}
-            className="fixed bottom-0 left-0 right-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl border-t border-white/10 bg-slate-900/95 p-6 shadow-2xl backdrop-blur-xl md:left-auto md:right-4 md:top-20 md:bottom-auto md:w-[480px] md:rounded-3xl md:border"
+            className="fixed bottom-0 left-0 right-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl border-t border-white/20 bg-slate-900/95 p-6 shadow-2xl backdrop-blur-xl md:left-auto md:right-4 md:top-20 md:bottom-auto md:w-[480px] md:rounded-3xl md:border"
           >
             {/* Grabber indicator for mobile swipes */}
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/20 md:hidden" />
 
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-white/20 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/20 text-violet-400">
                   <ShieldCheck className="h-5 w-5" />
@@ -128,7 +128,7 @@ export default function TraceDrawer({
                   <h4 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
                     Parameter Resolution (Active State)
                   </h4>
-                  <div className="divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/5 bg-black/20">
+                  <div className="divide-y divide-white/20 overflow-hidden rounded-2xl border border-white/5 bg-black/20">
                     {variables.map((v, i) => (
                       <div
                         key={i}

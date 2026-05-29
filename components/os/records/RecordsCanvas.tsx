@@ -54,7 +54,7 @@ export default function RecordsCanvas() {
         )}
 
         {flowState === "UPLOADING" && (
-          <div className="w-full h-64 border-2 border-dashed border-slate-700/50 rounded-xl bg-slate-900 flex flex-col items-center justify-center gap-4">
+          <div className="w-full h-64 border-2 border-dashed border-white/10 rounded-[32px] bg-[#1D1D1F] flex flex-col items-center justify-center gap-4">
             <span className="material-symbols-outlined text-4xl text-indigo-400 animate-pulse">document_scanner</span>
             <div className="text-slate-300 font-medium">Reading your results...</div>
             <div className="text-xs text-slate-500">This usually takes just a few seconds.</div>
@@ -69,7 +69,7 @@ export default function RecordsCanvas() {
         )}
 
         {flowState === "SUCCESS" && (
-          <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center gap-6 mt-12 shadow-sm animate-fade-in">
+          <div className="w-full bg-[#1D1D1F] border border-white/5 rounded-[32px] p-8 flex flex-col items-center justify-center gap-6 mt-12 animate-fade-in">
             <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center">
               <span className="material-symbols-outlined text-3xl text-emerald-400">check_circle</span>
             </div>
@@ -105,7 +105,7 @@ export default function RecordsCanvas() {
       {flowState === "IDLE" && (
         <div className="pt-8 border-t border-slate-800/50">
           <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Past Imports</h3>
-          <div className="bg-slate-900 border border-slate-800 rounded-lg divide-y divide-slate-800">
+          <div className="bg-[#1D1D1F] border border-white/5 rounded-2xl divide-y divide-white/20">
             {/* Mock History Item */}
             <div className="p-4 flex items-center justify-between group hover:bg-slate-800/30 transition-colors">
               <div className="flex items-center gap-4">

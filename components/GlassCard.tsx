@@ -43,13 +43,9 @@ export default function GlassCard({ children, className, interactive = true, ...
         transition: { type: "spring", stiffness: 400, damping: 25 } 
       } : {}}
       className={cn(
-        "glass-card p-8 relative overflow-hidden transition-all duration-700 bg-surface/30 backdrop-blur-[40px] group",
-        interactive && "hover:shadow-premium-hover",
+        "solid-card p-8 relative overflow-hidden transition-all duration-700 bg-[#1D1D1F] rounded-[24px] border border-white/5 group",
         className
       )} 
-      style={{
-        boxShadow: "var(--shadow-premium), inset 0 1.5px 0 0 rgba(255,255,255,0.15), inset 0 0 0 1px rgba(255,255,255,0.05)",
-      }}
       {...props}
     >
       {/* 1. Physically-Correct Glint (follows mouse) */}

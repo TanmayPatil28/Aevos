@@ -50,7 +50,7 @@ export default function AcademicAdvisorBanner({ status }: AcademicAdvisorBannerP
   }
 
   return (
-    <div className={`p-4 rounded-xl border ${bgColor} flex items-start gap-4 transition-all duration-300 backdrop-blur-sm`}>
+    <div className={`p-4 rounded-xl border ${bgColor} flex items-start gap-4 transition-all duration-300`}>
       <div className="shrink-0 mt-0.5 p-2 bg-slate-950/50 rounded-lg">
         {icon}
       </div>
