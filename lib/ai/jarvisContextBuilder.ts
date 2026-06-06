@@ -12,13 +12,30 @@ import {
   selectSemesterCredits,
 } from "@/stores/selectors";
 
+// Page context descriptions for JARVIS awareness
+const PAGE_CONTEXTS: Record<string, string> = {
+  "/": "Landing page",
+  "/dashboard": "Main Command Center dashboard with risk widgets and academic overview",
+  "/attendance": "Attendance tracker & bunk calculator — managing class attendance",
+  "/calculator": "Grade calculator — computing SGPA and CGPA",
+  "/placement": "Placement radar — checking career eligibility",
+  "/forecast": "Academic forecasting — predicting future performance",
+  "/backlog": "Backlog recovery — managing failed subjects",
+  "/planner": "Academic planner — setting grade targets",
+  "/timeline": "Academic timeline — viewing semester history",
+  "/multi-semester": "Multi-semester roadmap — long-term planning",
+};
+
 /**
  * JARVIS Context Builder
  * Serializes the entire GradeFlow intelligence layer into a compact
  * context string that Gemini can reason over.
  */
-export function buildJarvisContext(): string {
+export function buildJarvisContext(currentRoute?: string): string {
   const state = useUSMStore.getState();
+
+  // Page awareness
+  const pageContext = currentRoute ? (PAGE_CONTEXTS[currentRoute] || `Page: ${currentRoute}`) : "Unknown page";
 
   // Core GPA
   const gpa = selectDerivedGPA(state);
@@ -32,6 +49,7 @@ export function buildJarvisContext(): string {
 
   // Compact course list
   const courseList = courses.map(c => ({
+    id: c.id,
     name: c.name,
     code: c.code,
     credits: c.credits,
@@ -64,6 +82,8 @@ export function buildJarvisContext(): string {
   }
 
   const context = {
+    currentPage: pageContext,
+    currentRoute: currentRoute || "/",
     student: {
       name: state.identity?.studentIdentity?.name || "Student",
       university: state.presetId || "Unknown",
@@ -106,6 +126,7 @@ export function buildJarvisContext(): string {
       targetCompanies: state.career?.targetCompanies || [],
     },
     backlogs: state.academic.activeBacklogsCount,
+    allCourseIds: courses.map(c => ({ id: c.id, code: c.code, name: c.name })),
     semesterHistory: state.semesterHistory?.map(s => ({
       semester: s.semester,
       sgpa: s.sgpa,

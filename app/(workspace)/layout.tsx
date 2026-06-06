@@ -6,9 +6,14 @@ import WorkspaceAtmosphere from "@/components/layout/WorkspaceAtmosphere";
 import WorkspacePanelContainer from "@/components/layout/WorkspacePanelContainer";
 import GlobalTerminal from "@/components/ui/GlobalTerminal";
 
+import JarvisNervousSystem from "@/components/ai/JarvisNervousSystem";
+import JarvisResumeModal from "@/components/ai/JarvisResumeModal";
+
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-[100dvh] bg-[#000000] relative">
+      <JarvisNervousSystem />
+      <JarvisResumeModal />
       <WorkspaceAtmosphere />
 
       {/* Workspace Canvas Container */}

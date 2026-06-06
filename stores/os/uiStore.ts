@@ -24,6 +24,16 @@ interface UIState {
   setInspectorEntity: (entity: UIState["activeInspectorEntity"]) => void;
   openInspector: (entity: UIState["activeInspectorEntity"]) => void;
   closeInspector: () => void;
+
+  // JARVIS Resume State
+  activeResumeData: {
+    company: string;
+    summary: string;
+    skills: string[];
+    coursework: string[];
+  } | null;
+  setResumeData: (data: UIState["activeResumeData"]) => void;
+  closeResume: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -36,4 +46,8 @@ export const useUIStore = create<UIState>((set) => ({
   setInspectorEntity: (entity) => set({ activeInspectorEntity: entity }),
   openInspector: (entity) => set({ activeInspectorEntity: entity }),
   closeInspector: () => set({ activeInspectorEntity: null }),
+
+  activeResumeData: null,
+  setResumeData: (data) => set({ activeResumeData: data }),
+  closeResume: () => set({ activeResumeData: null }),
 }));

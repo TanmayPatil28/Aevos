@@ -262,7 +262,7 @@ export function ExpandedActivity({ activity }: { activity: LiveActivity }) {
             onClick={handleTogglePause}
             className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors border border-white/5 shadow-lg active:scale-95"
           >
-            {isActive ? <Pause size={24} className="text-white" fill="currentColor" /> : <Play size={24} className="text-white" fill="currentColor" className="ml-1" />}
+            {isActive ? <Pause size={24} className="text-white" fill="currentColor" /> : <Play size={24} className="text-white ml-1" fill="currentColor" />}
           </button>
         </div>
       </motion.div>
@@ -431,11 +431,11 @@ export function ExpandedActivity({ activity }: { activity: LiveActivity }) {
     
     const handleLogAttendance = (e: React.MouseEvent, courseId: string, bunkedCount: number, totalCount: number, isBunk: boolean, courseName: string) => {
       e.stopPropagation();
-      updateCourse(courseId, { bunked: bunkedCount, total: totalCount });
+      updateCourse(courseId, { attendanceBunked: bunkedCount, attendanceTotal: totalCount });
       addAttendanceHistoryEvent({
         courseId,
-        date: new Date().toISOString().split("T")[0],
-        status: isBunk ? "ABSENT" : "PRESENT",
+        dateStr: new Date().toISOString().split("T")[0],
+        action: isBunk ? "BUNKED" : "ATTENDED",
       });
       // The BunkCalculatorController automatically syncs and updates the UI!
     };
@@ -607,18 +607,34 @@ interface JarvisHighlight {
   color: "blue" | "green" | "amber" | "red" | "purple" | "cyan";
 }
 
-interface JarvisResponse {
-  responseType: "data_card" | "action" | "advice" | "navigation" | "error";
+interface JarvisSuggestedAction {
+  label: string;
+  query: string;
+}
+
+interface JarvisAction {
+  type: "navigate" | "mark_attendance" | "set_target_cgpa" | "set_exam_countdown" | "show_alert" | "set_streak" | "none";
+  route?: string;
+  courseId?: string;
+  attendanceAction?: "ATTENDED" | "BUNKED";
+  value?: number;
+  subject?: string;
+  examDate?: string;
+  alertType?: "success" | "warning" | "error" | "info";
+  alertTitle?: string;
+  alertMessage?: string;
+  streakCount?: number;
+  streakType?: "study" | "attendance" | "assignment";
+  streakLabel?: string;
+}
+
+interface JarvisMetadata {
+  responseType: string;
   title: string;
-  message: string;
   highlights?: JarvisHighlight[];
-  action?: {
-    type: "navigate" | "update_attendance" | "set_target" | "none";
-    route?: string;
-    courseCode?: string;
-    data?: any;
-  };
+  action?: JarvisAction;
   followUp?: string | null;
+  suggestedActions?: JarvisSuggestedAction[];
 }
 
 const HIGHLIGHT_COLORS: Record<string, string> = {
@@ -643,20 +659,116 @@ const QUICK_COMMANDS = [
   { name: "Can I bunk today?", icon: AlertCircle, color: "text-red-400", query: "How many bunks do I have left in each subject?" },
   { name: "Am I placement ready?", icon: Zap, color: "text-cyan-400", query: "Check my placement eligibility across all companies" },
   { name: "What should I focus on?", icon: BookOpen, color: "text-purple-400", query: "Based on my current academic data, what should I focus on this week?" },
+  { name: "Academic health check", icon: CheckCircle2, color: "text-emerald-400", query: "Give me a full academic health report" },
+  { name: "Set my target CGPA", icon: Flame, color: "text-amber-400", query: "Set my target CGPA to 8.5" },
 ];
 
 export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [jarvisResponse, setJarvisResponse] = useState<JarvisResponse | null>(null);
+  const [streamedMessage, setStreamedMessage] = useState("");
+  const [metadata, setMetadata] = useState<JarvisMetadata | null>(null);
+  const [isDoneStreaming, setIsDoneStreaming] = useState(false);
   const router = useRouter();
   const inputRef = React.useRef<HTMLInputElement>(null);
+
+  // Execute JARVIS actions on stores
+  const executeAction = React.useCallback((action: JarvisAction) => {
+    const { useDynamicIslandStore: islandStore } = require("@/stores/dynamicIslandStore");
+    const { useUSMStore: usmStore } = require("@/stores/usmStore");
+
+    switch (action.type) {
+      case "navigate":
+        if (action.route) {
+          setTimeout(() => { router.push(action.route!); onClose(); }, 1500);
+        }
+        break;
+
+      case "mark_attendance":
+        if (action.courseId && action.attendanceAction) {
+          const store = usmStore.getState();
+          const course = store.courses.find((c: any) => c.id === action.courseId || c.code === action.courseId);
+          if (course) {
+            if (action.attendanceAction === "BUNKED") {
+              store.updateCourse(course.id, { attendanceBunked: course.attendanceBunked + 1 });
+            } else {
+              store.updateCourse(course.id, { attendanceTotal: course.attendanceTotal + 1 });
+            }
+            islandStore.getState().showAlert({
+              id: `jarvis-att-${Date.now()}`,
+              type: action.attendanceAction === "BUNKED" ? "warning" : "success",
+              title: action.attendanceAction === "BUNKED" ? "Bunk Recorded" : "Attendance Marked",
+              message: `${course.name} marked as ${action.attendanceAction.toLowerCase()}.`,
+              duration: 3000,
+            });
+          }
+        }
+        break;
+
+      case "set_target_cgpa":
+        if (action.value !== undefined) {
+          usmStore.getState().setAcademic({ targetCgpa: action.value });
+          islandStore.getState().showAlert({
+            id: `jarvis-target-${Date.now()}`,
+            type: "success",
+            title: "Target Updated",
+            message: `Target CGPA set to ${action.value}`,
+            duration: 3000,
+          });
+        }
+        break;
+
+      case "set_exam_countdown":
+        if (action.subject && action.examDate) {
+          const examDate = new Date(action.examDate);
+          const now = new Date();
+          const diffMs = examDate.getTime() - now.getTime();
+          const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+          const hours = Math.max(0, Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+
+          islandStore.getState().setExamCountdown({
+            id: `jarvis-exam-${Date.now()}`,
+            subject: action.subject,
+            examDate,
+            daysRemaining: days,
+            hoursRemaining: hours,
+            minutesRemaining: 0,
+            urgency: days <= 3 ? "critical" : days <= 7 ? "high" : days <= 14 ? "medium" : "low",
+          });
+        }
+        break;
+
+      case "show_alert":
+        if (action.alertTitle) {
+          islandStore.getState().showAlert({
+            id: `jarvis-alert-${Date.now()}`,
+            type: action.alertType || "info",
+            title: action.alertTitle,
+            message: action.alertMessage || "",
+            duration: 4000,
+          });
+        }
+        break;
+
+      case "set_streak":
+        if (action.streakCount) {
+          islandStore.getState().setStreak({
+            count: action.streakCount,
+            type: action.streakType || "study",
+            label: action.streakLabel || `${action.streakCount} Day Streak`,
+          });
+        }
+        break;
+    }
+  }, [router, onClose]);
 
   const executeQuery = async (userQuery: string) => {
     if (!userQuery.trim()) return;
 
     setIsProcessing(true);
-    setJarvisResponse(null);
+    setMetadata(null);
+    setStreamedMessage("");
+    setIsDoneStreaming(false);
 
     const command = userQuery.trim();
 
@@ -680,11 +792,11 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
       }
     }
 
-    // Layer 2: JARVIS AI — Full context query
+    // Layer 2: JARVIS AI — Full context streaming query
     try {
-      // Build context from stores (imported dynamically to avoid SSR issues)
       const { buildJarvisContext } = await import("@/lib/ai/jarvisContextBuilder");
-      const studentContext = buildJarvisContext();
+      const currentRoute = typeof window !== "undefined" ? window.location.pathname : "/";
+      const studentContext = buildJarvisContext(currentRoute);
 
       const res = await fetch("/api/jarvis", {
         method: "POST",
@@ -692,35 +804,90 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
         body: JSON.stringify({ query: command, studentContext })
       });
 
-      if (res.ok) {
-        const data: JarvisResponse = await res.json();
-        setJarvisResponse(data);
-
-        // Auto-execute navigation actions
-        if (data.action?.type === "navigate" && data.action.route) {
-          setTimeout(() => {
-            router.push(data.action!.route!);
-            onClose();
-          }, 2000); // Show the card for 2s before navigating
-        }
-      } else {
-        setJarvisResponse({
+      if (!res.ok) {
+        setMetadata({
           responseType: "error",
           title: "Connection Error",
-          message: "Could not reach JARVIS. Check your API key in .env.local.",
           highlights: [],
           action: { type: "none" },
         });
+        setStreamedMessage("Could not reach JARVIS. Check your API key in .env.local.");
+        setIsDoneStreaming(true);
+        setIsProcessing(false);
+        return;
       }
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No stream reader");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let metadataReceived = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === "metadata") {
+              setMetadata(parsed);
+              metadataReceived = true;
+              setIsProcessing(false);
+              // Execute action immediately
+              if (parsed.action && parsed.action.type !== "none") {
+                executeAction(parsed.action);
+              }
+            } else if (parsed.type === "chunk") {
+              setStreamedMessage(prev => prev + parsed.text);
+            } else if (parsed.type === "done") {
+              setIsDoneStreaming(true);
+            }
+          } catch {
+            // Skip malformed JSON lines
+          }
+        }
+      }
+
+      // Handle non-streaming responses (fallback)
+      if (!metadataReceived && buffer.trim()) {
+        try {
+          const data = JSON.parse(buffer);
+          setMetadata({
+            responseType: data.responseType || "advice",
+            title: data.title || "JARVIS",
+            highlights: data.highlights || [],
+            action: data.action || { type: "none" },
+            followUp: data.followUp,
+            suggestedActions: data.suggestedActions,
+          });
+          setStreamedMessage(data.message || buffer);
+          if (data.action && data.action.type !== "none") {
+            executeAction(data.action);
+          }
+        } catch {
+          setMetadata({ responseType: "advice", title: "JARVIS", highlights: [] });
+          setStreamedMessage(buffer);
+        }
+        setIsDoneStreaming(true);
+      }
+
     } catch (err) {
       console.error("JARVIS Error:", err);
-      setJarvisResponse({
+      setMetadata({
         responseType: "error",
         title: "System Failure",
-        message: "JARVIS encountered an internal error. Please try again.",
         highlights: [],
         action: { type: "none" },
       });
+      setStreamedMessage("JARVIS encountered an internal error. Please try again.");
+      setIsDoneStreaming(true);
     } finally {
       setIsProcessing(false);
     }
@@ -731,8 +898,9 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
       executeQuery(query);
     }
     if (e.key === "Escape") {
-      if (jarvisResponse) {
-        setJarvisResponse(null);
+      if (metadata) {
+        setMetadata(null);
+        setStreamedMessage("");
         setQuery("");
       } else {
         onClose();
@@ -740,13 +908,7 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleFollowUp = () => {
-    if (jarvisResponse?.followUp) {
-      setQuery(jarvisResponse.followUp);
-      setJarvisResponse(null);
-      executeQuery(jarvisResponse.followUp);
-    }
-  };
+  const hasResponse = metadata !== null;
 
   return (
     <motion.div {...STAGGER_ANIMATION} className="w-full flex flex-col p-4 gap-3">
@@ -769,15 +931,15 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
           placeholder="Ask JARVIS anything..." 
           className="bg-transparent border-none outline-none text-white text-[16px] w-full font-medium placeholder-white/30 disabled:opacity-50"
         />
-        {!isProcessing && !jarvisResponse && (
+        {!isProcessing && !hasResponse && (
           <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded-md ml-3 border border-white/5 shrink-0">
             <Command size={12} className="text-white/50" />
             <span className="text-white/50 text-[10px] font-bold">K</span>
           </div>
         )}
-        {jarvisResponse && (
+        {hasResponse && (
           <button
-            onClick={() => { setJarvisResponse(null); setQuery(""); inputRef.current?.focus(); }}
+            onClick={() => { setMetadata(null); setStreamedMessage(""); setQuery(""); inputRef.current?.focus(); }}
             className="ml-2 text-white/40 hover:text-white/80 transition-colors shrink-0 text-xs font-bold uppercase tracking-widest"
           >
             Clear
@@ -818,32 +980,33 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
             </motion.div>
           )}
 
-          {/* STATE 2: JARVIS Response Card */}
-          {!isProcessing && jarvisResponse && (
+          {/* STATE 2: JARVIS Streaming Response */}
+          {!isProcessing && hasResponse && (
             <motion.div
               key="response"
               initial={{ opacity: 0, y: 12, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.97 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="flex flex-col gap-3"
+              className="flex flex-col gap-3 max-h-[350px] overflow-y-auto pr-1"
             >
               {/* Response Header */}
               <div className="flex items-center gap-2">
-                <span className="text-lg">{RESPONSE_ICONS[jarvisResponse.responseType] || "🤖"}</span>
-                <span className="text-white font-bold text-[15px] tracking-tight">{jarvisResponse.title}</span>
+                <span className="text-lg">{RESPONSE_ICONS[metadata!.responseType] || "🤖"}</span>
+                <span className="text-white font-bold text-[15px] tracking-tight">{metadata!.title}</span>
                 <span className="ml-auto text-[10px] text-white/30 font-mono uppercase tracking-widest">JARVIS</span>
               </div>
 
-              {/* Main Message */}
+              {/* Streamed Message */}
               <p className="text-white/75 text-[14px] leading-relaxed">
-                {jarvisResponse.message}
+                {streamedMessage}
+                {!isDoneStreaming && <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} className="inline-block w-[2px] h-[14px] bg-cyan-400 ml-0.5 align-text-bottom" />}
               </p>
 
               {/* Stat Highlight Chips */}
-              {jarvisResponse.highlights && jarvisResponse.highlights.length > 0 && (
+              {metadata!.highlights && metadata!.highlights.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {jarvisResponse.highlights.map((h, i) => (
+                  {metadata!.highlights.map((h, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, scale: 0.8 }}
@@ -858,30 +1021,63 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              {/* Action Button */}
-              {jarvisResponse.action?.type === "navigate" && jarvisResponse.action.route && (
+              {/* Navigate Button */}
+              {metadata!.action?.type === "navigate" && metadata!.action.route && (
                 <motion.button
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  onClick={() => { router.push(jarvisResponse.action!.route!); onClose(); }}
+                  onClick={() => { router.push(metadata!.action!.route!); onClose(); }}
                   className="mt-1 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-300 text-[13px] font-bold hover:bg-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] w-fit"
                 >
                   Go deeper <ArrowRight size={14} />
                 </motion.button>
               )}
 
-              {/* Follow-up Suggestion */}
-              {jarvisResponse.followUp && (
+              {/* Suggested Action Buttons */}
+              {isDoneStreaming && metadata!.suggestedActions && metadata!.suggestedActions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex flex-wrap gap-2 mt-2"
+                >
+                  {metadata!.suggestedActions.map((sa, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setQuery(sa.query);
+                        setMetadata(null);
+                        setStreamedMessage("");
+                        setIsDoneStreaming(false);
+                        executeQuery(sa.query);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white/60 text-[12px] font-semibold hover:bg-white/[0.08] hover:text-white/90 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <Sparkles size={12} className="text-cyan-400/60" />
+                      {sa.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+
+              {/* Follow-up (text) */}
+              {isDoneStreaming && metadata!.followUp && !metadata!.suggestedActions?.length && (
                 <motion.button
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  onClick={handleFollowUp}
+                  onClick={() => {
+                    const fq = metadata!.followUp!;
+                    setQuery(fq);
+                    setMetadata(null);
+                    setStreamedMessage("");
+                    executeQuery(fq);
+                  }}
                   className="flex items-center gap-2 text-[12px] text-white/40 hover:text-white/70 transition-colors mt-1 group"
                 >
                   <Sparkles size={12} className="group-hover:text-cyan-400 transition-colors" />
-                  <span className="italic">{jarvisResponse.followUp}</span>
+                  <span className="italic">{metadata!.followUp}</span>
                   <ArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
                 </motion.button>
               )}
@@ -889,7 +1085,7 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
           )}
 
           {/* STATE 3: Quick Commands (Default Idle State) */}
-          {!isProcessing && !jarvisResponse && (
+          {!isProcessing && !hasResponse && (
             <motion.div 
               key="suggestions"
               initial={{ opacity: 0 }}

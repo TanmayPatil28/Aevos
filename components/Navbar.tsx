@@ -109,10 +109,17 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleEvents = (e: MouseEvent | globalThis.KeyboardEvent) => {
-      if (e instanceof KeyboardEvent && e.key === "Escape") {
-        setIsMobileOpen(false);
-        setActiveMenu(null);
-        useDynamicIslandStore.getState().setExpandedId(null);
+      if (e instanceof KeyboardEvent) {
+        if (e.key === "Escape") {
+          setIsMobileOpen(false);
+          setActiveMenu(null);
+          useDynamicIslandStore.getState().setExpandedId(null);
+        }
+        // ⌘K / Ctrl+K — Open JARVIS Spotlight
+        if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+          e.preventDefault();
+          setActiveMenu(prev => prev === "spotlight" ? null : "spotlight");
+        }
       }
     };
     document.addEventListener("keydown", handleEvents);

@@ -1,9 +1,11 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 model Account {
@@ -52,6 +54,7 @@ model User {
   plans             Plan[]
   sessions          Session[]
   skillProgress     SkillProgress[]
+  memories          UserMemory[]
 
   @@map("users")
 }
@@ -180,4 +183,15 @@ model MilestoneProgress {
 
   @@unique([skillProgressId, milestoneId])
   @@map("milestone_progress")
+}
+
+model UserMemory {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  content   String
+  embedding Unsupported("vector(768)")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_memories")
 }
