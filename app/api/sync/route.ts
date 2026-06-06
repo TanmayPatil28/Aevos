@@ -67,7 +67,7 @@ export async function POST(request: Request) {
                   seeMarks: c.seeMarks ?? null,
                   attendanceTotal: c.attendanceTotal ?? 0,
                   attendanceBunked: c.attendanceBunked ?? 0,
-                  semester: "Current",
+                  semester: c.semester?.toString() || "1",
                 },
                 create: {
                   userId,
@@ -77,9 +77,37 @@ export async function POST(request: Request) {
                   seeMarks: c.seeMarks ?? null,
                   attendanceTotal: c.attendanceTotal ?? 0,
                   attendanceBunked: c.attendanceBunked ?? 0,
-                  semester: "Current",
+                  semester: c.semester?.toString() || "1",
                 },
               });
+            }
+          }
+
+          // 3. Synchronize semester history into Calculation table
+          if (Array.isArray(payload.semesterHistory)) {
+            // Because calculation table doesn't have a unique constraint on (userId, semester),
+            // we delete existing records for the semesters we are syncing to avoid duplicates.
+            const incomingSemesters = payload.semesterHistory.map((s: any) => s.semester?.toString());
+            if (incomingSemesters.length > 0) {
+              await prisma.calculation.deleteMany({
+                where: {
+                  userId,
+                  semester: { in: incomingSemesters }
+                }
+              });
+
+              for (const sem of payload.semesterHistory) {
+                await prisma.calculation.create({
+                  data: {
+                    userId,
+                    semester: sem.semester?.toString() || "1",
+                    sgpa: sem.sgpa || 0,
+                    cgpa: sem.sgpa || 0, // Fallback if CGPA is needed
+                    total_credits: sem.credits || 0,
+                    subjects: [], // Or store courses for that semester here if needed
+                  }
+                });
+              }
             }
           }
           break;

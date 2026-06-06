@@ -15,39 +15,41 @@ export default function TopperBenchmark({ userCgpa, userCredits, userSkillsCount
   const overallPercentile = Math.round((cgpaPercentile + skillsPercentile) / 2);
 
   return (
-    <div className="bg-[#1D1D1F] border border-white/5 rounded-[32px] p-6 md:p-8 relative overflow-hidden h-full shadow-none flex flex-col justify-between group">
+    <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 relative overflow-hidden h-full shadow-2xl flex flex-col justify-between">
       
-      <div className="flex items-center gap-2 mb-4 relative z-10">
-        <Users className="w-5 h-5 text-emerald-400" />
-        <h3 className="text-sm font-bold text-white uppercase tracking-[0.2em]">Peer Ranking</h3>
-        <span className="ml-auto text-[10px] font-bold uppercase bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-white/50 whitespace-nowrap text-center">
+      <div className="flex items-center gap-3 mb-4 relative z-10">
+        <div className="p-2 bg-[#bf5af2]/20 rounded-xl">
+          <Users className="w-5 h-5 text-[#bf5af2]" />
+        </div>
+        <h3 className="text-sm font-semibold text-white/50 uppercase tracking-widest">Peer Ranking</h3>
+        <span className="ml-auto text-xs font-bold uppercase bg-white/10 px-3 py-1.5 rounded-full text-white/70">
           {branch === "Computer Science" ? "CS" : branch}
         </span>
       </div>
 
       <div className="flex flex-col items-center justify-center py-6 relative z-10">
-        <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] mb-2">Overall Percentile</span>
         <div className="flex items-baseline gap-2">
-          <span className="text-6xl md:text-7xl font-black tracking-[-0.05em] text-transparent bg-clip-text leading-none bg-gradient-to-b from-emerald-300 to-emerald-600 drop-shadow-none">
+          <span className="text-7xl md:text-[7rem] font-black tracking-tighter text-transparent bg-clip-text leading-none bg-gradient-to-b from-[#bf5af2] to-[#bf5af2]/50">
             Top {overallPercentile}%
           </span>
         </div>
+        <span className="text-sm font-medium text-white/40 mt-4">Overall Percentile</span>
       </div>
 
       <div className="grid grid-cols-2 gap-4 relative z-10">
-        <div className="p-4 rounded-[20px] bg-white/[0.02] border border-white/[0.05]">
-          <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">CGPA Rank</div>
-          <div className="text-xl font-bold text-emerald-400">Top {cgpaPercentile}%</div>
+        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+          <div className="text-[11px] uppercase tracking-widest text-white/40 font-bold mb-1">CGPA Rank</div>
+          <div className="text-2xl font-bold text-[#bf5af2]">Top {cgpaPercentile}%</div>
         </div>
-        <div className="p-4 rounded-[20px] bg-white/[0.02] border border-white/[0.05]">
-          <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Skills Rank</div>
-          <div className="text-xl font-bold text-emerald-400">Top {skillsPercentile}%</div>
+        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+          <div className="text-[11px] uppercase tracking-widest text-white/40 font-bold mb-1">Skills Rank</div>
+          <div className="text-2xl font-bold text-[#bf5af2]">Top {skillsPercentile}%</div>
         </div>
       </div>
       
-      <div className="mt-6 pt-4 border-t border-white/20 flex items-start gap-3 relative z-10">
-        <TrendingUp className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
-        <p className="text-[11px] text-white/40 leading-relaxed">
+      <div className="mt-6 flex items-start gap-3 relative z-10 bg-white/5 p-4 rounded-2xl">
+        <TrendingUp className="w-5 h-5 text-[#bf5af2] mt-0.5 shrink-0" />
+        <p className="text-sm text-white/60 leading-relaxed">
           This live ranking compares your trajectory against anonymized data from 400+ peers in your branch. Top 15% is the sweet spot for Tier-1.
         </p>
       </div>

@@ -53,7 +53,7 @@ export default function AcademicTimeline({ history }: AcademicTimelineProps) {
             const heightPercent = (entry.sgpa / maxSgpa) * 100;
 
             return (
-              <div key={entry.semester} className="flex flex-col items-center relative group w-full">
+              <div key={`${entry.semester}-${idx}`} className="flex flex-col items-center relative group w-full">
                 
                 {/* Visual marker mapping */}
                 <div 

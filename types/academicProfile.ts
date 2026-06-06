@@ -33,6 +33,7 @@ export interface AcademicProfile {
   studentIdentity: {
     id?: string;
     name?: string;
+    registrationId?: string;
   };
   institution: string;
   presetId: string;

@@ -14,7 +14,9 @@ import WorkspaceSection from "@/components/layout/WorkspaceSection";
 import CalendarManager from "@/components/dashboard/CalendarManager";
 import dynamic from "next/dynamic";
 import { useOSMode } from "@/contexts/OSModeContext";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { PageHero } from "@/components/ui/PageHero";
+import AnimatedCounter from "@/components/AnimatedCounter";
 
 // OS Views
 import AcademicDashboardView from "@/components/dashboard/os-views/AcademicDashboardView";
@@ -22,6 +24,7 @@ import CareerDashboardView from "@/components/dashboard/os-views/CareerDashboard
 import UnifiedDashboardView from "@/components/dashboard/os-views/UnifiedDashboardView";
 
 const DataSyncDrawer = dynamic(() => import("@/components/dashboard/sync/DataSyncDrawer").then(mod => mod.DataSyncDrawer), { ssr: false });
+const ResetDataButton = dynamic(() => import("@/components/dashboard/sync/DataSyncDrawer").then(mod => mod.ResetDataButton), { ssr: false });
 const DataSyncEngine = dynamic(() => import("@/components/dashboard/sync/DataSyncEngine").then(mod => mod.DataSyncEngine), { ssr: false });
 import { diagnostics } from "@/lib/diagnostics";
 
@@ -49,7 +52,7 @@ export default function DashboardClient({
   // Auto-evaluate interventions if empty but we have authoritative data
   useEffect(() => {
     // EMERGENCY FIX: If local storage is corrupted with 60+ semesters from the old timeline bug, nuke it.
-    if (store.semesterHistory.length > 20) {
+    if (store.semesterHistory.length > 12 || store.semesterHistory.some(s => s.semester > 15)) {
       localStorage.removeItem("gradeflow-usm-storage");
       window.location.reload();
       return;
@@ -197,8 +200,15 @@ export default function DashboardClient({
   // Adaptive Empty State
   if (!store.identity.hasAuthoritativeData) {
     return (
-      <WorkspaceContent className="min-h-[80vh] flex flex-col justify-center">
+      <WorkspaceContent className="min-h-[80vh] flex flex-col justify-center gap-12">
         <DataSyncEngine isHero />
+        
+        <div className="max-w-md mx-auto w-full pt-8 border-t border-white/5 text-center">
+          <p className="text-sm text-slate-500 mb-4">Need to clear corrupted backend records? Note: this cannot be undone.</p>
+          <div className="mx-auto max-w-xs">
+            <ResetDataButton />
+          </div>
+        </div>
       </WorkspaceContent>
     );
   }
@@ -218,60 +228,59 @@ export default function DashboardClient({
         ? "from-emerald-900/40 to-emerald-600/10 border-emerald-500/30 text-emerald-400"
         : "from-indigo-900/40 to-indigo-600/10 border-indigo-500/30 text-indigo-400";
 
-  return (
-    <WorkspaceContent className="space-y-8">
-      
-      {/* 1. Identity Layer */}
-      <AcademicIdentityBar onSyncClick={() => setIsSyncDrawerOpen(true)} />
+  const { setMode } = useOSMode();
 
-      {/* 2. Intelligence Layer */}
-      
-      {/* Contextual Header */}
-      <div className={`p-6 rounded-2xl border bg-gradient-to-r ${headerTheme} transition-colors duration-500`}>
-        <div className="flex justify-between items-start">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-2 block">
-              {isSimulation ? "Strategy Sandbox Active" : "Your Dashboard"}
-            </span>
-            <h1 className="text-3xl font-black text-white">
-              {isSimulation 
-                ? activeScenario.name 
-                : isRecovery 
-                  ? "Get Back on Track" 
-                  : isOptimization 
-                    ? "Optimize Your Grades" 
-                    : "Academic Overview"}
-            </h1>
-            <p className="text-sm mt-2 opacity-80 max-w-2xl">
-              {isSimulation 
-                ? "You are in sandbox mode. Your original academic records are safely locked."
-                : isRecovery 
-                  ? "We've mapped out a clear path to help you clear your backlogs and stabilize your grades."
-                  : "Your academic standing is healthy. Focus on CGPA optimization and strategic skill acquisition."}
-            </p>
-          </div>
+  return (
+    <div className="relative min-h-screen bg-black">
+      {/* Immersive Ambient Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/20 mix-blend-screen blur-[120px] rounded-full"
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute top-[40%] -right-[10%] w-[60%] h-[60%] bg-blue-500/10 mix-blend-screen blur-[120px] rounded-full"
+        />
+      </div>
+
+      <WorkspaceContent className="space-y-8 relative z-10 pb-24">
+        
+        {/* 1. Identity Layer */}
+        <AcademicIdentityBar onSyncClick={() => setIsSyncDrawerOpen(true)} />
+
+        {/* 2. Intelligence Layer */}
+        
+        {/* Contextual Header replaced with PageHero */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-8">
+          <PageHero
+            headline={isSimulation ? activeScenario.name : isRecovery ? "Get Back on Track" : isOptimization ? "Optimize Your Grades" : "Academic Overview"}
+            description={isSimulation ? "Strategy Sandbox Active. Your original academic records are safely locked." : isRecovery ? "We've mapped out a clear path to help you clear your backlogs and stabilize your grades." : "Your academic standing is healthy. Focus on CGPA optimization and strategic skill acquisition."}
+            className="mb-0 max-w-2xl"
+          />
           
-          {/* Academic Health Score Mini Widget (Only in Academic/Unified) */}
+          {/* Academic Health Score Mini Widget using AnimatedCounter */}
           {healthScore && !isSimulation && mode !== "career" && (
-            <div className="hidden md:flex flex-col items-end bg-black/20 p-4 rounded-xl border border-white/10">
-              <span className="text-xs uppercase tracking-wider opacity-70">Health Score</span>
+            <div className="hidden md:flex flex-col items-end bg-[#1c1c1e]/60 backdrop-blur-3xl p-4 rounded-3xl border border-white/10 ring-1 ring-white/5">
+              <span className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-1">Health Score</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-white">{healthScore.overall}</span>
-                <span className="text-sm opacity-50">/100</span>
+                <AnimatedCounter target={healthScore.overall} className="text-4xl font-black text-white" />
+                <span className="text-sm text-slate-500">/100</span>
               </div>
             </div>
           )}
+          
+          {isSimulation && (
+            <button 
+              onClick={() => store.clearSimulationScenarios()}
+              className="px-6 py-3 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 hover:bg-white/10 text-white rounded-full text-sm font-bold transition-all"
+            >
+              Exit Sandbox
+            </button>
+          )}
         </div>
-
-        {isSimulation && (
-          <button 
-            onClick={() => store.clearSimulationScenarios()}
-            className="mt-4 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded text-xs font-bold transition-colors"
-          >
-            Exit Sandbox
-          </button>
-        )}
-      </div>
 
       {/* Priority Intervention Inbox */}
       {interventions.length > 0 && !isSimulation && (
@@ -342,6 +351,40 @@ export default function DashboardClient({
         onClose={() => setIsSyncDrawerOpen(false)} 
       />
 
-    </WorkspaceContent>
+      </WorkspaceContent>
+
+      {/* Floating Dynamic Island Mode Toggle */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+        <div className="bg-[#1c1c1e]/80 backdrop-blur-3xl border border-white/10 rounded-full p-1.5 flex items-center shadow-2xl ring-1 ring-white/5">
+          <button
+            onClick={() => setMode("academic")}
+            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              mode === "academic" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            <span className="hidden md:inline">Academic</span>
+          </button>
+          <button
+            onClick={() => setMode("unified")}
+            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              mode === "unified" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden md:inline">Unified</span>
+          </button>
+          <button
+            onClick={() => setMode("career")}
+            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              mode === "career" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            <Briefcase className="w-4 h-4" />
+            <span className="hidden md:inline">Career</span>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

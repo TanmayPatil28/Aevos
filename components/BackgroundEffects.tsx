@@ -49,7 +49,7 @@ export default function BackgroundEffects() {
   if (!mounted) return null;
 
   return (
-    <div ref={containerRef} className="fixed inset-0 -z-50 overflow-hidden bg-black pointer-events-none select-none">
+    <div ref={containerRef} className="fixed inset-0 -z-50 overflow-hidden bg-black pointer-events-none select-none" style={{ contain: "layout style paint" }}>
       
       {/* A. DEEP PARALLAX STARFIELD (The infinite void) */}
       
@@ -79,7 +79,7 @@ export default function BackgroundEffects() {
             opacity: [0.15, 0.25, 0.15],
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[120%] h-[120%] rounded-full bg-[radial-gradient(circle,var(--primary)_0%,transparent_70%)] blur-[96px]"
+          className="absolute -top-[20%] -left-[10%] w-[120%] h-[120%] rounded-full bg-[radial-gradient(circle,var(--primary)_0%,transparent_70%)] blur-[64px]"
         />
 
         {/* Active Cloud 2: Secondary (Drifting) */}
@@ -90,13 +90,13 @@ export default function BackgroundEffects() {
             opacity: [0.1, 0.2, 0.1],
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-[20%] -right-[15%] w-[110%] h-[110%] rounded-full bg-[radial-gradient(circle,var(--secondary)_0%,transparent_70%)] blur-[96px]"
+          className="absolute -bottom-[20%] -right-[15%] w-[110%] h-[110%] rounded-full bg-[radial-gradient(circle,var(--secondary)_0%,transparent_70%)] blur-[64px]"
         />
       </div>
 
       {/* C. FLOATING ATMOSPHERIC EMBERS (Particle Depth) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(12)].map((_, i) => (
+        {[...Array(5)].map((_, i) => (
           <motion.div
             key={i}
             initial={{ 

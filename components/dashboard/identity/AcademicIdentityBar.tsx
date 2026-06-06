@@ -61,7 +61,7 @@ export function AcademicIdentityBar({ onSyncClick }: AcademicIdentityBarProps) {
         </div>
 
         {/* Right: Quick Stats & Sync */}
-        <div className="flex items-center gap-8 border-t md:border-t-0 md:border-l border-white/20 pt-4 md:pt-0 md:pl-8 w-full md:w-auto">
+        <div className="flex items-center gap-8 border-t md:border-t-0 md: border-t border-white/20 pt-4 md:pt-0 md:pl-8 w-full md:w-auto">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Current CGPA</span>
             <span className="text-3xl font-black font-mono text-white leading-none">

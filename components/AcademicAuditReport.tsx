@@ -397,7 +397,7 @@ export default function AcademicAuditReport({
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t border-white/20 px-6 py-4 bg-black/20 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10 text-[10px] text-white/20 font-mono">
+            <div className=" border-t border-white/20 px-6 py-4 bg-black/20 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10 text-[10px] text-white/20 font-mono">
               <div className="flex items-center gap-1.5">
                 <AlertCircle size={10} className="text-[#4F8EF7]" />
                 <span>UGC Framework & University Ordinance Compliant Abstraction System</span>

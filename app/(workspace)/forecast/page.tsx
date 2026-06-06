@@ -1,70 +1,49 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import FocusModeWrapper from "@/components/workspace/FocusModeWrapper";
-import TrajectoryChart from "@/components/forecast/TrajectoryChart";
-import ScenarioSelector from "@/components/forecast/ScenarioSelector";
-import ProjectionTable from "@/components/forecast/ProjectionTable";
+import React, { useState } from "react";
+import NeuralDecisionTree from "@/components/forecast/NeuralDecisionTree";
+import ForecastStatusBar from "@/components/forecast/ForecastStatusBar";
 import { useUSMStore } from "@/stores/usmStore";
-import { scenarioFactory } from "@/lib/forecasting/scenarioFactory";
-import { ForecastEngineInput } from "@/lib/forecasting/types";
+import { StudentState } from "@/lib/forecasting/decisionTypes";
 
-export default function ForecastPage() {
-  const currentCgpa = useUSMStore(state => state.academic.currentCgpa);
-  const completedSemesters = useUSMStore(state => state.academic.completedSemesters);
-  const earnedCredits = useUSMStore(state => state.academic.earnedCredits);
+export default function NeuralDecisionEnginePage() {
+  const currentCgpa = useUSMStore(state => state.academic.currentCgpa) || 7.0;
+  const completedSemesters = useUSMStore(state => state.academic.completedSemesters) || 0;
   const targetCgpa = useUSMStore(state => state.workspaceUi.globalTargetCgpa) || 8.0;
-  const semesterHistory = useUSMStore(state => state.semesterHistory);
-  const presetId = useUSMStore(state => state.presetId);
-  const cgpaVolatility = useUSMStore(state => 0.1); // Placeholder
 
-  const [activeScenarioId, setActiveScenarioId] = useState("maintain");
-
-  const currentSgpa = semesterHistory.length > 0 
-    ? semesterHistory[semesterHistory.length - 1].sgpa 
-    : currentCgpa;
-
-  const scenarios = useMemo(() => {
-    const input: ForecastEngineInput = {
-      currentCgpa,
-      completedSemesters,
-      earnedCredits,
-      targetCgpa,
-      totalProgramSemesters: 8,
-      creditsPerSemester: 20,
-      currentSgpa,
-      volatility: cgpaVolatility,
-    };
-    return scenarioFactory.generateAll(input, presetId);
-  }, [
-    currentCgpa, completedSemesters, earnedCredits, targetCgpa, 
-    currentSgpa, cgpaVolatility, presetId
-  ]);
+  // Initialize state based on current student data
+  const [studentState, setStudentState] = useState<StudentState>({
+    currentCgpa,
+    completedSemesters,
+    skillPoints: 10,
+    careerReadiness: 20,
+    stressLevel: 30,
+    logs: ["Started the simulation timeline."]
+  });
 
   return (
-    <FocusModeWrapper title="Grade Forecaster">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <TrajectoryChart 
-            scenarios={scenarios}
-            activeScenarioId={activeScenarioId}
-            targetCgpa={targetCgpa}
-            currentCgpa={currentCgpa}
-            completedSemesters={completedSemesters}
-          />
-          <ProjectionTable 
-            projections={scenarios.find(s => s.id === activeScenarioId)?.projections || []}
-            targetCgpa={targetCgpa}
-          />
-        </div>
-        <div className="space-y-8">
-          <ScenarioSelector 
-            scenarios={scenarios}
-            activeScenarioId={activeScenarioId}
-            setActiveScenarioId={setActiveScenarioId}
-          />
-        </div>
+    <div className="relative w-full h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar bg-black selection:bg-[#0a84ff]/30">
+      {/* Background Grid & Ambience */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-b from-black/20 via-transparent to-black pointer-events-none" />
+
+      {/* Sticky Status Bar */}
+      <ForecastStatusBar state={studentState} targetCgpa={targetCgpa} />
+
+      {/* Vertical Roadmap Canvas */}
+      <div className="relative z-10 w-full min-h-[150vh] flex flex-col items-center pt-16 pb-32">
+        <NeuralDecisionTree 
+          initialState={{
+            currentCgpa,
+            completedSemesters,
+            skillPoints: 10,
+            careerReadiness: 20,
+            stressLevel: 30,
+            logs: ["Started the simulation timeline."]
+          }}
+          onStateChange={setStudentState} 
+        />
       </div>
-    </FocusModeWrapper>
+    </div>
   );
 }

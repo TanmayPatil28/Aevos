@@ -40,11 +40,21 @@ export const DigicampusParser: AcademicParser = {
     const semesters: IntermediateExtractionModel["semesters"] = [];
     let studentName = "Unknown Student";
     let detectedInstitution = "jspm_university_wagholi"; // Default for Digicampus
+    let registrationId: string | undefined;
+    let programme: string | undefined;
+    let branch: string | undefined;
+    let batchYear: number | undefined;
 
     // Extract Student Profile if available
     const profileNode = parsedArray.find(node => node.studentProfile);
-    if (profileNode?.studentProfile?.fullName) {
-      studentName = profileNode.studentProfile.fullName;
+    if (profileNode?.studentProfile) {
+      studentName = profileNode.studentProfile.fullName || studentName;
+      registrationId = profileNode.studentProfile.registrationId || registrationId;
+      if (profileNode.studentProfile.academicDetails) {
+        programme = profileNode.studentProfile.academicDetails.programme || programme;
+        branch = profileNode.studentProfile.academicDetails.department || branch;
+        // Basic batch year estimation from "2nd Year" if present, etc. (Optional, can be improved)
+      }
     }
 
     // Extract Academic Terms
@@ -66,41 +76,45 @@ export const DigicampusParser: AcademicParser = {
     }
 
     termNodes.forEach((node: any) => {
-      const termLevelStr = node.academicTerm?.level || "";
-      const termStr = node.academicTerm?.term || "";
-      
-      // Heuristic to guess semester index (e.g. "UG First Year", "Even Term" -> Sem 2)
-      // For now, let's just infer from length or simple text parsing
-      // Prioritize the explicitly provided semesterIndex from the AI extraction
-      let semIndex = typeof node.semesterIndex === 'number' ? node.semesterIndex : semesters.length + 1;
-      
-      // Fallback heuristics if explicitly not provided
-      if (typeof node.semesterIndex !== 'number') {
-        // Direct semester matching (e.g. "Semester 2", "Sem 4")
-        const semMatch = (termLevelStr + " " + termStr).match(/sem(?:ester)?\s*(\d+)/i);
-        if (semMatch && semMatch[1]) {
-          semIndex = parseInt(semMatch[1], 10);
+      if (node.studentIdentity) {
+        studentName = node.studentIdentity.name || node.studentIdentity.studentName || studentName;
+        registrationId = node.studentIdentity.registrationId || node.studentIdentity.rollNumber || registrationId;
+        programme = node.studentIdentity.programme || node.studentIdentity.degree || programme;
+        branch = node.studentIdentity.branch || node.studentIdentity.department || branch;
+        if (node.studentIdentity.batchYear) {
+          batchYear = parseInt(node.studentIdentity.batchYear, 10) || batchYear;
         }
-        // Legacy Digicampus Year/Term matching
-        else if (termLevelStr.includes("First Year") && termStr.includes("Odd")) semIndex = 1;
-        else if (termLevelStr.includes("First Year") && termStr.includes("Even")) semIndex = 2;
-        else if (termLevelStr.includes("Second Year") && termStr.includes("Odd")) semIndex = 3;
-        else if (termLevelStr.includes("Second Year") && termStr.includes("Even")) semIndex = 4;
-        else if (termLevelStr.includes("Third Year") && termStr.includes("Odd")) semIndex = 5;
-        else if (termLevelStr.includes("Third Year") && termStr.includes("Even")) semIndex = 6;
-        else if (termLevelStr.includes("Fourth Year") && termStr.includes("Odd")) semIndex = 7;
-        else if (termLevelStr.includes("Fourth Year") && termStr.includes("Even")) semIndex = 8;
       }
 
       if (node.institution) {
         detectedInstitution = node.institution.toLowerCase();
       }
 
+      const termLevelStr = node.academicTerm?.level || "";
+      const termStr = node.academicTerm?.term || "";
+      
+      let semIndex = typeof node.semesterIndex === 'number' ? node.semesterIndex : 
+                     (node.semesterIndex ? parseInt(node.semesterIndex, 10) : semesters.length + 1);
+      
+      if (isNaN(semIndex) || !node.semesterIndex) {
+        const semMatch = (termLevelStr + " " + termStr).match(/sem(?:ester)?\s*(\d+)/i);
+        if (semMatch && semMatch[1]) {
+          semIndex = parseInt(semMatch[1], 10);
+        } else if (termLevelStr.toLowerCase().includes("first year") && termStr.toLowerCase().includes("even")) {
+          semIndex = 2;
+        } else {
+          semIndex = semesters.length + 1; // Last resort
+        }
+      }
+
       const courses = node.courses.map((c: any) => ({
         code: c.courseCode || "UNKNOWN",
         name: c.courseName || "Unknown Course",
+        semester: semIndex,
         credits: typeof c.credits === "number" ? c.credits : parseFloat(c.credits) || 0,
         grade: c.grade || "-",
+        internalMarks: c.internalMarks || c.cieMarks || 0,
+        externalMarks: c.externalMarks || c.seeMarks || 0,
       }));
 
       // Calculate simple SGPA if missing
@@ -114,6 +128,7 @@ export const DigicampusParser: AcademicParser = {
 
       semesters.push({
         semesterIndex: semIndex,
+        isBacklogClearance: node.isBacklogClearance === true,
         sgpa,
         credits: totalCredits,
         earnedCredits: earnedCredits,
@@ -132,6 +147,10 @@ export const DigicampusParser: AcademicParser = {
       extractedData: {
         institutionId: detectedInstitution,
         studentName,
+        registrationId,
+        programme,
+        branch,
+        batchYear,
         semesters,
       }
     };

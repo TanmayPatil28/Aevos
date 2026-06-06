@@ -35,6 +35,22 @@ export const SPPUParser: AcademicParser = {
     }
 
     const semesters: IntermediateExtractionModel["semesters"] = [];
+    
+    let studentName = parsed.studentName || "Unknown Student";
+    let registrationId: string | undefined;
+    let programme: string | undefined;
+    let branch: string | undefined;
+    let batchYear: number | undefined;
+
+    if (parsed.studentIdentity) {
+      studentName = parsed.studentIdentity.name || parsed.studentIdentity.studentName || studentName;
+      registrationId = parsed.studentIdentity.registrationId || parsed.studentIdentity.rollNumber;
+      programme = parsed.studentIdentity.programme || parsed.studentIdentity.degree;
+      branch = parsed.studentIdentity.branch || parsed.studentIdentity.department;
+      if (parsed.studentIdentity.batchYear) {
+        batchYear = parseInt(parsed.studentIdentity.batchYear, 10) || undefined;
+      }
+    }
 
     // Map semesterHistory
     if (Array.isArray(parsed.semesterHistory)) {
@@ -79,8 +95,13 @@ export const SPPUParser: AcademicParser = {
       const currentCourses = parsed.currentSemesterCourses || parsed.courses;
       
       // Determine what the "current" semester index should be
-      const maxSem = semesters.length > 0 ? Math.max(...semesters.map(s => s.semesterIndex)) : 0;
-      const currentSemIndex = maxSem + 1;
+      let currentSemIndex = 1;
+      
+      if (parsed.semesterIndex) {
+         currentSemIndex = parseInt(parsed.semesterIndex, 10) || 1;
+      } else if (semesters.length > 0) {
+         currentSemIndex = Math.max(...semesters.map(s => s.semesterIndex)) + 1;
+      }
 
       semesters.push({
         semesterIndex: currentSemIndex,
@@ -105,7 +126,11 @@ export const SPPUParser: AcademicParser = {
       validationWarnings: warnings,
       extractedData: {
         institutionId: "sppu",
-        studentName: parsed.studentName,
+        studentName,
+        registrationId,
+        programme,
+        branch,
+        batchYear,
         semesters,
       }
     };

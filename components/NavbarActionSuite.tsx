@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Moon, Sun, ArrowRight } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import { UniversityTrigger } from "@/components/UniversitySelector";
 import { OSModeTrigger } from "@/components/OSModeSwitcher";
 
-export type ActiveMenu = "intelligence" | "university" | "os" | null;
+export type ActiveMenu = "intelligence" | "university" | "os" | "spotlight" | null;
 
 interface NavbarActionSuiteProps {
   activeMenu: ActiveMenu;
@@ -16,7 +15,6 @@ interface NavbarActionSuiteProps {
 }
 
 export default function NavbarActionSuite({ activeMenu, setActiveMenu }: NavbarActionSuiteProps) {
-  const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
 
   return (
@@ -31,22 +29,18 @@ export default function NavbarActionSuite({ activeMenu, setActiveMenu }: NavbarA
       />
 
       <button
-        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-        className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/[0.05] flex items-center justify-center transition-all duration-500 hover:bg-[#4F8EF7]/10 hover:border-[#4F8EF7]/20 text-white hover:text-[#4F8EF7] group shadow-inner"
+        onClick={() => setActiveMenu(activeMenu === "spotlight" ? null : "spotlight")}
+        aria-label="Spotlight Search"
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-inner border hover:scale-105 ${
+          activeMenu === "spotlight" 
+            ? "bg-white/20 border-white/30 text-white" 
+            : "bg-white/[0.03] border-white/[0.05] text-white hover:bg-white/10 hover:border-white/20"
+        }`}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={theme}
-            initial={{ rotate: -180, scale: 0.5, opacity: 0 }}
-            animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            exit={{ rotate: 180, scale: 0.5, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          >
-            {theme === 'dark' ? <Moon size={18} strokeWidth={2.5} /> : <Sun size={18} strokeWidth={2.5} className="text-yellow-400" />}
-          </motion.div>
-        </AnimatePresence>
+        <Search size={18} strokeWidth={2.5} />
       </button>
+
+
 
       {session ? (
         <button

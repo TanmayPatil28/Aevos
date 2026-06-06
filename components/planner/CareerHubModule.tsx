@@ -94,7 +94,7 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-white/20 bg-[#1D1D1F]"
+                        className=" border-t border-white/20 bg-[#1D1D1F]"
                       >
                         <div className="p-5 space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

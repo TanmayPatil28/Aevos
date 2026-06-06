@@ -11,69 +11,67 @@ interface SkillGapDetectorProps {
 
 export default function SkillGapDetector({ role, skills, result }: SkillGapDetectorProps) {
   return (
-    <div className="w-full bg-white/[0.02] border border-white/[0.05] rounded-3xl p-8 md:p-12 relative overflow-hidden group">
-      {/* Background Grid Pattern */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay z-0" />
-      <div className="absolute -top-32 -right-32 w-64 h-64 bg-purple-500/10 blur-[100px] rounded-full" />
-
+    <div className="w-full bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 md:p-12 relative overflow-hidden shadow-2xl">
       <div className="relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <div className="flex items-center gap-2 text-purple-400 mb-4">
-              <Crosshair size={18} />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.2em]">Skill Gap Radar</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
+                <Crosshair size={20} className="text-[#0a84ff]" />
+              </div>
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-white/50">Competency Radar</h2>
             </div>
-            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-2">
-              Target: {role}
+            <h3 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">
+              {role}
             </h3>
-            <p className="text-white/40 text-lg">Analyzing competency overlap</p>
+            <p className="text-white/40 text-lg">Detailed competency overlap</p>
           </div>
           
           <div className="flex flex-col items-start md:items-end">
-            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2">Readiness Index</span>
+            <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2">Readiness Index</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-6xl md:text-7xl font-bold tracking-tighter text-white leading-none">
+              <span className="text-6xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text leading-none bg-gradient-to-b from-white to-white/60">
                 {result.readinessPercentage}
               </span>
-              <span className="text-2xl text-white/30 font-medium">%</span>
+              <span className="text-3xl text-white/30 font-bold">%</span>
             </div>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden mb-12">
+        {/* macOS Style Progress Bar */}
+        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mb-12 shadow-inner">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${result.readinessPercentage}%` }}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            className="bg-purple-500 h-full shadow-[0_0_15px_rgba(168,85,247,0.5)]" 
+            className="bg-[#0a84ff] h-full shadow-[0_0_15px_rgba(10,132,255,0.8)]" 
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white/[0.01] border border-white/[0.03] rounded-2xl p-6 md:p-8">
-            <h4 className="text-emerald-400/80 text-sm font-semibold mb-6 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" /> Present Competencies
+          <div className="bg-white/5 border border-white/5 rounded-3xl p-8">
+            <h4 className="text-[#34c759] text-sm font-bold mb-6 flex items-center gap-2 uppercase tracking-widest">
+              <CheckCircle2 className="w-5 h-5" /> Acquired Skills
             </h4>
             <div className="flex flex-wrap gap-2">
               {result.presentSkills.length > 0 ? result.presentSkills.map(s => (
-                <span key={s} className="px-3 py-1.5 bg-emerald-500/10 text-emerald-300 rounded-lg text-xs font-medium border border-emerald-500/20">
+                <span key={s} className="px-4 py-2 bg-[#34c759]/10 text-[#34c759] rounded-xl text-xs font-bold border border-[#34c759]/20 shadow-sm">
                   {s}
                 </span>
-              )) : <span className="text-sm text-white/20 italic">No exact matches found.</span>}
+              )) : <span className="text-sm text-white/30 italic font-medium">No exact matches found in profile.</span>}
             </div>
           </div>
 
-          <div className="bg-white/[0.01] border border-white/[0.03] rounded-2xl p-6 md:p-8">
-            <h4 className="text-rose-400/80 text-sm font-semibold mb-6 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" /> Missing Layers
+          <div className="bg-white/5 border border-white/5 rounded-3xl p-8">
+            <h4 className="text-[#ff453a] text-sm font-bold mb-6 flex items-center gap-2 uppercase tracking-widest">
+              <AlertCircle className="w-5 h-5" /> Missing Requirements
             </h4>
             <div className="flex flex-wrap gap-2">
                {result.missingSkills.length > 0 ? result.missingSkills.map(s => (
-                <span key={s} className="px-3 py-1.5 bg-rose-500/5 text-rose-300 rounded-lg text-xs font-medium border border-rose-500/10">
+                <span key={s} className="px-4 py-2 bg-[#ff453a]/10 text-[#ff453a] rounded-xl text-xs font-bold border border-[#ff453a]/20 shadow-sm">
                   {s}
                 </span>
-              )) : <span className="text-sm text-white/20 italic">All core requirements met.</span>}
+              )) : <span className="text-sm text-white/30 italic font-medium">All core requirements met.</span>}
             </div>
           </div>
         </div>

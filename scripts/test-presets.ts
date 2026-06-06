@@ -72,9 +72,9 @@ function runTests() {
   // Verify all presets are loaded and verified
   const allPresets = getAllPresets();
   assert(
-    "All 25 presets successfully loaded and verified in registry",
-    allPresets.length === 25,
-    `Expected 25, found ${allPresets.length}`
+    "All 26 presets successfully loaded and verified in registry",
+    allPresets.length === 26,
+    `Expected 26, found ${allPresets.length}`
   );
 
   // ─── 1. MUMBAI UNIVERSITY PIECEWISE EQUATIONS ───────────────────────────────

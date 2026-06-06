@@ -2,15 +2,20 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { Layers, Crosshair, Target, CheckCircle2, AlertTriangle, XCircle, Beaker, PinOff, FileText, Download, Filter } from "lucide-react";
+import { Target, PinOff, Filter } from "lucide-react";
 import { useUSMStore } from "@/stores/usmStore";
 import { intelligenceEngine, IntelligenceEngineInput, IntelligenceResult } from "@/lib/career/intelligenceEngine";
+import { DEFAULT_RECRUITERS } from "@/lib/career/careerData";
 
 import PlacementHealthMeter from "@/components/placement/PlacementHealthMeter";
 import SkillGapDetector from "@/components/placement/SkillGapDetector";
 import PriorityActionItems from "@/components/placement/PriorityActionItems";
+import PlacementGuideTypography from "@/components/placement/PlacementGuideTypography";
+import CompanyIntelligenceGuide from "@/components/placement/CompanyIntelligenceGuide";
+import CompanyComparisonGuide from "@/components/placement/CompanyComparisonGuide";
 import TopperBenchmark from "@/components/placement/TopperBenchmark";
 import CompanyLedgerRow from "@/components/placement/CompanyLedgerRow";
+import DynamicIsland from "@/components/placement/DynamicIsland";
 import { cn } from "@/lib/cn";
 
 import { PageHero } from "@/components/ui/PageHero";
@@ -20,13 +25,19 @@ export default function CareerIntelligencePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   
   // Advanced features state
-  const [isSandbox, setIsSandbox] = useState(false);
-  const [pinnedCompany, setPinnedCompany] = useState<string | null>(null);
+  const [isSandboxActive, setIsSandboxActive] = useState(false);
+  const rawPinnedCompanies = useUSMStore(state => state.career.targetCompanies) || [];
+  const pinnedCompanies = rawPinnedCompanies.filter(name => DEFAULT_RECRUITERS.some(c => c.name === name));
+  const setTargetCompanies = useUSMStore(state => state.setTargetCompanies);
   const [activeFilter, setActiveFilter] = useState<"All" | "FAANG" | "Product" | "Startup" | "Service">("All");
+  
+  // Productivity utilities
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"Score" | "Difficulty" | "Name">("Score");
 
   const { scrollY } = useScroll();
   const glowY = useTransform(scrollY, [0, 500], [0, 150]);
-  const glowOpacity = useTransform(scrollY, [0, 300], [0.6, 0]);
+  const glowOpacity = useTransform(scrollY, [0, 300], [0.8, 0]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 100);
@@ -42,26 +53,50 @@ export default function CareerIntelligencePage() {
   const realSkills = useUSMStore((state) => state.career.skills) || [];
   const targetRole = useUSMStore((state) => state.career.targetRole) || "Frontend Developer";
 
-  // Sandbox data
-  const [sandboxCgpa, setSandboxCgpa] = useState(realCgpa);
-  const [sandboxBacklogs, setSandboxBacklogs] = useState(realBacklogs);
-  
+  const globalSandboxCgpa = useUSMStore(state => state.workspaceUi.sandboxCgpa);
+  const globalSandboxBacklogs = useUSMStore(state => state.workspaceUi.sandboxBacklogs);
+  const setSandboxMetrics = useUSMStore(state => state.setSandboxMetrics);
+
+  const sandboxCgpa = globalSandboxCgpa ?? realCgpa;
+  const sandboxBacklogs = globalSandboxBacklogs ?? realBacklogs;
+
   // Sync sandbox with real data when toggling off
   useEffect(() => {
-    if (!isSandbox) {
-      setSandboxCgpa(realCgpa);
-      setSandboxBacklogs(realBacklogs);
+    if (!isSandboxActive) {
+      setSandboxMetrics(null, null);
+    } else if (globalSandboxCgpa === null || globalSandboxBacklogs === null) {
+      setSandboxMetrics(realCgpa, realBacklogs);
     }
-  }, [isSandbox, realCgpa, realBacklogs]);
+  }, [isSandboxActive, realCgpa, realBacklogs, globalSandboxCgpa, globalSandboxBacklogs, setSandboxMetrics]);
+
+  const handleOptimizeSandbox = (targetCgpa: number, targetBacklogs: number) => {
+    setIsSandboxActive(true);
+    setSandboxMetrics(targetCgpa, targetBacklogs);
+    import("react-hot-toast").then((module) => {
+      module.toast.success("Sandbox Globally Optimized!");
+    });
+  };
+
+  const handlePinToggle = (companyName: string) => {
+    if (pinnedCompanies.includes(companyName)) {
+      setTargetCompanies(pinnedCompanies.filter(n => n !== companyName));
+    } else {
+      if (pinnedCompanies.length >= 3) {
+        import("react-hot-toast").then(m => m.toast.error("You can only pin up to 3 companies."));
+        return;
+      }
+      setTargetCompanies([...pinnedCompanies, companyName]);
+    }
+  };
 
   const engineInput: IntelligenceEngineInput = useMemo(() => ({
-    cgpa: isSandbox ? sandboxCgpa : realCgpa,
-    backlogs: isSandbox ? sandboxBacklogs : realBacklogs,
+    cgpa: isSandboxActive ? sandboxCgpa : realCgpa,
+    backlogs: isSandboxActive ? sandboxBacklogs : realBacklogs,
     earnedCredits: realCredits,
     branch,
     skills: realSkills,
     targetRole
-  }), [isSandbox, sandboxCgpa, realCgpa, sandboxBacklogs, realBacklogs, realCredits, branch, realSkills, targetRole]);
+  }), [isSandboxActive, sandboxCgpa, realCgpa, sandboxBacklogs, realBacklogs, realCredits, branch, realSkills, targetRole]);
 
   let eligibilityResults = useMemo(() => intelligenceEngine.calculateEligibility(engineInput), [engineInput]);
   
@@ -70,210 +105,224 @@ export default function CareerIntelligencePage() {
     eligibilityResults = eligibilityResults.filter(c => c.tier === activeFilter);
   }
 
-  // Target Pinning Logic
-  if (pinnedCompany) {
-    // Bring pinned company to front, hide others or show just the pinned one for intense focus
-    eligibilityResults = eligibilityResults.filter(c => c.name === pinnedCompany);
-  }
 
   const riskResult = useMemo(() => intelligenceEngine.calculatePlacementRisk(engineInput), [engineInput]);
   const skillGapResult = useMemo(() => intelligenceEngine.detectSkillGaps(realSkills, targetRole), [realSkills, targetRole]);
 
-  const safeCompanies = eligibilityResults.filter(c => c.status === "ELIGIBLE");
-  const borderlineCompanies = eligibilityResults.filter(c => c.status === "BORDERLINE");
-  const riskCompanies = eligibilityResults.filter(c => c.status === "INELIGIBLE");
+  // Apply Search, Filter and Sort
+  let processedResults = eligibilityResults.filter(c => {
+    if (activeFilter !== "All" && c.tier !== activeFilter) return false;
+    if (searchQuery.trim() !== "" && !c.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
+
+  processedResults.sort((a, b) => {
+    if (sortBy === "Score") return b.eligibilityScore - a.eligibilityScore;
+    if (sortBy === "Difficulty") return a.eligibilityScore - b.eligibilityScore;
+    if (sortBy === "Name") return a.name.localeCompare(b.name);
+    return 0;
+  });
+
+  const pinnedResults = processedResults.filter(c => pinnedCompanies.includes(c.name));
+  const unpinnedResults = processedResults.filter(c => !pinnedCompanies.includes(c.name));
+
+  const safeCompanies = unpinnedResults.filter(c => c.status === "ELIGIBLE");
+  const borderlineCompanies = unpinnedResults.filter(c => c.status === "BORDERLINE");
+  const riskCompanies = unpinnedResults.filter(c => c.status === "INELIGIBLE");
 
   return (
-    <div className="w-full relative min-h-screen bg-[#000] overflow-x-hidden selection:bg-purple-500/30 selection:text-white pb-32 font-sans">
+    <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-[#0a84ff]/30 selection:text-white pb-40 font-sans">
       
-      {/* Background Ambient Glows */}
+      {/* Background Ambient Glows (macOS / visionOS style) */}
       <motion.div 
         style={{ y: glowY, opacity: glowOpacity }}
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] pointer-events-none z-0"
+        className="fixed top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] pointer-events-none z-0"
       >
-        <div className={cn("absolute inset-0 blur-[120px] rounded-full mix-blend-screen transition-colors duration-700", isSandbox ? "bg-gradient-to-b from-[#3b82f6]/20 via-transparent to-transparent" : "bg-gradient-to-b from-[#7c3aed]/20 via-transparent to-transparent")} />
-        <div className={cn("absolute top-20 left-1/2 -translate-x-1/2 w-[400px] h-[400px] blur-[100px] rounded-full mix-blend-screen transition-colors duration-700", isSandbox ? "bg-[#3b82f6]/15" : "bg-[#8b5cf6]/15")} />
+        <div className={cn("absolute inset-0 blur-[160px] rounded-full mix-blend-screen transition-colors duration-1000", isSandboxActive ? "bg-gradient-to-b from-[#0a84ff]/15 via-transparent to-transparent" : "bg-gradient-to-b from-[#5e5ce6]/15 via-[#bf5af2]/5 to-transparent")} />
+        <div className={cn("absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[400px] blur-[120px] rounded-full mix-blend-screen transition-colors duration-1000", isSandboxActive ? "bg-[#0a84ff]/10" : "bg-[#5e5ce6]/10")} />
       </motion.div>
 
       {/* Standardized Hero Section */}
-      <section className="relative z-10 w-full flex flex-col items-center justify-center pt-32 pb-8 px-6">
-        <div className="w-full max-w-7xl mx-auto flex flex-col">
+      <section className="relative z-10 w-full flex flex-col items-start justify-center pt-24 pb-8 px-6 md:px-12 max-w-[1400px] mx-auto">
+        <div className="w-full max-w-2xl flex flex-col items-start text-left">
           <PageHero 
-            headline={<>Predict placements.<br/>Know your exact eligibility.</>}
-            description="The career intelligence engine evaluates your current CGPA and skill profile against live company requirements, instantly calculating your eligibility for top-tier tech roles and identifying skill gaps."
+            headline={<>Career Intelligence.<br/>Redefined for Desktop.</>}
+            description="The intelligence engine evaluates your profile against live company requirements, instantly calculating your eligibility for top-tier tech roles and identifying skill gaps."
           />
-
-          {/* Integrated Prominent Sandbox Sliders */}
-          <div className="w-full max-w-4xl mx-auto mt-4">
-            <div className="flex items-center justify-center gap-4 mb-8">
-               <button 
-                onClick={() => setIsSandbox(!isSandbox)}
-                className={cn("flex items-center gap-2 px-8 py-4 rounded-full text-sm font-bold border transition-all duration-500", isSandbox ? "bg-blue-500 text-white border-blue-500 shadow-none" : "bg-[#1D1D1F] text-white/60 border-white/10 hover:text-white hover:border-white/20")}
-              >
-                <Beaker size={18} className={isSandbox ? "text-blue-400" : ""} />
-                {isSandbox ? "Exit Sandbox Mode" : "Enter Sandbox Mode"}
-              </button>
-            </div>
-
-            <AnimatePresence>
-              {isSandbox && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, y: -20 }}
-                  animate={{ opacity: 1, height: "auto", y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -20 }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="w-full overflow-hidden"
-                >
-                  <div className="p-8 md:p-10 rounded-[32px] border border-blue-500/30 bg-[#1D1D1F] flex flex-col md:flex-row gap-12 items-center relative overflow-hidden">
-                    <div className="flex-1 w-full relative z-10">
-                      <label className="flex justify-between text-sm font-bold text-blue-300 mb-4 uppercase tracking-[0.15em]">
-                        <span>Simulate CGPA</span>
-                        <span className="text-2xl text-white">{sandboxCgpa.toFixed(2)}</span>
-                      </label>
-                      <input 
-                        type="range" min="5" max="10" step="0.1" 
-                        value={sandboxCgpa} 
-                        onChange={(e) => setSandboxCgpa(parseFloat(e.target.value))}
-                        className="w-full h-3 bg-white/10 rounded-full appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
-                      />
-                    </div>
-                    <div className="w-px h-20 bg-white/10 hidden md:block" />
-                    <div className="flex-1 w-full relative z-10">
-                      <label className="flex justify-between text-sm font-bold text-blue-300 mb-4 uppercase tracking-[0.15em]">
-                        <span>Simulate Backlogs</span>
-                        <span className="text-2xl text-white">{sandboxBacklogs}</span>
-                      </label>
-                      <input 
-                        type="range" min="0" max="10" step="1" 
-                        value={sandboxBacklogs} 
-                        onChange={(e) => setSandboxBacklogs(parseInt(e.target.value))}
-                        className="w-full h-3 bg-white/10 rounded-full appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
       </section>
 
-      {/* Sticky Dynamic Island Navigation */}
-      <div className={`sticky top-6 z-[100] flex justify-center mb-16 transition-all duration-500 ${isScrolled ? 'px-4' : 'px-6'}`}>
-        <div className="flex flex-col md:flex-row items-center gap-4">
-          <motion.div 
-            layout
-            className="relative overflow-hidden flex items-center p-1.5 bg-[#1D1D1F] border border-white/5 rounded-full"
-          >
-            <div 
-              className="absolute top-1.5 bottom-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 transition-all duration-500 ease-in-out z-0"
-              style={{ left: mode === "matrix" ? "6px" : "50%", width: "calc(50% - 6px)" }}
-            />
-            <button
-              onClick={() => setMode("matrix")}
-              className={cn("relative z-10 flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold transition-colors duration-300 w-40 md:w-48", mode === "matrix" ? "text-white" : "text-white/50 hover:text-white")}
-            >
-              <Layers size={14} /> Matrix
-            </button>
-            <button
-              onClick={() => setMode("radar")}
-              className={cn("relative z-10 flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold transition-colors duration-300 w-40 md:w-48", mode === "radar" ? "text-white" : "text-white/50 hover:text-white")}
-            >
-              <Crosshair size={14} /> Skills
-            </button>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Dashboard Content Area */}
-      <div className="relative z-10 w-full px-4 md:px-8 max-w-7xl mx-auto">
+      {/* Desktop Content Area - Max Width 7xl for large screens */}
+      <div className="relative z-10 w-full px-6 md:px-12 max-w-[1400px] mx-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={mode}
-            initial={{ opacity: 0, y: 30, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.98 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="w-full"
           >
             {mode === "matrix" ? (
-              <div className="flex flex-col gap-8">
-                {/* Executive Summary Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="md:col-span-1">
-                    <PlacementHealthMeter 
-                      readinessScore={riskResult.readinessScore} 
-                      averageEligibility={riskResult.averageEligibility} 
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                {/* Left Column: Metrics & Actions (Takes 4 cols on Desktop) */}
+                <div className="lg:col-span-4 flex flex-col gap-6 sticky top-32">
+                  
+                  {/* Context-Aware Company Guide or Comparison Matrix (Moved to TOP) */}
+                  {pinnedCompanies.length === 0 && (
+                    <CompanyIntelligenceGuide 
+                      pinnedCompany={null} 
+                      userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
+                      userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
+                      userSkills={realSkills}
+                      readinessScore={riskResult.readinessScore}
+                      averageEligibility={riskResult.averageEligibility}
+                      userCredits={realCredits}
+                      branch={branch}
                     />
-                  </div>
-                  <div className="md:col-span-1">
-                    <PriorityActionItems eligibility={eligibilityResults} skillGap={skillGapResult} />
-                  </div>
-                  <div className="md:col-span-1">
-                    <TopperBenchmark userCgpa={isSandbox ? sandboxCgpa : realCgpa} userCredits={realCredits} userSkillsCount={realSkills.length} branch={branch} />
-                  </div>
-                </div>
-
-                {/* Company Targets Ledger */}
-                <div className="w-full mt-8">
-                  {/* Smart Filters */}
-                  {!pinnedCompany && (
-                    <div className="flex items-center gap-3 overflow-x-auto pb-4 mb-2 scrollbar-hide">
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 text-xs font-bold mr-2">
-                        <Filter size={14} /> Filters
-                      </div>
-                      {["All", "FAANG", "Product", "Startup", "Service"].map((f) => (
-                        <button
-                          key={f}
-                          onClick={() => setActiveFilter(f as any)}
-                          className={cn("px-4 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap", activeFilter === f ? "bg-purple-500/20 text-purple-300 border-purple-500/30" : "bg-black/50 text-white/40 border-white/10 hover:text-white")}
-                        >
-                          {f}
-                        </button>
-                      ))}
-                    </div>
+                  )}
+                  {pinnedCompanies.length === 1 && (
+                    <CompanyIntelligenceGuide 
+                      pinnedCompany={pinnedCompanies[0]} 
+                      userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
+                      userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
+                      userSkills={realSkills}
+                      onOptimizeSandbox={handleOptimizeSandbox}
+                      isSandboxActive={isSandboxActive}
+                      onResetSandbox={() => {
+                        setSandboxMetrics(null, null);
+                        setIsSandboxActive(false);
+                      }}
+                      readinessScore={riskResult.readinessScore}
+                      averageEligibility={riskResult.averageEligibility}
+                      userCredits={realCredits}
+                      branch={branch}
+                    />
+                  )}
+                  {pinnedCompanies.length > 1 && (
+                    <CompanyComparisonGuide 
+                      pinnedCompanies={pinnedCompanies}
+                      userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
+                      userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
+                      userSkills={realSkills}
+                      onOptimizeSandbox={handleOptimizeSandbox}
+                      isSandboxActive={isSandboxActive}
+                      onResetSandbox={() => {
+                        setSandboxMetrics(null, null);
+                        setIsSandboxActive(false);
+                      }}
+                      readinessScore={riskResult.readinessScore}
+                      averageEligibility={riskResult.averageEligibility}
+                      userCredits={realCredits}
+                      branch={branch}
+                    />
                   )}
 
-                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 mb-6 gap-4">
-                    <div className="flex items-center gap-3">
-                      <Target size={20} className={pinnedCompany ? "text-purple-400" : "text-[#8b5cf6]"} />
-                      <h2 className="text-xl font-bold text-white tracking-tight">
-                        {pinnedCompany ? `Pinned Target: ${pinnedCompany}` : "Company Target Ledger"}
+                  <PriorityActionItems 
+                    eligibility={eligibilityResults} 
+                    skillGap={skillGapResult} 
+                  />
+                  
+                </div>
+
+                {/* Right Column: Company Ledger (Takes 8 cols on Desktop) */}
+                <div className="lg:col-span-8 flex flex-col">
+                  {/* Smart Filters and Utility Bar */}
+                  <div className="flex flex-col gap-4 mb-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+                        {pinnedCompanies.length > 0 ? (
+                          <><Target size={28} className="text-[#bf5af2]" /> Target Wishlist ({pinnedCompanies.length}/3)</>
+                        ) : "Company Target Ledger"}
                       </h2>
+                      
+                      {pinnedCompanies.length > 0 && (
+                        <button 
+                          onClick={() => setTargetCompanies([])}
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-sm font-semibold text-white transition-all"
+                        >
+                          <PinOff size={16} /> Clear All
+                        </button>
+                      )}
                     </div>
-                    
-                    {pinnedCompany && (
-                      <div className="flex items-center gap-3 w-full md:w-auto">
-                        <button 
-                          onClick={() => {
-                            import("react-hot-toast").then((mod) => {
-                              mod.toast.success(`Generating ATS-optimized Resume for ${pinnedCompany}...`);
-                            });
-                          }}
-                          className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-xs font-bold text-emerald-400 hover:bg-emerald-500/30 transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)]"
-                        >
-                          <FileText size={14} /> Generate Resume
-                        </button>
-                        <button 
-                          onClick={() => setPinnedCompany(null)}
-                          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                        >
-                          <PinOff size={14} /> Clear
-                        </button>
+
+                    <div className="flex flex-wrap items-center gap-4 bg-[#1c1c1e] p-2 rounded-[24px] border border-white/10">
+                      {/* Search */}
+                      <div className="flex-1 min-w-[200px] relative">
+                        <Filter size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" />
+                        <input 
+                          type="text" 
+                          placeholder="Search companies..." 
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full bg-black/40 border border-white/5 rounded-full py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#bf5af2]/50 transition-colors"
+                        />
                       </div>
-                    )}
+                      
+                      {/* Filters */}
+                      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                        {["All", "FAANG", "Product", "Startup", "Service"].map((f) => (
+                          <button
+                            key={f}
+                            onClick={() => setActiveFilter(f as any)}
+                            className={cn("px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap", 
+                              activeFilter === f 
+                                ? "bg-white text-black shadow-lg" 
+                                : "bg-black/40 text-white/70 border border-white/5 hover:bg-black/80")}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Sort Dropdown */}
+                      <select 
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as any)}
+                        className="bg-black/40 border border-white/5 rounded-full py-2.5 px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#bf5af2]/50 appearance-none min-w-[140px] cursor-pointer"
+                      >
+                        <option value="Score">Sort by Score</option>
+                        <option value="Difficulty">Sort by Easiest</option>
+                        <option value="Name">Sort Alphabetically</option>
+                      </select>
+                    </div>
                   </div>
                   
-                  <div className="space-y-8">
+                  
+                  {/* Apple Style Unified List Cards */}
+                  <div className="flex flex-col gap-10">
+                    {/* Pinned Wishlist Zone */}
+                    {pinnedResults.length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold text-[#bf5af2] uppercase tracking-widest pl-2">Pinned Targets ({pinnedResults.length}/3)</h3>
+                        <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-[#bf5af2]/30 rounded-[32px] overflow-hidden shadow-[0_0_30px_rgba(191,90,242,0.15)] ring-1 ring-white/5">
+                          {pinnedResults.map((company, i) => (
+                            <CompanyLedgerRow 
+                              key={company.name} 
+                              result={company} 
+                              isPinned={true} 
+                              onPinToggle={handlePinToggle}
+                              isLast={i === pinnedResults.length - 1} 
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Safe Zone */}
                     {safeCompanies.length > 0 && (
                       <div className="space-y-3">
-                        <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-widest pl-2 flex items-center gap-2">
-                          <CheckCircle2 size={14} /> Achievable Now ({safeCompanies.length})
-                        </h3>
-                        <div className="space-y-2">
+                        <h3 className="text-sm font-semibold text-[#34c759] uppercase tracking-widest pl-2">Achievable Now ({safeCompanies.length})</h3>
+                        <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl">
                           {safeCompanies.map((company, i) => (
-                            <CompanyLedgerRow key={i} result={company} isPinned={pinnedCompany === company.name} onPinToggle={(n) => setPinnedCompany(n === pinnedCompany ? null : n)} />
+                            <CompanyLedgerRow 
+                              key={company.name} 
+                              result={company} 
+                              isPinned={pinnedCompanies.includes(company.name)} 
+                              onPinToggle={handlePinToggle}
+                              isLast={i === safeCompanies.length - 1} 
+                            />
                           ))}
                         </div>
                       </div>
@@ -282,12 +331,16 @@ export default function CareerIntelligencePage() {
                     {/* Borderline Zone */}
                     {borderlineCompanies.length > 0 && (
                       <div className="space-y-3">
-                        <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest pl-2 flex items-center gap-2">
-                          <AlertTriangle size={14} /> Requires Work ({borderlineCompanies.length})
-                        </h3>
-                        <div className="space-y-2">
+                        <h3 className="text-sm font-semibold text-[#ff9f0a] uppercase tracking-widest pl-2">Requires Work ({borderlineCompanies.length})</h3>
+                        <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl">
                           {borderlineCompanies.map((company, i) => (
-                            <CompanyLedgerRow key={i} result={company} isPinned={pinnedCompany === company.name} onPinToggle={(n) => setPinnedCompany(n === pinnedCompany ? null : n)} />
+                            <CompanyLedgerRow 
+                              key={company.name} 
+                              result={company} 
+                              isPinned={pinnedCompanies.includes(company.name)} 
+                              onPinToggle={handlePinToggle}
+                              isLast={i === borderlineCompanies.length - 1} 
+                            />
                           ))}
                         </div>
                       </div>
@@ -296,12 +349,16 @@ export default function CareerIntelligencePage() {
                     {/* Risk Zone */}
                     {riskCompanies.length > 0 && (
                       <div className="space-y-3">
-                        <h3 className="text-xs font-bold text-rose-400 uppercase tracking-widest pl-2 flex items-center gap-2">
-                          <XCircle size={14} /> Out of Reach ({riskCompanies.length})
-                        </h3>
-                        <div className="space-y-2">
+                        <h3 className="text-sm font-semibold text-[#ff453a] uppercase tracking-widest pl-2">Out of Reach ({riskCompanies.length})</h3>
+                        <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl">
                           {riskCompanies.map((company, i) => (
-                            <CompanyLedgerRow key={i} result={company} isPinned={pinnedCompany === company.name} onPinToggle={(n) => setPinnedCompany(n === pinnedCompany ? null : n)} />
+                            <CompanyLedgerRow 
+                              key={company.name} 
+                              result={company} 
+                              isPinned={pinnedCompanies.includes(company.name)} 
+                              onPinToggle={handlePinToggle}
+                              isLast={i === riskCompanies.length - 1} 
+                            />
                           ))}
                         </div>
                       </div>
@@ -310,7 +367,7 @@ export default function CareerIntelligencePage() {
                 </div>
               </div>
             ) : (
-              <div className="max-w-4xl mx-auto">
+              <div className="max-w-6xl mx-auto">
                 <SkillGapDetector 
                   role={targetRole} 
                   skills={realSkills} 
@@ -321,6 +378,18 @@ export default function CareerIntelligencePage() {
           </motion.div>
         </AnimatePresence>
       </div>
+      
+      {/* Unified Dynamic Island — Fixed at top right */}
+      <DynamicIsland
+        mode={mode}
+        onModeChange={setMode}
+        sandboxActive={isSandboxActive}
+        onSandboxToggle={() => setIsSandboxActive(!isSandboxActive)}
+        cgpa={sandboxCgpa}
+        setCgpa={(val) => setSandboxMetrics(val, sandboxBacklogs)}
+        backlogs={sandboxBacklogs}
+        setBacklogs={(val) => setSandboxMetrics(sandboxCgpa, val)}
+      />
     </div>
   );
 }

@@ -2,36 +2,25 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, AlertOctagon, ChevronDown, RefreshCcw, BookOpen, AlertTriangle } from "lucide-react";
+import { Activity, AlertOctagon, ChevronDown, ShieldAlert, AlertTriangle, ArrowRight } from "lucide-react";
 import Card from "@/components/ui/Card";
-import Input from "@/components/ui/Input";
 import { useUSMStore } from "@/stores/usmStore";
+import { BacklogEngine } from "@/lib/backlog-intelligence/engine";
+import Link from "next/link";
 
-interface BacklogProps {
-  currentCgpa?: number;
-  targetCgpa?: number;
-  completedSemesters?: number;
-  remainingSemesters?: number;
-  result?: any;
-  preset?: any;
-}
-
-export default function BacklogRecoveryModule(props: BacklogProps) {
-  const storeBacklogsCount = useUSMStore(state => state.academic.activeBacklogsCount);
-  
+export default function BacklogRecoveryModule() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [backlogsCount, setBacklogsCount] = useState(storeBacklogsCount.toString());
-  const [backlogCredits, setBacklogCredits] = useState((storeBacklogsCount * 4).toString()); // Estimate 4 credits per backlog by default
+  const { courses, semesterHistory, career, presetId, academic } = useUSMStore();
+  
+  const currentSem = academic.completedSemesters + 1;
+  const analysis = React.useMemo(() => {
+    return BacklogEngine.analyzeBacklogs(courses, currentSem - 1, semesterHistory, career, presetId);
+  }, [courses, currentSem, semesterHistory, career, presetId]);
 
-  React.useEffect(() => {
-    setBacklogsCount(storeBacklogsCount.toString());
-    setBacklogCredits((storeBacklogsCount * 4).toString());
-  }, [storeBacklogsCount]);
-
-  const count = parseInt(backlogsCount) || 0;
-  const credits = parseInt(backlogCredits) || 0;
-
-  const hasBacklogs = count > 0;
+  const hasBacklogs = analysis.activeBacklogs.length > 0;
+  const count = analysis.activeBacklogs.length;
+  const credits = analysis.totalBacklogCredits;
+  const atkt = analysis.atktStatus;
 
   return (
     <Card className={`relative overflow-hidden transition-all duration-500 border ${hasBacklogs ? 'border-amber-500/30' : 'border-white/10'}`} padding="xl">
@@ -47,8 +36,8 @@ export default function BacklogRecoveryModule(props: BacklogProps) {
               <Activity />
             </div>
             <div>
-              <h3 className={`font-headline text-xl font-black ${hasBacklogs ? 'text-amber-400' : 'text-white'}`}>Backlog Recovery Engine</h3>
-              <p className="text-on-surface-variant text-sm">Clearance roadmaps and re-registration limits.</p>
+              <h3 className={`font-headline text-xl font-black ${hasBacklogs ? 'text-amber-400' : 'text-white'}`}>Backlog Intelligence Engine</h3>
+              <p className="text-on-surface-variant text-sm">Real-time ATKT rules and clearance data.</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -73,86 +62,60 @@ export default function BacklogRecoveryModule(props: BacklogProps) {
             >
               <div className="pt-6 border-t border-white/20 space-y-8">
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Input 
-                    label="Active Backlog Count" 
-                    type="number" 
-                    value={backlogsCount} 
-                    onChange={(e) => setBacklogsCount(e.target.value)}
-                  />
-                  <Input 
-                    label="Total Dead Credits" 
-                    type="number" 
-                    value={backlogCredits} 
-                    onChange={(e) => setBacklogCredits(e.target.value)}
-                  />
-                </div>
-
                 {!hasBacklogs ? (
-                  <div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 text-center">
-                    <p className="text-emerald-400/80 text-sm">You have no active backlogs. Keep up the great work!</p>
+                  <div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 text-center flex flex-col items-center justify-center space-y-3">
+                    <p className="text-emerald-400/80 text-sm">System Nominal. You have no active backlogs.</p>
+                    <Link href="/backlog" className="text-xs font-semibold px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">
+                      Open Command Center
+                    </Link>
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                        <div className="text-xs text-amber-400/70 font-bold uppercase tracking-widest mb-1">Max Re-Registration</div>
-                        <div className="text-xl font-bold text-amber-400 font-mono">
-                          {Math.min(count, 3)} subjects
-                        </div>
-                        <p className="text-[10px] text-amber-400/60 mt-1">Per university ordinance limit per semester.</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/10 col-span-1">
+                        <div className="text-xs text-white/50 font-bold uppercase tracking-widest mb-1">Active Backlogs</div>
+                        <div className="text-xl font-bold text-white font-mono">{count}</div>
                       </div>
-                      
-                      <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 md:col-span-2">
-                        <div className="text-xs text-red-400/70 font-bold uppercase tracking-widest mb-1">Year-Down Risk Assessment</div>
-                        <div className="flex items-center gap-3 mt-1">
-                          <AlertTriangle className="text-red-400" size={24} />
-                          <p className="text-sm text-red-400/90 font-medium">
-                            {credits >= 16 
-                              ? "CRITICAL: You are at immediate risk of a Year Down. Clear at least " + (credits - 12) + " credits immediately." 
-                              : "Warning: You are approaching the maximum carry-forward credit limit. Prioritize backlog exams."}
-                          </p>
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/10 col-span-1">
+                        <div className="text-xs text-white/50 font-bold uppercase tracking-widest mb-1">Dead Credits</div>
+                        <div className="text-xl font-bold text-white font-mono">{credits}</div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 col-span-2">
+                        <div className="text-xs text-amber-400/70 font-bold uppercase tracking-widest mb-1">ATKT Progression Limit</div>
+                        <div className="text-xl font-bold text-amber-400 font-mono">
+                          Max {atkt.allowedBacklogsToProceed} allowed
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-[#1D1D1F] border border-white/5">
-                      <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                        <RefreshCcw size={16} className="text-amber-400" />
-                        Recommended Clearance Roadmap
-                      </h4>
-                      <div className="space-y-4">
-                        <div className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 text-xs font-bold">1</div>
-                            <div className="w-px h-full bg-white/10 my-1" />
-                          </div>
-                          <div className="pb-4">
-                            <h5 className="text-sm font-bold text-white">Register for Even/Odd Matches</h5>
-                            <p className="text-xs text-white/50 mt-1">Check if the backlog subject is offered in the upcoming semester. You can only register for Odd sem subjects in Odd sems, and Even in Even.</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 text-xs font-bold">2</div>
-                            <div className="w-px h-full bg-white/10 my-1" />
-                          </div>
-                          <div className="pb-4">
-                            <h5 className="text-sm font-bold text-white">Prioritize High-Credit Subjects</h5>
-                            <p className="text-xs text-white/50 mt-1">If you have multiple backlogs, clear 4-credit or 3-credit subjects first to reduce the Year-Down risk drastically.</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 text-xs font-bold">3</div>
-                          </div>
-                          <div>
-                            <h5 className="text-sm font-bold text-white">Target 40% Minimum Passing Score</h5>
-                            <p className="text-xs text-white/50 mt-1">For backlog exams, focus entirely on crossing the passing threshold. Do not aim for high grades at the cost of failing another backlog exam.</p>
-                          </div>
+                    {atkt.yearDownRisk ? (
+                      <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <div className="text-xs text-red-400/70 font-bold uppercase tracking-widest mb-1">Year-Down Risk Assessment</div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <ShieldAlert className="text-red-400 shrink-0" size={24} />
+                          <p className="text-sm text-red-400/90 font-medium leading-relaxed">
+                            {atkt.criticalWarning}
+                          </p>
                         </div>
                       </div>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <div className="text-xs text-amber-400/70 font-bold uppercase tracking-widest mb-1">Year-Down Risk Assessment</div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <AlertTriangle className="text-amber-400 shrink-0" size={24} />
+                          <p className="text-sm text-amber-400/90 font-medium">
+                            Warning: You have {count} active backlogs. Keep this under {atkt.allowedBacklogsToProceed} to proceed to the next year.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-4 flex justify-end">
+                      <Link href="/backlog" className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0a84ff] hover:bg-[#0a84ff]/80 text-white font-semibold text-sm transition-colors group">
+                        Launch Full Command Center <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      </Link>
                     </div>
+
                   </div>
                 )}
               </div>

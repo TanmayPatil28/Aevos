@@ -7,6 +7,7 @@ import AcademicTimeline from "@/components/dashboard/AcademicTimeline";
 import CalendarManager from "@/components/dashboard/CalendarManager";
 import { Activity, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
+import AnimatedCounter from "@/components/AnimatedCounter";
 
 export default function AcademicDashboardView() {
   const store = useUSMStore();
@@ -24,26 +25,26 @@ export default function AcademicDashboardView() {
     >
       <CalendarManager />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl relative overflow-hidden group hover:border-blue-500/30 transition-colors">
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Activity className="w-16 h-16 text-blue-400" /></div>
-              <div className="text-sm text-slate-500 uppercase font-bold tracking-wider mb-2">Active CGPA</div>
-              <div className="text-4xl font-black text-white">{cgpa.toFixed(2)}</div>
-              {percentage > 0 && <div className="text-xs text-indigo-400 mt-2 font-mono">≈ {percentage.toFixed(2)}% Equivalent</div>}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all">
+              <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Activity className="w-24 h-24 text-blue-400" /></div>
+              <div className="text-sm text-slate-400 uppercase font-bold tracking-wider mb-3 relative z-10">Active CGPA</div>
+              <AnimatedCounter target={cgpa} decimals={2} className="text-5xl font-black text-white relative z-10 block" />
+              {percentage > 0 && <div className="text-sm text-indigo-400 mt-4 font-mono relative z-10">≈ <AnimatedCounter target={percentage} decimals={2} />% Equivalent</div>}
             </div>
             
-            <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl relative overflow-hidden group hover:border-emerald-500/30 transition-colors">
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><TrendingUp className="w-16 h-16 text-emerald-400" /></div>
-              <div className="text-sm text-slate-500 uppercase font-bold tracking-wider mb-2">Sem Credits</div>
-              <div className="text-4xl font-black text-white">{credits.totalActiveCredits}</div>
-              <div className="text-xs text-slate-400 mt-2">Active Semester Load</div>
+            <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all">
+              <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><TrendingUp className="w-24 h-24 text-emerald-400" /></div>
+              <div className="text-sm text-slate-400 uppercase font-bold tracking-wider mb-3 relative z-10">Sem Credits</div>
+              <AnimatedCounter target={credits.totalActiveCredits} className="text-5xl font-black text-white relative z-10 block" />
+              <div className="text-sm text-slate-500 mt-4 relative z-10">Active Semester Load</div>
             </div>
           </div>
           
-          <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl">
-            <h3 className="text-lg font-bold text-white mb-6">Active Course Ledger</h3>
+          <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
+            <h3 className="text-xl font-bold text-white mb-6">Active Course Ledger</h3>
             <div className="space-y-3">
               {activeCourses.map(course => (
                 <div key={course.id} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
@@ -72,8 +73,10 @@ export default function AcademicDashboardView() {
           </div>
         </div>
 
-        <div className="lg:col-span-1">
-          <AcademicTimeline history={store.semesterHistory} />
+        <div className="lg:col-span-4">
+          <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 h-full">
+            <AcademicTimeline history={store.semesterHistory} />
+          </div>
         </div>
       </div>
     </motion.div>

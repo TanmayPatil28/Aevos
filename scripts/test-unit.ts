@@ -33,7 +33,6 @@ global.window = {
   localStorage: storageMock
 } as any;
 
-// Use require instead of ES import to execute setups before store hydration
 const { runEnginesTests } = require("../tests/simulation/engines.test");
 const { runStoreTests } = require("../tests/stores/usmStore.test");
 const { runStrategyTests } = require("../tests/strategy/strategy.test");

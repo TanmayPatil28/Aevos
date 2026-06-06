@@ -241,6 +241,8 @@ export default function PlannerPage() {
               </div>
             </motion.div>
 
+            <div className="w-full h-px bg-white/10" />
+
             {/* Target */}
             <motion.div 
               className="flex flex-col gap-6"
@@ -270,7 +272,7 @@ export default function PlannerPage() {
         </div>
 
         {/* RIGHT COLUMN: Results Sticky */}
-        <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-32 h-fit relative z-10 w-full pt-10 border-t border-white/20 lg:border-t-0 lg:pt-0">
+        <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-32 h-fit relative z-10 w-full pt-10 border-t border-t border-white/20 lg:border-t-0 lg:border-l lg:border-white/20 lg:pl-16 lg:pt-0">
           <AnimatePresence mode="wait">
             {!isValidTarget || !result ? (
               <motion.div 
@@ -413,7 +415,7 @@ export default function PlannerPage() {
           </div>
 
           {/* RIGHT COLUMN: CANVAS (70%) */}
-          <div className="flex-1 w-full relative z-20 flex flex-col items-center justify-center min-h-[600px] lg:pl-6">
+          <div className="flex-1 w-full relative z-20 flex flex-col items-center justify-center min-h-[600px] lg:border-l lg:border-white/20 lg:pl-12">
             {/* BACKGROUND TYPOGRAPHY (STATE A) */}
             <AnimatePresence>
               {!activeModule && (

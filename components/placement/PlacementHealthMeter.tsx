@@ -12,10 +12,10 @@ export default function PlacementHealthMeter({ readinessScore, averageEligibilit
   
   const getRiskColors = () => {
     switch(readinessScore) {
-      case "SAFE": return { glow: "bg-emerald-500/20", text: "text-emerald-400", border: "border-emerald-500/20" };
-      case "MODERATE RISK": return { glow: "bg-amber-500/20", text: "text-amber-400", border: "border-amber-500/20" };
-      case "HIGH RISK": return { glow: "bg-orange-500/20", text: "text-orange-400", border: "border-orange-500/20" };
-      case "CRITICAL": return { glow: "bg-rose-500/20", text: "text-rose-400", border: "border-rose-500/20" };
+      case "SAFE": return { glow: "bg-[#34c759]/20", text: "text-[#34c759]", border: "border-[#34c759]/30" };
+      case "MODERATE RISK": return { glow: "bg-[#ffcc00]/20", text: "text-[#ffcc00]", border: "border-[#ffcc00]/30" };
+      case "HIGH RISK": return { glow: "bg-[#ff9f0a]/20", text: "text-[#ff9f0a]", border: "border-[#ff9f0a]/30" };
+      case "CRITICAL": return { glow: "bg-[#ff453a]/20", text: "text-[#ff453a]", border: "border-[#ff453a]/30" };
       default: return { glow: "bg-white/10", text: "text-white/50", border: "border-white/10" };
     }
   };
@@ -23,42 +23,38 @@ export default function PlacementHealthMeter({ readinessScore, averageEligibilit
   const colors = getRiskColors();
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center pt-8 pb-12 px-6 bg-[#1D1D1F] border border-white/5 rounded-[32px] relative overflow-hidden group shadow-none">
-      
-      
-
-      <div className="relative z-10 flex flex-col items-center text-center">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-white/40 mb-8">
+    <div className="w-full flex flex-col items-center justify-center p-8 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] relative overflow-hidden shadow-2xl">
+      <div className="relative z-10 flex flex-col items-center text-center w-full">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/50 mb-6">
           Placement Health
         </h2>
 
         <div className="flex flex-col items-center justify-center mb-8">
-          <span className="text-[12px] font-medium text-white/50 uppercase tracking-widest mb-2">Overall Eligibility</span>
           <div className="flex items-baseline gap-1">
-            <span className="text-8xl md:text-[9rem] font-black tracking-[-0.05em] text-transparent bg-clip-text leading-none bg-gradient-to-b from-white to-white/40">
+            <span className="text-8xl md:text-[8rem] font-black tracking-tighter text-transparent bg-clip-text leading-none bg-gradient-to-b from-white to-white/60">
               {averageEligibility.toFixed(0)}
             </span>
-            <span className="text-3xl font-bold text-white/20">%</span>
+            <span className="text-4xl font-bold text-white/30">%</span>
           </div>
+          <span className="text-sm font-medium text-white/40 mt-4">Average Eligibility</span>
         </div>
 
-        <div className={cn("px-5 py-2 rounded-full border backdrop-blur-md flex items-center gap-2", colors.border, "bg-black/40")}>
-          <div className={cn("w-2 h-2 rounded-full", colors.text, "shadow-none")} />
-          <span className={cn("text-xs font-bold tracking-widest uppercase", colors.text)}>
+        <div className={cn("px-6 py-2.5 rounded-full border flex items-center gap-3", colors.border, colors.glow)}>
+          <div className={cn("w-2.5 h-2.5 rounded-full", "bg-current", colors.text, "shadow-sm")} />
+          <span className={cn("text-sm font-bold tracking-wider uppercase", colors.text)}>
             {readinessScore}
           </span>
         </div>
 
-        {/* Share Trajectory Button */}
         <button 
           onClick={() => {
             import("react-hot-toast").then((mod) => {
               mod.toast.success("Trajectory graphic generated and copied to clipboard!");
             });
           }}
-          className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-colors text-xs font-bold shadow-none"
+          className="mt-8 flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 transition-colors text-sm font-semibold"
         >
-          <Share2 className="w-4 h-4" /> Share My Trajectory
+          <Share2 className="w-4 h-4" /> Share Dashboard
         </button>
       </div>
     </div>

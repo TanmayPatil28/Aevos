@@ -7,6 +7,7 @@ import { selectDerivedGPA } from "@/stores/selectors/academic";
 import { Activity, Briefcase, GraduationCap, LayoutDashboard, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useOSMode } from "@/contexts/OSModeContext";
+import AnimatedCounter from "@/components/AnimatedCounter";
 
 export default function UnifiedDashboardView() {
   const store = useUSMStore();
@@ -30,18 +31,18 @@ export default function UnifiedDashboardView() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="space-y-6"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Academic Half */}
-        <div className="bg-gradient-to-br from-blue-900/20 to-[#000000] border border-blue-500/20 p-8 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[300px] group">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><GraduationCap className="w-32 h-32 text-blue-400" /></div>
+        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:bg-white/[0.02] transition-all">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><GraduationCap className="w-48 h-48 text-blue-400" /></div>
           
           <div>
             <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
               <Activity className="text-blue-400" /> Academic Standing
             </h2>
-            <div className="text-sm text-blue-400/80 uppercase font-bold tracking-wider mb-2">Active CGPA</div>
-            <div className="text-6xl font-black text-white">{cgpa.toFixed(2)}</div>
+            <div className="text-sm text-blue-400 uppercase font-bold tracking-wider mb-3 relative z-10">Active CGPA</div>
+            <AnimatedCounter target={cgpa} decimals={2} className="text-7xl font-black text-white relative z-10 block" />
             <div className="text-sm text-slate-400 mt-3 max-w-[200px]">
               {backlogs > 0 ? `Attention required: ${backlogs} backlogs pending.` : "You are on track. Maintain consistency."}
             </div>
@@ -56,17 +57,17 @@ export default function UnifiedDashboardView() {
         </div>
 
         {/* Career Half */}
-        <div className="bg-gradient-to-br from-purple-900/20 to-[#000000] border border-purple-500/20 p-8 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[300px] group">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Briefcase className="w-32 h-32 text-purple-400" /></div>
+        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:bg-white/[0.02] transition-all">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Briefcase className="w-48 h-48 text-purple-400" /></div>
           
           <div>
             <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
               <LayoutDashboard className="text-purple-400" /> Career Readiness
             </h2>
-            <div className="text-sm text-purple-400/80 uppercase font-bold tracking-wider mb-2">Placement Score</div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-6xl font-black text-white">{readinessScore}</span>
-              <span className="text-lg text-slate-500 font-bold">/ 100</span>
+            <div className="text-sm text-purple-400 uppercase font-bold tracking-wider mb-3 relative z-10">Placement Score</div>
+            <div className="flex items-baseline gap-2 relative z-10">
+              <AnimatedCounter target={readinessScore} className="text-7xl font-black text-white block" />
+              <span className="text-xl text-slate-500 font-bold">/ 100</span>
             </div>
             <div className="text-sm text-slate-400 mt-3 max-w-[200px]">
               Your academic profile is strong. Focus on DSA and Projects.
@@ -83,10 +84,10 @@ export default function UnifiedDashboardView() {
 
       </div>
 
-      <div className="bg-[#000000] border border-white/5 p-6 rounded-xl flex items-center justify-between">
-        <div>
-          <h3 className="text-white font-bold text-lg mb-1">Explore all modules</h3>
-          <p className="text-slate-400 text-sm">Use the OS Switcher in the navbar to morph this dashboard to your current goals.</p>
+      <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="relative z-10">
+          <h3 className="text-white font-bold text-xl mb-2">Explore all modules</h3>
+          <p className="text-slate-400 text-sm max-w-xl">Use the Dynamic Island toggle below to morph this dashboard to your current goals.</p>
         </div>
       </div>
     </motion.div>

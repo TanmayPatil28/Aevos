@@ -3,8 +3,12 @@ import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import dynamic from "next/dynamic";
+import SmartTimetableController from "@/components/dynamic-island/SmartTimetableController";
+import BunkCalculatorController from "@/components/dynamic-island/BunkCalculatorController";
+import InterventionAlertBridge from "@/components/dynamic-island/InterventionAlertBridge";
 
+import NextTopLoader from "nextjs-toploader";
+import dynamic from "next/dynamic";
 const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: false });
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -46,6 +50,9 @@ import { AcademicHydrationBoundary } from "@/components/providers/AcademicHydrat
 const DiagnosticOverlay = dynamic(() => import("@/components/layout/DiagnosticOverlay"), { ssr: false });
 const BackgroundEffects = dynamic(() => import("@/components/BackgroundEffects"), { ssr: false });
 import { OSModeProvider } from "@/contexts/OSModeContext";
+import IslandTestControls from "@/components/dynamic-island/IslandTestControls";
+import ContextualIslandController from "@/components/dynamic-island/ContextualIslandController";
+import { BackgroundSyncWorker } from "@/components/providers/BackgroundSyncWorker";
 
 export default function RootLayout({
   children,
@@ -54,20 +61,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-      </head>
       <body className={`${inter.variable} font-body bg-background text-foreground custom-scrollbar selection:bg-primary-container selection:text-on-primary-container`}>
+          <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
           <BackgroundEffects />
           <AuthProvider>
             <UniversityProvider>
+            <NextTopLoader
+              color="#3b82f6"
+              initialPosition={0.2}
+              crawlSpeed={150}
+              height={3}
+              crawl={true}
+              showSpinner={false}
+              easing="cubic-bezier(0.16, 1, 0.3, 1)"
+              speed={150}
+              shadow="0 0 15px #3b82f6,0 0 5px #3b82f6"
+            />
             <CustomCursor />
             <ErrorBoundary>
               <AcademicStateProvider>
                 <AcademicHydrationBoundary>
+                  <BackgroundSyncWorker />
                   <OSModeProvider>
                     <Navbar />
                     {children}
@@ -119,6 +133,11 @@ export default function RootLayout({
               },
             }}
           />
+          <ContextualIslandController />
+          <SmartTimetableController />
+          <BunkCalculatorController />
+          <InterventionAlertBridge />
+          <IslandTestControls />
       </body>
     </html>
   );

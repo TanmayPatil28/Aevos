@@ -75,8 +75,8 @@ async def run_test():
         
         # --> Assertions to verify final state
         frame = context.pages[-1]
-        assert await frame.locator("xpath=//*[contains(., 'Operating Systems')]").nth(0).is_visible(), "The dashboard should show the saved subject Operating Systems in the history after saving.",
-        assert await frame.locator("xpath=//*[contains(., 'CGPA')]").nth(0).is_visible(), "The dashboard should display CGPA chart elements reflecting the saved calculation data after saving."]}
+        assert await frame.locator("xpath=//*[contains(., 'Operating Systems')]").nth(0).is_visible(), "The dashboard should show the saved subject Operating Systems in the history after saving."
+        assert await frame.locator("xpath=//*[contains(., 'CGPA')]").nth(0).is_visible(), "The dashboard should display CGPA chart elements reflecting the saved calculation data after saving."
         await asyncio.sleep(5)
 
     finally:

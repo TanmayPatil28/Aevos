@@ -26,7 +26,6 @@ import { useUSMStore } from "@/stores/usmStore";
 import { selectAttendanceRisk } from "@/stores/selectors/attendance";
 import { getPresetById } from "@/lib/presets/presetRegistry";
 
-import { PageHero } from "@/components/ui/PageHero";
 
 export default function AttendancePage() {
   const storeState = useUSMStore();
@@ -90,6 +89,195 @@ export default function AttendancePage() {
   
   const scoreDetails = getSurvivalScoreDetails(attendanceRiskData.survivalScore);
 
+  // Drag & Drop / Custom Categorization state
+  const [customCategories, setCustomCategories] = useState<Record<string, "THEORY" | "LAB">>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("attendance_categories");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error("Error reading attendance categories from localStorage", e);
+        }
+      }
+    }
+    return {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem("attendance_categories", JSON.stringify(customCategories));
+  }, [customCategories]);
+
+  const [isDragOverTheory, setIsDragOverTheory] = useState(false);
+  const [isDragOverLab, setIsDragOverLab] = useState(false);
+  const [activeDraggedId, setActiveDraggedId] = useState<string | null>(null);
+
+  const getCourseCategory = (courseId: string, name: string): "THEORY" | "LAB" => {
+    if (customCategories[courseId]) {
+      return customCategories[courseId];
+    }
+    return /lab|practical|workshop/i.test(name) ? "LAB" : "THEORY";
+  };
+
+  const handleDragStart = (e: React.DragEvent, courseId: string) => {
+    e.dataTransfer.setData("text/plain", courseId);
+    e.dataTransfer.effectAllowed = "move";
+    setActiveDraggedId(courseId);
+  };
+
+  const handleDragEnd = () => {
+    setActiveDraggedId(null);
+    setIsDragOverTheory(false);
+    setIsDragOverLab(false);
+  };
+
+  const handleDragOverTheory = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (activeDraggedId) {
+      setIsDragOverTheory(true);
+    }
+  };
+
+  const handleDragOverLab = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (activeDraggedId) {
+      setIsDragOverLab(true);
+    }
+  };
+
+  const handleDropTheory = (e: React.DragEvent) => {
+    e.preventDefault();
+    const courseId = e.dataTransfer.getData("text/plain") || activeDraggedId;
+    if (courseId) {
+      setCustomCategories(prev => ({
+        ...prev,
+        [courseId]: "THEORY"
+      }));
+    }
+    handleDragEnd();
+  };
+
+  const handleDropLab = (e: React.DragEvent) => {
+    e.preventDefault();
+    const courseId = e.dataTransfer.getData("text/plain") || activeDraggedId;
+    if (courseId) {
+      setCustomCategories(prev => ({
+        ...prev,
+        [courseId]: "LAB"
+      }));
+    }
+    handleDragEnd();
+  };
+
+  const filteredCourses = attendanceRiskData.courses.filter(c => !filterCriticalOnly || c.urgencyLevel === "CRITICAL" || c.urgencyLevel === "WARNING");
+  const theoryCourses = filteredCourses.filter(c => getCourseCategory(c.courseId, c.courseName) === "THEORY");
+  const labCourses = filteredCourses.filter(c => getCourseCategory(c.courseId, c.courseName) === "LAB");
+
+  const renderCourseCard = (courseRisk: any, idx: number) => {
+    const matchingCourse = schedulerCourses.find((c) => c.id === courseRisk.courseId);
+    if (!matchingCourse) return null;
+
+    const isCritical = courseRisk.urgencyLevel === "CRITICAL";
+    const isWarning = courseRisk.urgencyLevel === "WARNING";
+
+    let safeBunks = 0;
+    let recoveryRequired = 0;
+    const attendanceDecimal = minAttendance / 100;
+    if (courseRisk.percentage >= minAttendance) {
+      safeBunks = Math.floor((matchingCourse.attended - attendanceDecimal * matchingCourse.conducted) / attendanceDecimal);
+      safeBunks = Math.max(0, safeBunks);
+    } else {
+      recoveryRequired = Math.ceil((attendanceDecimal * matchingCourse.conducted - matchingCourse.attended) / (1 - attendanceDecimal));
+      recoveryRequired = Math.max(0, recoveryRequired);
+    }
+
+    return (
+      <motion.div
+        key={courseRisk.courseId}
+        layout
+        draggable
+        onDragStart={(e) => handleDragStart(e, courseRisk.courseId)}
+        onDragEnd={handleDragEnd}
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: activeDraggedId === courseRisk.courseId ? 0.92 : 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className={`relative bg-[#111111] border border-white/5 rounded-[24px] p-6 flex flex-col h-full min-h-[180px] transition-all duration-500 group overflow-hidden cursor-grab active:cursor-grabbing select-none ${
+          isCritical ? 'hover:border-rose-500/30' : isWarning ? 'hover:border-amber-500/30' : 'hover:border-white/15'
+        } ${activeDraggedId === courseRisk.courseId ? 'opacity-30 border-dashed border-white/15' : ''}`}
+      >
+        {/* Top Row: Code & Name */}
+        <div className="flex flex-col mb-4 relative z-10">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-mono font-semibold text-white/40 tracking-widest uppercase">
+              {courseRisk.courseCode}
+            </span>
+            <span className={`text-[9px] px-2 py-0.5 rounded-full font-mono uppercase font-bold flex items-center gap-1 ${
+              isCritical ? "text-rose-400 bg-rose-500/10 border border-rose-500/20" : 
+              isWarning ? "text-amber-400 bg-amber-500/10 border border-amber-500/20" :
+              "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+            }`}>
+              {courseRisk.urgencyLevel}
+            </span>
+          </div>
+          <h3 className="text-sm font-semibold text-white/90 leading-snug line-clamp-2 pr-2">
+            {courseRisk.courseName}
+          </h3>
+        </div>
+
+        {/* Middle Row: Massive Percentage */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center mb-6 mt-2">
+          <div className="flex items-baseline gap-1">
+            <AnimatedCounter target={courseRisk.percentage} decimals={1} className={`text-5xl font-semibold tracking-tighter ${
+              courseRisk.percentage >= minAttendance ? "text-white" : "text-rose-400"
+            }`} />
+            <span className={`text-xl font-bold ${courseRisk.percentage >= minAttendance ? "text-white/30" : "text-rose-400/40"}`}>%</span>
+          </div>
+          {courseRisk.internalsImpact > 0 && (
+            <div className="mt-2 flex items-center gap-1.5">
+              <TrendingDown className="w-3.5 h-3.5 text-rose-400/80" />
+              <span className="text-[10px] text-rose-400/80 font-medium">Internal Impact: -{courseRisk.internalsImpact}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Row: Minimalist Stats */}
+        <div className="flex items-center justify-between pt-4 border-t border-white/[0.04] relative z-10">
+          <div className="flex flex-col">
+            <span className="text-[9px] uppercase tracking-widest text-white/30 font-semibold mb-1">Attended</span>
+            <span className="text-xs font-mono font-medium text-white/60">
+              {matchingCourse.attended} / {matchingCourse.conducted}
+            </span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-[9px] uppercase tracking-widest text-white/30 font-semibold mb-1">
+              {courseRisk.percentage >= minAttendance ? 'Safe' : 'Needed'}
+            </span>
+            <span className={`text-xs font-mono font-medium ${courseRisk.percentage >= minAttendance ? 'text-emerald-400/80' : 'text-rose-400/80'}`}>
+              {courseRisk.percentage >= minAttendance ? `${safeBunks} bunks` : `${recoveryRequired} classes`}
+            </span>
+          </div>
+        </div>
+
+        {/* Glassmorphic Quick Actions Overlay */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 flex flex-col items-center justify-center gap-3 p-6 pointer-events-none group-hover:pointer-events-auto">
+          <button 
+            onClick={() => storeState.updateCourse(courseRisk.courseId, { attendanceTotal: matchingCourse.conducted + 1, attendanceBunked: matchingCourse.bunked })}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-[14px] transition-colors shadow-[0_0_20px_rgba(255,255,255,0.05)] border border-white/10 hover:border-white/20"
+          >
+            <Check className="w-4 h-4 text-emerald-400" /> Mark Attended
+          </button>
+          <button 
+            onClick={() => storeState.updateCourse(courseRisk.courseId, { attendanceTotal: matchingCourse.conducted + 1, attendanceBunked: matchingCourse.bunked + 1 })}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-100 text-xs font-bold rounded-[14px] transition-colors shadow-[0_0_20px_rgba(244,63,94,0.05)] border border-rose-500/20 hover:border-rose-500/40"
+          >
+            <X className="w-4 h-4 text-rose-400" /> Mark Bunked
+          </button>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-white/20 selection:text-white pb-32">
       
@@ -107,22 +295,27 @@ export default function AttendancePage() {
       {/* Main Content Area */}
       <WorkspaceContent className="relative z-10">
         <WorkspaceSection>
-          <PageHero 
-            headline={<>Calculate safe bunks.<br/>Never drop below the threshold.</>}
-            description="The attendance intelligence system tracks your classes in real-time. Know exactly how many lectures you can afford to skip, or the exact recovery path needed to stay out of the danger zone."
-          />
           
-          <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-8">
+          <div className="w-full flex flex-wrap gap-12 lg:gap-16 items-start relative z-10 mt-6">
             
-            {/* LEFT PANE: Strategy & Heatmap */}
-            <div className="flex-[2] min-w-[320px] flex flex-col gap-10 relative z-10 w-full">
+            {/* LEFT COLUMN: Hero Header & Heatmap */}
+            <div className="flex-[2] min-w-[320px] flex flex-col gap-16 relative z-10 w-full">
               
-              {/* Strategy Selector Container */}
-              <div className="bg-[#1D1D1F] border border-white/5 px-6 py-6 rounded-[32px] relative overflow-hidden group">
-                <div className="relative z-10">
-                  <StrategySelector currentStrategy={strategy} onStrategyChange={setStrategy} />
-                </div>
-              </div>
+              {/* Premium Hero Header directly in left column */}
+              <motion.div 
+                className="flex flex-col"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <h1 className="text-4xl md:text-5xl lg:text-[4rem] font-semibold tracking-tight leading-[1.05] mb-6 text-transparent bg-clip-text bg-gradient-to-br from-[#E0F2FE] to-[#7DD3FC]">
+                  Calculate safe bunks.<br/>
+                  Never drop below the threshold.
+                </h1>
+                <p className="text-lg md:text-xl text-[#A1A1AA] font-medium max-w-2xl leading-[1.4] tracking-tight">
+                  The attendance intelligence system tracks your classes in real-time. Know exactly how many lectures you can afford to skip, or the exact recovery path needed to stay out of the danger zone.
+                </p>
+              </motion.div>
 
               {/* Subject-Wise Risk Heatmap */}
               <div className="w-full flex flex-col gap-6">
@@ -144,9 +337,17 @@ export default function AttendancePage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4">
-                  <AnimatePresence mode="popLayout">
-                    {schedulerCourses.length === 0 ? (
+                {/* Premium Drag and Drop Tip Banner */}
+                {schedulerCourses.length > 0 && (
+                  <div className="px-4 py-2.5 rounded-xl border border-white/5 bg-white/[0.01] flex items-center gap-2.5 transition-opacity">
+                    <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full font-mono font-bold tracking-wide select-none">TIP</span>
+                    <p className="text-[11px] text-white/40 font-medium">Drag any card between sections to customize and personalize your academic category view.</p>
+                  </div>
+                )}
+
+                {schedulerCourses.length === 0 ? (
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4">
+                    <AnimatePresence mode="popLayout">
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -159,121 +360,88 @@ export default function AttendancePage() {
                           Please register your active semester courses in the calculator to activate intelligence tracking.
                         </p>
                       </motion.div>
-                    ) : (
-                      attendanceRiskData.courses
-                        .filter(c => !filterCriticalOnly || c.urgencyLevel === "CRITICAL" || c.urgencyLevel === "WARNING")
-                        .map((courseRisk, idx) => {
-                        const matchingCourse = schedulerCourses.find((c) => c.id === courseRisk.courseId);
-                        if (!matchingCourse) return null;
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-10">
+                    
+                    {/* Droppable Theory Column */}
+                    <div 
+                      onDragOver={handleDragOverTheory}
+                      onDragLeave={() => setIsDragOverTheory(false)}
+                      onDrop={handleDropTheory}
+                      className={`flex flex-col gap-4 p-4 rounded-[28px] border transition-all duration-300 ${
+                        isDragOverTheory 
+                          ? "bg-blue-500/5 border-dashed border-blue-500/30 shadow-[0_0_25px_rgba(59,130,246,0.05)] scale-[1.01]" 
+                          : activeDraggedId 
+                          ? "border-dashed border-white/5 bg-white/[0.01]" 
+                          : "border-transparent"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 px-1">
+                        <h4 className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Theory Subjects</h4>
+                        <div className="flex-1 h-px bg-white/5 ml-2" />
+                      </div>
+                      
+                      {theoryCourses.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 px-6 bg-[#111111]/30 border border-dashed border-white/5 rounded-[24px] min-h-[100px]">
+                          <span className="text-[11px] font-mono text-white/30 tracking-wider">Drag & drop theory subjects here</span>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4">
+                          <AnimatePresence mode="popLayout">
+                            {theoryCourses.map((courseRisk, idx) => renderCourseCard(courseRisk, idx))}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </div>
 
-                        const isCritical = courseRisk.urgencyLevel === "CRITICAL";
-                        const isWarning = courseRisk.urgencyLevel === "WARNING";
+                    {/* Droppable Lab Column */}
+                    <div 
+                      onDragOver={handleDragOverLab}
+                      onDragLeave={() => setIsDragOverLab(false)}
+                      onDrop={handleDropLab}
+                      className={`flex flex-col gap-4 p-4 rounded-[28px] border transition-all duration-300 ${
+                        isDragOverLab 
+                          ? "bg-emerald-500/5 border-dashed border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.05)] scale-[1.01]" 
+                          : activeDraggedId 
+                          ? "border-dashed border-white/5 bg-white/[0.01]" 
+                          : "border-transparent"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 px-1">
+                        <h4 className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Laboratories & Practicals</h4>
+                        <div className="flex-1 h-px bg-white/5 ml-2" />
+                      </div>
 
-                        // Recalculate margins based on strategy modified minAttendance
-                        let safeBunks = 0;
-                        let recoveryRequired = 0;
-                        const attendanceDecimal = minAttendance / 100;
-                        if (courseRisk.percentage >= minAttendance) {
-                          safeBunks = Math.floor((matchingCourse.attended - attendanceDecimal * matchingCourse.conducted) / attendanceDecimal);
-                          safeBunks = Math.max(0, safeBunks);
-                        } else {
-                          recoveryRequired = Math.ceil((attendanceDecimal * matchingCourse.conducted - matchingCourse.attended) / (1 - attendanceDecimal));
-                          recoveryRequired = Math.max(0, recoveryRequired);
-                        }
+                      {labCourses.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 px-6 bg-[#111111]/30 border border-dashed border-white/5 rounded-[24px] min-h-[100px]">
+                          <span className="text-[11px] font-mono text-white/30 tracking-wider">Drag & drop laboratory subjects here</span>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4">
+                          <AnimatePresence mode="popLayout">
+                            {labCourses.map((courseRisk, idx) => renderCourseCard(courseRisk, idx))}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </div>
 
-                        return (
-                          <motion.div
-                            key={courseRisk.courseId}
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            transition={{ delay: idx * 0.05, type: "spring", stiffness: 300, damping: 25 }}
-                            className={`relative bg-[#111111] border border-white/5 rounded-[24px] p-6 flex flex-col h-full min-h-[180px] transition-all duration-500 group overflow-hidden ${
-                              isCritical ? 'hover:border-rose-500/30' : isWarning ? 'hover:border-amber-500/30' : 'hover:border-white/15'
-                            }`}
-                          >
-                            {/* Top Row: Code & Name */}
-                            <div className="flex flex-col mb-4 relative z-10">
-                              <div className="flex justify-between items-start mb-2">
-                                <span className="text-[10px] font-mono font-semibold text-white/40 tracking-widest uppercase">
-                                  {courseRisk.courseCode}
-                                </span>
-                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-mono uppercase font-bold flex items-center gap-1 ${
-                                  isCritical ? "text-rose-400 bg-rose-500/10 border border-rose-500/20" : 
-                                  isWarning ? "text-amber-400 bg-amber-500/10 border border-amber-500/20" :
-                                  "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
-                                }`}>
-                                  {courseRisk.urgencyLevel}
-                                </span>
-                              </div>
-                              <h3 className="text-sm font-semibold text-white/90 leading-snug line-clamp-2 pr-2">
-                                {courseRisk.courseName}
-                              </h3>
-                            </div>
-
-                            {/* Middle Row: Massive Percentage */}
-                            <div className="relative z-10 flex-1 flex flex-col justify-center mb-6 mt-2">
-                              <div className="flex items-baseline gap-1">
-                                <AnimatedCounter target={courseRisk.percentage} decimals={1} className={`text-5xl font-semibold tracking-tighter ${
-                                  courseRisk.percentage >= minAttendance ? "text-white" : "text-rose-400"
-                                }`} />
-                                <span className={`text-xl font-bold ${courseRisk.percentage >= minAttendance ? "text-white/30" : "text-rose-400/40"}`}>%</span>
-                              </div>
-                              {courseRisk.internalsImpact > 0 && (
-                                <div className="mt-2 flex items-center gap-1.5">
-                                  <TrendingDown className="w-3.5 h-3.5 text-rose-400/80" />
-                                  <span className="text-[10px] text-rose-400/80 font-medium">Internal Impact: -{courseRisk.internalsImpact}</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Bottom Row: Minimalist Stats */}
-                            <div className="flex items-center justify-between pt-4 border-t border-white/20 relative z-10">
-                              <div className="flex flex-col">
-                                <span className="text-[9px] uppercase tracking-widest text-white/30 font-semibold mb-1">Attended</span>
-                                <span className="text-xs font-mono font-medium text-white/60">
-                                  {matchingCourse.attended} / {matchingCourse.conducted}
-                                </span>
-                              </div>
-                              <div className="flex flex-col items-end">
-                                <span className="text-[9px] uppercase tracking-widest text-white/30 font-semibold mb-1">
-                                  {courseRisk.percentage >= minAttendance ? 'Safe' : 'Needed'}
-                                </span>
-                                <span className={`text-xs font-mono font-medium ${courseRisk.percentage >= minAttendance ? 'text-emerald-400/80' : 'text-rose-400/80'}`}>
-                                  {courseRisk.percentage >= minAttendance ? `${safeBunks} bunks` : `${recoveryRequired} classes`}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Glassmorphic Quick Actions Overlay */}
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 flex flex-col items-center justify-center gap-3 p-6 pointer-events-none group-hover:pointer-events-auto">
-                              <button 
-                                onClick={() => storeState.updateCourse(courseRisk.courseId, { attendanceTotal: matchingCourse.conducted + 1, attendanceBunked: matchingCourse.bunked })}
-                                className="w-full flex items-center justify-center gap-2 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-[14px] transition-colors shadow-[0_0_20px_rgba(255,255,255,0.05)] border border-white/10 hover:border-white/20"
-                              >
-                                <Check className="w-4 h-4 text-emerald-400" /> Mark Attended
-                              </button>
-                              <button 
-                                onClick={() => storeState.updateCourse(courseRisk.courseId, { attendanceTotal: matchingCourse.conducted + 1, attendanceBunked: matchingCourse.bunked + 1 })}
-                                className="w-full flex items-center justify-center gap-2 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-100 text-xs font-bold rounded-[14px] transition-colors shadow-[0_0_20px_rgba(244,63,94,0.05)] border border-rose-500/20 hover:border-rose-500/40"
-                              >
-                                <X className="w-4 h-4 text-rose-400" /> Mark Bunked
-                              </button>
-                            </div>
-                          </motion.div>
-                        );
-                      })
-                    )}
-                  </AnimatePresence>
-                </div>
+                  </div>
+                )}
               </div>
 
             </div>
 
-            {/* RIGHT PANE: Sticky Numbers & Assignments */}
+            {/* RIGHT COLUMN: Strategy, Sticky Numbers & Assignments */}
             <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10 w-full">
               
-              <div className="flex flex-col">
+              {/* Strategy Selector Container - NOW FLOATING PILL BUBBLES */}
+              <div className="relative z-10">
+                <StrategySelector currentStrategy={strategy} onStrategyChange={setStrategy} />
+              </div>
+
+              <div className="flex flex-col border-t border-white/5 pt-8">
                 <span className="text-white/50 font-black tracking-[0.3em] text-[10px] mb-6 uppercase">Semester Survival</span>
                 <motion.div 
                   className="flex items-baseline gap-2"
@@ -324,7 +492,7 @@ export default function AttendancePage() {
             <div className="mt-24 pt-16 border-t border-white/20 flex flex-col gap-12">
               <TimetableManager />
 
-              <div className="border-t border-white/20 pt-12">
+              <div className=" border-t border-white/20 pt-12">
                 <div className="mb-10">
                   <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
                     <motion.span 

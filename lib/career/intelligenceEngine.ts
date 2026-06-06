@@ -1,4 +1,4 @@
-import { TraceMetadata } from "../../stores/selectors";
+// Removed unused import
 
 export interface CompanyCriteria {
   name: string;

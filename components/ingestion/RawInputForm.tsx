@@ -8,6 +8,7 @@ interface RawInputFormProps {
 
 const SCOPES = [
   { id: "student-details", label: "Student Details Profile" },
+  { id: "backlog-clearance", label: "Backlog / Summer Term Transcript" },
   { id: "semester-1", label: "Semester 1 Transcript" },
   { id: "semester-2", label: "Semester 2 Transcript" },
   { id: "semester-3", label: "Semester 3 Transcript" },
@@ -45,8 +46,9 @@ export function RawInputForm({ onAnalyze, isLoading }: RawInputFormProps) {
           fullName: "YOUR NAME",
           registrationId: "REG_ID",
           academicDetails: {
-            programme: "B.Tech",
-            department: "Computer Science",
+            programme: "e.g., B.Tech (Computer Science...)",
+            department: "e.g., Department Of...",
+            batchYear: 2024,
             currentYear: "2nd Year",
             currentTerm: "4th Semester"
           }
@@ -54,11 +56,25 @@ export function RawInputForm({ onAnalyze, isLoading }: RawInputFormProps) {
       }, null, 2);
     }
     
+    if (scopeId === "backlog-clearance") {
+      return JSON.stringify([
+        {
+          academicTerm: { level: "Backlog Clearance", term: "e.g., July 2025 Summer Term" },
+          isBacklogClearance: true,
+          performance: { majorSGPA: 0.00 },
+          courses: [
+            { courseCode: "SUB101", courseName: "Subject Name", credits: 4, grade: "O" }
+          ]
+        }
+      ], null, 2);
+    }
+    
     const semIndex = parseInt(scopeId.split("-")[1]) || 1;
     return JSON.stringify([
       {
-        academicTerm: { level: `Semester ${semIndex}`, term: "Placeholder" },
+        academicTerm: { level: `Semester ${semIndex}`, term: "e.g., November / December 2024" },
         semesterIndex: semIndex,
+        performance: { majorSGPA: 0.00 },
         courses: [
           { courseCode: "SUB101", courseName: "Subject Name", credits: 4, grade: "A+" }
         ]
@@ -74,8 +90,10 @@ export function RawInputForm({ onAnalyze, isLoading }: RawInputFormProps) {
   const generateAIPrompt = () => {
     const template = getTemplateForScope(targetScope);
     const instruction = targetScope === "student-details" 
-      ? "Extract the student profile details from the provided image/document and return them strictly in the following JSON format. Do not use any markdown formatting or explanation text."
-      : "Extract the courses and grades from the provided transcript image/document and return them strictly in the following JSON format. You do not need to calculate or extract the SGPA, just extract the courses and grades and let GradeFlow calculate the SGPA. Do not use any markdown formatting or explanation text.";
+      ? "Extract the student profile details from the provided image/document. Pay close attention to extract the exact Programme name, Department name, and Batch Year. Return them strictly in the following JSON format. Do not use any markdown formatting or explanation text."
+      : targetScope === "backlog-clearance"
+      ? "Extract the SGPA (if available), courses, and grades from the provided Backlog/Summer Term transcript image. Since this is a backlog clearance, set the `isBacklogClearance` flag to true. Make sure to accurately extract the course codes and the new passing grades. Return the data strictly in the following JSON format. Do not use any markdown formatting or explanation text."
+      : "Extract the SGPA, courses, and grades from the provided transcript image/document. Make sure to accurately extract the SGPA and place it in the `performance.majorSGPA` field. Return the data strictly in the following JSON format. Do not use any markdown formatting or explanation text.";
     
     return `${instruction}\n\n${template}`;
   };

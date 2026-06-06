@@ -1,9 +1,72 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { useUSMStore } from "@/stores/usmStore";
+import { X, Trash2, AlertTriangle } from "lucide-react";
 import { DataSyncEngine } from "./DataSyncEngine";
+
+export function ResetDataButton() {
+  const [confirmStep, setConfirmStep] = useState(0);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleReset = async () => {
+    if (confirmStep === 0) {
+      setConfirmStep(1);
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      const res = await fetch("/api/academic/reset", {
+        method: "POST",
+      });
+      if (res.ok) {
+        // Clear Zustand persist storage properly
+        useUSMStore.persist.clearStorage();
+        localStorage.removeItem("gradeflow-usm-storage");
+        
+        // Reset in-memory state to ensure it doesn't flush back to disk
+        useUSMStore.getState().resetStore();
+
+        // Hard reload
+        window.location.href = "/dashboard";
+      } else {
+        console.error("Failed to reset academic data");
+        setIsResetting(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setIsResetting(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleReset}
+      disabled={isResetting}
+      className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold transition-all ${
+        confirmStep === 1
+          ? "bg-red-500 hover:bg-red-600 text-white"
+          : "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
+      }`}
+    >
+      {isResetting ? (
+        <span className="animate-pulse">Resetting...</span>
+      ) : confirmStep === 1 ? (
+        <>
+          <AlertTriangle className="w-5 h-5" />
+          Yes, Clear My Data
+        </>
+      ) : (
+        <>
+          <Trash2 className="w-5 h-5" />
+          Reset Academic Data
+        </>
+      )}
+    </button>
+  );
+}
 
 interface DataSyncDrawerProps {
   isOpen: boolean;
@@ -59,7 +122,20 @@ export function DataSyncDrawer({ isOpen, onClose }: DataSyncDrawerProps) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 p-6 md:p-8">
+            <div className="flex-1 p-6 md:p-8 flex flex-col gap-8">
+              {/* Danger Zone */}
+              <div className="pb-8 border-b border-white/10">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-red-400">Danger Zone</h3>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Clear corrupted academic data and reset dashboard
+                    </p>
+                  </div>
+                </div>
+                <ResetDataButton />
+              </div>
+
               <DataSyncEngine onSuccess={onClose} isHero={false} />
             </div>
           </motion.div>

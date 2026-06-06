@@ -128,7 +128,7 @@ export default function TraceDrawer({
                   <h4 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
                     Parameter Resolution (Active State)
                   </h4>
-                  <div className="divide-y divide-white/20 overflow-hidden rounded-2xl border border-white/5 bg-black/20">
+                  <div className=" divide-y divide-white/20 overflow-hidden rounded-2xl border border-white/5 bg-black/20">
                     {variables.map((v, i) => (
                       <div
                         key={i}

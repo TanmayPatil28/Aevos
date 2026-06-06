@@ -12,7 +12,7 @@ export class AttendancePlacementRiskRule implements IRecommendationRule {
     const placement = selectPlacementEligibility(state);
 
     const isPlacementEligible = placement.overallStatus === "ELIGIBLE" || placement.overallStatus === "BORDERLINE";
-    const isAttendanceHighRisk = attendance.overallRisk === "HIGH";
+    const isAttendanceHighRisk = attendance.overallRisk === "HIGH" || attendance.overallRisk === "EMERGENCY";
 
     if (isPlacementEligible && isAttendanceHighRisk) {
       const reg = pluggableRegulationEngine.resolveRegulation(state.presetId);

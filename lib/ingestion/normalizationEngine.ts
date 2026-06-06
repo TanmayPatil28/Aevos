@@ -33,6 +33,7 @@ export function normalizeExtraction(model: IntermediateExtractionModel): Academi
 
       semesterHistory.push({
         semester: sem.semesterIndex,
+        isBacklogClearance: sem.isBacklogClearance,
         sgpa: sem.sgpa,
         credits: semCredits,
         earnedCredits: semEarned,
@@ -68,6 +69,7 @@ export function normalizeExtraction(model: IntermediateExtractionModel): Academi
   return {
     studentIdentity: {
       name: model.studentName,
+      registrationId: model.registrationId,
     },
     presetId: model.institutionId,
     institution: model.institutionId,
@@ -78,6 +80,9 @@ export function normalizeExtraction(model: IntermediateExtractionModel): Academi
       completedSemesters,
       earnedCredits,
       activeBacklogsCount,
+      programme: model.programme,
+      branch: model.branch,
+      batchYear: model.batchYear,
     },
     courses,
     semesterHistory,

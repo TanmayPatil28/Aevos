@@ -49,7 +49,7 @@ export default function StrategyComparison({ safe, balanced, aggressive }: Strat
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/20 text-xs text-white/40">
+                <tr className=" border-b border-white/20 text-xs text-white/40">
                   <th className="py-3 px-4 font-semibold">Course</th>
                   <th className="py-3 px-4 font-semibold text-center">
                     <span className="inline-flex items-center gap-1 text-emerald-400">
@@ -70,7 +70,7 @@ export default function StrategyComparison({ safe, balanced, aggressive }: Strat
               </thead>
               <tbody>
                 {courseDifferences.map((diff) => (
-                  <tr key={diff.courseId} className="border-b border-white/20 text-sm hover:bg-white/[0.01] transition-colors">
+                  <tr key={diff.courseId} className=" border-b border-white/20 text-sm hover:bg-white/[0.01] transition-colors">
                     <td className="py-4 px-4">
                       <div className="font-semibold text-white">{diff.courseCode}</div>
                       <div className="text-xs text-white/50">{diff.courseName}</div>

@@ -45,7 +45,7 @@ export function validateSnapshotPayload(rawPayload: unknown): AcademicProfile {
       credits: c.credits,
       grade: c.grade,
       cieMarks: typeof c.cieMarks === "number" ? c.cieMarks : 0,
-      seeMarks: typeof c.seeMarks === "number" ? c.seeMarks : undefined,
+      seeMarks: typeof c.seeMarks === "number" ? c.seeMarks : null,
       attendanceTotal: typeof c.attendanceTotal === "number" ? c.attendanceTotal : 0,
       attendanceBunked: typeof c.attendanceBunked === "number" ? c.attendanceBunked : 0,
     };
@@ -71,8 +71,8 @@ export function validateSnapshotPayload(rawPayload: unknown): AcademicProfile {
   // Return the strictly validated and normalized profile
   return {
     studentIdentity: {
-      id: payload.studentIdentity?.id || undefined,
-      name: payload.studentIdentity?.name || undefined,
+      id: payload.studentIdentity?.id || null,
+      name: payload.studentIdentity?.name || null,
     },
     institution: payload.institution,
     presetId: payload.presetId,

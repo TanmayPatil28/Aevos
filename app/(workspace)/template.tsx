@@ -9,13 +9,15 @@ import { motion } from "framer-motion";
 export default function WorkspaceTemplate({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, y: 20, scale: 0.95, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
       transition={{
-        duration: 0.5,
-        ease: [0.32, 0.72, 0, 1],
-        filter: { duration: 0.35 }
+        type: "spring",
+        stiffness: 400,
+        damping: 30,
+        mass: 0.8,
       }}
+      className="w-full h-full"
     >
       {children}
     </motion.div>

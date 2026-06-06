@@ -74,7 +74,7 @@ export default function CustomCursor() {
     };
 
     const handleMouseDown = (e: MouseEvent) => {
-      setClicks(prev => [...prev.slice(-4), { id: Date.now(), x: e.clientX, y: e.clientY }]);
+      setClicks(prev => [...prev.slice(-2), { id: Date.now(), x: e.clientX, y: e.clientY }]);
     };
 
     window.addEventListener("mousemove", moveCursor, { passive: true });

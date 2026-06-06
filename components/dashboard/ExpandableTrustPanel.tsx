@@ -11,6 +11,8 @@ interface ExpandableTrustPanelProps {
 export default function ExpandableTrustPanel({ explanation }: ExpandableTrustPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
+  if (!explanation) return null;
+
   const confidenceColor = 
     explanation.confidence === "HIGH" ? "text-emerald-400" : 
     explanation.confidence === "MEDIUM" ? "text-amber-400" : "text-rose-400";

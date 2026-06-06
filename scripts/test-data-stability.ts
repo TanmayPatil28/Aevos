@@ -113,8 +113,8 @@ async function runStabilitySuite() {
     );
     assert(
       "Restores academic structure default value on violation",
-      activeState.academic && typeof activeState.academic.currentCgpa === "number" && activeState.academic.currentCgpa === 8.0,
-      `Expected currentCgpa = 8.0, got: ${JSON.stringify(activeState.academic)}`
+      activeState.academic && typeof activeState.academic.currentCgpa === "number" && activeState.academic.currentCgpa === 0,
+      `Expected currentCgpa = 0.0, got: ${JSON.stringify(activeState.academic)}`
     );
     assert(
       "Resets courses to default empty array on corrupted structure",

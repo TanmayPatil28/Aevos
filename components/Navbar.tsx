@@ -14,12 +14,18 @@ import NavbarActionSuite, { ActiveMenu } from "./NavbarActionSuite";
 import { UniversityContent } from "./UniversitySelector";
 import { OSModeContent } from "./OSModeSwitcher";
 import NavbarMobileDrawer from "./NavbarMobileDrawer";
+import { useDynamicIslandStore } from "@/stores/dynamicIslandStore";
+import { MinimalActivity, MinimalSecondaryActivity, ExpandedActivity, IslandAlertView, IslandSpotlightView } from "./dynamic-island/LiveActivities";
+import ExamCountdownPill from "./dynamic-island/ExamCountdownPill";
+import StreakBadge from "./dynamic-island/StreakBadge";
 
 // --- Navigation Links ---
 export const MAIN_LINKS = [
   { name: "Home", href: "/", icon: Home },
   { name: "Command Center", href: "/dashboard", icon: LayoutDashboard },
 ];
+
+const SPRING_PHYSICS = { type: "spring", stiffness: 400, damping: 30, mass: 0.8 };
 
 export const INTELLIGENCE_MODULES = [
   {
@@ -62,13 +68,37 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   
-  // Dynamic Island States
+  // Local UI States
   const [activeMenu, setActiveMenu] = useState<ActiveMenu>(null);
   const [isIslandHovered, setIsIslandHovered] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+  const [attentionWake, setAttentionWake] = useState(false);
 
-  // The island expands if we are at the top, if we hover it, or if a menu is open
-  const isExpanded = !isScrolled || isIslandHovered || activeMenu !== null;
+  // Dynamic Island Global State
+  const { activities, activeAlert, expandedId, setExpandedId, removeActivity, dismissAlert, promoteActivity } = useDynamicIslandStore();
+
+  // Island Logic
+  const hasAlert = activeAlert !== null;
+  const isExpanded = !isScrolled || isIslandHovered || activeMenu !== null || hasAlert || expandedId !== null || attentionWake;
+  
+  const hasLiveActivity = activities.length > 0;
+  const hasSplitActivity = activities.length > 1;
+  const primaryActivity = activities[0];
+  const secondaryActivity = activities[1];
+
+  // If there's an alert or active menu, the island takes its massive squircle form.
+  const isSquircle = activeMenu !== null || hasAlert || expandedId !== null;
+
+  const isDimmed = isScrolled && !isIslandHovered && !isSquircle && !attentionWake;
+
+  // Snap to Attention
+  useEffect(() => {
+    if (activities.length > 0 || activeAlert) {
+      setAttentionWake(true);
+      const timer = setTimeout(() => setAttentionWake(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [activities.length, activeAlert]);
 
   useEffect(() => {
     setMounted(true);
@@ -82,6 +112,7 @@ export default function Navbar() {
       if (e instanceof KeyboardEvent && e.key === "Escape") {
         setIsMobileOpen(false);
         setActiveMenu(null);
+        useDynamicIslandStore.getState().setExpandedId(null);
       }
     };
     document.addEventListener("keydown", handleEvents);
@@ -91,7 +122,8 @@ export default function Navbar() {
   useEffect(() => {
     setIsMobileOpen(false);
     setActiveMenu(null);
-  }, [pathname]);
+    setExpandedId(null);
+  }, [pathname, setExpandedId]);
 
   if (!mounted) return null;
 
@@ -99,13 +131,17 @@ export default function Navbar() {
     <>
       {/* CINEMATIC BACKDROP */}
       <AnimatePresence>
-        {activeMenu && (
+        {(activeMenu || expandedId) && (
           <motion.div
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
             animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} // Apple ease-out
-            className="fixed inset-0 z-40 bg-black/40 pointer-events-none"
+            className="fixed inset-0 z-40 bg-black/40 pointer-events-auto cursor-pointer"
+            onClick={() => {
+              setActiveMenu(null);
+              setExpandedId(null);
+            }}
           />
         )}
       </AnimatePresence>
@@ -114,22 +150,44 @@ export default function Navbar() {
         "fixed left-0 right-0 z-[9999] transition-all duration-700 flex justify-center px-4 antialiased font-body pointer-events-none",
         isScrolled ? "top-4" : "top-6"
       )}>
-        <motion.div
-          layout
-          layoutRoot
-          onMouseEnter={() => setIsIslandHovered(true)}
-          onMouseLeave={() => {
-            setIsIslandHovered(false);
-            setActiveMenu(null);
-          }}
-          transition={{ type: "spring", stiffness: 450, damping: 40, mass: 1 }}
-          className={cn(
-            "bg-[#1D1D1F]/90 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl pointer-events-auto relative flex flex-col",
-            // The island radius shrinks slightly when it stretches down
-            activeMenu ? "rounded-[32px]" : "rounded-full"
-          )}
-        >
-        {/* TOP ROW: LOGO, NAV, ACTIONS */}
+        {/* MULTITASKING WRAPPER: [ExamPill] — [MainIsland] — [SecondaryBubble] */}
+        <div className="flex items-start gap-3 pointer-events-none">
+          
+          {/* LEFT: EXAM COUNTDOWN PILL */}
+          <ExamCountdownPill />
+
+          {/* MAIN DYNAMIC ISLAND PILL */}
+          <motion.div
+            layout
+            layoutRoot
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.1}
+            onDragEnd={(e, { offset, velocity }) => {
+              if (Math.abs(offset.x) > 100 || Math.abs(velocity.x) > 500) {
+                if (primaryActivity && !isSquircle) removeActivity(primaryActivity.id);
+              }
+            }}
+            whileDrag={{ scale: 0.95 }}
+            onMouseEnter={() => setIsIslandHovered(true)}
+            onMouseLeave={() => {
+              setIsIslandHovered(false);
+              setActiveMenu(null);
+            }}
+            animate={{
+              scale: isDimmed ? 0.9 : 1,
+              opacity: isDimmed ? 0.6 : 1,
+              y: isDimmed ? -8 : 0,
+              borderRadius: isSquircle ? 44 : 100,
+            }}
+            transition={SPRING_PHYSICS}
+            className="bg-[#1D1D1F]/90 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl pointer-events-auto relative flex flex-col origin-top"
+          >
+
+          {/* STREAK BADGE (hover-reveal) */}
+          <StreakBadge isVisible={isIslandHovered} />
+
+          {/* TOP ROW: LOGO, NAV, ACTIONS */}
         <motion.div layout className="flex items-center justify-between p-2 gap-4">
           
           {/* LEFT: LOGO */}
@@ -143,16 +201,16 @@ export default function Navbar() {
                 <GraduationCap size={24} strokeWidth={2.5} className="z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
                 <motion.div initial={{ scale: 0 }} whileHover={{ scale: 1.5 }} className="absolute -z-10 w-full h-full bg-blue-500/10 blur-xl rounded-full" />
               </motion.div>
-              <AnimatePresence>
-                {isExpanded && (
+              <AnimatePresence mode="popLayout">
+                {isExpanded && !hasSplitActivity && (
                   <motion.span
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: "auto" }}
                     exit={{ opacity: 0, width: 0 }}
-                    className="font-headline text-[18px] font-bold tracking-tight select-none overflow-hidden whitespace-nowrap"
+                    transition={SPRING_PHYSICS}
+                    className="font-bold tracking-tight text-white/90 whitespace-nowrap overflow-hidden"
                   >
-                    <span className="text-white drop-shadow-sm font-black ml-1">Grade</span>
-                    <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent font-black">Flow</span>
+                    GradeFlow
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -167,8 +225,8 @@ export default function Navbar() {
                 initial={{ opacity: 0, filter: "blur(8px)", scale: 0.95 }}
                 animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
                 exit={{ opacity: 0, filter: "blur(8px)", scale: 0.95, transition: { duration: 0.15 } }}
-                transition={{ type: "spring", stiffness: 450, damping: 40, mass: 1 }}
-                className="hidden md:flex items-center gap-1 shrink-0"
+                transition={SPRING_PHYSICS}
+                className="hidden md:flex items-center gap-1 shrink-0 px-2"
               >
                 {MAIN_LINKS.map((link) => (
                   <LiquidNavItem
@@ -204,6 +262,22 @@ export default function Navbar() {
             )}
           </AnimatePresence>
 
+          {/* PRIMARY MINIMAL ACTIVITY */}
+          <AnimatePresence mode="popLayout">
+            {primaryActivity && !isSquircle && (
+              <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.5, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.5, filter: "blur(4px)" }}
+                className="shrink-0 flex items-center pr-2 cursor-pointer hover:bg-white/5 rounded-full px-2 py-1 transition-colors"
+                onClick={() => setExpandedId(expandedId === primaryActivity.id ? null : primaryActivity.id)}
+              >
+                <MinimalActivity activity={primaryActivity} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* RIGHT: ACTION SUITE & COMPACT MENU TRIGGER */}
           <motion.div layout className="shrink-0 flex items-center justify-end pr-1">
             <AnimatePresence mode="wait">
@@ -214,7 +288,7 @@ export default function Navbar() {
                   initial={{ opacity: 0, filter: "blur(8px)", scale: 0.95 }}
                   animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
                   exit={{ opacity: 0, filter: "blur(8px)", scale: 0.95, transition: { duration: 0.15 } }}
-                  transition={{ type: "spring", stiffness: 450, damping: 40, mass: 1 }}
+                  transition={SPRING_PHYSICS}
                 >
                   <NavbarActionSuite activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
                 </motion.div>
@@ -225,7 +299,11 @@ export default function Navbar() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.1 } }}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all ml-2"
+                  onClick={() => setActiveMenu(activeMenu === "spotlight" ? null : "spotlight")}
+                  className={cn(
+                    "w-10 h-10 flex items-center justify-center rounded-full transition-all ml-2",
+                    activeMenu === "spotlight" ? "bg-white/20 text-white" : "bg-white/10 text-white hover:bg-white/20"
+                  )}
                 >
                   <Search size={18} strokeWidth={2.5} />
                 </motion.button>
@@ -242,19 +320,34 @@ export default function Navbar() {
 
         </motion.div>
 
-        {/* BOTTOM ROW: DYNAMIC MENUS (PHYSICAL ENCAPSULATION) */}
+        {/* BOTTOM ROW: DYNAMIC MENUS / ALERTS / EXPANDED ACTIVITIES */}
         <AnimatePresence mode="wait">
-          {activeMenu && (
+          {isSquircle && (
               <motion.div
-              key={activeMenu}
+              key={activeAlert ? `alert-${activeAlert.id}` : expandedId ? `exp-${expandedId}` : activeMenu || 'empty'}
               layout
               initial={{ height: 0, opacity: 0, filter: "blur(12px)", scale: 0.98 }}
               animate={{ height: "auto", opacity: 1, filter: "blur(0px)", scale: 1 }}
               exit={{ height: 0, opacity: 0, filter: "blur(12px)", scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 450, damping: 40, mass: 1 }} // Apple Dynamic Island Physics
-              className="w-[800px] overflow-hidden self-center"
+              transition={SPRING_PHYSICS}
+              className={cn(
+                "overflow-hidden self-center",
+                activeAlert ? "w-auto" : "w-[800px]"
+              )}
             >
-              {activeMenu === "intelligence" && (
+              {activeAlert && (
+                <div className="border-t border-white/5 mt-2">
+                  <IslandAlertView alert={activeAlert} />
+                </div>
+              )}
+              
+              {!activeAlert && expandedId && (
+                <div className="border-t border-white/5 mt-2 flex justify-center">
+                  <ExpandedActivity activity={activities.find(a => a.id === expandedId)!} />
+                </div>
+              )}
+
+              {!activeAlert && !expandedId && activeMenu === "intelligence" && (
                 <div className="px-6 pb-6 pt-4 grid grid-cols-4 gap-4 border-t border-white/20 mt-2">
                   {INTELLIGENCE_MODULES.map((module) => (
                     <div key={module.category} className="flex flex-col gap-2.5">
@@ -294,20 +387,64 @@ export default function Navbar() {
               )}
               
               {activeMenu === "university" && (
-                <div className="border-t border-white/20 mt-2 pt-4">
+                <div className=" border-t border-white/20 mt-2 pt-4">
                   <UniversityContent onClose={() => setActiveMenu(null)} />
                 </div>
               )}
 
               {activeMenu === "os" && (
-                <div className="border-t border-white/20 mt-2 pt-4">
+                <div className=" border-t border-white/20 mt-2 pt-4">
                   <OSModeContent onClose={() => setActiveMenu(null)} />
+                </div>
+              )}
+
+              {activeMenu === "spotlight" && (
+                <div className="border-t border-white/20 mt-2">
+                  <IslandSpotlightView onClose={() => setActiveMenu(null)} />
                 </div>
               )}
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* SECONDARY DETACHED BUBBLE (SPLIT STATE) */}
+      <AnimatePresence>
+        {hasSplitActivity && !isSquircle && (
+          <motion.div
+            layout
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.1}
+            onDragEnd={(e, { offset, velocity }) => {
+              if (offset.x < -50 || velocity.x < -500) {
+                promoteActivity(secondaryActivity.id);
+              }
+            }}
+            whileDrag={{ scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.5, x: -20 }}
+            animate={{ 
+              opacity: isDimmed ? 0.6 : 1, 
+              scaleX: isDimmed ? 0.9 : [1, 1.05, 0.98, 1],
+              scaleY: isDimmed ? 0.9 : [1, 0.95, 1.02, 1],
+              x: 0,
+              y: isDimmed ? -8 : 0
+            }}
+            exit={{ opacity: 0, scale: 0.5, x: -20 }}
+            transition={SPRING_PHYSICS}
+            className="h-[52px] w-[52px] shrink-0 rounded-full bg-[#1D1D1F]/90 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl pointer-events-auto flex items-center justify-center relative cursor-pointer group"
+            onClick={() => setExpandedId(expandedId === secondaryActivity.id ? null : secondaryActivity.id)}
+          >
+            <MinimalSecondaryActivity activity={secondaryActivity} />
+            {/* Morphing Glow */}
+            <motion.div 
+              className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      </div>
       
       <NavbarMobileDrawer isOpen={isMobileOpen} setIsOpen={setIsMobileOpen} />
       </header>

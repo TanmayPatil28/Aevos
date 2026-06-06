@@ -78,7 +78,7 @@ export default function HistoryTable({ calculations, onDelete }: HistoryTablePro
               <th className="pb-4 px-4 text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/20">
+          <tbody className=" divide-y divide-white/20">
             <AnimatePresence mode="popLayout">
               {filteredCalculations.map((calc, index) => (
                 <motion.tr

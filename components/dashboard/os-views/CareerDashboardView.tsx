@@ -5,19 +5,47 @@ import { motion } from "framer-motion";
 import { Briefcase, Map, GitMerge, Code2, Terminal, Award, Target } from "lucide-react";
 import { useUSMStore } from "@/stores/usmStore";
 import { selectDerivedGPA } from "@/stores/selectors/academic";
-
+import AnimatedCounter from "@/components/AnimatedCounter";
+import { intelligenceEngine } from "@/lib/career/intelligenceEngine";
+import { ROLE_SKILL_MAP } from "@/lib/career/careerData";
 export default function CareerDashboardView() {
   const store = useUSMStore();
   const { cgpa } = selectDerivedGPA(store);
   
-  // Calculate a mock Placement Readiness Score based on CGPA and backlogs (just for visual representation right now)
-  const backlogs = store.semesterHistory.reduce((acc, sem) => acc + (sem.credits - sem.earnedCredits), 0);
-  let readinessScore = 85;
-  if (cgpa < 7) readinessScore -= 20;
-  if (backlogs > 0) readinessScore -= 15;
-  if (cgpa >= 8.5) readinessScore += 10;
-  if (readinessScore > 100) readinessScore = 98;
-  if (readinessScore < 10) readinessScore = 15;
+  const backlogs = store.academic.activeBacklogsCount;
+  const earnedCredits = store.academic.earnedCredits;
+  const { skills, targetRole, branch } = store.career;
+
+  const placementRisk = intelligenceEngine.calculatePlacementRisk({
+    cgpa,
+    backlogs,
+    earnedCredits,
+    branch,
+    skills,
+    targetRole
+  });
+  
+  const readinessScore = Math.round(placementRisk.averageEligibility);
+  const probabilityLabel = placementRisk.readinessScore;
+
+  const roleMap = ROLE_SKILL_MAP[targetRole] || ROLE_SKILL_MAP["Frontend Developer"];
+  const levels = [
+    { key: "level_1_basics", name: "Level 1: Basics", color: "bg-blue-500" },
+    { key: "level_2_core", name: "Level 2: Core", color: "bg-emerald-500" },
+    { key: "level_3_intermediate", name: "Level 3: Intermediate", color: "bg-yellow-500" },
+    { key: "level_4_advanced", name: "Level 4: Advanced", color: "bg-purple-500" },
+  ];
+
+  const userSkillsNorm = skills.map(s => s.toLowerCase());
+  const dynamicSkills = levels.map(lvl => {
+    const req = roleMap[lvl.key] || [];
+    const present = req.filter(r => userSkillsNorm.some(u => r.toLowerCase().includes(u) || u.includes(r.toLowerCase()))).length;
+    const val = req.length > 0 ? Math.round((present / req.length) * 100) : 0;
+    return { name: lvl.name, val, color: lvl.color };
+  });
+
+  const timeline = intelligenceEngine.generateTimeline(store.academic.completedSemesters);
+  const activeTimeline = timeline.filter(t => t.status === "CURRENT" || t.status === "FUTURE").slice(0, 3);
 
   return (
     <motion.div
@@ -27,29 +55,29 @@ export default function CareerDashboardView() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="space-y-6"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Placement Readiness Hero Metric */}
-        <div className="lg:col-span-1 bg-[#000000] border border-slate-800 p-6 rounded-xl relative overflow-hidden group hover:border-purple-500/30 transition-colors flex flex-col justify-between min-h-[220px]">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Briefcase className="w-24 h-24 text-purple-400" /></div>
-          <div>
-            <div className="text-sm text-slate-500 uppercase font-bold tracking-wider mb-2">Placement Readiness</div>
+        <div className="lg:col-span-4 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all flex flex-col justify-between min-h-[260px]">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Briefcase className="w-32 h-32 text-purple-400" /></div>
+          <div className="relative z-10">
+            <div className="text-sm text-slate-400 uppercase font-bold tracking-wider mb-3">Placement Readiness</div>
             <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-white">{readinessScore}</span>
-              <span className="text-sm text-slate-500">/ 100</span>
+              <AnimatedCounter target={readinessScore} className="text-6xl font-black text-white" />
+              <span className="text-lg text-slate-500">/ 100</span>
             </div>
-            <div className="text-xs text-purple-400 mt-2 font-mono flex items-center gap-1">
-              <Award className="w-3.5 h-3.5" /> High Probability (Tier 1)
+            <div className="text-sm text-purple-400 mt-3 font-mono flex items-center gap-1.5">
+              <Award className="w-4 h-4" /> {probabilityLabel}
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-white/20 flex justify-between text-xs font-bold text-slate-400">
-            <span>CGPA: {cgpa.toFixed(2)}</span>
-            <span>Backlogs: {backlogs}</span>
+          <div className="mt-6 pt-4 border-t border-white/10 flex justify-between text-sm font-bold text-slate-400 relative z-10">
+            <span>CGPA: <AnimatedCounter target={cgpa} decimals={2} /></span>
+            <span>Backlogs: <AnimatedCounter target={backlogs} /></span>
           </div>
         </div>
 
         {/* Developer Presence (GitHub & LeetCode) */}
-        <div className="lg:col-span-2 bg-[#000000] border border-slate-800 p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Terminal className="w-5 h-5 text-indigo-400" /> Developer Presence
@@ -73,20 +101,14 @@ export default function CareerDashboardView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Skills Matrix / Radar Chart Placeholder */}
-        <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl">
-          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-            <Target className="w-5 h-5 text-emerald-400" /> Skills Matrix
+        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
+          <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
+            <Target className="w-6 h-6 text-emerald-400" /> Skills Matrix ({targetRole})
           </h3>
           <div className="flex flex-col gap-4">
-            {/* Simple linear progress bars as placeholders for a radar chart */}
-            {[
-              { name: "Frontend (React/Next)", val: 85, color: "bg-blue-500" },
-              { name: "Backend (Node/Python)", val: 60, color: "bg-emerald-500" },
-              { name: "Data Structures & Algorithms", val: 75, color: "bg-yellow-500" },
-              { name: "System Design", val: 40, color: "bg-purple-500" },
-            ].map(skill => (
+            {dynamicSkills.map(skill => (
               <div key={skill.name}>
                 <div className="flex justify-between text-xs font-bold mb-1.5 text-slate-400">
                   <span>{skill.name}</span>
@@ -106,31 +128,26 @@ export default function CareerDashboardView() {
         </div>
 
         {/* Internship & Project Roadmap */}
-        <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl">
-          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-            <Map className="w-5 h-5 text-amber-400" /> Internship Roadmap
+        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
+          <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
+            <Map className="w-6 h-6 text-amber-400" /> Career Roadmap
           </h3>
           <div className="relative border-l-2 border-white/10 ml-3 space-y-6">
             
-            <div className="relative pl-6">
-              <div className="absolute w-4 h-4 bg-[#000000] border-2 border-emerald-500 rounded-full -left-[9px] top-1" />
-              <div className="text-xs font-bold text-emerald-400 mb-0.5">Current Focus</div>
-              <div className="text-sm font-bold text-white">Build Core Projects</div>
-              <div className="text-xs text-slate-500 mt-1">Develop 2 full-stack applications to showcase skills.</div>
-            </div>
+            {activeTimeline.map((item, idx) => (
+              <div key={idx} className="relative pl-6">
+                <div className={`absolute w-4 h-4 bg-[#000000] border-2 ${item.status === "CURRENT" ? "border-emerald-500" : "border-slate-600"} rounded-full -left-[9px] top-1`} />
+                <div className={`text-xs font-bold ${item.status === "CURRENT" ? "text-emerald-400" : "text-slate-500"} mb-0.5`}>
+                  {item.status === "CURRENT" ? "Current Focus" : `Semester ${item.sem} Target`}
+                </div>
+                <div className={`text-sm font-bold ${item.status === "CURRENT" ? "text-white" : "text-slate-300"}`}>{item.title}</div>
+                <div className={`text-xs ${item.status === "CURRENT" ? "text-slate-400" : "text-slate-500"} mt-1`}>{item.tasks.join(" • ")}</div>
+              </div>
+            ))}
 
-            <div className="relative pl-6">
-              <div className="absolute w-4 h-4 bg-[#000000] border-2 border-slate-600 rounded-full -left-[9px] top-1" />
-              <div className="text-xs font-bold text-slate-500 mb-0.5">Next Milestone</div>
-              <div className="text-sm font-bold text-slate-300">Resume Review & DSA</div>
-              <div className="text-xs text-slate-600 mt-1">Optimize resume and solve top 100 interview questions.</div>
-            </div>
-
-            <div className="relative pl-6">
-              <div className="absolute w-4 h-4 bg-[#000000] border-2 border-slate-700 rounded-full -left-[9px] top-1" />
-              <div className="text-xs font-bold text-slate-600 mb-0.5">Target</div>
-              <div className="text-sm font-bold text-slate-400">Summer Internship Application</div>
-            </div>
+            {activeTimeline.length === 0 && (
+              <div className="text-slate-400 text-sm">No upcoming roadmap items.</div>
+            )}
 
           </div>
         </div>

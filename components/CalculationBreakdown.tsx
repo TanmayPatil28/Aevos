@@ -181,7 +181,7 @@ export default function CalculationBreakdown({
           </div>
 
           {/* Right: Massive Typography Output (Replacing Ring) */}
-          <div className="flex flex-col justify-center gap-4 shrink-0 pl-0 lg:pl-12 lg:border-l border-white/20 relative">
+          <div className="flex flex-col justify-center gap-4 shrink-0 pl-0 lg:pl-12 lg: border-l border-white/20 relative">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#86868b]">Tracer Output</span>
             
             <div className="relative group w-fit">

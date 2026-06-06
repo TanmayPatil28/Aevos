@@ -10,6 +10,9 @@ export interface AcademicState {
   earnedCredits: number;
   activeBacklogsCount: number;
   targetCgpa: number;
+  programme?: string;
+  branch?: string;
+  batchYear?: number;
 }
 
 export interface CourseState {
@@ -23,6 +26,7 @@ export interface CourseState {
   seeMarks?: number;
   attendanceTotal: number;
   attendanceBunked: number;
+  recoverySemester?: number; // Target semester to clear the backlog
 }
 
 export interface TimetableEntry {
@@ -101,10 +105,13 @@ export interface WorkspaceState {
   globalTargetCgpa: number | null;
   mode: "DEFAULT" | "SANDBOX" | "RECOVERY" | "OPTIMIZATION" | "FOCUS";
   preferredDensity: "COMFORTABLE" | "COMPACT";
+  sandboxCgpa: number | null;
+  sandboxBacklogs: number | null;
 }
 
 export interface SemesterHistoryEntry {
   semester: number;
+  isBacklogClearance?: boolean;
   sgpa: number;
   credits: number;
   earnedCredits: number;
@@ -141,6 +148,7 @@ export interface USMStoreState {
   setAcademic: (academic: Partial<AcademicState>) => void;
   setCourses: (courses: CourseState[]) => void;
   updateCourse: (courseId: string, updates: Partial<CourseState>) => void;
+  updateCourseRecoverySemester: (courseId: string, semester: number | null) => void;
   setTimetable: (timetable: Partial<TimetableState>) => void;
   setAcademicCalendar: (events: AcademicEvent[]) => void;
   addAttendanceHistoryEvent: (event: Omit<AttendanceHistoryEvent, "id" | "timestamp">) => void;
@@ -166,6 +174,7 @@ export interface USMStoreState {
   // Sync Actions
   queueSyncAction: (type: SyncAction["type"], payload: any) => void;
   clearSyncActions: () => void;
+  removeSyncActions: (actionIds: string[]) => void;
   
   // Hydration helper
   resetStore: () => void;
@@ -184,6 +193,7 @@ export interface USMStoreState {
   closePanel: () => void;
   setWorkspaceMode: (mode: WorkspaceState["mode"]) => void;
   setWorkspaceDensity: (density: WorkspaceState["preferredDensity"]) => void;
+  setSandboxMetrics: (cgpa: number | null, backlogs: number | null) => void;
 }
 
 const initialAcademic: AcademicState = {
@@ -235,6 +245,8 @@ const initialWorkspaceUi: WorkspaceState = {
   globalTargetCgpa: null,
   mode: "DEFAULT",
   preferredDensity: "COMFORTABLE",
+  sandboxCgpa: null,
+  sandboxBacklogs: null,
 };
 
 const initialTimetable: TimetableState = {
@@ -336,6 +348,16 @@ export const useUSMStore = create<USMStoreState>()(
         }));
       },
 
+      setSandboxMetrics: (cgpa, backlogs) => {
+        set((state) => ({
+          workspaceUi: { 
+            ...state.workspaceUi, 
+            sandboxCgpa: cgpa,
+            sandboxBacklogs: backlogs 
+          }
+        }));
+      },
+
       setPresetId: (presetId) => {
         set({ presetId });
         get().queueSyncAction("SEMESTER_UPDATE", { presetId });
@@ -366,10 +388,28 @@ export const useUSMStore = create<USMStoreState>()(
           const updatedCourses = state.courses.map((c) =>
             c.id === courseId ? { ...c, ...updates } : c
           );
-          return { courses: updatedCourses };
+          
+          const activeBacklogsCount = updatedCourses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase())).length;
+          
+          return { 
+            courses: updatedCourses,
+            academic: {
+              ...state.academic,
+              activeBacklogsCount
+            }
+          };
         });
 
         get().queueSyncAction("ATTENDANCE_EDIT", { courseId, updates });
+      },
+
+      updateCourseRecoverySemester: (courseId, semester) => {
+        set((state) => {
+          const updatedCourses = state.courses.map((c) =>
+            c.id === courseId ? { ...c, recoverySemester: semester === null ? undefined : semester } : c
+          );
+          return { courses: updatedCourses };
+        });
       },
 
       setTimetable: (updates) => {
@@ -548,6 +588,16 @@ export const useUSMStore = create<USMStoreState>()(
         set({ sync: { pendingSyncActions: [] } });
       },
 
+      removeSyncActions: (actionIds) => {
+        set((state) => ({
+          sync: {
+            pendingSyncActions: state.sync.pendingSyncActions.filter(
+              (a) => !actionIds.includes(a.id)
+            ),
+          },
+        }));
+      },
+
       resetStore: () => {
         set({
           presetId: "sppu",
@@ -563,6 +613,9 @@ export const useUSMStore = create<USMStoreState>()(
           attendanceHistory: [],
           holidays: [],
           academicCalendar: [],
+          interventions: [],
+          workspaceContexts: ["DEFAULT"],
+          healthScore: null,
         });
       },
 
@@ -585,17 +638,49 @@ export const useUSMStore = create<USMStoreState>()(
           let mergedCourses = state.courses;
           let mergedHistory = state.semesterHistory;
           let newAcademic = state.academic;
+          
+          // Filter out undefined properties from incoming academic data
+          const incomingAcademic = profile.academic 
+            ? Object.fromEntries(Object.entries(profile.academic).filter(([_, v]) => v !== undefined))
+            : {};
 
           if (profile.courses && profile.courses.length > 0) {
-            const incomingSemesters = new Set(profile.courses.map((c: any) => c.semester || 1));
-            const retainedCourses = state.courses.filter(c => !incomingSemesters.has(c.semester || 1));
-            mergedCourses = [...retainedCourses, ...profile.courses];
+            const isBacklogMerge = profile.semesterHistory?.some((sh: any) => sh.isBacklogClearance);
+            
+            if (isBacklogMerge) {
+              mergedCourses = [...state.courses];
+              profile.courses.forEach((incomingCourse: any) => {
+                const existingIndex = mergedCourses.findIndex(c => c.code === incomingCourse.code);
+                if (existingIndex >= 0) {
+                  mergedCourses[existingIndex] = { 
+                    ...mergedCourses[existingIndex], 
+                    ...incomingCourse,
+                    semester: mergedCourses[existingIndex].semester
+                  };
+                } else {
+                  mergedCourses.push(incomingCourse);
+                }
+              });
+            } else {
+              const incomingSemesters = new Set(profile.courses.map((c: any) => c.semester || 1));
+              const retainedCourses = state.courses.filter(c => !incomingSemesters.has(c.semester || 1));
+              mergedCourses = [...retainedCourses, ...profile.courses];
+            }
           }
 
           if (profile.semesterHistory && profile.semesterHistory.length > 0) {
             const incomingSemesters = new Set(profile.semesterHistory.map((s: any) => s.semester));
-            const retainedHistory = state.semesterHistory.filter(s => !incomingSemesters.has(s.semester));
-            mergedHistory = [...retainedHistory, ...profile.semesterHistory].sort((a, b) => a.semester - b.semester);
+            const isBacklogMerge = profile.semesterHistory.some((sh: any) => sh.isBacklogClearance);
+            
+            let retainedHistory = state.semesterHistory;
+            if (!isBacklogMerge) {
+              retainedHistory = state.semesterHistory.filter(s => !incomingSemesters.has(s.semester));
+            }
+            
+            // For backlog clearances, we don't necessarily add a new semester to history unless it doesn't exist
+            if (!isBacklogMerge) {
+              mergedHistory = [...retainedHistory, ...profile.semesterHistory].sort((a, b) => a.semester - b.semester);
+            }
             
             // Update academic metrics based on merged history
             const completedSemesters = mergedHistory.length;
@@ -607,13 +692,21 @@ export const useUSMStore = create<USMStoreState>()(
 
             newAcademic = {
               ...state.academic,
+              ...incomingAcademic,
               completedSemesters,
               earnedCredits,
               currentCgpa,
               activeBacklogsCount
             };
           } else if (profile.courses && profile.courses.length > 0) {
-              newAcademic = profile.academic;
+              const activeBacklogsCount = mergedCourses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase())).length;
+              newAcademic = {
+                ...state.academic,
+                ...incomingAcademic,
+                activeBacklogsCount
+              };
+          } else if (profile.academic) {
+              newAcademic = { ...state.academic, ...incomingAcademic };
           }
 
           return {
@@ -630,7 +723,8 @@ export const useUSMStore = create<USMStoreState>()(
               hasAuthoritativeData: true,
               studentIdentity: {
                 ...state.identity.studentIdentity,
-                ...profile.studentIdentity
+                ...(profile.studentIdentity?.name && profile.studentIdentity.name !== "Unknown Student" ? { name: profile.studentIdentity.name } : {}),
+                ...(profile.studentIdentity?.registrationId ? { registrationId: profile.studentIdentity.registrationId } : {})
               },
               institution: profile.institution || state.identity.institution,
               regulation: profile.regulation || state.identity.regulation,
@@ -647,6 +741,10 @@ export const useUSMStore = create<USMStoreState>()(
             holidays: profile.holidays || state.holidays || [],
             academicCalendar: profile.academicCalendar || state.academicCalendar || []
           };
+        });
+        get().queueSyncAction("SEMESTER_UPDATE", { 
+          courses: get().courses,
+          semesterHistory: get().semesterHistory 
         });
       },
     }),

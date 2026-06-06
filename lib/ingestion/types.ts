@@ -24,10 +24,14 @@ export interface ValidationWarning {
 export interface IntermediateExtractionModel {
   institutionId: string;
   studentName?: string;
+  registrationId?: string;
+  programme?: string;
   regulation?: string;
   branch?: string;
+  batchYear?: number;
   semesters: Array<{
     semesterIndex: number;
+    isBacklogClearance?: boolean;
     sgpa?: number;
     credits?: number;
     earnedCredits?: number;
