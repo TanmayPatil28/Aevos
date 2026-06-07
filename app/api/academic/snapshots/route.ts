@@ -1,3 +1,4 @@
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -5,10 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { validateSnapshotPayload } from "@/lib/academic-intelligence/hydration/hydrationEngine";
 import { generateStructuralHash } from "@/lib/academic-intelligence/hashing/structuralHash";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -18,7 +22,7 @@ export async function GET(req: Request) {
 
     if (activeOnly) {
       const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: user.id },
         select: { activeSnapshotId: true },
       });
 
@@ -34,7 +38,7 @@ export async function GET(req: Request) {
     }
 
     const snapshots = await prisma.academicSnapshot.findMany({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
       take: limit,
     });
@@ -48,8 +52,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -80,7 +85,7 @@ export async function POST(req: Request) {
     const newSnapshot = await prisma.$transaction(async (tx: any) => {
       const snapshot = await tx.academicSnapshot.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           sourceType,
           sourceInstitution,
           snapshotType,
@@ -95,7 +100,7 @@ export async function POST(req: Request) {
       });
 
       await tx.user.update({
-        where: { id: session.user.id },
+        where: { id: user.id },
         data: { activeSnapshotId: snapshot.id },
       });
 

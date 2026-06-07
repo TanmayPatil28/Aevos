@@ -5,6 +5,7 @@ import NeuralDecisionTree from "@/components/forecast/NeuralDecisionTree";
 import ForecastStatusBar from "@/components/forecast/ForecastStatusBar";
 import { useUSMStore } from "@/stores/usmStore";
 import { StudentState } from "@/lib/forecasting/decisionTypes";
+import PredictiveForecastModule from "@/components/forecast/PredictiveForecastModule";
 
 export default function NeuralDecisionEnginePage() {
   const currentCgpa = useUSMStore(state => state.academic.currentCgpa) || 7.0;
@@ -31,7 +32,9 @@ export default function NeuralDecisionEnginePage() {
       <ForecastStatusBar state={studentState} targetCgpa={targetCgpa} />
 
       {/* Vertical Roadmap Canvas */}
-      <div className="relative z-10 w-full min-h-[150vh] flex flex-col items-center pt-16 pb-32">
+      <div className="relative z-10 w-full min-h-[150vh] flex flex-col items-center pt-8 pb-32">
+        <PredictiveForecastModule />
+        <div className="w-full h-px bg-white/10 my-16 max-w-4xl" />
         <NeuralDecisionTree 
           initialState={{
             currentCgpa,

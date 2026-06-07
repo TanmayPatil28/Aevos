@@ -55,6 +55,7 @@ model User {
   sessions          Session[]
   skillProgress     SkillProgress[]
   memories          UserMemory[]
+  documents         Document[]
 
   @@map("users")
 }
@@ -194,4 +195,16 @@ model UserMemory {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_memories")
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  fileName   String   @map("file_name")
+  fileUrl    String   @map("file_url")
+  fileType   String   @map("file_type")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
 }

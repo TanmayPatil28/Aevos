@@ -6,13 +6,13 @@ import { useUSMStore } from "@/stores/usmStore";
 import { selectDerivedGPA } from "@/stores/selectors/academic";
 import { Activity, Briefcase, GraduationCap, LayoutDashboard, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useOSMode } from "@/contexts/OSModeContext";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import DocumentVault from "@/components/DocumentVault";
 
 export default function UnifiedDashboardView() {
   const store = useUSMStore();
   const { cgpa } = selectDerivedGPA(store);
-  const { setMode } = useOSMode();
+  const setMode = store.setWorkspaceMode;
 
   // Mock Readiness Score
   const backlogs = store.semesterHistory.reduce((acc, sem) => acc + (sem.credits - sem.earnedCredits), 0);
@@ -90,6 +90,8 @@ export default function UnifiedDashboardView() {
           <p className="text-slate-400 text-sm max-w-xl">Use the Dynamic Island toggle below to morph this dashboard to your current goals.</p>
         </div>
       </div>
+
+      <DocumentVault />
     </motion.div>
   );
 }

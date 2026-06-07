@@ -36,7 +36,7 @@ export function UniversityTrigger({ isOpen, onClick }: { isOpen: boolean; onClic
       aria-haspopup="listbox"
       aria-label={activePreset.shortName ? `Selected university: ${activePreset.shortName}` : "Select university"}
       className={cn(
-        "flex items-center gap-2.5 px-4 py-2 rounded-full backdrop-blur-xl border transition-all duration-500 text-[13px] font-bold group outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 shadow-[0_2px_10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)]",
+        "flex items-center gap-2.5 px-4 py-2.5 rounded-full backdrop-blur-xl border transition-all duration-500 text-[13px] font-bold group outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 shadow-[0_2px_10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)]",
         isOpen
           ? "border-white/20 bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1),inset_0_1px_0_rgba(255,255,255,0.1)]"
           : "border-white/[0.05] bg-white/[0.02] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-white/15"

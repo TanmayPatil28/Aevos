@@ -70,6 +70,15 @@ const config: Config = {
         "os-component": "1.5rem", // 24px
         "os-section": "3rem",     // 48px
         "os-macro": "6rem",       // 96px
+        "navbar-bubble": "52px",
+      },
+      width: {
+        "navbar-desktop": "800px",
+        "navbar-mobile": "300px",
+        "navbar-spotlight": "90vw",
+      },
+      maxWidth: {
+        "navbar-spotlight": "64rem",
       },
       animation: {
         "fade-in": "fade-in 300ms ease-in forwards",

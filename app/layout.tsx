@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
-import Navbar from "@/components/Navbar";
+import NavbarServer from "@/components/NavbarServer";
 import Footer from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import SmartTimetableController from "@/components/dynamic-island/SmartTimetableController";
@@ -11,6 +11,10 @@ import NextTopLoader from "nextjs-toploader";
 import dynamic from "next/dynamic";
 const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: false });
 import { Inter } from "next/font/google";
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { SupabaseAuthProvider } from "@/lib/auth/AuthProvider";
+import SkipToContent from "@/components/ui/SkipToContent";
+import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -44,28 +48,28 @@ export const metadata: Metadata = {
 };
 
 import { UniversityProvider } from "@/components/providers/UniversityProvider";
-import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AcademicStateProvider } from "@/contexts/AcademicContext";
 import { AcademicHydrationBoundary } from "@/components/providers/AcademicHydrationBoundary";
 const DiagnosticOverlay = dynamic(() => import("@/components/layout/DiagnosticOverlay"), { ssr: false });
 const BackgroundEffects = dynamic(() => import("@/components/BackgroundEffects"), { ssr: false });
-import { OSModeProvider } from "@/contexts/OSModeContext";
 import IslandTestControls from "@/components/dynamic-island/IslandTestControls";
 import ContextualIslandController from "@/components/dynamic-island/ContextualIslandController";
 import { BackgroundSyncWorker } from "@/components/providers/BackgroundSyncWorker";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${inter.variable} font-body bg-background text-foreground custom-scrollbar selection:bg-primary-container selection:text-on-primary-container`}>
           <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
           <BackgroundEffects />
-          <AuthProvider>
-            <UniversityProvider>
+          <UniversityProvider>
             <NextTopLoader
               color="#3b82f6"
               initialPosition={0.2}
@@ -78,20 +82,24 @@ export default function RootLayout({
               shadow="0 0 15px #3b82f6,0 0 5px #3b82f6"
             />
             <CustomCursor />
-            <ErrorBoundary>
-              <AcademicStateProvider>
-                <AcademicHydrationBoundary>
-                  <BackgroundSyncWorker />
-                  <OSModeProvider>
-                    <Navbar />
-                    {children}
-                    <Footer />
-                  </OSModeProvider>
-                </AcademicHydrationBoundary>
-              </AcademicStateProvider>
-            </ErrorBoundary>
+            <SkipToContent />
+            <NuqsAdapter>
+              <SupabaseAuthProvider initialUser={user}>
+                <ErrorBoundary>
+                  <AcademicStateProvider>
+                    <AcademicHydrationBoundary>
+                      <BackgroundSyncWorker />
+                      <NavbarServer />
+                      <main id="main-content" tabIndex={-1} className="outline-none">
+                        {children}
+                      </main>
+                      <Footer />
+                    </AcademicHydrationBoundary>
+                  </AcademicStateProvider>
+                </ErrorBoundary>
+              </SupabaseAuthProvider>
+            </NuqsAdapter>
             </UniversityProvider>
-          </AuthProvider>
           <DiagnosticOverlay />
           <Toaster 
             position="bottom-center"

@@ -1,3 +1,4 @@
+import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
@@ -5,10 +6,13 @@ import { authOptions } from "@/lib/auth";
 import { planSchema } from "@/lib/validations";
 import { Prisma } from "@prisma/client";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    const userId = session?.user?.id;
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -45,8 +49,9 @@ export async function POST(req: NextRequest) {
 
     const { current_cgpa, target_cgpa, completed_semesters, remaining_semesters, required_gpa, plan_data } = validation.data;
 
-    const session = await getServerSession(authOptions);
-    const userId = session?.user?.id;
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

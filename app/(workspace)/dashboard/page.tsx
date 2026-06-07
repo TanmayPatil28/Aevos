@@ -1,19 +1,19 @@
-import { getServerSession } from "next-auth/next";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Calculation, Plan } from "@prisma/client";
 import dynamic from "next/dynamic";
 const DashboardClient = dynamic(() => import("./DashboardClient"), { ssr: false });
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session?.user?.id) {
+  if (!user?.id) {
     redirect("/login");
   }
 
-  const userId = session.user.id;
+  const userId = user.id;
 
   let rawCalculations: Calculation[] = [];
   let rawPlans: Plan[] = [];

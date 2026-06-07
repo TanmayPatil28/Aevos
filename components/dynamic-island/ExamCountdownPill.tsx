@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, BookOpen, X } from "lucide-react";
 import { useDynamicIslandStore, ExamCountdown } from "@/stores/dynamicIslandStore";
@@ -41,7 +42,34 @@ const urgencyConfig = {
 };
 
 export default function ExamCountdownPill() {
-  const { examCountdown, isExamPillExpanded, setExamPillExpanded, clearExamCountdown } = useDynamicIslandStore();
+  const { examCountdown, isExamPillExpanded, setExamPillExpanded, clearExamCountdown, updateExamCountdown } = useDynamicIslandStore();
+
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
+
+  useEffect(() => {
+    if (!examCountdown?.examDate) return;
+
+    const tick = () => {
+      const now = new Date();
+      const examDate = new Date(examCountdown.examDate);
+      const diffMs = examDate.getTime() - now.getTime();
+      
+      if (diffMs <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0 });
+        return;
+      }
+
+      const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      
+      setTimeLeft({ days: d, hours: h, minutes: m });
+    };
+
+    tick();
+    const interval = setInterval(tick, 60000); // tick every minute
+    return () => clearInterval(interval);
+  }, [examCountdown?.examDate]);
 
   if (!examCountdown) return null;
 

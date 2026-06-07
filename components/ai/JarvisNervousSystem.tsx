@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUSMStore } from "@/stores/usmStore";
 import { useDynamicIslandStore } from "@/stores/dynamicIslandStore";
+import { Mic, MicOff, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useChat } from "@ai-sdk/react";
+
+const SpeechRecognition = typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
 export default function JarvisNervousSystem() {
   const previousState = useRef<{
@@ -13,6 +18,19 @@ export default function JarvisNervousSystem() {
     bunkedTotals: {},
     completedCoursesCount: 0,
     mode: "DEFAULT",
+  });
+
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const { messages, isLoading, append } = useChat({
+    api: '/api/chat',
+    onFinish: (message) => {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(message.content);
+        window.speechSynthesis.speak(utterance);
+      }
+    }
   });
 
   useEffect(() => {
@@ -139,5 +157,65 @@ export default function JarvisNervousSystem() {
     return () => unsubscribe();
   }, []);
 
-  return null; // Headless component
+  useEffect(() => {
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        append({ role: 'user', content: transcript });
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [append]);
+
+  const toggleListen = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+    }
+  };
+
+  return (
+    <div className="fixed bottom-[88px] right-6 z-50 flex flex-col items-end gap-4 pointer-events-auto">
+      <AnimatePresence>
+        {messages.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="bg-black/80 backdrop-blur-md border border-white/10 p-4 rounded-xl max-w-sm text-sm text-white/90"
+          >
+            <div className="font-bold mb-1">
+              {messages[messages.length - 1].role === 'user' ? (
+                <span className="text-white/50">You</span>
+              ) : (
+                <span className="text-blue-400">Jarvis</span>
+              )}
+            </div>
+            {messages[messages.length - 1].content}
+            {isLoading && <Loader2 className="w-4 h-4 mt-2 animate-spin text-white/50" />}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <button
+        onClick={toggleListen}
+        className={`p-4 rounded-full shadow-2xl backdrop-blur-md transition-all ${
+          isListening 
+            ? "bg-red-500/20 text-red-500 border border-red-500/50 animate-pulse" 
+            : "bg-black/50 text-white/80 border border-white/20 hover:bg-black/80"
+        }`}
+      >
+        {isListening ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
+      </button>
+    </div>
+  );
 }

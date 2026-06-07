@@ -6,11 +6,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [data, setData] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const supabase = createClient();
 
   const registerUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,25 +22,29 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    try {
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        toast.success("Account initialized. Please log in.");
-        router.push("/login");
-      } else {
-        const result = await response.json();
-        toast.error(result.error || "Failed to register.");
+    
+    // Register the user with Supabase Auth.
+    // Since email confirmations are disabled for MVP, this will automatically
+    // sign them in. The PostgreSQL trigger will sync their account to Prisma.
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          full_name: data.name,
+        }
       }
-    } catch {
-      toast.error("Something went wrong.");
-    } finally {
-      setLoading(false);
+    });
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Account initialized! Welcome to the Nebula.");
+      router.push("/dashboard");
+      router.refresh();
     }
+    
+    setLoading(false);
   };
 
   return (

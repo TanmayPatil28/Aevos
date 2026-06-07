@@ -6,7 +6,7 @@ import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 import { COPY } from "@/lib/os/constants/copy";
-import { useOSMode } from "@/contexts/OSModeContext";
+import { useUSMStore } from "@/stores/usmStore";
 
 import { PageHero } from "@/components/ui/PageHero";
 
@@ -58,7 +58,8 @@ function SkillGapWidget() {
 export default function OverviewCanvas() {
   const { terms, courses } = useDomainStore();
   const { setContextBar, clearContextBar } = useUIStore();
-  const { mode } = useOSMode();
+  const store = useUSMStore();
+  const mode = store.workspaceUi.mode;
 
   useEffect(() => {
     // Context bar must never disappear to preserve visual rhythm

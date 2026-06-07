@@ -1,13 +1,14 @@
 "use client";
 
-import { useOSMode } from "@/contexts/OSModeContext";
+import { useUSMStore, WorkspaceMode } from "@/stores/usmStore";
 import { motion } from "framer-motion";
-import { GraduationCap, Briefcase, LayoutDashboard, ChevronDown, Check, Sparkles } from "lucide-react";
+import { GraduationCap, Briefcase, LayoutDashboard, ChevronDown, Check, Sparkles, Activity } from "lucide-react";
 import { cn } from "@/lib/cn";
 
+// We map our visual modes to the internal USM WorkspaceModes
 export const OS_MODES = [
   { 
-    id: "academic", 
+    id: "DEFAULT", 
     label: "Academic", 
     desc: "Grade calculation, attendance tracking, and semester planning tools.",
     icon: GraduationCap, 
@@ -19,7 +20,7 @@ export const OS_MODES = [
     accentBg: "bg-blue-500",
   },
   { 
-    id: "unified", 
+    id: "OPTIMIZATION", 
     label: "Unified OS", 
     desc: "Full suite — academic, career, and strategic tools in one unified workspace.",
     icon: LayoutDashboard, 
@@ -31,7 +32,7 @@ export const OS_MODES = [
     accentBg: "bg-white",
   },
   { 
-    id: "career", 
+    id: "FOCUS", 
     label: "Career", 
     desc: "Placement prediction, skill gap analysis, and career roadmap generation.",
     icon: Briefcase, 
@@ -41,12 +42,24 @@ export const OS_MODES = [
     gradient: "from-purple-500/20 to-purple-600/5",
     glow: "shadow-[0_0_30px_rgba(168,85,247,0.15)]",
     accentBg: "bg-purple-500",
+  },
+  {
+    id: "RECOVERY",
+    label: "Recovery",
+    desc: "Emergency mode triggered by JARVIS for attendance or backlog interventions.",
+    icon: Activity,
+    color: "text-red-400",
+    bg: "bg-red-500/10",
+    border: "border-red-500/20",
+    gradient: "from-red-500/20 to-red-600/5",
+    glow: "shadow-[0_0_30px_rgba(239,68,68,0.15)]",
+    accentBg: "bg-red-500",
   }
 ];
 
 export function OSModeTrigger({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) {
-  const { mode } = useOSMode();
-  const active = OS_MODES.find(m => m.id === mode) || OS_MODES[1];
+  const mode = useUSMStore(s => s.workspaceUi.mode);
+  const active = OS_MODES.find(m => m.id === mode) || OS_MODES[0];
   const ActiveIcon = active.icon;
 
   return (
@@ -68,7 +81,8 @@ export function OSModeTrigger({ isOpen, onClick }: { isOpen: boolean; onClick: (
 }
 
 export function OSModeContent({ onClose }: { onClose: () => void }) {
-  const { mode, setMode } = useOSMode();
+  const mode = useUSMStore(s => s.workspaceUi.mode);
+  const setWorkspaceMode = useUSMStore(s => s.setWorkspaceMode);
 
   return (
     <div className="w-full px-6 pb-6 pt-2">
@@ -80,8 +94,8 @@ export function OSModeContent({ onClose }: { onClose: () => void }) {
         </span>
       </div>
 
-      {/* 3-Column Card Grid */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* 4-Column Card Grid */}
+      <div className="grid grid-cols-4 gap-3">
         {OS_MODES.map((m) => {
           const isActive = mode === m.id;
           const Icon = m.icon;
@@ -89,7 +103,7 @@ export function OSModeContent({ onClose }: { onClose: () => void }) {
             <button
               key={m.id}
               onClick={() => {
-                setMode(m.id as any);
+                setWorkspaceMode(m.id as WorkspaceMode);
                 onClose();
               }}
               className={cn(

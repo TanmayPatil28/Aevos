@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { useUSMStore } from "@/stores/usmStore";
 
 /**
@@ -12,14 +12,14 @@ import { useUSMStore } from "@/stores/usmStore";
  * No boot sequence. No blocking. No artificial delays.
  */
 export function AcademicHydrationBoundary({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
   const store = useUSMStore();
   const hasAttemptedRef = useRef(false);
+  const supabase = createClient();
 
   useEffect(() => {
-    // Only attempt hydration once per mount when authenticated
-    if (status === "authenticated" && !hasAttemptedRef.current) {
-      hasAttemptedRef.current = true;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && !hasAttemptedRef.current) {
+        hasAttemptedRef.current = true;
 
       const hydrateAcademics = async () => {
         try {
@@ -38,8 +38,9 @@ export function AcademicHydrationBoundary({ children }: { children: React.ReactN
       };
 
       hydrateAcademics();
-    }
-  }, [status, store]);
+      }
+    });
+  }, [supabase.auth, store]);
 
   // Always render children immediately — never block the UI
   return <>{children}</>;

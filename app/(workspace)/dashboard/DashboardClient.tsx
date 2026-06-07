@@ -13,7 +13,6 @@ import WorkspaceContent from "@/components/layout/WorkspaceContent";
 import WorkspaceSection from "@/components/layout/WorkspaceSection";
 import CalendarManager from "@/components/dashboard/CalendarManager";
 import dynamic from "next/dynamic";
-import { useOSMode } from "@/contexts/OSModeContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageHero } from "@/components/ui/PageHero";
 import AnimatedCounter from "@/components/AnimatedCounter";
@@ -42,7 +41,7 @@ export default function DashboardClient({
   const [isSyncDrawerOpen, setIsSyncDrawerOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
   
-  const { mode } = useOSMode();
+  const mode = store.workspaceUi.mode;
 
   const activeCourses = selectActiveCourses(store);
   const { cgpa, percentage } = selectDerivedGPA(store);
@@ -228,7 +227,7 @@ export default function DashboardClient({
         ? "from-emerald-900/40 to-emerald-600/10 border-emerald-500/30 text-emerald-400"
         : "from-indigo-900/40 to-indigo-600/10 border-indigo-500/30 text-indigo-400";
 
-  const { setMode } = useOSMode();
+  const setMode = store.setWorkspaceMode;
 
   return (
     <div className="relative min-h-screen bg-black">

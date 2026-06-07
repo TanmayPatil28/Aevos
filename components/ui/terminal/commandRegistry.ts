@@ -110,11 +110,11 @@ export function generateNeofetch(ctx: TerminalContext): string[] {
   const cgpa = isSandbox ? s.workspaceUi.sandboxCgpa : s.academic.currentCgpa;
   const backlogs = isSandbox ? s.workspaceUi.sandboxBacklogs : s.academic.activeBacklogsCount;
 
-  const totalAttended = s.courses.reduce(
+  const totalAttended = (s.courses || []).reduce(
     (sum: number, c: any) => sum + (c.attendanceTotal - c.attendanceBunked),
     0
   );
-  const totalClasses = s.courses.reduce(
+  const totalClasses = (s.courses || []).reduce(
     (sum: number, c: any) => sum + c.attendanceTotal,
     0
   );
@@ -127,12 +127,12 @@ export function generateNeofetch(ctx: TerminalContext): string[] {
     "",
     "   ██████╗ ███████╗" + pad("CGPA", cgpa ?? 0),
     "  ██╔════╝ ██╔════╝" + pad("Backlogs", backlogs ?? 0),
-    "  ██║  ███╗█████╗  " + pad("Semester", s.academic.completedSemesters),
-    "  ██║   ██║██╔══╝  " + pad("Credits", s.academic.earnedCredits),
+    "  ██║  ███╗█████╗  " + pad("Semester", s.academic?.completedSemesters ?? 0),
+    "  ██║   ██║██╔══╝  " + pad("Credits", s.academic?.earnedCredits ?? 0),
     "  ╚██████╔╝██║     " + pad("Attendance", `${attendancePct}%`),
-    "   ╚═════╝ ╚═╝     " + pad("Mode", s.workspaceUi.mode),
-    "                    " + pad("Target Role", s.career.targetRole || "—"),
-    "  GradeFlow v0.1.0 " + pad("Skills", s.career.skills.length),
+    "   ╚═════╝ ╚═╝     " + pad("Mode", s.workspaceUi?.mode ?? "UNKNOWN"),
+    "                    " + pad("Target Role", s.career?.targetRole || "—"),
+    "  GradeFlow v0.1.0 " + pad("Skills", Array.isArray(s.career?.skills) ? s.career?.skills.length : 0),
     "",
   ];
 }
