@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Target, Code2, Users, Lightbulb, Zap, FileText, CheckCircle2, XCircle, ChevronDown, Clock, BookOpen, AlertCircle, BarChart3, Download, RefreshCcw } from "lucide-react";
+import { Target, Code2, Users, Lightbulb, Zap, FileText, CheckCircle2, XCircle, ChevronDown, Clock, BookOpen, AlertCircle, BarChart3, Download, RefreshCcw, Loader2 } from "lucide-react";
 import { DEFAULT_RECRUITERS } from "@/lib/career/careerData";
 import FluidDataWave from "./FluidDataWave";
 import PlacementHealthMeter from "./PlacementHealthMeter";
@@ -76,95 +76,66 @@ export default function CompanyIntelligenceGuide({
   });
 
   // 2. Interactive Prep Journey Generation
-  let rounds = [];
+  let defaultRounds = [];
   if (company.tier === "Service") {
-    rounds = [
-      { 
-        name: "Online Assessment", 
-        icon: FileText, 
-        duration: "90 mins",
-        focus: "Aptitude, Logical Reasoning, Verbal Ability.",
-        prep: "Practice quantitative aptitude and basic grammar. Speed and accuracy over deep technical knowledge."
-      },
-      { 
-        name: "Technical Interview", 
-        icon: Code2, 
-        duration: "45 mins",
-        focus: "Basic Data Structures, OOPs, DBMS, and core languages.",
-        prep: "Be ready to write pseudo-code or basic SQL queries on paper. Thoroughly revise OOPs concepts."
-      },
-      { 
-        name: "HR Interview", 
-        icon: Users, 
-        duration: "20 mins",
-        focus: "Behavioral questions, company fit, and communication skills.",
-        prep: "Prepare your introduction, willingness to relocate, and basic knowledge about the company's recent news."
-      }
+    defaultRounds = [
+      { name: "Online Assessment", icon: FileText, duration: "90 mins", focus: "Aptitude, Logical Reasoning, Verbal Ability.", prep: "Practice quantitative aptitude and basic grammar. Speed and accuracy over deep technical knowledge." },
+      { name: "Technical Interview", icon: Code2, duration: "45 mins", focus: "Basic Data Structures, OOPs, DBMS, and core languages.", prep: "Be ready to write pseudo-code or basic SQL queries on paper. Thoroughly revise OOPs concepts." },
+      { name: "HR Interview", icon: Users, duration: "20 mins", focus: "Behavioral questions, company fit, and communication skills.", prep: "Prepare your introduction, willingness to relocate, and basic knowledge about the company's recent news." }
     ];
   } else if (company.tier === "Product" || company.tier === "Startup") {
-    rounds = [
-      { 
-        name: "Machine Coding / OA", 
-        icon: Code2, 
-        duration: "90-120 mins",
-        focus: "Medium/Hard Leetcode style questions or a mini-app.",
-        prep: "Focus on edge-cases and clean code. If startup, expect to build an API or React component from scratch."
-      },
-      { 
-        name: "Technical Round 1", 
-        icon: Zap, 
-        duration: "60 mins",
-        focus: "Advanced Data Structures & Algorithms, Problem Solving.",
-        prep: "Graphs, DP, Trees. You must explain your time and space complexity clearly."
-      },
-      { 
-        name: "Technical Round 2", 
-        icon: Lightbulb, 
-        duration: "60 mins",
-        focus: "System Design, Architecture, Core OS/Networking concepts.",
-        prep: "HLD/LLD. Practice designing systems like URL shorteners or chat apps. Know your database indexing."
-      },
-      { 
-        name: "Managerial / HR", 
-        icon: Users, 
-        duration: "45 mins",
-        focus: "Cultural fit, past projects deep dive, behavioral.",
-        prep: "Use the STAR method for answering. Be ready to explain the hardest bug you've ever fixed."
-      }
+    defaultRounds = [
+      { name: "Machine Coding / OA", icon: Code2, duration: "90-120 mins", focus: "Medium/Hard Leetcode style questions or a mini-app.", prep: "Focus on edge-cases and clean code. If startup, expect to build an API or React component from scratch." },
+      { name: "Technical Round 1", icon: Zap, duration: "60 mins", focus: "Advanced Data Structures & Algorithms, Problem Solving.", prep: "Graphs, DP, Trees. You must explain your time and space complexity clearly." },
+      { name: "Technical Round 2", icon: Lightbulb, duration: "60 mins", focus: "System Design, Architecture, Core OS/Networking concepts.", prep: "HLD/LLD. Practice designing systems like URL shorteners or chat apps. Know your database indexing." },
+      { name: "Managerial / HR", icon: Users, duration: "45 mins", focus: "Cultural fit, past projects deep dive, behavioral.", prep: "Use the STAR method for answering. Be ready to explain the hardest bug you've ever fixed." }
     ];
   } else {
-    // FAANG
-    rounds = [
-      { 
-        name: "Online Screening", 
-        icon: FileText, 
-        duration: "70 mins",
-        focus: "Platform specific coding challenge (2-3 questions).",
-        prep: "Competitive programming speed required. Focus on Arrays, Strings, and HashMap optimizations."
-      },
-      { 
-        name: "Data Structures & Algos", 
-        icon: Code2, 
-        duration: "45 mins x 2",
-        focus: "Rigorous whiteboarding sessions.",
-        prep: "Do not just write code; think out loud. Interviewers care about your approach as much as the solution."
-      },
-      { 
-        name: "System Design", 
-        icon: Lightbulb, 
-        duration: "60 mins",
-        focus: "Scalable architecture design for complex systems.",
-        prep: "CAP Theorem, Load Balancing, Sharding, Microservices. Drive the conversation."
-      },
-      { 
-        name: "Leadership / Behavioral", 
-        icon: Users, 
-        duration: "45 mins",
-        focus: "Deep dive into leadership principles and cultural fit.",
-        prep: "Strict adherence to company-specific principles (e.g., Amazon LPs). Have 5-6 adaptable stories ready."
-      }
+    defaultRounds = [
+      { name: "Online Screening", icon: FileText, duration: "70 mins", focus: "Platform specific coding challenge (2-3 questions).", prep: "Competitive programming speed required. Focus on Arrays, Strings, and HashMap optimizations." },
+      { name: "Data Structures & Algos", icon: Code2, duration: "45 mins x 2", focus: "Rigorous whiteboarding sessions.", prep: "Do not just write code; think out loud. Interviewers care about your approach as much as the solution." },
+      { name: "System Design", icon: Lightbulb, duration: "60 mins", focus: "Scalable architecture design for complex systems.", prep: "CAP Theorem, Load Balancing, Sharding, Microservices. Drive the conversation." },
+      { name: "Leadership / Behavioral", icon: Users, duration: "45 mins", focus: "Deep dive into leadership principles and cultural fit.", prep: "Strict adherence to company-specific principles (e.g., Amazon LPs). Have 5-6 adaptable stories ready." }
     ];
   }
+
+  const [dynamicRounds, setDynamicRounds] = useState<any[]>([]);
+  const [isLoadingRounds, setIsLoadingRounds] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setDynamicRounds([]);
+    setIsLoadingRounds(true);
+    
+    fetch('/api/career/prep-rounds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companyName: company.name,
+        tier: company.tier,
+        userSkills: userSkills
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (active && Array.isArray(data) && data.length > 0) {
+        // Map icons appropriately
+        const aiRounds = data.map((r, i) => ({
+          ...r,
+          icon: i === 0 ? FileText : i === data.length - 1 ? Users : Code2
+        }));
+        setDynamicRounds(aiRounds);
+      }
+    })
+    .catch(console.error)
+    .finally(() => {
+      if (active) setIsLoadingRounds(false);
+    });
+
+    return () => { active = false; };
+  }, [company.name, company.tier, userSkills]);
+
+  const rounds = dynamicRounds.length > 0 ? dynamicRounds : defaultRounds;
 
   return (
     <div className="w-full mt-8 rounded-[32px] overflow-hidden relative z-10 flex flex-col border border-white/[0.08] bg-[#1c1c1e] shadow-2xl pb-6">
@@ -308,7 +279,10 @@ export default function CompanyIntelligenceGuide({
 
         {/* 2. Interactive Prep Journey */}
         <div className="flex flex-col gap-4">
-          <h4 className="text-[11px] font-black tracking-widest uppercase text-white/50">Interactive Prep Journey</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="text-[11px] font-black tracking-widest uppercase text-white/50">Interactive Prep Journey</h4>
+            {isLoadingRounds && <Loader2 size={12} className="animate-spin text-[#0a84ff]" />}
+          </div>
           <div className="flex flex-col gap-3 relative">
             {/* Connecting line */}
             <div className="absolute left-[23px] top-6 bottom-6 w-px bg-gradient-to-b from-white/10 via-white/10 to-transparent" />

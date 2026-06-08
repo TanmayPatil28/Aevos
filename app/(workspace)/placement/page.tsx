@@ -107,8 +107,19 @@ export default function CareerIntelligencePage() {
 
 
   const riskResult = useMemo(() => intelligenceEngine.calculatePlacementRisk(engineInput), [engineInput]);
-  const skillGapResult = useMemo(() => intelligenceEngine.detectSkillGaps(realSkills, targetRole), [realSkills, targetRole]);
+  const syncSkillGapResult = useMemo(() => intelligenceEngine.detectSkillGaps(realSkills, targetRole), [realSkills, targetRole]);
+  const [aiSkillGapResult, setAiSkillGapResult] = useState(syncSkillGapResult);
+  
+  useEffect(() => {
+    let active = true;
+    intelligenceEngine.analyzeSkillGapAI(realSkills, targetRole).then(res => {
+      if (active) setAiSkillGapResult(res);
+    });
+    return () => { active = false; };
+  }, [realSkills, targetRole]);
 
+  const skillGapResult = aiSkillGapResult;
+  
   // Apply Search, Filter and Sort
   let processedResults = eligibilityResults.filter(c => {
     if (activeFilter !== "All" && c.tier !== activeFilter) return false;

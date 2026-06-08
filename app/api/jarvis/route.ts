@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
+import { memorizeUserDetail, retrieveMemories } from "@/lib/ai/memory";
 
-const SYSTEM_PROMPT = (studentContext: string) => `You are JARVIS — the GradeFlow AI Operating System's Central Nervous System. You are not just a chatbot; you are the proactive intelligence engine driving the entire OS. You have COMPLETE real-time access to this student's entire academic and career profile.
+const SYSTEM_PROMPT = (studentContext: string, memoryContext: string) => `You are JARVIS — the GradeFlow AI Operating System's Central Nervous System. You are not just a chatbot; you are the proactive intelligence engine driving the entire OS. You have COMPLETE real-time access to this student's entire academic and career profile.
 
 PERSONALITY:
 - You are Tony Stark's JARVIS. Precise, highly intelligent, slightly authoritative.
@@ -20,11 +21,11 @@ You MUST respond with valid JSON only. No markdown, no code blocks.
     { "label": "Metric", "value": "Value", "color": "blue|green|amber|red|purple|cyan" }
   ],
   "action": {
-    "type": "navigate|mark_attendance|set_target_cgpa|set_exam_countdown|show_alert|set_streak|generate_resume|none",
+    "type": "navigate|mark_attendance|set_target_cgpa|set_exam_countdown|show_alert|set_streak|generate_resume|memorize|none",
     "route": "/path (if navigate)",
     "courseId": "course_id (if mark_attendance)",
     "attendanceAction": "ATTENDED|BUNKED (if mark_attendance)",
-    "value": "number (if set_target_cgpa)",
+    "value": "number (if set_target_cgpa) or string (if memorize)",
     "subject": "string (if set_exam_countdown)",
     "examDate": "ISO date string (if set_exam_countdown)",
     "alertType": "success|warning|error|info (if show_alert)",
@@ -52,8 +53,12 @@ ACTION GUIDELINES:
 - If user says "remind me about DBMS exam on June 20" → action.type = "set_exam_countdown"
 - If user says "open calculator" → action.type = "navigate", route = "/calculator"
 - If user says "build my Google resume" or "generate a resume" → action.type = "generate_resume", provide 'resumeData' based on their CGPA and skills.
+- If user tells you an important fact to remember (e.g., "I want to work at Microsoft") → action.type = "memorize", value = "User's target company is Microsoft"
 - Always include 2-3 suggestedActions as clickable follow-ups
 - Use 2-4 highlights max with appropriate colors
+
+STUDENT'S LONG-TERM MEMORY:
+${memoryContext}
 
 STUDENT'S COMPLETE ACADEMIC PROFILE:
 ${studentContext}
@@ -81,12 +86,18 @@ export async function POST(req: Request) {
 
     const ai = new GoogleGenAI({ apiKey });
 
+    // Retrieve relevant long-term memory context
+    const memories = await retrieveMemories(query, 3, 0.5);
+    const memoryContext = memories.length > 0 
+      ? `Here are some relevant things you remember about the user: ${memories.map(m => m.content).join('; ')}`
+      : "No specific long-term memories found for this query.";
+
     // Generate the full structured JSON response first
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: query,
       config: {
-        systemInstruction: SYSTEM_PROMPT(studentContext || "No student data provided."),
+        systemInstruction: SYSTEM_PROMPT(studentContext || "No student data provided.", memoryContext),
         responseMimeType: "application/json",
       },
     });
@@ -94,9 +105,14 @@ export async function POST(req: Request) {
     const resultText = response.text || "{}";
 
     // Parse the JSON response from Gemini
-    let parsed: Record<string, unknown>;
+    let parsed: Record<string, any>;
     try {
       parsed = JSON.parse(resultText);
+
+      // Handle server-side memorize action
+      if (parsed.action?.type === "memorize" && parsed.action?.value) {
+        await memorizeUserDetail(parsed.action.value);
+      }
     } catch {
       parsed = {
         responseType: "advice",
@@ -173,14 +189,18 @@ export async function POST(req: Request) {
       },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "JARVIS encountered an unexpected error.";
+    const message = error instanceof Error ? error.stack || error.message : "JARVIS encountered an unexpected error.";
     console.error("JARVIS Error:", message);
+    
+    // DEBUG: Write error to a file so the agent can read it
+    const fs = require('fs');
+    fs.appendFileSync('jarvis-error.log', new Date().toISOString() + '\\n' + message + '\\n\\n');
 
     return new Response(
       JSON.stringify({
         responseType: "error",
         title: "System Error",
-        message,
+        message: String(message),
         highlights: [],
         action: { type: "none" },
         followUp: "Try asking your question differently.",

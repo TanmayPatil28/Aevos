@@ -21,12 +21,12 @@ export async function GET(req: Request) {
     const activeOnly = searchParams.get("activeOnly") === "true";
 
     if (activeOnly) {
-      const user = await prisma.user.findUnique({
+      const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
         select: { activeSnapshotId: true },
       });
 
-      if (!user?.activeSnapshotId) {
+      if (!dbUser?.activeSnapshotId) {
         return NextResponse.json({ snapshot: null });
       }
 

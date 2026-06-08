@@ -80,8 +80,11 @@ export const intelligenceEngine = {
 
       // Skills Check
       if (company.requiredSkills && company.requiredSkills.length > 0) {
-        const matchedSkills = company.requiredSkills.filter(req => userSkills.includes(req.toLowerCase()));
-        const missingSkillsList = company.requiredSkills.filter(req => !userSkills.includes(req.toLowerCase()));
+        const isMatch = (req: string) => userSkills.some(u => 
+          u.includes(req.toLowerCase()) || req.toLowerCase().includes(u)
+        );
+        const matchedSkills = company.requiredSkills.filter(isMatch);
+        const missingSkillsList = company.requiredSkills.filter(req => !isMatch(req));
         const skillMatchRatio = matchedSkills.length / company.requiredSkills.length;
         
         if (skillMatchRatio === 1) {
@@ -151,6 +154,22 @@ export const intelligenceEngine = {
       presentSkills,
       readinessPercentage
     };
+  },
+
+  async analyzeSkillGapAI(userSkills: string[], targetRole: string): Promise<SkillGapResult> {
+    try {
+      const res = await fetch('/api/career/skill-gap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userSkills, targetRole })
+      });
+      if (!res.ok) throw new Error("Failed to fetch AI skill gap");
+      return res.json();
+    } catch (e) {
+      console.error(e);
+      // Fallback to local synchronous detection
+      return this.detectSkillGaps(userSkills, targetRole);
+    }
   },
 
   generateTimeline(completedSemesters: number) {

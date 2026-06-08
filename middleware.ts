@@ -38,7 +38,8 @@ export async function middleware(request: NextRequest) {
   const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
   const isProtectedApi = request.nextUrl.pathname.startsWith('/api') && 
                          !request.nextUrl.pathname.startsWith('/api/parse') &&
-                         !request.nextUrl.pathname.startsWith('/api/chat')
+                         !request.nextUrl.pathname.startsWith('/api/chat') &&
+                         !request.nextUrl.pathname.startsWith('/api/jarvis')
   
   if (!user && (isDashboard || isProtectedApi)) {
     // no user, potentially respond by redirecting the user to the login page

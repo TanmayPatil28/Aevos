@@ -1,73 +1,41 @@
 # Original User Request
 
-## Initial Request — 2026-06-06T15:41:12+05:30
+## Initial Request — 2026-06-08T10:05:02Z
 
-# Teamwork Project Prompt
+Conduct a comprehensive AI Ecosystem Master Architecture Audit for the GradeFlow platform. Scan the entire codebase to map out every page and component, identify AI opportunities, and design a unified "Nervous System" architecture around Jarvis (the central AI). The final deliverable is a comprehensive Master Architecture Report covering 10 distinct phases of discovery and design.
 
-Redesign the GradeFlow Dashboard page (`app/(workspace)/dashboard/page.tsx` and related components) to act as the central hub for the entire application. The dashboard must match the premium "Apple-tier" aesthetics, layouts, glassmorphic cards, and fluid animations of the `planner`, `placement`, and `calculator` pages.
-
-Working directory: `c:\Users\Tanmay\OneDrive\Desktop\GradeFlow\gradeflow`
-Integrity mode: development
+Working directory: `c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow`
+Integrity mode: benchmark
 
 ## Requirements
 
-### R1. Central Hub Architecture
-The dashboard must act as a central hub displaying high-level summaries and quick-access points for all major GradeFlow features (Planner, Attendance, Career, Backlog).
+### R1. Complete System Discovery (Phase 1 & 2)
+Scan the entire GradeFlow codebase to create a complete inventory of all pages and major components. For every page, identify the decisions made, confusion, manual work, and potential for predictions/recommendations. Classify every component as either "No AI Needed", "AI Enhancement Candidate", or "AI Critical".
 
-### R2. Perfect UI Consistency
-The team must aggressively re-use existing UI components (e.g., `Card`, `AnimatedCounter`, `FadeText`, `StaggerContainer`, Framer Motion variants) found in the `planner` and `calculator` pages. Do not introduce new design languages or third-party component libraries; rely strictly on the established Tailwind and Framer Motion glassmorphic design system.
+### R2. Jarvis Brain & Page Level Design (Phase 3 & 4)
+Design the architecture for Jarvis's Memory, Context, Event, and Prediction layers. What should Jarvis permanently understand, monitor, and predict? For every single page, outline its current purpose, missing intelligence, recommended AI features, Jarvis integration, user value, and priority (Critical, High, Medium, Low).
 
-### R3. Visual Auditing
-The team must launch the local Next.js development server and use the `browser` subagent to visually inspect the redesigned dashboard. The page must render without React hydration errors or layout breaks.
+### R3. AI Workflows & Shared Intelligence (Phase 5, 6 & 7)
+Design end-to-end AI workflows (e.g., Attendance, GPA Recovery, Placement Readiness). Map out the shared intelligence layer, detailing how data (like backlogs) cascades and affects different engines. Define the Agent Architecture—determine if specialized subagents (Academic, Career, Planner, etc.) are needed, what their roles are, and how Jarvis orchestrates them.
 
-## Acceptance Criteria
+### R4. Infrastructure & API Requirements (Phase 8 & 9)
+Identify every infrastructure requirement (LLMs, Vector DBs, Background Jobs, etc.) and explain why it is needed and its priority. Detail all required third-party APIs with provider recommendations, usage estimates, and alternatives.
 
-### Visual & Functional Quality
-- [ ] The dashboard successfully renders a "Bento box" style layout using the existing `Card` components.
-- [ ] Information from different modules (e.g., current CGPA, attendance status) is represented in visually distinct sections of the hub.
-- [ ] Running `npx tsc --noEmit` on the dashboard components produces no new TypeScript errors.
-- [ ] A visual screenshot taken by the `browser` agent confirms that the dashboard matches the dark-mode glassmorphic aesthetic of the `planner` page.
+### R5. Final AI Ecosystem Report (Phase 10)
+Produce a single, cohesive Markdown file named `ai_ecosystem_master_architecture.md` containing the complete AI Feature Inventory, Missing Opportunities, Architecture designs (Jarvis, Shared Intelligence, Agents, Events, Memory, Prediction, Automation), API Requirements, and a ranked list of the Top 100 Highest Value AI Features.
 
-## Follow-up — 2026-06-07T10:05:56+05:30
-
-# Teamwork Project Prompt — Final
-
-> Status: Launched
-> Goal: Craft prompt → get user approval → delegate to teamwork_preview
-
-Conduct a ruthless, exhaustive 15-section "Destruction Audit" of the GradeFlow Navbar and Information Architecture to identify 100+ critical flaws, UX issues, frontend/backend technical debt, and scalability bottlenecks as it transitions to a Student Intelligence OS.
-
-Working directory: c:\Users\Tanmay\OneDrive\Desktop\GradeFlow\gradeflow
-Integrity mode: development
-
-## Requirements
-
-### R1. Comprehensive UX/IA & Technical Audit
-Analyze the navbar's structure (`Navbar.tsx`, `NavbarActionSuite.tsx`, `NavbarMobileDrawer.tsx`, etc.), user journeys, feature overlap, mobile usability, accessibility, and alignment with student psychology based on the 15 provided sections. Inspect the frontend architecture, backend implications, and database model. Act as an elite audit team trying to reject a $10M VC investment.
-
-### R2. Output Formatting
-Produce a professional audit report (`navbar_destruction_audit.md`). The report must contain exactly 100 or more findings. Every single finding MUST follow this exact schema:
-- Issue ID
-- Severity (Critical/High/Medium/Low)
-- Category (UX/IA/Frontend/Backend/Product/Accessibility/Performance/Growth/Security)
-- Problem
-- Why It Is A Problem
-- User Impact
-- Technical Impact
-- Future Scale Impact
-- Evidence
-- Confidence Level (%)
-
-### R3. Verification Script
-Write a programmatic verification script (e.g., `verify_audit.js` or `verify_audit.py`) that parses the generated markdown report. The script must confirm:
-1. All 15 sections requested are present.
-2. The total number of findings is >= 100.
-3. Every finding strictly adheres to the required schema fields.
+## Verification Resources
+An independent auditor agent will review the final `ai_ecosystem_master_architecture.md` file against the acceptance criteria. 
 
 ## Acceptance Criteria
 
-### Audit Report Quality
-- [ ] The markdown report exists at `navbar_destruction_audit.md`.
-- [ ] The verification script runs successfully and passes, outputting that 100+ items and all 15 sections are present.
-- [ ] The findings are extremely critical and not mere suggestions; they must frame the current navbar architecture as critically flawed for a future "Student Intelligence Operating System".
-- [ ] The audit explicitly calls out failures in `Navbar.tsx` and related components in the GradeFlow codebase.
+### Content Completeness
+- [ ] The report contains all 10 requested Phases with their respective headers.
+- [ ] Phase 1 lists at least 10 distinct pages/routes found in the codebase.
+- [ ] Phase 5 explicitly defines at least 3 end-to-end AI workflows.
+- [ ] Phase 10 contains a strictly numbered list of exactly 100 highest value AI features.
+- [ ] The report includes a dedicated "APIs Needed" section.
+
+### Formatting & Output
+- [ ] The entire output is contained within a single file named `ai_ecosystem_master_architecture.md`.
+- [ ] No code files in the repository were modified, deleted, or created (other than the report itself).

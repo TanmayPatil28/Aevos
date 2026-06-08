@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Beaker, ChevronDown } from "lucide-react";
+import { Beaker, ChevronDown, Loader2, UploadCloud } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
+import { useUSMStore } from "@/stores/usmStore";
+import { toast } from "sonner";
 
 interface SandboxPanelProps {
   isActive: boolean;
@@ -23,6 +25,34 @@ export default function SandboxPanel({
   setBacklogs
 }: SandboxPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const syncParsedResume = useUSMStore((state) => state.syncParsedResume);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsParsing(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/parse/resume", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Failed to parse resume");
+
+      const data = await res.json();
+      syncParsedResume(data);
+      toast.success("Resume parsed successfully! Skills updated.");
+    } catch (err) {
+      toast.error("Error parsing resume.");
+    } finally {
+      setIsParsing(false);
+    }
+  };
 
   const cgpaPercent = ((cgpa - 5) / 5) * 100;
   const backlogsPercent = (backlogs / 10) * 100;
@@ -216,6 +246,34 @@ export default function SandboxPanel({
                         className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
                       />
                     </div>
+                  </div>
+
+                  {/* AI Resume Uploader */}
+                  <div className="pt-2">
+                    <label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em] mb-2 block">Resume Parsing</label>
+                    <label className={cn(
+                      "flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed transition-all cursor-pointer",
+                      isParsing ? "border-[#0a84ff]/50 bg-[#0a84ff]/5" : "border-white/10 hover:border-white/30 bg-white/5"
+                    )}>
+                      {isParsing ? (
+                        <div className="flex items-center gap-2 text-[#0a84ff]">
+                          <Loader2 size={20} className="animate-spin" />
+                          <span className="text-xs font-semibold">Extracting Skills...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1 text-white/50 hover:text-white/80 transition-colors">
+                          <UploadCloud size={20} />
+                          <span className="text-xs font-medium">Upload PDF Resume</span>
+                        </div>
+                      )}
+                      <input 
+                        type="file" 
+                        accept="application/pdf" 
+                        className="hidden" 
+                        onChange={handleFileUpload}
+                        disabled={!isActive || isParsing}
+                      />
+                    </label>
                   </div>
                 </div>
               </motion.div>

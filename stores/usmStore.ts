@@ -170,6 +170,7 @@ export interface USMStoreState {
   // Career Actions
   setCareer: (career: Partial<CareerState>) => void;
   setTargetCompanies: (companies: string[]) => void;
+  syncParsedResume: (parsedData: any) => void;
 
   // Sync Actions
   queueSyncAction: (type: SyncAction["type"], payload: any) => void;
@@ -568,6 +569,23 @@ export const useUSMStore = create<USMStoreState>()(
         set((state) => ({
           career: { ...state.career, targetCompanies: companies },
         }));
+      },
+
+      syncParsedResume: (parsedData) => {
+        set((state) => {
+          const newSkills = parsedData.skills || [];
+          const existingSkills = state.career.skills || [];
+          // Merge without duplicates
+          const mergedSkills = Array.from(new Set([...existingSkills, ...newSkills]));
+          
+          return {
+            career: {
+              ...state.career,
+              skills: mergedSkills,
+              // Optionally store parsed projects or experience here later
+            }
+          };
+        });
       },
 
       queueSyncAction: (type, payload) => {
