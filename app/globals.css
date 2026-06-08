@@ -173,6 +173,17 @@
   50% { transform: translateY(-6px) scale(1.05); }
 }
 
+/* Ambient background pulse — replaces Framer Motion infinite animations */
+@keyframes ambient-pulse-1 {
+  0%, 100% { transform: translateZ(0) scale(1); opacity: 0.3; }
+  50% { transform: translateZ(0) scale(1.1); opacity: 0.5; }
+}
+
+@keyframes ambient-pulse-2 {
+  0%, 100% { transform: translateZ(0) scale(1); opacity: 0.2; }
+  50% { transform: translateZ(0) scale(1.2); opacity: 0.4; }
+}
+
 /* ═══════════════════════════════════════════
    BASE STYLES
    ═══════════════════════════════════════════ */
@@ -242,7 +253,7 @@
   }
 
   .glass-card {
-    @apply border-white/[0.08] backdrop-blur-[40px];
+    @apply border-white/[0.08] backdrop-blur-xl;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%),
                 rgba(10, 10, 10, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -265,7 +276,7 @@
 
   /* HUD & Nebula Navigation (Perfection Phase) */
   .nebula-glass {
-    @apply relative overflow-hidden backdrop-blur-[60px];
+    @apply relative overflow-hidden backdrop-blur-xl;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.01) 100%),
                 rgba(10, 10, 10, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -329,7 +340,7 @@
   }
 
   .premium-card {
-    @apply border-white/[0.08] backdrop-blur-[32px];
+    @apply border-white/[0.08] backdrop-blur-lg;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%),
                 rgba(10, 10, 10, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -415,10 +426,9 @@
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
-  backdrop-filter: blur(4px);
   background-color: rgba(255, 255, 255, 0.05); /* Default to light-mode white */
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.2), 0 0 2px rgba(0, 0, 0, 0.2);
-  transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
 }
 
 .dark .cursor-ring {

@@ -58,7 +58,7 @@ export default function CareerDashboardView() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Placement Readiness Hero Metric */}
-        <div className="lg:col-span-4 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all flex flex-col justify-between min-h-[260px]">
+        <div className="lg:col-span-4 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all flex flex-col justify-between min-h-[260px]">
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Briefcase className="w-32 h-32 text-purple-400" /></div>
           <div className="relative z-10">
             <div className="text-sm text-slate-400 uppercase font-bold tracking-wider mb-3">Placement Readiness</div>
@@ -77,7 +77,7 @@ export default function CareerDashboardView() {
         </div>
 
         {/* Developer Presence (GitHub & LeetCode) */}
-        <div className="lg:col-span-8 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Terminal className="w-5 h-5 text-indigo-400" /> Developer Presence
@@ -103,7 +103,7 @@ export default function CareerDashboardView() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Skills Matrix / Radar Chart Placeholder */}
-        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
+        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
           <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
             <Target className="w-6 h-6 text-emerald-400" /> Skills Matrix ({targetRole})
           </h3>
@@ -128,7 +128,7 @@ export default function CareerDashboardView() {
         </div>
 
         {/* Internship & Project Roadmap */}
-        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
+        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
           <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
             <Map className="w-6 h-6 text-amber-400" /> Career Roadmap
           </h3>

@@ -56,14 +56,11 @@ import IslandTestControls from "@/components/dynamic-island/IslandTestControls";
 import ContextualIslandController from "@/components/dynamic-island/ContextualIslandController";
 import { BackgroundSyncWorker } from "@/components/providers/BackgroundSyncWorker";
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${inter.variable} font-body bg-background text-foreground custom-scrollbar selection:bg-primary-container selection:text-on-primary-container`}>
@@ -84,7 +81,7 @@ export default async function RootLayout({
             <CustomCursor />
             <SkipToContent />
             <NuqsAdapter>
-              <SupabaseAuthProvider initialUser={user}>
+              <SupabaseAuthProvider initialUser={null}>
                 <ErrorBoundary>
                   <AcademicStateProvider>
                     <AcademicHydrationBoundary>

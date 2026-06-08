@@ -11,7 +11,7 @@ interface SkillGapDetectorProps {
 
 export default function SkillGapDetector({ role, skills, result }: SkillGapDetectorProps) {
   return (
-    <div className="w-full bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 md:p-12 relative overflow-hidden shadow-2xl">
+    <div className="w-full bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 md:p-12 relative overflow-hidden shadow-2xl">
       <div className="relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>

@@ -123,11 +123,11 @@ export default function Navbar({ mainLinks, intelligenceModules }: { mainLinks: 
       <AnimatePresence>
         {(activeMenu || expandedId) && (
           <motion.div
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-40 bg-black/40 pointer-events-auto cursor-pointer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm pointer-events-auto cursor-pointer"
             onClick={() => {
               setActiveMenu("");
               setExpandedId(null);
@@ -168,7 +168,7 @@ export default function Navbar({ mainLinks, intelligenceModules }: { mainLinks: 
               borderRadius: isSquircle ? 44 : 100,
             }}
             transition={transitionProps}
-            className="bg-[#1D1D1F]/90 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl pointer-events-auto relative flex flex-col origin-top"
+            className="bg-[#1D1D1F]/90 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-xl pointer-events-auto relative flex flex-col origin-top"
           >
 
           {/* STREAK BADGE (hover-reveal) */}
@@ -467,7 +467,7 @@ export default function Navbar({ mainLinks, intelligenceModules }: { mainLinks: 
             exit={{ opacity: 0, scale: 0.5, x: -20 }}
             transition={transitionProps}
             aria-expanded={expandedId === secondaryActivity.id}
-            className="h-navbar-bubble w-navbar-bubble shrink-0 rounded-full bg-[#1D1D1F]/90 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl pointer-events-auto flex items-center justify-center relative cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="h-navbar-bubble w-navbar-bubble shrink-0 rounded-full bg-[#1D1D1F]/90 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-xl pointer-events-auto flex items-center justify-center relative cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             onClick={() => setExpandedId(expandedId === secondaryActivity.id ? null : secondaryActivity.id)}
           >
             <MinimalSecondaryActivity activity={secondaryActivity} />

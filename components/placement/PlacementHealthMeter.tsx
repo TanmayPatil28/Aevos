@@ -23,7 +23,7 @@ export default function PlacementHealthMeter({ readinessScore, averageEligibilit
   const colors = getRiskColors();
 
   return (
-    <div className="w-full flex flex-col items-center justify-center p-8 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] relative overflow-hidden shadow-2xl">
+    <div className="w-full flex flex-col items-center justify-center p-8 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] relative overflow-hidden shadow-2xl">
       <div className="relative z-10 flex flex-col items-center text-center w-full">
         <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/50 mb-6">
           Placement Health

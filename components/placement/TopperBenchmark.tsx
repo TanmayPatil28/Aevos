@@ -15,7 +15,7 @@ export default function TopperBenchmark({ userCgpa, userCredits, userSkillsCount
   const overallPercentile = Math.round((cgpaPercentile + skillsPercentile) / 2);
 
   return (
-    <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 relative overflow-hidden h-full shadow-2xl flex flex-col justify-between">
+    <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 relative overflow-hidden h-full shadow-2xl flex flex-col justify-between">
       
       <div className="flex items-center gap-3 mb-4 relative z-10">
         <div className="p-2 bg-[#bf5af2]/20 rounded-xl">

@@ -3,10 +3,8 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   poweredByHeader: false,
-  compiler: {
-    removeConsole: {
-      exclude: ['error', 'warn'],
-    },
+  experimental: {
+    optimizePackageImports: ['lucide-react']
   },
   async headers() {
     return [

@@ -31,7 +31,7 @@ export async function GET(req: Request) {
       }
 
       const activeSnapshot = await prisma.academicSnapshot.findUnique({
-        where: { id: user.activeSnapshotId },
+        where: { id: dbUser.activeSnapshotId },
       });
 
       return NextResponse.json({ snapshot: activeSnapshot });

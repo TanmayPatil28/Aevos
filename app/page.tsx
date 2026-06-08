@@ -487,7 +487,7 @@ export default function Home() {
 
 function LocalNav() {
   return (
-    <div className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-3xl border-b border-white/20">
+    <div className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-xl border-b border-white/20">
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-white/90 font-semibold tracking-tight">GradeFlow OS</span>

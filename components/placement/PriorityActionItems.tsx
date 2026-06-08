@@ -47,7 +47,7 @@ export default function PriorityActionItems({
   }
 
   return (
-    <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 relative overflow-hidden h-full shadow-2xl">
+    <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 relative overflow-hidden h-full shadow-2xl">
       
       <div className="flex items-center gap-3 mb-6 relative z-10">
         <div className="p-2 bg-[#0a84ff]/20 rounded-xl">

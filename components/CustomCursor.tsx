@@ -26,14 +26,14 @@ export default function CustomCursor() {
   );
 
   // Dynamic Styles (Renderless)
-  const ringSize = useTransform(hoverValue, [0, 1], [40, 65]);
+  const ringScale = useTransform(hoverValue, [0, 1], [1, 1.625]); // 40px base -> 65px hover via scale
   const ringBorderColor = useTransform(hoverValue, [0, 1], ["rgba(172, 199, 255, 0.4)", "rgba(214, 186, 255, 0.8)"]);
   const ringBgColor = useTransform(hoverValue, [0, 1], ["rgba(172, 199, 255, 0.05)", "rgba(214, 186, 255, 0.15)"]);
   const dotScale = useTransform(hoverValue, [0, 1], [1, 1.5]);
 
-  // Spring smoothing for the ring
-  const springX = useSpring(mouseX, { stiffness: 250, damping: 25 });
-  const springY = useSpring(mouseY, { stiffness: 250, damping: 25 });
+  // Spring smoothing for the ring (high stiffness for snappy, responsive feel)
+  const springX = useSpring(mouseX, { stiffness: 800, damping: 40 });
+  const springY = useSpring(mouseY, { stiffness: 800, damping: 40 });
 
   useEffect(() => {
     const isMobile = window.matchMedia("(max-width: 768px)").matches || "ontouchstart" in window;
@@ -109,33 +109,34 @@ export default function CustomCursor() {
       </AnimatePresence>
 
       <motion.div
-        className="cursor-ring"
+        className="absolute top-0 left-0 rounded-full border-[1.5px] border-solid pointer-events-none z-[9999] mix-blend-screen"
         style={{
           x: springX,
           y: springY,
           translateX: "-50%",
           translateY: "-50%",
+          scale: ringScale,
           scaleX: stretchScale,
           rotate: angle,
-          width: ringSize,
-          height: ringSize,
+          width: 40,
+          height: 40,
           borderColor: ringBorderColor,
           backgroundColor: ringBgColor,
-          willChange: "transform, width, height",
-          transform: "translateZ(0)",
+          willChange: "transform",
         }}
       />
 
       <motion.div
-        className="cursor-dot"
+        className="absolute top-0 left-0 rounded-full bg-white pointer-events-none z-[10000]"
         style={{
           x: mouseX,
           y: mouseY,
           translateX: "-50%",
           translateY: "-50%",
           scale: dotScale,
+          width: 6,
+          height: 6,
           willChange: "transform",
-          transform: "translateZ(0)",
         }}
       />
     </div>

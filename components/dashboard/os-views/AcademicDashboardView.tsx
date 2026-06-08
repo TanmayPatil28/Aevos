@@ -28,14 +28,14 @@ export default function AcademicDashboardView() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all">
+            <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all">
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Activity className="w-24 h-24 text-blue-400" /></div>
               <div className="text-sm text-slate-400 uppercase font-bold tracking-wider mb-3 relative z-10">Active CGPA</div>
               <AnimatedCounter target={cgpa} decimals={2} className="text-5xl font-black text-white relative z-10 block" />
               {percentage > 0 && <div className="text-sm text-indigo-400 mt-4 font-mono relative z-10">≈ <AnimatedCounter target={percentage} decimals={2} />% Equivalent</div>}
             </div>
             
-            <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all">
+            <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden group hover:bg-white/[0.02] transition-all">
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><TrendingUp className="w-24 h-24 text-emerald-400" /></div>
               <div className="text-sm text-slate-400 uppercase font-bold tracking-wider mb-3 relative z-10">Sem Credits</div>
               <AnimatedCounter target={credits.totalActiveCredits} className="text-5xl font-black text-white relative z-10 block" />
@@ -43,7 +43,7 @@ export default function AcademicDashboardView() {
             </div>
           </div>
           
-          <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
+          <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5">
             <h3 className="text-xl font-bold text-white mb-6">Active Course Ledger</h3>
             <div className="space-y-3">
               {activeCourses.map(course => (
@@ -74,7 +74,7 @@ export default function AcademicDashboardView() {
         </div>
 
         <div className="lg:col-span-4">
-          <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 h-full">
+          <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 h-full">
             <AcademicTimeline history={store.semesterHistory} />
           </div>
         </div>

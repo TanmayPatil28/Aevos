@@ -3,8 +3,15 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Layers, Edit3 } from "lucide-react";
-import ActiveSimulator from "./ActiveSimulator";
-import ManualCalculator from "./ManualCalculator";
+import dynamic from "next/dynamic";
+const ActiveSimulator = dynamic(() => import("./ActiveSimulator"), { 
+  ssr: false,
+  loading: () => <div className="h-[500px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
+});
+const ManualCalculator = dynamic(() => import("./ManualCalculator"), { 
+  ssr: false,
+  loading: () => <div className="h-[500px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
+});
 
 import { PageHero } from "@/components/ui/PageHero";
 

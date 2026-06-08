@@ -18,9 +18,18 @@ import { PageHero } from "@/components/ui/PageHero";
 import AnimatedCounter from "@/components/AnimatedCounter";
 
 // OS Views
-import AcademicDashboardView from "@/components/dashboard/os-views/AcademicDashboardView";
-import CareerDashboardView from "@/components/dashboard/os-views/CareerDashboardView";
-import UnifiedDashboardView from "@/components/dashboard/os-views/UnifiedDashboardView";
+const AcademicDashboardView = dynamic(() => import("@/components/dashboard/os-views/AcademicDashboardView"), { 
+  ssr: false,
+  loading: () => <div className="h-[600px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
+});
+const CareerDashboardView = dynamic(() => import("@/components/dashboard/os-views/CareerDashboardView"), { 
+  ssr: false,
+  loading: () => <div className="h-[600px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
+});
+const UnifiedDashboardView = dynamic(() => import("@/components/dashboard/os-views/UnifiedDashboardView"), { 
+  ssr: false,
+  loading: () => <div className="h-[600px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
+});
 
 const DataSyncDrawer = dynamic(() => import("@/components/dashboard/sync/DataSyncDrawer").then(mod => mod.DataSyncDrawer), { ssr: false });
 const ResetDataButton = dynamic(() => import("@/components/dashboard/sync/DataSyncDrawer").then(mod => mod.ResetDataButton), { ssr: false });
@@ -233,15 +242,13 @@ export default function DashboardClient({
     <div className="relative min-h-screen bg-black">
       {/* Immersive Ambient Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <motion.div 
-          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/20 mix-blend-screen blur-[120px] rounded-full"
+        <div 
+          className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/20 mix-blend-screen blur-[120px] rounded-full animate-[ambient-pulse-1_10s_ease-in-out_infinite]"
+          style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
         />
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-[40%] -right-[10%] w-[60%] h-[60%] bg-blue-500/10 mix-blend-screen blur-[120px] rounded-full"
+        <div 
+          className="absolute top-[40%] -right-[10%] w-[60%] h-[60%] bg-blue-500/10 mix-blend-screen blur-[120px] rounded-full animate-[ambient-pulse-2_15s_ease-in-out_2s_infinite]"
+          style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
         />
       </div>
 
@@ -262,7 +269,7 @@ export default function DashboardClient({
           
           {/* Academic Health Score Mini Widget using AnimatedCounter */}
           {healthScore && !isSimulation && mode !== "career" && (
-            <div className="hidden md:flex flex-col items-end bg-[#1c1c1e]/60 backdrop-blur-3xl p-4 rounded-3xl border border-white/10 ring-1 ring-white/5">
+            <div className="hidden md:flex flex-col items-end bg-[#1c1c1e]/60 backdrop-blur-xl p-4 rounded-3xl border border-white/10 ring-1 ring-white/5">
               <span className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-1">Health Score</span>
               <div className="flex items-baseline gap-1">
                 <AnimatedCounter target={healthScore.overall} className="text-4xl font-black text-white" />
@@ -274,7 +281,7 @@ export default function DashboardClient({
           {isSimulation && (
             <button 
               onClick={() => store.clearSimulationScenarios()}
-              className="px-6 py-3 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 ring-1 ring-white/5 hover:bg-white/10 text-white rounded-full text-sm font-bold transition-all"
+              className="px-6 py-3 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 ring-1 ring-white/5 hover:bg-white/10 text-white rounded-full text-sm font-bold transition-all"
             >
               Exit Sandbox
             </button>
@@ -354,7 +361,7 @@ export default function DashboardClient({
 
       {/* Floating Dynamic Island Mode Toggle */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-[#1c1c1e]/80 backdrop-blur-3xl border border-white/10 rounded-full p-1.5 flex items-center shadow-2xl ring-1 ring-white/5">
+        <div className="bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 rounded-full p-1.5 flex items-center shadow-2xl ring-1 ring-white/5">
           <button
             onClick={() => setMode("academic")}
             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${

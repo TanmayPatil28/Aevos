@@ -338,7 +338,7 @@ export default function PredictorPanel() {
           initial="hidden" 
           whileInView="visible" 
           viewport={{ once: true, margin: "-20px" }}
-          className="relative bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] p-6 space-y-6 z-50 transition-all duration-500 shadow-2xl w-full"
+          className="relative bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 space-y-6 z-50 transition-all duration-500 shadow-2xl w-full"
         >
           <div className="flex flex-col gap-4 w-full">
             {/* Top Row: Dropdowns Grid */}
@@ -533,7 +533,7 @@ export default function PredictorPanel() {
             <span className="text-xs font-semibold text-[#86868B]">Click to Pin Goal</span>
           </div>
 
-          <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl flex flex-col">
+          <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl flex flex-col">
             {matrix.map((row, i) => {
               const isPinned = lockedGrade === row.grade;
               const isLast = i === matrix.length - 1;

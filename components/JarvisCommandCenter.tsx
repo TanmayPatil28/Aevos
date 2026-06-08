@@ -328,7 +328,7 @@ export default function JarvisCommandCenter({ isOpen, onClose }: JarvisCommandCe
             maxWidth: "64rem",
           }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="relative flex items-center bg-[#000000] backdrop-blur-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden ring-1 ring-white/5"
+          className="relative flex items-center bg-[#000000] backdrop-blur-xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden ring-1 ring-white/5"
         >
           <div className="absolute left-6 flex items-center justify-center pointer-events-none">
             <Search className="text-white/40" size={22} strokeWidth={2.5} />

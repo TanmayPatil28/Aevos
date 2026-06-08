@@ -34,7 +34,7 @@ export default function UnifiedDashboardView() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Academic Half */}
-        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:bg-white/[0.02] transition-all">
+        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:bg-white/[0.02] transition-all">
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><GraduationCap className="w-48 h-48 text-blue-400" /></div>
           
           <div>
@@ -57,7 +57,7 @@ export default function UnifiedDashboardView() {
         </div>
 
         {/* Career Half */}
-        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:bg-white/[0.02] transition-all">
+        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:bg-white/[0.02] transition-all">
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Briefcase className="w-48 h-48 text-purple-400" /></div>
           
           <div>
@@ -84,7 +84,7 @@ export default function UnifiedDashboardView() {
 
       </div>
 
-      <div className="bg-[#1c1c1e]/60 backdrop-blur-3xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
+      <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
         <div className="relative z-10">
           <h3 className="text-white font-bold text-xl mb-2">Explore all modules</h3>
           <p className="text-slate-400 text-sm max-w-xl">Use the Dynamic Island toggle below to morph this dashboard to your current goals.</p>

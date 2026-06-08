@@ -29,7 +29,7 @@ export default function StreakBadge({ isVisible }: { isVisible: boolean }) {
         >
           <div className={`
             flex items-center gap-2 px-4 py-2 rounded-full
-            bg-[#1D1D1F]/90 backdrop-blur-3xl
+            bg-[#1D1D1F]/90 backdrop-blur-xl
             border border-white/10
             ${colors.glow}
           `}>

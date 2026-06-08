@@ -86,7 +86,7 @@ export default function ExamCountdownPill() {
         onClick={() => setExamPillExpanded(!isExamPillExpanded)}
         className={cn(
           "pointer-events-auto relative cursor-pointer group overflow-hidden",
-          "bg-[#1D1D1F]/90 backdrop-blur-3xl",
+          "bg-[#1D1D1F]/90 backdrop-blur-xl",
           "border",
           config.border,
           config.glow,
