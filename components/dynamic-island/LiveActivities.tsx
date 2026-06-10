@@ -1117,3 +1117,104 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ═══════════════════════════════════════════════
+//  FOCUS TIMER EXPANDED VIEW
+// ═══════════════════════════════════════════════
+
+export function FocusTimerActivity() {
+  const { focusMode, endTime, isFocusActive, focusStreak } = useUSMStore((state) => state.focus);
+  const stopFocus = useUSMStore((state) => state.stopFocus);
+  const resetFocus = useUSMStore((state) => state.resetFocus);
+  
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    if (!isFocusActive || !endTime) {
+      return;
+    }
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+      setTimeLeft(remaining);
+    }, 200);
+    return () => clearInterval(interval);
+  }, [endTime, isFocusActive]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const getModeColor = () => {
+    switch (focusMode) {
+      case "WORK": return "text-indigo-400";
+      case "SHORT_BREAK": return "text-emerald-400";
+      case "LONG_BREAK": return "text-blue-400";
+      default: return "text-white";
+    }
+  };
+
+  const getBgColor = () => {
+    switch (focusMode) {
+      case "WORK": return "bg-indigo-500/20";
+      case "SHORT_BREAK": return "bg-emerald-500/20";
+      case "LONG_BREAK": return "bg-blue-500/20";
+      default: return "bg-white/10";
+    }
+  };
+
+  if (!isFocusActive) return null;
+
+  // Assume total time is 25 minutes for WORK, 5 for SHORT, 15 for LONG
+  const totalSeconds = focusMode === "WORK" ? 25 * 60 : focusMode === "SHORT_BREAK" ? 5 * 60 : 15 * 60;
+  const progress = Math.min(100, Math.max(0, 100 - (timeLeft / totalSeconds) * 100));
+
+  return (
+    <motion.div {...STAGGER_ANIMATION} className="w-full px-6 py-6 min-w-[320px]">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <div className={cn("p-1.5 rounded-lg", getBgColor(), getModeColor())}>
+            {focusMode === "WORK" ? <Flame size={16} /> : <Coffee size={16} />}
+          </div>
+          <span className="font-bold text-white/80 uppercase tracking-wider text-xs">
+            {focusMode.replace("_", " ")}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 px-2 py-1 bg-white/5 rounded-md border border-white/10">
+          <span className="text-xs text-white/40">Streak</span>
+          <span className="text-xs font-bold text-orange-400">{focusStreak}</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center justify-center py-4">
+        <div className={cn("text-6xl font-black tabular-nums tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]", getModeColor())}>
+          {formatTime(timeLeft)}
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mt-2 mb-6">
+        <div 
+          className={cn("h-full transition-all duration-200", getBgColor().replace('/20', '/80'))}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="flex items-center justify-center gap-4 border-t border-white/10 pt-4">
+        <button 
+          onClick={stopFocus}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 font-semibold transition-all text-sm"
+        >
+          <Pause size={16} /> Pause
+        </button>
+        <button 
+          onClick={resetFocus}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 font-semibold transition-all text-sm"
+        >
+          <AlertCircle size={16} /> Stop
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+

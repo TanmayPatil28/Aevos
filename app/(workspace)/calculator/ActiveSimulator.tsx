@@ -172,7 +172,7 @@ export default function CalculatorPage() {
 
   const derivationSubjects = useMemo(() => {
     return deferredSimulatedCourses
-      .filter(c => c.grade && c.grade !== "F")
+      .filter(c => c.grade)
       .map(c => ({
         name: c.name,
         credits: c.credits,
@@ -337,7 +337,7 @@ export default function CalculatorPage() {
                               <GradeDropdown
                                 value={course.grade || ""}
                                 onChange={(val) => handleUpdateTemp(course.id, 'grade', val)}
-                                options={gradeScale.filter(g => g.grade !== "F").map(g => g.grade)}
+                                options={gradeScale.map(g => g.grade)}
                               />
                             </div>
                           </div>

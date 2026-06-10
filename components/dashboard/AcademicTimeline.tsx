@@ -3,6 +3,7 @@
 import React from "react";
 import { SemesterHistoryEntry } from "@/stores/usmStore";
 import { Activity, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { useUniversity } from "@/components/providers/UniversityProvider";
 
 interface AcademicTimelineProps {
   history: SemesterHistoryEntry[];
@@ -23,11 +24,11 @@ export default function AcademicTimeline({ history }: AcademicTimelineProps) {
     );
   }
 
+  const { maxGradePoint } = useUniversity();
   const sortedHistory = [...history].sort((a, b) => a.semester - b.semester);
   
-  // Find min/max for charting scale
-  const maxSgpa = Math.max(...sortedHistory.map(h => h.sgpa), 10);
-  const minSgpa = 0; // Fixed scale 0-10
+  // Dynamic scale based on active grading system
+  const maxSgpa = Math.max(...sortedHistory.map(h => h.sgpa), maxGradePoint);
 
   return (
     <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl space-y-6">
@@ -40,7 +41,7 @@ export default function AcademicTimeline({ history }: AcademicTimelineProps) {
 
       <div className="relative pt-8 pb-4">
         {/* Connection Line */}
-        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-800 -translate-y-1/2 z-0" />
+        <div className="absolute bottom-[46px] left-0 w-full h-0.5 bg-slate-800 z-0" />
         
         <div className="relative z-10 flex justify-between items-center">
           {sortedHistory.map((entry, idx) => {
@@ -49,15 +50,15 @@ export default function AcademicTimeline({ history }: AcademicTimelineProps) {
             const isDrop = diff < 0;
             const isJump = diff > 0.5;
 
-            // Simple visual height mapping for SGPA (0-10)
+            // Visual mapping (0 to 100% of container height)
             const heightPercent = (entry.sgpa / maxSgpa) * 100;
 
             return (
-              <div key={`${entry.semester}-${idx}`} className="flex flex-col items-center relative group w-full">
+              <div key={`${entry.semester}-${idx}`} className="flex flex-col items-center justify-end relative group w-full h-[120px]">
                 
                 {/* Visual marker mapping */}
                 <div 
-                  className="absolute bottom-6 w-1 bg-indigo-500/20 rounded-t transition-all duration-500"
+                  className="absolute bottom-10 w-1 bg-indigo-500/20 rounded-t transition-all duration-500"
                   style={{ height: `${heightPercent}px` }}
                 />
 

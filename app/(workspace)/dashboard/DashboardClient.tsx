@@ -4,18 +4,16 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useUSMStore } from "@/stores/usmStore";
-import { selectActiveCourses, selectDerivedGPA, selectSemesterCredits } from "@/stores/selectors/academic";
+
 import ExpandableTrustPanel from "@/components/dashboard/ExpandableTrustPanel";
-import AcademicTimeline from "@/components/dashboard/AcademicTimeline";
-import { AlertCircle, Target, TrendingUp, Activity, Compass, ArrowRight, Briefcase, ShieldCheck, LineChart, LayoutGrid } from "lucide-react";
+import { AlertCircle, Target, TrendingUp, Activity, Compass, ArrowRight, Briefcase, LayoutGrid } from "lucide-react";
 import { AcademicIdentityBar } from "@/components/dashboard/identity/AcademicIdentityBar";
 import WorkspaceContent from "@/components/layout/WorkspaceContent";
-import WorkspaceSection from "@/components/layout/WorkspaceSection";
-import CalendarManager from "@/components/dashboard/CalendarManager";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageHero } from "@/components/ui/PageHero";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import DocumentVault from "@/components/DocumentVault";
 
 // OS Views
 const AcademicDashboardView = dynamic(() => import("@/components/dashboard/os-views/AcademicDashboardView"), { 
@@ -39,32 +37,30 @@ import { diagnostics } from "@/lib/diagnostics";
 export default function DashboardClient({
   initialCalculations = [],
   initialPlans = [],
-  initialEnrollments = []
+  initialEnrollments = [],
+  initialSnapshot = null,
 }: {
   initialCalculations?: any[];
   initialPlans?: any[];
   initialEnrollments?: any[];
+  initialSnapshot?: any;
 }) {
   const store = useUSMStore();
   const searchParams = useSearchParams();
   const [isSyncDrawerOpen, setIsSyncDrawerOpen] = useState(false);
-  const [hasHydrated, setHasHydrated] = useState(false);
+  const hasHydratedRef = React.useRef(false);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const mode = store.workspaceUi.mode;
 
-  const activeCourses = selectActiveCourses(store);
-  const { cgpa, percentage } = selectDerivedGPA(store);
-  const credits = selectSemesterCredits(store);
   const activeScenario = store.simulation?.activeScenarios?.find(s => s.id === store.simulation?.selectedScenarioId);
 
   // Auto-evaluate interventions if empty but we have authoritative data
   useEffect(() => {
-    // EMERGENCY FIX: If local storage is corrupted with 60+ semesters from the old timeline bug, nuke it.
-    if (store.semesterHistory.length > 12 || store.semesterHistory.some(s => s.semester > 15)) {
-      localStorage.removeItem("gradeflow-usm-storage");
-      window.location.reload();
-      return;
-    }
 
     if (store.identity.hasAuthoritativeData && store.interventions.length === 0) {
       store.evaluateInterventions();
@@ -74,16 +70,27 @@ export default function DashboardClient({
 
 // Hydrate store from server props
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") diagnostics.info("DashboardClient", `Hydration Effect triggered. hasHydrated: ${hasHydrated}`);
-    if (!hasHydrated) {
+    if (process.env.NODE_ENV === "development") diagnostics.info("DashboardClient", `Hydration Effect triggered. hasHydrated: ${hasHydratedRef.current}`);
+    if (!hasHydratedRef.current) {
+      hasHydratedRef.current = true;
       if (process.env.NODE_ENV === "development") diagnostics.info("DashboardClient", `Starting bootstrap. Server Calculations: ${initialCalculations.length}, Server Enrollments: ${initialEnrollments.length}`);
+      
+      // If we have an authoritative snapshot from DB, and local store isn't authoritative yet, hydrate it first.
+      if (initialSnapshot && !store.identity.hasAuthoritativeData) {
+        if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] Hydrating authoritative snapshot from DB.");
+        store.hydrateFromSnapshot(initialSnapshot);
+      }
+      
       if (initialCalculations.length > 0 || initialEnrollments.length > 0) {
         let semesterHistory: any[] = [];
         let courses: any[] = [];
         
         // Identify which semesters are locked by the authoritative snapshot
         const authoritativeSemesters = store.identity.hasAuthoritativeData 
-             ? new Set(store.semesterHistory.map(s => s.semester))
+             ? new Set([
+                 ...store.semesterHistory.map(s => s.semester),
+                 ...store.courses.map(c => c.semester || 1)
+               ])
              : new Set();
              
         let startingSemester = 1;
@@ -93,12 +100,18 @@ export default function DashboardClient({
 
         const multiSem = initialCalculations.find((c: any) => c.semester.startsWith("Multi-Sem"));
         if (multiSem && Array.isArray(multiSem.subjects)) {
-          semesterHistory = multiSem.subjects.map((s: any, i: number) => ({
-            semester: startingSemester + i,
+          const multiSemHistory = multiSem.subjects.map((s: any, i: number) => ({
+            semester: i + 1, // Multi-Sem always starts from 1
             sgpa: Number(s.sgpa) || 0,
             credits: Number(s.credits) || 0,
             earnedCredits: Number(s.credits) || 0
           }));
+          
+          multiSemHistory.forEach((sem: any) => {
+            if (!authoritativeSemesters.has(sem.semester)) {
+              semesterHistory.push(sem);
+            }
+          });
         } else {
           const singleSems = initialCalculations.filter((c: any) => !c.semester.startsWith("Multi-Sem"));
           if (singleSems.length > 0) {
@@ -115,7 +128,9 @@ export default function DashboardClient({
             const chronological = [...deduplicatedSems].reverse();
             
             chronological.forEach((s: any, i: number) => {
-              const parsedSem = s.semester.match(/\d+/) ? parseInt(s.semester.match(/\d+/)[0]) : startingSemester + i;
+              const match = s.semester.match(/\d+/);
+              if (!match) return; // Fix timeline duplication: skip non-numeric semesters
+              const parsedSem = parseInt(match[0]);
               
               // NEVER overwrite an authoritative snapshot semester with a manual calculation
               if (authoritativeSemesters.has(parsedSem)) {
@@ -191,10 +206,9 @@ export default function DashboardClient({
       } else {
         if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] Server props were empty. Bypassing hydration.");
       }
-      if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] Hydration complete. Setting hasHydrated to true.");
-      setHasHydrated(true);
+      if (process.env.NODE_ENV === "development") console.log("[QA Instrumentation] Hydration complete.");
     }
-  }, [hasHydrated, initialCalculations, initialEnrollments, store]);
+  }, [initialCalculations, initialEnrollments, store]);
 
   // Handle URL parameters for routing redirects
   useEffect(() => {
@@ -204,6 +218,18 @@ export default function DashboardClient({
       window.history.replaceState({}, '', '/dashboard');
     }
   }, [searchParams]);
+
+  if (!mounted) {
+    return (
+      <div className="relative min-h-screen bg-black">
+        <WorkspaceContent className="space-y-8 relative z-10 pt-8 pb-24">
+          <div className="h-16 w-full rounded-2xl bg-white/5 animate-pulse border border-white/10" />
+          <div className="h-32 w-full max-w-2xl rounded-2xl bg-white/5 animate-pulse border border-white/10" />
+          <div className="h-[600px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
+        </WorkspaceContent>
+      </div>
+    );
+  }
 
   // Adaptive Empty State
   if (!store.identity.hasAuthoritativeData) {
@@ -351,6 +377,8 @@ export default function DashboardClient({
         )}
       </AnimatePresence>
 
+
+
       {/* 3. Sync Layer (Drawer) */}
       <DataSyncDrawer 
         isOpen={isSyncDrawerOpen} 
@@ -364,6 +392,7 @@ export default function DashboardClient({
         <div className="bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 rounded-full p-1.5 flex items-center shadow-2xl ring-1 ring-white/5">
           <button
             onClick={() => setMode("academic")}
+            aria-label="Academic Mode"
             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
               mode === "academic" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
             }`}
@@ -373,6 +402,7 @@ export default function DashboardClient({
           </button>
           <button
             onClick={() => setMode("unified")}
+            aria-label="Unified Mode"
             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
               mode === "unified" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
             }`}
@@ -382,6 +412,7 @@ export default function DashboardClient({
           </button>
           <button
             onClick={() => setMode("career")}
+            aria-label="Career Mode"
             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
               mode === "career" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
             }`}

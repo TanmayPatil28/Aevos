@@ -1,10 +1,21 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+
 import { prisma } from "@/lib/prisma";
 import { validateSnapshotPayload } from "@/lib/academic-intelligence/hydration/hydrationEngine";
 import { generateStructuralHash } from "@/lib/academic-intelligence/hashing/structuralHash";
+import { z } from "zod";
+
+const snapshotPayloadSchema = z.object({
+  academicProfile: z.any(),
+  sourceType: z.string(),
+  sourceInstitution: z.string(),
+  snapshotType: z.string().optional().default("official_import"),
+  parserVersion: z.string().optional().default("1.0"),
+  regulationVersion: z.string().optional().default("1.0"),
+  normalizationVersion: z.string().optional().default("1.0"),
+  confidenceScore: z.number().optional().default(100),
+});
 
 export const dynamic = 'force-dynamic';
 
@@ -58,24 +69,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const jsonBody = await req.json();
+    const parsed = snapshotPayloadSchema.safeParse(jsonBody);
+    
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid payload", details: parsed.error.format() }, { status: 400 });
+    }
+
     const { 
       academicProfile, 
       sourceType, 
       sourceInstitution, 
-      snapshotType = "official_import",
-      parserVersion = "1.0",
-      regulationVersion = "1.0",
-      normalizationVersion = "1.0",
-      confidenceScore = 100,
-    } = body;
+      snapshotType,
+      parserVersion,
+      regulationVersion,
+      normalizationVersion,
+      confidenceScore,
+    } = parsed.data;
 
     // 1. Validate JSON strictly through the Hydration Engine
     let validatedProfile;
     try {
       validatedProfile = validateSnapshotPayload(academicProfile);
-    } catch (err: any) {
-      return NextResponse.json({ error: `Validation Error: ${err.message}` }, { status: 400 });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      return NextResponse.json({ error: `Validation Error: ${errorMessage}` }, { status: 400 });
     }
 
     // 2. Generate Structural Hash to prevent duplicate identical imports

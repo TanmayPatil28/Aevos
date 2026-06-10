@@ -3,7 +3,12 @@
 import { useDomainStore } from "@/stores/os/domainStore";
 import { useUIStore } from "@/stores/os/uiStore";
 import { useEffect, useState, useMemo } from "react";
-import { LineChart, Line, ResponsiveContainer, YAxis, ReferenceLine } from "recharts";
+import dynamic from "next/dynamic";
+const LineChart = dynamic(() => import('recharts').then(mod => mod.LineChart), { ssr: false });
+const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false });
+const ReferenceLine = dynamic(() => import('recharts').then(mod => mod.ReferenceLine), { ssr: false });
 import { COPY } from "@/lib/os/constants/copy";
 
 export default function ForecastingCanvas() {

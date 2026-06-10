@@ -1,11 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider   = "postgresql"
-  extensions = [vector]
+  extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions"), vector]
 }
 
 model Account {
@@ -24,6 +24,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -34,6 +35,7 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("sessions")
 }
 
@@ -46,17 +48,20 @@ model User {
   password          String?
   university        String             @default("jspm")
   createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at")
   activeSnapshotId  String?            @map("active_snapshot_id")
   academicSnapshots AcademicSnapshot[]
   accounts          Account[]
   calculations      Calculation[]
+  documents         Document[]
   enrollments       Enrollment[]
   plans             Plan[]
   sessions          Session[]
   skillProgress     SkillProgress[]
   memories          UserMemory[]
-  documents         Document[]
+  chatMemories      ChatMemory[]
 
+  @@index([activeSnapshotId])
   @@map("users")
 }
 
@@ -70,7 +75,7 @@ model VerificationToken {
 }
 
 model Calculation {
-  id            Int      @id @default(autoincrement())
+  id            String   @id @default(cuid())
   date          DateTime @default(now())
   semester      String
   subjects      Json
@@ -78,14 +83,16 @@ model Calculation {
   cgpa          Float
   total_credits Int
   created_at    DateTime @default(now())
-  userId        String?  @map("user_id")
-  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("calculations")
 }
 
 model Plan {
-  id                  Int      @id @default(autoincrement())
+  id                  String   @id @default(cuid())
   current_cgpa        Float
   target_cgpa         Float
   completed_semesters Int
@@ -94,9 +101,11 @@ model Plan {
   plan_data           Json
   current_semester    String?
   created_at          DateTime @default(now())
-  userId              String?  @map("user_id")
-  user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at")
+  userId              String   @map("user_id")
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("plans")
 }
 
@@ -106,6 +115,7 @@ model Course {
   name        String
   credits     Int
   prereqs     String[]
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at")
   enrollments Enrollment[]
 
   @@map("courses")
@@ -121,21 +131,31 @@ model Enrollment {
   seeMarks         Float?          @map("see_marks")
   attendanceTotal  Int             @default(0) @map("attendance_total")
   attendanceBunked Int             @default(0) @map("attendance_bunked")
+  updatedAt        DateTime        @default(now()) @updatedAt @map("updated_at")
   attendanceLogs   AttendanceLog[]
   course           Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
+  @@index([courseId])
   @@map("enrollments")
 }
 
-model AttendanceLog {
-  id           String     @id @default(cuid())
-  enrollmentId String     @map("enrollment_id")
-  date         DateTime   @default(now()) @map("date")
-  status       String
-  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
 
+model AttendanceLog {
+  id           String           @id @default(cuid())
+  enrollmentId String           @map("enrollment_id")
+  date         DateTime         @default(now()) @map("date")
+  status       AttendanceStatus
+  updatedAt    DateTime         @default(now()) @updatedAt @map("updated_at")
+  enrollment   Enrollment       @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
   @@map("attendance_logs")
 }
 
@@ -154,6 +174,7 @@ model AcademicSnapshot {
   checksumHash         String   @map("checksum_hash")
   verificationStatus   String   @default("unverified") @map("verification_status")
   academicProfile      Json     @map("academic_profile")
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at")
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
@@ -161,14 +182,15 @@ model AcademicSnapshot {
 }
 
 model SkillProgress {
-  id          String    @id @default(cuid())
-  userId      String    @map("user_id")
-  roadmapId   String    @map("roadmap_id") 
-  nodeId      String    @map("node_id")    
-  status      String    @default("in_progress")
-  completedAt DateTime? @map("completed_at")
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String              @id @default(cuid())
+  userId      String              @map("user_id")
+  roadmapId   String              @map("roadmap_id")
+  nodeId      String              @map("node_id")
+  status      String              @default("in_progress")
+  completedAt DateTime?           @map("completed_at")
+  updatedAt   DateTime            @default(now()) @updatedAt @map("updated_at")
   milestones  MilestoneProgress[]
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roadmapId, nodeId])
   @@map("skill_progress")
@@ -187,24 +209,47 @@ model MilestoneProgress {
 }
 
 model UserMemory {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  content   String
-  embedding Unsupported("vector(768)")
-  createdAt DateTime @default(now()) @map("created_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String                @id @default(cuid())
+  userId     String                @map("user_id")
+  documentId String?               @map("document_id")
+  content    String
+  embedding  Unsupported("vector")
+  createdAt  DateTime              @default(now()) @map("created_at")
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document   Document?             @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([documentId])
   @@map("user_memories")
 }
 
 model Document {
-  id         String   @id @default(cuid())
-  userId     String   @map("user_id")
-  fileName   String   @map("file_name")
-  fileUrl    String   @map("file_url")
-  fileType   String   @map("file_type")
-  createdAt  DateTime @default(now()) @map("created_at")
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String       @id @default(cuid())
+  userId    String       @map("user_id")
+  fileName  String       @map("file_name")
+  fileUrl   String       @map("file_url")
+  fileType  String       @map("file_type")
+  tags      String[]     @default([])
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at")
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memories  UserMemory[]
 
+  @@index([userId])
   @@map("documents")
 }
+
+model ChatMemory {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  sessionId String   @map("session_id")
+  role      String
+  content   String
+  metadata  Json?    @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sessionId, createdAt(sort: Desc)])
+  @@map("chat_memory")
+}
+

@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useUSMStore } from "@/stores/usmStore";
 import { selectDerivedGPA } from "@/stores/selectors/academic";
+import { intelligenceEngine } from "@/lib/career/intelligenceEngine";
 import { Activity, Briefcase, GraduationCap, LayoutDashboard, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import AnimatedCounter from "@/components/AnimatedCounter";
@@ -14,14 +15,20 @@ export default function UnifiedDashboardView() {
   const { cgpa } = selectDerivedGPA(store);
   const setMode = store.setWorkspaceMode;
 
-  // Mock Readiness Score
+  // Fetch Readiness Score via Intelligence Engine
   const backlogs = store.semesterHistory.reduce((acc, sem) => acc + (sem.credits - sem.earnedCredits), 0);
-  let readinessScore = 85;
-  if (cgpa < 7) readinessScore -= 20;
-  if (backlogs > 0) readinessScore -= 15;
-  if (cgpa >= 8.5) readinessScore += 10;
-  if (readinessScore > 100) readinessScore = 98;
-  if (readinessScore < 10) readinessScore = 15;
+  const earnedCredits = store.semesterHistory.reduce((acc, sem) => acc + sem.earnedCredits, 0);
+  
+  const placementRisk = intelligenceEngine.calculatePlacementRisk({
+    cgpa,
+    backlogs,
+    earnedCredits,
+    branch: "Computer Science", // Default fallback if not in store
+    skills: store.career?.skills || [],
+    targetRole: store.career?.targetRole || "Frontend Developer"
+  });
+  
+  const readinessScore = Math.round(placementRisk.averageEligibility);
 
   return (
     <motion.div
@@ -91,7 +98,11 @@ export default function UnifiedDashboardView() {
         </div>
       </div>
 
-      <DocumentVault />
+      {/* Smart Documents / RAG Integration */}
+      <div className="mt-8">
+        <h3 className="text-xl font-bold text-white mb-4">Academic Vault</h3>
+        <DocumentVault />
+      </div>
     </motion.div>
   );
 }

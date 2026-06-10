@@ -11,13 +11,14 @@ export const calculationSchema = z.object({
   presetId: z.string().optional(),
   type: z.enum(["semester", "multi_semester"]).optional().default("semester"),
   subjects: z.array(z.record(z.string(), z.unknown())).min(1, "Subjects/semesters array cannot be empty"),
+  total_credits: z.number().optional(),
 });
 
 export const planSchema = z.object({
-  current_cgpa: z.coerce.number().min(0, "Current CGPA must be a non-negative number"),
-  target_cgpa: z.coerce.number().min(0, "Target CGPA must be a non-negative number"),
-  completed_semesters: z.coerce.number().int().min(0, "Completed semesters must be a non-negative integer"),
-  remaining_semesters: z.coerce.number().int().min(0, "Remaining semesters must be a non-negative integer"),
-  required_gpa: z.coerce.number().min(0, "Required GPA must be a non-negative number"),
+  current_cgpa: z.coerce.number().min(0, "Current CGPA must be a non-negative number").max(10, "CGPA cannot exceed 10"),
+  target_cgpa: z.coerce.number().min(0, "Target CGPA must be a non-negative number").max(10, "CGPA cannot exceed 10"),
+  completed_semesters: z.coerce.number().int().min(0, "Completed semesters must be a non-negative integer").max(20, "Completed semesters cannot exceed 20"),
+  remaining_semesters: z.coerce.number().int().min(0, "Remaining semesters must be a non-negative integer").max(20, "Remaining semesters cannot exceed 20"),
+  required_gpa: z.coerce.number().min(0, "Required GPA must be a non-negative number").max(10, "GPA cannot exceed 10"),
   plan_data: z.array(z.record(z.string(), z.unknown())).min(1, "Plan data cannot be empty"),
 });

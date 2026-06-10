@@ -114,9 +114,17 @@ export class BacklogEngine {
 
     let rollingTrajectoryPoints = totalPoints;
     let rollingCeilingPoints = totalPoints;
+
+    // Add maximum possible points from clearing active backlogs
+    const activeBacklogs = courses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase()));
+    const backlogCredits = activeBacklogs.reduce((sum, c) => sum + c.credits, 0);
+    // When cleared with an O (10 points), they add 10 * credits. F had 0 points, so we just add 10 * credits.
+    rollingCeilingPoints += backlogCredits * 10;
+
     let rollingCredits = totalCreditsAttempted;
 
-    for (let s = completedSemesters + 1; s <= 8; s++) {
+    const maxSem = Math.max(8, completedSemesters + 4);
+    for (let s = completedSemesters + 1; s <= maxSem; s++) {
       const mockSemCredits = 22; // Assume 22 credits per future sem
       rollingCredits += mockSemCredits;
       
@@ -231,21 +239,13 @@ export class BacklogEngine {
       "O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "P": 4, "F": 0, "FF": 0, "ABSENT": 0, "AB": 0
     };
     
-    let totalCredits = 0;
-    let totalPoints = 0;
+    let totalCredits = history.reduce((acc, sem) => acc + sem.credits, 0);
+    let totalPoints = history.reduce((acc, sem) => acc + (sem.sgpa * sem.credits), 0);
 
-    courses.forEach(c => {
-      // Don't double count if it's already in history, actually courses might just be all courses
-      // In this mockup, let's assume we sum all courses that have grades
-      if (c.grade && c.id !== course.id) {
-        totalCredits += c.credits;
-        totalPoints += (gradePoints[c.grade.toUpperCase()] || 0) * c.credits;
-      }
-    });
-
-    // Add the time travel course
-    totalCredits += course.credits;
-    totalPoints += (gradePoints[targetGrade.toUpperCase()] || 0) * course.credits;
+    const oldPoints = (gradePoints[(course.grade || "").toUpperCase()] || 0) * course.credits;
+    const newPoints = (gradePoints[targetGrade.toUpperCase()] || 0) * course.credits;
+    
+    totalPoints = totalPoints - oldPoints + newPoints;
 
     return totalCredits > 0 ? parseFloat((totalPoints / totalCredits).toFixed(2)) : 0;
   }
@@ -258,23 +258,18 @@ export class BacklogEngine {
       (c) => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase())
     );
 
-    // Calculate current exact CGPA based on all graded courses
     const gradePoints: { [key: string]: number } = {
       "O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "P": 4, "F": 0, "FF": 0, "ABSENT": 0, "AB": 0
     };
-    let totalCredits = 0;
-    let totalPoints = 0;
-    courses.forEach(c => {
-      if (c.grade) {
-        totalCredits += c.credits;
-        totalPoints += (gradePoints[c.grade.toUpperCase()] || 0) * c.credits;
-      }
-    });
+
+    let totalCredits = history.reduce((acc, sem) => acc + sem.credits, 0);
+    let totalPoints = history.reduce((acc, sem) => acc + (sem.sgpa * sem.credits), 0);
     const currentCgpa = totalCredits > 0 ? (totalPoints / totalCredits) : 0;
 
     const roiList = activeBacklogs.map(backlog => {
+      const oldPoints = (gradePoints[(backlog.grade || "").toUpperCase()] || 0) * backlog.credits;
       // Assuming a target grade of "A" (8 points) for ROI calculation
-      const hypotheticalPoints = totalPoints + (8 * backlog.credits); // Previous 0 points are replaced
+      const hypotheticalPoints = totalPoints - oldPoints + (8 * backlog.credits);
       const newCgpa = hypotheticalPoints / totalCredits; // Credits remain same since backlog was already attempted
       return {
         courseId: backlog.id,
@@ -325,24 +320,59 @@ export class BacklogEngine {
   static generateStrategy(
     courses: CourseState[],
     currentSemester: number,
-    maxCreditsPerSemester: number,
-    strategy: "BALANCED" | "AGGRESSIVE"
-  ): RecoveryPlanResult {
+    strategy: "SAFE" | "BALANCED" | "AGGRESSIVE"
+  ): RecoveryPlanResult & { insight: string; maxCredits: number } {
     const activeBacklogs = courses.filter(
       (c) => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase())
     );
     
     const plannedCourses: { [courseId: string]: number } = {};
     const unplannableCourses: CourseState[] = [];
-    const sortedBacklogs = [...activeBacklogs].sort((a, b) => a.semester - b.semester);
+    
+    // Core/Prerequisite keywords
+    const coreKeywords = ["math", "data structure", "algorithm", "operating system", "database", "network"];
+    
+    // Sort backlogs based on strategy
+    let sortedBacklogs = [...activeBacklogs];
+    
+    if (strategy === "SAFE" || strategy === "BALANCED") {
+      // Prioritize prerequisite blockers (core subjects) and older semesters
+      sortedBacklogs.sort((a, b) => {
+        const aIsCore = coreKeywords.some(k => a.name.toLowerCase().includes(k));
+        const bIsCore = coreKeywords.some(k => b.name.toLowerCase().includes(k));
+        if (aIsCore && !bIsCore) return -1;
+        if (!aIsCore && bIsCore) return 1;
+        return a.semester - b.semester; // older first
+      });
+    } else {
+      // Aggressive: just older first
+      sortedBacklogs.sort((a, b) => a.semester - b.semester);
+    }
 
     const BASE_CREDITS_PER_SEM = 20;
+    let maxCreditsPerSemester = 24;
+    let insight = "";
+
+    switch (strategy) {
+      case "SAFE":
+        maxCreditsPerSemester = 24;
+        insight = "Prioritizes critical blockers early while keeping credit load strictly under 24 per semester to prevent burnout.";
+        break;
+      case "BALANCED":
+        maxCreditsPerSemester = 28;
+        insight = "A steady approach clearing prerequisites quickly while balancing moderate credit loads for interview prep.";
+        break;
+      case "AGGRESSIVE":
+        maxCreditsPerSemester = 32;
+        insight = "Pure mathematical maximum. Packs absolute highest credit load into the immediate semester for fastest possible clearance.";
+        break;
+    }
     
     for (const backlog of sortedBacklogs) {
       let placed = false;
       
-      // For AGGRESSIVE, try to pack as early as possible. For BALANCED, we might want to skip a semester if it's getting full, but the logic below works well enough as a baseline greedy approach for both.
-      for (let s = currentSemester; s <= 8; s++) {
+      const maxSem = Math.max(8, currentSemester + 4);
+      for (let s = currentSemester; s <= maxSem; s++) {
         const existingRecoveryCredits = Object.entries(plannedCourses)
           .filter(([_, sem]) => sem === s)
           .map(([id]) => courses.find(c => c.id === id)?.credits || 0)
@@ -362,6 +392,6 @@ export class BacklogEngine {
       }
     }
 
-    return { plannedCourses, unplannableCourses };
+    return { plannedCourses, unplannableCourses, insight, maxCredits: maxCreditsPerSemester };
   }
 }

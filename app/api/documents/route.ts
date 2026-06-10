@@ -1,6 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const documentPayloadSchema = z.object({
+  fileName: z.string().min(1),
+  fileUrl: z.string().url(),
+  fileType: z.string().min(1)
+});
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +40,14 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { fileName, fileUrl, fileType } = await req.json();
+    const jsonBody = await req.json();
+    const parsed = documentPayloadSchema.safeParse(jsonBody);
+    
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid payload", details: parsed.error.format() }, { status: 400 });
+    }
+
+    const { fileName, fileUrl, fileType } = parsed.data;
 
     const document = await prisma.document.create({
       data: {

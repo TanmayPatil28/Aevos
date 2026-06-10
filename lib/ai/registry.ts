@@ -1,5 +1,6 @@
 import { AIProvider, OCRProvider, ProviderHealth, TelemetryMetric, TelemetryTracker } from "./types";
 import { GeminiAIProvider } from "./providers/gemini";
+import { GroqAIProvider } from "./providers/groq";
 import { OpenAIProvider } from "./providers/openai";
 import { MockAIProvider, MockOCRProvider } from "./providers/mock";
 
@@ -162,6 +163,7 @@ export class AIRuntimeRegistry {
 
 // Self-register default providers in runtime
 AIRuntimeRegistry.registerAIProvider(new GeminiAIProvider());
+AIRuntimeRegistry.registerAIProvider(new GroqAIProvider());
 AIRuntimeRegistry.registerAIProvider(new OpenAIProvider());
 AIRuntimeRegistry.registerAIProvider(new MockAIProvider());
 AIRuntimeRegistry.registerOCRProvider(new MockOCRProvider());

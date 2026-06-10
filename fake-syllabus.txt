@@ -1,0 +1,21 @@
+CS301 Data Structures and Algorithms Syllabus
+
+Professor: Dr. Alan Turing
+Office Hours: Tuesdays and Thursdays, 2PM - 4PM
+Room: Computer Science Building, Room 404
+
+Course Objectives:
+This course covers fundamental data structures including arrays, linked lists, stacks, queues, hash tables, trees, and graphs.
+Students will learn algorithm analysis (Big-O notation) and essential algorithms like sorting (QuickSort, MergeSort) and graph traversal (BFS, DFS).
+
+Grading Breakdown:
+- Assignments: 30%
+- Midterm Exam: 30%
+- Final Project: 40%
+
+Important Dates:
+- Midterm: October 15th
+- Final Project Due: December 10th
+
+Academic Integrity:
+All code submitted must be your own. Plagiarism will result in an automatic F for the course.

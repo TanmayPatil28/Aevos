@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { DraggableNumberInput } from "@/components/ui/DraggableNumberInput";
 import toast from "react-hot-toast";
@@ -35,6 +35,13 @@ function FadeText({ children, delay = 0, className = "" }: { children: React.Rea
 }
 
 const MODULES = [
+  {
+    id: "optimizer",
+    name: "Academic Optimizer",
+    shortName: "Optimizer",
+    desc: "Predictive path generation & risk assessment.",
+    component: AcademicOptimizerModule,
+  },
   {
     id: "attendance",
     name: "Attendance Predictor",
@@ -187,11 +194,14 @@ export default function PlannerPage() {
       requiredGPA: reqGPA,
       gap: targetCGPA - currentCGPA,
       isImpossible: reqGPA > maxGradePoint,
-      difficulty: getDifficultyLevel(reqGPA, activePreset)
+      difficulty: getDifficultyLevel(reqGPA, activePreset),
+      totalCredits: completedCredits,
+      remainingSems: remainingSemesters,
+      creditsPerSem: creditsPerSemester
     };
   }, [currentCGPA, completedSemesters, targetCGPA, remainingSemesters, creditsPerSemester, activePreset, maxGradePoint]);
 
-  const isValidTarget = targetCGPA > currentCGPA && targetCGPA > 0;
+  const isValidTarget = targetCGPA > 0;
 
   return (
     <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-white/20 selection:text-white pb-32 pt-24 px-6 md:px-12 lg:px-24">

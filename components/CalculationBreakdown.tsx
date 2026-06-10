@@ -51,7 +51,7 @@ export default function CalculationBreakdown({
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-600/15 via-[#0B0F19]/5 to-transparent blur-[80px] pointer-events-none rounded-[32px] -z-10" />
 
       {/* Dynamic Print Styles for Statutory Proof */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style>{`
         @media print {
           /* Hide everything except the print wrapper */
           body * {
@@ -75,7 +75,7 @@ export default function CalculationBreakdown({
             display: none !important;
           }
         }
-      `}} />
+      `}</style>
 
       {/* Main Breakdown Dashboard - Apple Tech Specs Aesthetic */}
       <div 

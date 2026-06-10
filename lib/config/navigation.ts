@@ -39,6 +39,13 @@ export const INTELLIGENCE_MODULES = [
     ]
   },
   {
+    category: "Focus & Productivity",
+    accent: { headerDot: "bg-pink-400", hoverIcon: "group-hover:bg-pink-500/10 group-hover:border-pink-500/20 group-hover:text-pink-400" },
+    items: [
+      { name: "Focus Engine", href: "/focus", iconName: "Target", desc: "Zen Mode & strict distraction blocking", role: "user" }
+    ]
+  },
+  {
     category: "Strategic Timelines",
     accent: { headerDot: "bg-emerald-400", hoverIcon: "group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 group-hover:text-emerald-400" },
     items: [

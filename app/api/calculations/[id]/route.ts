@@ -18,8 +18,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = parseInt(params.id);
-    if (isNaN(id)) {
+    const id = params.id;
+    if (!id) {
       return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
     }
 

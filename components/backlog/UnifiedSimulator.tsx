@@ -22,7 +22,8 @@ export default function UnifiedSimulator({
   const [isSaved, setIsSaved] = useState(false);
   
   const activeBacklogs = courses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase()));
-  const availableSemesters = Array.from({ length: 8 - currentSemester + 1 }, (_, i) => currentSemester + i);
+  const maxSem = Math.max(8, currentSemester + 4);
+  const availableSemesters = Array.from({ length: maxSem - currentSemester + 1 }, (_, i) => currentSemester + i);
 
   const handleMove = (course: CourseState, targetSem: number | "UNPLANNED") => {
     if (targetSem === "UNPLANNED") {

@@ -119,10 +119,10 @@ export default function JarvisCommandCenter({ isOpen, onClose }: JarvisCommandCe
       const currentRoute = typeof window !== "undefined" ? window.location.pathname : "/";
       const studentContext = buildJarvisContext(currentRoute);
 
-      const res = await fetch("/api/jarvis", {
+      const res = await fetch("/api/jarvis/v2", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, studentContext })
+        body: JSON.stringify({ query, studentContext, sessionId: "jarvis-default-session" })
       });
 
       if (!res.ok) {

@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getGeminiKey } from '@/lib/career/ai-keys';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   try {
+    const { data: { user } } = await createClient().auth.getUser(); if (!user) return new Response("Unauthorized", { status: 401 });
     const { userSkills, companyName, tier } = await request.json();
 
     if (!userSkills || !companyName || !tier) {
@@ -35,10 +37,11 @@ export async function POST(request: Request) {
     const parsedData = JSON.parse(cleanedText);
 
     return NextResponse.json(parsedData);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Prep Rounds AI Error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Failed to generate prep rounds', details: error.message },
+      { error: 'Failed to generate prep rounds', details: errorMessage },
       { status: 500 }
     );
   }

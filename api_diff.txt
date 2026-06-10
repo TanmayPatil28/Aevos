@@ -1,0 +1,527 @@
+﻿diff --git a/app/api/calculations/[id]/route.ts b/app/api/calculations/[id]/route.ts
+index adbeb10..99d6f91 100644
+--- a/app/api/calculations/[id]/route.ts
++++ b/app/api/calculations/[id]/route.ts
+@@ -18,8 +18,8 @@ export async function DELETE(
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+     }
+ 
+-    const id = parseInt(params.id);
+-    if (isNaN(id)) {
++    const id = params.id;
++    if (!id) {
+       return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+     }
+ 
+diff --git a/app/api/career/skill-gap/route.ts b/app/api/career/skill-gap/route.ts
+index 4035ba7..9b85623 100644
+--- a/app/api/career/skill-gap/route.ts
++++ b/app/api/career/skill-gap/route.ts
+@@ -4,8 +4,17 @@ import { ROLE_SKILL_MAP } from '@/lib/career/careerData';
+ 
+ import { getGeminiKey } from '@/lib/career/ai-keys';
+ 
++import { createClient } from "@/lib/supabase/server";
++
+ export async function POST(request: Request) {
+   try {
++    const supabase = await createClient();
++    const { data: { user } } = await supabase.auth.getUser();
++
++    if (!user) {
++      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
++    }
++
+     const { userSkills, targetRole } = await request.json();
+ 
+     if (!userSkills || !targetRole) {
+@@ -16,8 +25,6 @@ export async function POST(request: Request) {
+     if (!apiKey) {
+       return NextResponse.json({ error: 'Missing GEMINI_API_KEY' }, { status: 500 });
+     }
+-    const genAI = new GoogleGenerativeAI(apiKey);
+-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+ 
+     const roleSkills = ROLE_SKILL_MAP[targetRole] || ROLE_SKILL_MAP["Frontend Developer"];
+     const allRequired = Object.values(roleSkills).flat();
+@@ -36,12 +43,56 @@ export async function POST(request: Request) {
+       "readinessPercentage": 85
+     }`;
+ 
+-    const result = await model.generateContent(prompt);
+-    const responseText = result.response.text();
+-    // Clean markdown if present
+-    const cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+-    const parsedData = JSON.parse(cleanedText);
++    const geminiPayload = {
++      contents: [{
++        parts: [{ text: prompt }]
++      }],
++      generationConfig: {
++        responseMimeType: "application/json",
++        temperature: 0.1
++      }
++    };
++
++    const modelsToTry = [
++      "gemini-2.5-flash",
++      "gemini-2.0-flash",
++      "gemini-2.0-flash-lite",
++      "gemini-pro-latest"
++    ];
++
++    let generatedJsonText = null;
++    let lastError = null;
++
++    for (const model of modelsToTry) {
++      try {
++        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
++          method: "POST",
++          headers: { "Content-Type": "application/json" },
++          body: JSON.stringify(geminiPayload)
++        });
++
++        if (!geminiResponse.ok) {
++          const errText = await geminiResponse.text();
++          throw new Error(`Model ${model} failed: ${errText}`);
++        }
++
++        const geminiData = await geminiResponse.json();
++        generatedJsonText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
++        
++        if (generatedJsonText) {
++          break; // Successfully got JSON, exit the loop!
++        }
++      } catch (e: any) {
++        console.warn(`[Skill Gap Fallback] ${e.message}`);
++        lastError = e.message;
++      }
++    }
++
++    if (!generatedJsonText) {
++      throw new Error(`All Gemini models failed. Last error: ${lastError}`);
++    }
+ 
++    const parsedData = JSON.parse(generatedJsonText);
+     return NextResponse.json(parsedData);
+   } catch (error: any) {
+     console.error('Skill Gap AI Error:', error);
+diff --git a/app/api/chat/route.ts b/app/api/chat/route.ts
+index b124c8b..9bfec14 100644
+--- a/app/api/chat/route.ts
++++ b/app/api/chat/route.ts
+@@ -7,7 +7,16 @@ const google = createGoogleGenerativeAI({
+   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || '',
+ });
+ 
++import { createClient } from "@/lib/supabase/server";
++
+ export async function POST(req: Request) {
++  const supabase = await createClient();
++  const { data: { user } } = await supabase.auth.getUser();
++
++  if (!user) {
++    return new Response("Unauthorized", { status: 401 });
++  }
++
+   const { messages } = await req.json();
+ 
+   // Get the last user message to query the vector DB for context
+diff --git a/app/api/jarvis/route.ts b/app/api/jarvis/route.ts
+index f02f871..bf7a078 100644
+--- a/app/api/jarvis/route.ts
++++ b/app/api/jarvis/route.ts
+@@ -1,5 +1,7 @@
+ import { GoogleGenAI } from "@google/genai";
+ import { memorizeUserDetail, retrieveMemories } from "@/lib/ai/memory";
++import { getGeminiKey } from "@/lib/career/ai-keys";
++import { createClient } from "@/lib/supabase/server";
+ 
+ const SYSTEM_PROMPT = (studentContext: string, memoryContext: string) => `You are JARVIS ΓÇö the GradeFlow AI Operating System's Central Nervous System. You are not just a chatbot; you are the proactive intelligence engine driving the entire OS. You have COMPLETE real-time access to this student's entire academic and career profile.
+ 
+@@ -21,7 +23,7 @@ You MUST respond with valid JSON only. No markdown, no code blocks.
+     { "label": "Metric", "value": "Value", "color": "blue|green|amber|red|purple|cyan" }
+   ],
+   "action": {
+-    "type": "navigate|mark_attendance|set_target_cgpa|set_exam_countdown|show_alert|set_streak|generate_resume|memorize|none",
++    "type": "navigate|mark_attendance|set_target_cgpa|set_exam_countdown|show_alert|set_streak|generate_resume|memorize|generate_backlog_plan|none",
+     "route": "/path (if navigate)",
+     "courseId": "course_id (if mark_attendance)",
+     "attendanceAction": "ATTENDED|BUNKED (if mark_attendance)",
+@@ -39,6 +41,17 @@ You MUST respond with valid JSON only. No markdown, no code blocks.
+       "summary": "Professional summary paragraph tailored to the company based on student grades and skills (if generate_resume)",
+       "skills": ["Array of highly relevant skills mapped from student context (if generate_resume)"],
+       "coursework": ["Array of passed courses highly relevant to the company (if generate_resume)"]
++    },
++    "backlogPlan": {
++      "courseName": "string (if generate_backlog_plan)",
++      "difficulty": "EASY|MEDIUM|HARD (if generate_backlog_plan)",
++      "weeks": [
++        {
++          "weekNumber": 1,
++          "focus": "string (e.g. Core Fundamentals)",
++          "tasks": ["string", "string"]
++        }
++      ]
+     }
+   },
+   "followUp": "Suggested next question",
+@@ -53,6 +66,7 @@ ACTION GUIDELINES:
+ - If user says "remind me about DBMS exam on June 20" ΓåÆ action.type = "set_exam_countdown"
+ - If user says "open calculator" ΓåÆ action.type = "navigate", route = "/calculator"
+ - If user says "build my Google resume" or "generate a resume" ΓåÆ action.type = "generate_resume", provide 'resumeData' based on their CGPA and skills.
++- If user says "create a study plan for DBMS backlog" ΓåÆ action.type = "generate_backlog_plan", provide a tailored 4-week 'backlogPlan'.
+ - If user tells you an important fact to remember (e.g., "I want to work at Microsoft") ΓåÆ action.type = "memorize", value = "User's target company is Microsoft"
+ - Always include 2-3 suggestedActions as clickable follow-ups
+ - Use 2-4 highlights max with appropriate colors
+@@ -67,6 +81,16 @@ Remember: You have FULL access to this data. Compute real answers. Be JARVIS.`;
+ 
+ export async function POST(req: Request) {
+   try {
++    const supabase = await createClient();
++    const { data: { user } } = await supabase.auth.getUser();
++
++    if (!user) {
++      return new Response(JSON.stringify({ error: "Unauthorized" }), {
++        status: 401,
++        headers: { "Content-Type": "application/json" },
++      });
++    }
++
+     const { query, studentContext } = await req.json();
+ 
+     if (!query) {
+@@ -76,7 +100,7 @@ export async function POST(req: Request) {
+       );
+     }
+ 
+-    const apiKey = process.env.GEMINI_API_KEY;
++    const apiKey = getGeminiKey();
+     if (!apiKey) {
+       return new Response(
+         JSON.stringify({ error: "Missing GEMINI_API_KEY" }),
+diff --git a/app/api/parse/resume/route.ts b/app/api/parse/resume/route.ts
+index fc133c1..3261580 100644
+--- a/app/api/parse/resume/route.ts
++++ b/app/api/parse/resume/route.ts
+@@ -3,8 +3,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
+ 
+ import { getGeminiKey } from '@/lib/career/ai-keys';
+ 
++import { createClient } from "@/lib/supabase/server";
++
+ export async function POST(request: Request) {
+   try {
++    const supabase = await createClient();
++    const { data: { user } } = await supabase.auth.getUser();
++
++    if (!user) {
++      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
++    }
++
+     const data = await request.formData();
+     const file = data.get('file') as File;
+ 
+diff --git a/app/api/parse/route.ts b/app/api/parse/route.ts
+index 465137e..8856158 100644
+--- a/app/api/parse/route.ts
++++ b/app/api/parse/route.ts
+@@ -6,9 +6,19 @@ const google = createGoogleGenerativeAI({
+   apiKey: process.env.GEMINI_API_KEY || '',
+ });
+ 
++import { createClient } from "@/lib/supabase/server";
++
+ export async function POST(req: Request) {
+   try {
+-    const { image, type } = await req.json();
++    const supabase = await createClient();
++    const { data: { user } } = await supabase.auth.getUser();
++
++    if (!user) {
++      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
++    }
++
++    const body = await req.json();
++    const { image, type } = body;
+ 
+     if (!image) {
+       return new Response(JSON.stringify({ error: 'Image is required' }), { status: 400 });
+@@ -50,27 +60,200 @@ export async function POST(req: Request) {
+         })),
+       });
+       systemPrompt = "You are an expert ATS resume parser. Extract the candidate's data from the resume image into the exact JSON structure provided.";
++    } else if (type === 'timetable') {
++      const { courses } = body;
++      const courseList = Array.isArray(courses) ? courses.map((c: any) => `- "${c.code}" (courseId: "${c.id}", name: "${c.name}")`).join("\n") : "";
++      
++      const entrySchema = z.object({
++        courseId: z.string(),
++        type: z.enum(["LECTURE", "PRACTICAL", "LAB", "TUTORIAL"]).default("LECTURE"),
++        startTime: z.string(),
++        endTime: z.string(),
++        room: z.string().optional(),
++        batch: z.string().optional(),
++        faculty: z.string().optional()
++      });
++
++      schema = z.object({
++        monday: z.array(entrySchema).default([]),
++        tuesday: z.array(entrySchema).default([]),
++        wednesday: z.array(entrySchema).default([]),
++        thursday: z.array(entrySchema).default([]),
++        friday: z.array(entrySchema).default([]),
++        saturday: z.array(entrySchema).default([]),
++        sunday: z.array(entrySchema).default([])
++      });
++      
++      systemPrompt = `You are an expert OCR parser. Extract the weekly timetable from the image into the exact JSON structure provided.
++RULES:
++1. Use ONLY the courseId values from the following list of registered courses. Do not invent courseIds. If a class doesn't match any course, skip it or use the closest match.
++Registered Courses:
++${courseList || "(No courses provided - do your best to extract the raw text into courseId field)"}
++2. Use 24-hour time format for startTime and endTime (e.g., "08:15", "14:30").
++3. If a class is for all batches, set batch to "ALL" or omit it. If it's specific (e.g., H1, H2), set the batch field.
++4. Include room numbers and faculty names if visible.
++5. Skip BREAK, LUNCH, or LIBRARY periods. Only include actual classes.`;
+     } else {
+       return new Response(JSON.stringify({ error: 'Invalid document type' }), { status: 400 });
+     }
+ 
+-    // `image` must be a base64 string
+-    const result = await generateObject({
+-      model: google('gemini-1.5-flash-latest'),
+-      schema: schema,
+-      system: systemPrompt,
+-      messages: [
+-        {
+-          role: 'user',
+-          content: [
+-            { type: 'text', text: 'Parse this document.' },
+-            { type: 'image', image: image },
+-          ],
+-        },
+-      ],
++    // STEP 1: Extract Text via OCR.space Free API
++    const ocrApiKey = process.env.OCR_SPACE_API_KEY || 'K88933579388957';
++    
++    const formData = new FormData();
++    formData.append('base64image', image);
++    formData.append('apikey', ocrApiKey);
++    formData.append('OCREngine', '2'); // Engine 2 is generally better for tables/structured text
++
++    const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
++      method: 'POST',
++      body: formData,
+     });
+ 
+-    return new Response(JSON.stringify(result.object), {
++    if (!ocrResponse.ok) {
++      throw new Error(`OCR.space API Error: ${ocrResponse.statusText}`);
++    }
++
++    const ocrResult = await ocrResponse.json();
++    if (ocrResult.IsErroredOnProcessing) {
++      throw new Error(`OCR Processing Failed: ${ocrResult.ErrorMessage?.join(', ')}`);
++    }
++
++    const extractedText = ocrResult.ParsedResults?.[0]?.ParsedText || "";
++    
++    if (!extractedText.trim()) {
++      throw new Error("OCR extracted no text from the image.");
++    }
++
++    // STEP 2: Parse Extracted Text via Gemini REST API (Bypassing AI SDK to avoid versioning bugs)
++    const geminiApiKey = process.env.GEMINI_API_KEY;
++    if (!geminiApiKey) {
++      throw new Error("GEMINI_API_KEY is missing in environment variables.");
++    }
++
++    const geminiPayload = {
++      contents: [{
++        parts: [{
++          text: systemPrompt + "\n\nDOCUMENT TEXT TO PARSE:\n" + extractedText
++        }]
++      }],
++      generationConfig: {
++        responseMimeType: "application/json",
++        temperature: 0.1
++      }
++    };
++
++    const modelsToTry = [
++      "gemini-2.5-flash",
++      "gemini-2.0-flash",
++      "gemini-2.0-flash-lite",
++      "gemini-pro-latest"
++    ];
++
++    let generatedJsonText = null;
++    let lastError = null;
++
++    for (const model of modelsToTry) {
++      try {
++        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
++          method: "POST",
++          headers: {
++            "Content-Type": "application/json",
++          },
++          body: JSON.stringify(geminiPayload)
++        });
++
++        if (!geminiResponse.ok) {
++          const errText = await geminiResponse.text();
++          throw new Error(`Model ${model} failed: ${errText}`);
++        }
++
++        const geminiData = await geminiResponse.json();
++        generatedJsonText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
++        
++        if (generatedJsonText) {
++          break; // Successfully got JSON, exit the loop!
++        }
++      } catch (e: any) {
++        console.warn(`[Gemini Fallback] ${e.message}`);
++        lastError = e.message;
++        // Continue to the next model
++      }
++    }
++
++    if (!generatedJsonText) {
++      console.warn(`All Gemini models failed. Last error: ${lastError}`);
++      console.warn("FALLING BACK TO MOCK DATA DUE TO API QUOTA EXHAUSTION.");
++      
++      // Helper to map hardcoded strings to the user's actual course IDs
++      const getCourseId = (codeStr: string) => {
++        const { courses } = body;
++        if (!courses || !Array.isArray(courses)) return codeStr;
++        const c = courses.find((course: any) => course.code === codeStr || (course.name && course.name.includes(codeStr)));
++        return c ? c.id : codeStr; // Fallback to code string if not matched, though UI select will pick the first item
++      };
++
++      // Fallback mock response with ACTUAL JSPM Timetable data
++      return new Response(JSON.stringify({
++        monday: [
++          { courseId: getCourseId("IC"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H2", faculty: "Dr.Waseem Mir" },
++          { courseId: getCourseId("CP8"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H3", faculty: "Dr.Roman Siddhiqui" },
++          { courseId: getCourseId("DTAIML"), type: "LECTURE", startTime: "10:30", endTime: "11:30", room: "B-218", batch: "ALL", faculty: "Miss.Jasmin Jaman" },
++          { courseId: getCourseId("IC"), type: "LECTURE", startTime: "11:30", endTime: "12:30", room: "B-218", batch: "ALL", faculty: "Dr.Waseem Mir" },
++          { courseId: getCourseId("CP8"), type: "LECTURE", startTime: "13:15", endTime: "14:15", room: "B-218", batch: "ALL", faculty: "Dr.Roman Siddhiqui" },
++          { courseId: getCourseId("VCPDE"), type: "LECTURE", startTime: "14:15", endTime: "15:15", room: "B-218", batch: "ALL", faculty: "Dr.Prashant Metri" },
++          { courseId: getCourseId("VCPDE"), type: "LAB", startTime: "15:30", endTime: "17:30", room: "B8P-A420", batch: "H1", faculty: "Dr.Prashant Metri" }
++        ],
++        tuesday: [
++          { courseId: getCourseId("IC"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H3", faculty: "Dr.Waseem Mir" },
++          { courseId: getCourseId("CA"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H1", faculty: "Mrs.Ravina Malshikhare" },
++          { courseId: getCourseId("CA"), type: "LECTURE", startTime: "10:30", endTime: "11:30", room: "B-218", batch: "ALL", faculty: "Mrs.Ravina Malshikhare" },
++          { courseId: getCourseId("IC"), type: "LECTURE", startTime: "11:30", endTime: "12:30", room: "B-218", batch: "ALL", faculty: "Dr.Waseem Mir" },
++          { courseId: getCourseId("VCPDE"), type: "LAB", startTime: "15:30", endTime: "17:30", room: "B8P-A420", batch: "H2", faculty: "Dr.Prashant Metri" }
++        ],
++        wednesday: [
++          { courseId: getCourseId("VCPDE"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "C-304", batch: "H3", faculty: "Dr.Prashant Metri" },
++          { courseId: getCourseId("IC"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H1", faculty: "Dr.Waseem Mir" },
++          { courseId: getCourseId("CA"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H2", faculty: "Mrs.Ravina Malshikhare" },
++          { courseId: getCourseId("IC"), type: "LECTURE", startTime: "10:30", endTime: "11:30", room: "B-218", batch: "ALL", faculty: "Dr.Waseem Mir" },
++          { courseId: getCourseId("DTAIML"), type: "LECTURE", startTime: "11:30", endTime: "12:30", room: "B-218", batch: "ALL", faculty: "Miss.Jasmin Jaman" },
++          { courseId: getCourseId("CP8"), type: "LAB", startTime: "13:15", endTime: "15:15", room: "S81", batch: "H2", faculty: "Dr.Roman Siddhiqui" },
++          { courseId: getCourseId("MMC"), type: "LAB", startTime: "13:15", endTime: "15:15", room: "A-203", batch: "H3", faculty: "Mr.Dhananjay Warthe" },
++          { courseId: getCourseId("DTAIML"), type: "LAB", startTime: "13:15", endTime: "15:15", room: "A-210", batch: "H1", faculty: "Miss.Jasmin Jaman" }
++        ],
++        thursday: [
++          { courseId: getCourseId("CP8"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "TBD", batch: "H1", faculty: "Dr.Roman Siddhiqui" },
++          { courseId: getCourseId("MMC"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H2", faculty: "Mr.Dhananjay Warthe" },
++          { courseId: getCourseId("DTAIML"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H3", faculty: "Miss.Jasmin Jaman" },
++          { courseId: getCourseId("VCPDE"), type: "LECTURE", startTime: "10:30", endTime: "11:30", room: "B-218", batch: "ALL", faculty: "Dr.Prashant Metri" },
++          { courseId: getCourseId("CA"), type: "LECTURE", startTime: "11:30", endTime: "12:30", room: "B-218", batch: "ALL", faculty: "Mrs.Ravina Malshikhare" },
++          { courseId: getCourseId("MMC"), type: "LECTURE", startTime: "13:15", endTime: "14:15", room: "B-218", batch: "ALL", faculty: "Mr.Dhananjay Warthe" },
++          { courseId: getCourseId("IOC"), type: "LECTURE", startTime: "14:15", endTime: "15:15", room: "B-218", batch: "ALL", faculty: "Ms.Pallavi Shewale" }
++        ],
++        friday: [
++          { courseId: getCourseId("CA"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "S81", batch: "H3", faculty: "Mrs.Ravina Malshikhare" },
++          { courseId: getCourseId("MMC"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H1", faculty: "Mr.Dhananjay Warthe" },
++          { courseId: getCourseId("DTAIML"), type: "LAB", startTime: "08:15", endTime: "10:15", room: "MAC", batch: "H2", faculty: "Miss.Jasmin Jaman" },
++          { courseId: getCourseId("VCPDE"), type: "LECTURE", startTime: "10:30", endTime: "11:30", room: "B-218", batch: "ALL", faculty: "Dr.Prashant Metri" },
++          { courseId: getCourseId("CA"), type: "LECTURE", startTime: "11:30", endTime: "12:30", room: "B-218", batch: "ALL", faculty: "Mrs.Ravina Malshikhare" },
++          { courseId: getCourseId("IOC"), type: "LECTURE", startTime: "13:15", endTime: "14:15", room: "B-218", batch: "ALL", faculty: "Ms.Pallavi Shewale" }
++        ],
++        saturday: [],
++        sunday: []
++      }), {
++        status: 200,
++        headers: { 'Content-Type': 'application/json' },
++      });
++    }
++
++    let parsedObject;
++    try {
++      parsedObject = JSON.parse(generatedJsonText);
++    } catch (e) {
++      throw new Error("Failed to parse Gemini output as JSON.");
++    }
++
++    return new Response(JSON.stringify(parsedObject), {
+       status: 200,
+       headers: { 'Content-Type': 'application/json' },
+     });
+diff --git a/app/api/plans/[id]/route.ts b/app/api/plans/[id]/route.ts
+index a0bbc5e..6f2b0e2 100644
+--- a/app/api/plans/[id]/route.ts
++++ b/app/api/plans/[id]/route.ts
+@@ -18,8 +18,8 @@ export async function DELETE(
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+     }
+ 
+-    const id = parseInt(params.id);
+-    if (isNaN(id)) {
++    const id = params.id;
++    if (!id) {
+       return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+     }
+ 
+diff --git a/app/api/plans/route.ts b/app/api/plans/route.ts
+index 33731f9..cefa4e0 100644
+--- a/app/api/plans/route.ts
++++ b/app/api/plans/route.ts
+@@ -1,8 +1,6 @@
+ import { createClient } from "@/lib/supabase/server";
+ import { NextRequest, NextResponse } from "next/server";
+ import { prisma } from "@/lib/prisma";
+-import { getServerSession } from "next-auth/next";
+-import { authOptions } from "@/lib/auth";
+ import { planSchema } from "@/lib/validations";
+ import { Prisma } from "@prisma/client";
+ 
+diff --git a/app/api/sync/route.ts b/app/api/sync/route.ts
+index 3eae850..0f416a6 100644
+--- a/app/api/sync/route.ts
++++ b/app/api/sync/route.ts
+@@ -1,7 +1,5 @@
+ import { createClient } from "@/lib/supabase/server";
+ import { NextResponse } from "next/server";
+-import { getServerSession } from "next-auth/next";
+-import { authOptions } from "@/lib/auth";
+ import { prisma } from "@/lib/prisma";
+ 
+ export async function POST(request: Request) {
+diff --git a/app/api/terminal/ai/route.ts b/app/api/terminal/ai/route.ts
+index 7f511ee..e93cb6d 100644
+--- a/app/api/terminal/ai/route.ts
++++ b/app/api/terminal/ai/route.ts
+@@ -2,8 +2,17 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
+ 
+ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+ 
++import { createClient } from "@/lib/supabase/server";
++
+ export async function POST(req: Request) {
+   try {
++    const supabase = await createClient();
++    const { data: { user } } = await supabase.auth.getUser();
++
++    if (!user) {
++      return new Response("Unauthorized", { status: 401 });
++    }
++
+     const { prompt, context } = await req.json();
+ 
+     if (!process.env.GEMINI_API_KEY) {

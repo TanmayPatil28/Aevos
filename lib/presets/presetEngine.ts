@@ -358,6 +358,7 @@ export function calculateRequiredGPA(
   completedCredits: number,
   remainingCredits: number
 ): number {
+  if (remainingCredits <= 0) return Infinity;
   const totalCreditsAtEnd = completedCredits + remainingCredits;
   const targetTotalPoints = targetCGPA * totalCreditsAtEnd;
   const currentTotalPoints = currentCGPA * completedCredits;
@@ -383,7 +384,15 @@ export function getDifficultyLevel(
   const maxGP = getMaxGradePoint(preset);
   const ratio = requiredGPA / maxGP;
 
-  if (ratio > 0.95) {
+  if (ratio > 1) {
+    return {
+      label: "IMPOSSIBLE",
+      color: "text-red-600",
+      borderColor: "border-red-600/60 shadow-[0_0_15px_rgba(220,38,38,0.4)]",
+      bgTint: "bg-red-600/5",
+      subLabel: "Mathematically impossible",
+    };
+  } else if (ratio > 0.95) {
     return {
       label: "VERY HARD",
       color: "text-red-400",

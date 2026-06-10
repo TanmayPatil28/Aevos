@@ -9,6 +9,8 @@ import { attendanceEngine } from "../../lib/attendance/attendanceEngine";
 import { progressionSolver } from "../../lib/simulation/progressionSolver";
 import { eligibilityEngine } from "../../lib/career/eligibilityEngine";
 import { healthScoreEngine } from "../../lib/academic-intelligence/healthScore";
+import { calculateRequiredGPA, getDifficultyLevel } from "../../lib/presets/presetEngine";
+import { getPresetById } from "../../lib/presets/presetRegistry";
 
 // CLI Colors
 const colors = {
@@ -317,6 +319,42 @@ function runEnginesTests() {
     "Health score trace exposes audit formulas clearly",
     excellentHealth.trace.formulaApplied.includes("AcademicHealth = "),
     `Formula: ${excellentHealth.trace.formulaApplied}`
+  );
+
+  // ─── 6. SUB-MILESTONE 2.1 BUG FIXES VERIFICATION ─────────────────────────────
+  section("Sub-milestone 2.1 Bug Fixes Verification");
+
+  // 1. Zero-credit bug in calculateRequiredGPA
+  const zeroCreditResult = calculateRequiredGPA(8.5, 8.0, 80, 0);
+  assert(
+    "calculateRequiredGPA handles zero remaining credits by returning Infinity",
+    zeroCreditResult === Infinity,
+    `Result: ${zeroCreditResult}`
+  );
+
+  const negativeCreditResult = calculateRequiredGPA(8.5, 8.0, 80, -5);
+  assert(
+    "calculateRequiredGPA handles negative remaining credits by returning Infinity",
+    negativeCreditResult === Infinity,
+    `Result: ${negativeCreditResult}`
+  );
+
+  const sppuPreset = getPresetById("sppu");
+
+  // 2. F-grade / Zero-credit / Math impossible trajectory in getDifficultyLevel
+  // If target GPA is 11 on a 10 point scale (ratio = 1.1)
+  const difficultyImpossible = getDifficultyLevel(11.0, sppuPreset!);
+  assert(
+    "getDifficultyLevel explicitly flags mathematically impossible pursuits (>1 ratio)",
+    difficultyImpossible.label === "IMPOSSIBLE",
+    `Label: ${difficultyImpossible.label}, Expected: IMPOSSIBLE`
+  );
+
+  const difficultyVeryHard = getDifficultyLevel(9.6, sppuPreset!); // ratio 0.96
+  assert(
+    "getDifficultyLevel correctly flags very hard pursuits (>0.95 ratio)",
+    difficultyVeryHard.label === "VERY HARD",
+    `Label: ${difficultyVeryHard.label}, Expected: VERY HARD`
   );
 
   console.log(`\n----------------------------------------------------------------`);

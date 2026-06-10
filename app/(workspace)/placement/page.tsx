@@ -15,6 +15,7 @@ import CompanyIntelligenceGuide from "@/components/placement/CompanyIntelligence
 import CompanyComparisonGuide from "@/components/placement/CompanyComparisonGuide";
 import TopperBenchmark from "@/components/placement/TopperBenchmark";
 import CompanyLedgerRow from "@/components/placement/CompanyLedgerRow";
+import ResumeUploadTarget from "@/components/placement/ResumeUploadTarget";
 import DynamicIsland from "@/components/placement/DynamicIsland";
 import { cn } from "@/lib/cn";
 
@@ -181,6 +182,7 @@ export default function CareerIntelligencePage() {
                 <div className="lg:col-span-4 flex flex-col gap-6 sticky top-32">
                   
                   {/* Context-Aware Company Guide or Comparison Matrix (Moved to TOP) */}
+                  <ResumeUploadTarget />
                   {pinnedCompanies.length === 0 && (
                     <CompanyIntelligenceGuide 
                       pinnedCompany={null} 

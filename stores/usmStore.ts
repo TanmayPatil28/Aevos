@@ -13,6 +13,8 @@ export interface AcademicState {
   programme?: string;
   branch?: string;
   batchYear?: number;
+  semesterStartDate?: string;
+  semesterEndDate?: string;
 }
 
 export interface CourseState {
@@ -97,6 +99,7 @@ export interface CareerState {
   skills: string[];
   targetRole: string;
   targetPackage: string;
+  projects: number;
 }
 
 export interface WorkspaceState {
@@ -107,6 +110,13 @@ export interface WorkspaceState {
   preferredDensity: "COMFORTABLE" | "COMPACT";
   sandboxCgpa: number | null;
   sandboxBacklogs: number | null;
+}
+
+export interface FocusState {
+  focusMode: "WORK" | "SHORT_BREAK" | "LONG_BREAK";
+  endTime: number | null;
+  isFocusActive: boolean;
+  focusStreak: number;
 }
 
 export interface SemesterHistoryEntry {
@@ -142,6 +152,7 @@ export interface USMStoreState {
   attendanceHistory: AttendanceHistoryEvent[];
   holidays: string[]; // YYYY-MM-DD strings
   academicCalendar: AcademicEvent[];
+  focus: FocusState;
 
   // Actions
   setPresetId: (presetId: string) => void;
@@ -195,7 +206,20 @@ export interface USMStoreState {
   setWorkspaceMode: (mode: WorkspaceState["mode"]) => void;
   setWorkspaceDensity: (density: WorkspaceState["preferredDensity"]) => void;
   setSandboxMetrics: (cgpa: number | null, backlogs: number | null) => void;
+
+  // Focus Actions
+  startFocus: (durationSeconds: number) => void;
+  stopFocus: () => void;
+  setFocusMode: (mode: FocusState["focusMode"]) => void;
+  incrementFocusStreak: () => void;
+  resetFocus: () => void;
 }
+
+const today = new Date();
+const start = new Date(today);
+start.setDate(today.getDate() - 30);
+const end = new Date(today);
+end.setDate(today.getDate() + 60);
 
 const initialAcademic: AcademicState = {
   currentCgpa: 0,
@@ -203,6 +227,8 @@ const initialAcademic: AcademicState = {
   earnedCredits: 0,
   activeBacklogsCount: 0,
   targetCgpa: 0,
+  semesterStartDate: start.toISOString().split("T")[0],
+  semesterEndDate: end.toISOString().split("T")[0],
 };
 
 const initialIdentity: AcademicIdentityState = {
@@ -233,7 +259,8 @@ const initialCareer: CareerState = {
   branch: "Computer Science",
   skills: [],
   targetRole: "Frontend Developer",
-  targetPackage: "Service (3-6LPA)"
+  targetPackage: "Service (3-6LPA)",
+  projects: 1
 };
 
 const initialSync: OfflineSyncState = {
@@ -251,13 +278,32 @@ const initialWorkspaceUi: WorkspaceState = {
 };
 
 const initialTimetable: TimetableState = {
-  monday: [],
-  tuesday: [],
-  wednesday: [],
-  thursday: [],
-  friday: [],
+  monday: [
+    { id: "t1", courseId: "c1", type: "LECTURE", startTime: "09:00", endTime: "10:00", room: "A-101" },
+    { id: "t2", courseId: "c2", type: "LAB", startTime: "10:00", endTime: "12:00", room: "Lab-1" }
+  ],
+  tuesday: [
+    { id: "t3", courseId: "c3", type: "LECTURE", startTime: "11:00", endTime: "12:00", room: "A-102" }
+  ],
+  wednesday: [
+    { id: "t4", courseId: "c1", type: "LECTURE", startTime: "09:00", endTime: "10:00", room: "A-101" }
+  ],
+  thursday: [
+    { id: "t5", courseId: "c2", type: "LECTURE", startTime: "10:00", endTime: "11:00", room: "A-103" }
+  ],
+  friday: [
+    { id: "t6", courseId: "c3", type: "LAB", startTime: "14:00", endTime: "16:00", room: "Lab-2" },
+    { id: "t7", courseId: "c1", type: "LECTURE", startTime: "16:00", endTime: "17:00", room: "A-101" }
+  ],
   saturday: [],
   sunday: [],
+};
+
+const initialFocus: FocusState = {
+  focusMode: "WORK",
+  endTime: null,
+  isFocusActive: false,
+  focusStreak: 0,
 };
 
 // ─── Store Creation ──────────────────────────────────────────────────────────
@@ -267,9 +313,19 @@ export const useUSMStore = create<USMStoreState>()(
     (set, get) => ({
       presetId: "sppu",
       identity: initialIdentity,
-      academic: initialAcademic,
-      courses: [],
-      semesterHistory: [],
+      academic: { ...initialAcademic, completedSemesters: 5, activeBacklogsCount: 2 },
+      courses: [
+        { id: "c1", code: "CS201", name: "Data Structures", semester: 3, credits: 4, grade: "F", cieMarks: 15, seeMarks: 20, attendanceTotal: 40, attendanceBunked: 10 },
+        { id: "c2", code: "CS202", name: "Operating Systems", semester: 4, credits: 4, grade: "FF", cieMarks: 12, seeMarks: 15, attendanceTotal: 40, attendanceBunked: 12 },
+        { id: "c3", code: "CS301", name: "Computer Networks", semester: 5, credits: 4, grade: "A", cieMarks: 25, seeMarks: 50, attendanceTotal: 40, attendanceBunked: 5 },
+      ],
+      semesterHistory: [
+        { semester: 1, sgpa: 8.5, credits: 20, earnedCredits: 20 },
+        { semester: 2, sgpa: 8.2, credits: 20, earnedCredits: 20 },
+        { semester: 3, sgpa: 6.5, credits: 22, earnedCredits: 18 },
+        { semester: 4, sgpa: 6.8, credits: 22, earnedCredits: 18 },
+        { semester: 5, sgpa: 7.5, credits: 20, earnedCredits: 20 },
+      ],
       simulation: initialSimulation,
       career: initialCareer,
       sync: initialSync,
@@ -278,6 +334,7 @@ export const useUSMStore = create<USMStoreState>()(
       attendanceHistory: [],
       holidays: [],
       academicCalendar: [],
+      focus: initialFocus,
       
       interventions: [],
       workspaceContexts: ["DEFAULT"],
@@ -368,6 +425,7 @@ export const useUSMStore = create<USMStoreState>()(
         set((state) => ({
           academic: { ...state.academic, ...academicUpdates },
         }));
+        get().evaluateInterventions();
         get().queueSyncAction("SEMESTER_UPDATE", { academic: academicUpdates });
       },
 
@@ -381,6 +439,7 @@ export const useUSMStore = create<USMStoreState>()(
             lastUpdatedAt: new Date().toISOString(),
           }
         }));
+        get().evaluateInterventions();
         get().queueSyncAction("SEMESTER_UPDATE", { courses });
       },
 
@@ -401,6 +460,7 @@ export const useUSMStore = create<USMStoreState>()(
           };
         });
 
+        get().evaluateInterventions();
         get().queueSyncAction("ATTENDANCE_EDIT", { courseId, updates });
       },
 
@@ -548,6 +608,53 @@ export const useUSMStore = create<USMStoreState>()(
         }));
       },
 
+      // ─── Focus Actions ───
+      startFocus: (durationSeconds) => {
+        set((state) => ({
+          focus: {
+            ...state.focus,
+            endTime: Date.now() + durationSeconds * 1000,
+            isFocusActive: true,
+          }
+        }));
+      },
+      stopFocus: () => {
+        set((state) => ({
+          focus: {
+            ...state.focus,
+            isFocusActive: false,
+          }
+        }));
+      },
+      setFocusMode: (mode) => {
+        set((state) => ({
+          focus: {
+            ...state.focus,
+            focusMode: mode,
+            isFocusActive: false, // Reset active state when mode changes
+            endTime: null
+          }
+        }));
+      },
+      incrementFocusStreak: () => {
+        set((state) => ({
+          focus: {
+            ...state.focus,
+            focusStreak: state.focus.focusStreak + 1,
+          }
+        }));
+      },
+      resetFocus: () => {
+        set((state) => ({
+          focus: {
+            ...state.focus,
+            isFocusActive: false,
+            endTime: null,
+            focusStreak: 0,
+            focusMode: "WORK",
+          }
+        }));
+      },
 
       setSemesterHistory: (history) => {
         set({ semesterHistory: history });
@@ -680,9 +787,22 @@ export const useUSMStore = create<USMStoreState>()(
                 }
               });
             } else {
-              const incomingSemesters = new Set(profile.courses.map((c: any) => c.semester || 1));
-              const retainedCourses = state.courses.filter(c => !incomingSemesters.has(c.semester || 1));
-              mergedCourses = [...retainedCourses, ...profile.courses];
+              mergedCourses = [...state.courses];
+              profile.courses.forEach((incomingCourse: any) => {
+                const existingIndex = mergedCourses.findIndex((c: any) => 
+                  c.id === incomingCourse.id || (c.code && incomingCourse.code && c.code === incomingCourse.code && c.semester === incomingCourse.semester)
+                );
+                if (existingIndex >= 0) {
+                  mergedCourses[existingIndex] = {
+                    ...mergedCourses[existingIndex],
+                    ...incomingCourse,
+                    attendanceTotal: Math.max(mergedCourses[existingIndex].attendanceTotal || 0, incomingCourse.attendanceTotal || 0),
+                    attendanceBunked: Math.max(mergedCourses[existingIndex].attendanceBunked || 0, incomingCourse.attendanceBunked || 0)
+                  };
+                } else {
+                  mergedCourses.push(incomingCourse);
+                }
+              });
             }
           }
 
@@ -760,6 +880,7 @@ export const useUSMStore = create<USMStoreState>()(
             academicCalendar: profile.academicCalendar || state.academicCalendar || []
           };
         });
+        get().evaluateInterventions();
         get().queueSyncAction("SEMESTER_UPDATE", { 
           courses: get().courses,
           semesterHistory: get().semesterHistory 
@@ -847,6 +968,13 @@ export const useUSMStore = create<USMStoreState>()(
           if (!Array.isArray(hydratedState.academicCalendar)) {
             hydratedState.academicCalendar = [];
           }
+          
+          // Re-evaluate interventions to ensure they are synchronized with the hydrated state
+          setTimeout(() => {
+            if (typeof hydratedState.evaluateInterventions === 'function') {
+              hydratedState.evaluateInterventions();
+            }
+          }, 0);
         };
       },
     }

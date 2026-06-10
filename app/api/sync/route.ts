@@ -1,7 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -22,153 +20,124 @@ export async function POST(request: Request) {
 
     console.log(`[API Sync] Processing ${actions.length} sync actions for user ${userId}...`);
 
-    for (const action of actions) {
-      const { type, payload } = action;
+    await prisma.$transaction(async (tx) => {
+      for (const action of actions) {
+        const { type, payload } = action;
 
-      switch (type) {
-        case "SEMESTER_UPDATE": {
-          // 1. Update university preset preference if presetId is provided
-          if (payload.presetId) {
-            await prisma.user.update({
-              where: { id: userId },
-              data: { university: payload.presetId },
-            });
-          }
-
-          // 2. Synchronize entire courses set (upsert Enrollments)
-          if (Array.isArray(payload.courses)) {
-            for (const c of payload.courses) {
-              // Ensure the course exists in the database catalog
-              let course = await prisma.course.findUnique({
-                where: { code: c.code },
+        switch (type) {
+          case "SEMESTER_UPDATE": {
+            if (payload.presetId) {
+              await tx.user.update({
+                where: { id: userId },
+                data: { university: payload.presetId },
               });
+            }
 
-              if (!course) {
-                // If it doesn't exist, create a fallback course
-                course = await prisma.course.create({
-                  data: {
-                    code: c.code,
-                    name: c.name || `Course ${c.code}`,
-                    credits: c.credits || 3,
-                    prereqs: [],
+            if (Array.isArray(payload.courses)) {
+              const uniqueCourses = Array.from(new Map(payload.courses.map((c: any) => [c.code, c])).values());
+              for (const c of uniqueCourses as any[]) {
+                let course = await tx.course.findUnique({ where: { code: c.code } });
+                if (!course) {
+                  course = await tx.course.create({
+                    data: {
+                      code: c.code,
+                      name: c.name || `Course ${c.code}`,
+                      credits: c.credits || 3,
+                      prereqs: [],
+                    },
+                  });
+                }
+                await tx.enrollment.upsert({
+                  where: { userId_courseId: { userId, courseId: course.id } },
+                  update: {
+                    grade: c.grade || null,
+                    cieMarks: c.cieMarks ?? 0,
+                    seeMarks: c.seeMarks ?? null,
+                    attendanceTotal: c.attendanceTotal ?? 0,
+                    attendanceBunked: c.attendanceBunked ?? 0,
+                    semester: c.semester?.toString() || "1",
                   },
-                });
-              }
-
-              // Upsert enrollment record
-              await prisma.enrollment.upsert({
-                where: {
-                  userId_courseId: {
+                  create: {
                     userId,
                     courseId: course.id,
+                    grade: c.grade || null,
+                    cieMarks: c.cieMarks ?? 0,
+                    seeMarks: c.seeMarks ?? null,
+                    attendanceTotal: c.attendanceTotal ?? 0,
+                    attendanceBunked: c.attendanceBunked ?? 0,
+                    semester: c.semester?.toString() || "1",
                   },
-                },
-                update: {
-                  grade: c.grade || null,
-                  cieMarks: c.cieMarks ?? 0,
-                  seeMarks: c.seeMarks ?? null,
-                  attendanceTotal: c.attendanceTotal ?? 0,
-                  attendanceBunked: c.attendanceBunked ?? 0,
-                  semester: c.semester?.toString() || "1",
-                },
-                create: {
-                  userId,
-                  courseId: course.id,
-                  grade: c.grade || null,
-                  cieMarks: c.cieMarks ?? 0,
-                  seeMarks: c.seeMarks ?? null,
-                  attendanceTotal: c.attendanceTotal ?? 0,
-                  attendanceBunked: c.attendanceBunked ?? 0,
-                  semester: c.semester?.toString() || "1",
-                },
-              });
-            }
-          }
-
-          // 3. Synchronize semester history into Calculation table
-          if (Array.isArray(payload.semesterHistory)) {
-            // Because calculation table doesn't have a unique constraint on (userId, semester),
-            // we delete existing records for the semesters we are syncing to avoid duplicates.
-            const incomingSemesters = payload.semesterHistory.map((s: any) => s.semester?.toString());
-            if (incomingSemesters.length > 0) {
-              await prisma.calculation.deleteMany({
-                where: {
-                  userId,
-                  semester: { in: incomingSemesters }
-                }
-              });
-
-              for (const sem of payload.semesterHistory) {
-                await prisma.calculation.create({
-                  data: {
-                    userId,
-                    semester: sem.semester?.toString() || "1",
-                    sgpa: sem.sgpa || 0,
-                    cgpa: sem.sgpa || 0, // Fallback if CGPA is needed
-                    total_credits: sem.credits || 0,
-                    subjects: [], // Or store courses for that semester here if needed
-                  }
                 });
               }
             }
+
+            if (Array.isArray(payload.semesterHistory)) {
+              const incomingSemesters = payload.semesterHistory.map((s: any) => s.semester?.toString());
+              if (incomingSemesters.length > 0) {
+                await tx.calculation.deleteMany({
+                  where: { userId, semester: { in: incomingSemesters } }
+                });
+                for (const sem of payload.semesterHistory) {
+                  await tx.calculation.create({
+                    data: {
+                      userId,
+                      semester: sem.semester?.toString() || "1",
+                      sgpa: sem.sgpa || 0,
+                      cgpa: sem.sgpa || 0,
+                      total_credits: sem.credits || 0,
+                      subjects: [],
+                    }
+                  });
+                }
+              }
+            }
+            break;
           }
-          break;
-        }
 
-        case "ATTENDANCE_EDIT":
-        case "OCR_CORRECTION": {
-          const { courseId, updates } = payload;
-          if (!courseId) break;
+          case "ATTENDANCE_EDIT":
+          case "OCR_CORRECTION": {
+            const { courseId, updates } = payload;
+            if (!courseId) break;
 
-          // Find the enrollment matching this course
-          const enrollment = await prisma.enrollment.findFirst({
-            where: {
-              userId,
-              course: {
-                id: courseId,
-              },
-            },
-          });
-
-          if (enrollment) {
-            const dataToUpdate: Record<string, string | number | null | undefined> = {};
-            if (updates.grade !== undefined) dataToUpdate.grade = updates.grade;
-            if (updates.cieMarks !== undefined) dataToUpdate.cieMarks = updates.cieMarks;
-            if (updates.seeMarks !== undefined) dataToUpdate.seeMarks = updates.seeMarks;
-            if (updates.attendanceTotal !== undefined) dataToUpdate.attendanceTotal = updates.attendanceTotal;
-            if (updates.attendanceBunked !== undefined) dataToUpdate.attendanceBunked = updates.attendanceBunked;
-
-            await prisma.enrollment.update({
-              where: { id: enrollment.id },
-              data: dataToUpdate as Record<string, unknown>,
+            const enrollment = await tx.enrollment.findFirst({
+              where: { userId, course: { id: courseId } },
             });
 
-            // Create an attendance log entry if attendance edit occurred
-            if (updates.attendanceBunked !== undefined) {
-              await prisma.attendanceLog.create({
-                data: {
-                  enrollmentId: enrollment.id,
-                  status: "ABSENT",
-                  date: new Date(),
-                },
+            if (enrollment) {
+              const dataToUpdate: Record<string, any> = {};
+              if (updates.grade !== undefined) dataToUpdate.grade = updates.grade;
+              if (updates.cieMarks !== undefined) dataToUpdate.cieMarks = updates.cieMarks;
+              if (updates.seeMarks !== undefined) dataToUpdate.seeMarks = updates.seeMarks;
+              if (updates.attendanceTotal !== undefined) dataToUpdate.attendanceTotal = updates.attendanceTotal;
+              if (updates.attendanceBunked !== undefined) dataToUpdate.attendanceBunked = updates.attendanceBunked;
+
+              await tx.enrollment.update({
+                where: { id: enrollment.id },
+                data: dataToUpdate,
               });
+
+              if (updates.attendanceBunked !== undefined) {
+                await tx.attendanceLog.create({
+                  data: {
+                    enrollmentId: enrollment.id,
+                    status: "ABSENT",
+                    date: new Date(),
+                  },
+                });
+              }
             }
+            break;
           }
-          break;
-        }
 
-        case "SIMULATION_SAVE": {
-          // Simulation is guest-first but we can log that a simulation occurred or update target
-          if (payload.snapshot && payload.snapshot.name) {
-            console.log(`[API Sync] Simulation Snapshot saved: ${payload.snapshot.name}`);
+          case "SIMULATION_SAVE": {
+            if (payload.snapshot && payload.snapshot.name) {
+              console.log(`[API Sync] Simulation Snapshot saved: ${payload.snapshot.name}`);
+            }
+            break;
           }
-          break;
         }
-
-        default:
-          console.warn(`[API Sync] Unhandled action type: ${type}`);
       }
-    }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

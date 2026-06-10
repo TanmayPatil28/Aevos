@@ -127,37 +127,53 @@ export default function HistorySettingsTab() {
         </div>
 
         {/* Data Backup */}
-        <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 flex-1">
-          <div className="flex items-center gap-2 mb-4">
-            <ShieldAlert className="w-4 h-4 text-[#4F8EF7]" />
-            <h4 className="text-xs font-bold text-white tracking-widest uppercase">Data Backup</h4>
+        <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 flex-1 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <ShieldAlert className="w-4 h-4 text-[#4F8EF7]" />
+              <h4 className="text-xs font-bold text-white tracking-widest uppercase">Data Backup</h4>
+            </div>
+            <p className="text-[10px] text-white/40 mb-4">
+              Export your entire GradeFlow profile to a JSON file, or restore from a backup.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleExport}
+                className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#4F8EF7]/10 hover:bg-[#4F8EF7]/20 border border-[#4F8EF7]/30 text-[#4F8EF7] rounded-xl text-[11px] font-bold transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" /> EXPORT JSON
+              </button>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <textarea
+                value={importJson}
+                onChange={(e) => setImportJson(e.target.value)}
+                placeholder="Paste backup JSON here to restore..."
+                className="w-full h-16 bg-black/40 border border-white/10 rounded-xl p-2 text-[9px] font-mono text-white/50 outline-none resize-none mb-2"
+              />
+              <button
+                onClick={handleImport}
+                disabled={!importJson}
+                className="w-full flex items-center justify-center gap-2 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white disabled:opacity-50 rounded-xl text-[11px] font-bold transition-colors"
+              >
+                {importStatus === "SUCCESS" ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Upload className="w-3.5 h-3.5" />}
+                {importStatus === "SUCCESS" ? "RESTORED!" : importStatus === "ERROR" ? "INVALID JSON" : "RESTORE BACKUP"}
+              </button>
+            </div>
           </div>
-          <p className="text-[10px] text-white/40 mb-4">
-            Export your entire GradeFlow profile to a JSON file, or restore from a backup.
-          </p>
-          <div className="flex gap-2">
+
+          <div className="mt-6 pt-4 border-t border-rose-500/20">
             <button
-              onClick={handleExport}
-              className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#4F8EF7]/10 hover:bg-[#4F8EF7]/20 border border-[#4F8EF7]/30 text-[#4F8EF7] rounded-xl text-[11px] font-bold transition-colors"
+              onClick={() => {
+                if (window.confirm("Are you sure you want to reset ALL your GradeFlow data? This cannot be undone!")) {
+                  localStorage.removeItem("gradeflow-usm-storage");
+                  window.location.reload();
+                }
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-xl text-[11px] font-bold transition-colors"
             >
-              <Download className="w-3.5 h-3.5" /> EXPORT JSON
-            </button>
-          </div>
-          
-          <div className="mt-4 pt-4 border-t border-white/20">
-            <textarea
-              value={importJson}
-              onChange={(e) => setImportJson(e.target.value)}
-              placeholder="Paste backup JSON here to restore..."
-              className="w-full h-16 bg-black/40 border border-white/10 rounded-xl p-2 text-[9px] font-mono text-white/50 outline-none resize-none mb-2"
-            />
-            <button
-              onClick={handleImport}
-              disabled={!importJson}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white disabled:opacity-50 rounded-xl text-[11px] font-bold transition-colors"
-            >
-              {importStatus === "SUCCESS" ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Upload className="w-3.5 h-3.5" />}
-              {importStatus === "SUCCESS" ? "RESTORED!" : importStatus === "ERROR" ? "INVALID JSON" : "RESTORE BACKUP"}
+              <Trash2 className="w-3.5 h-3.5" /> RESET ALL DATA
             </button>
           </div>
         </div>

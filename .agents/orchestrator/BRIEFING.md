@@ -1,63 +1,51 @@
-# BRIEFING — 2026-06-06T15:50:00+05:30
+# BRIEFING — 2026-06-10T13:42:00Z
 
 ## Mission
-Redesign the GradeFlow Dashboard page to act as a central hub using the premium aesthetics of the planner, placement, and calculator pages.
+Build a Job/Internship Matcher feature using Tavily API and Gemini/Mastra.
 
 ## 🔒 My Identity
-- Archetype: Project Orchestrator
+- Archetype: orchestrator
 - Roles: orchestrator, user_liaison, human_reporter, successor
-- Working directory: c:\Users\Tanmay\OneDrive\Desktop\GradeFlow\gradeflow\.agents\orchestrator
+- Working directory: c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/.agents/orchestrator
 - Original parent: top-level
-- Original parent conversation ID: d97dc0d5-039d-4c17-a4fb-673e53f09722
+- Original parent conversation ID: 376614b5-d6bb-44bb-9ce4-454cd07fcf6a
 
 ## 🔒 My Workflow
 - **Pattern**: Project
-- **Scope document**: c:\Users\Tanmay\OneDrive\Desktop\GradeFlow\gradeflow\.agents\orchestrator\PROJECT.md
-1. **Decompose**: Breaking the dashboard redesign into one milestone: Dashboard Redesign.
-2. **Dispatch & Execute**: Running Iteration Loop (2B).
-3. **On failure**: Retry, Replace, Skip, Redistribute, Redesign, Escalate.
+- **Scope document**: c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/.agents/orchestrator/PROJECT.md
+1. **Decompose**: Decompose the requirements into milestones. We have 3 clear components: (M1) Tavily API integration, (M2) LLM matching, (M3) Frontend integration. We'll group them into a Backend track and a Frontend track.
+2. **Dispatch & Execute**:
+   - **Direct (iteration loop)**: M1 and M2 can be run by a single worker, M3 by another.
+   - **Delegate (sub-orchestrator)**: We'll run the Explorer -> Worker -> Reviewer loop directly since the scope is relatively contained.
+3. **On failure** (in this order): Retry, Replace, Skip, Redistribute, Redesign, Escalate.
 4. **Succession**: At 16 spawns, write handoff.md, spawn successor.
 - **Work items**:
-  1. Dashboard Redesign [in-progress]
-- **Current phase**: 2
-- **Current focus**: Dashboard Redesign - Implement Fix (Iter 3)
+  1. Backend engine & LLM matcher [in-progress]
+  2. Frontend UI component [in-progress]
+  3. Tests & Build Verification [in-progress]
+- **Current phase**: 3
+- **Current focus**: Succession
 
 ## 🔒 Key Constraints
-- Never write, modify, or create source code files directly.
-- Never run build/test commands yourself.
-- If Forensic Auditor reports INTEGRITY VIOLATION, milestone FAILS UNCONDITIONALLY.
+- Never reuse a subagent after it has delivered its handoff — always spawn fresh
+- Do not write code myself, only delegate to teamwork_preview_worker.
 
 ## Current Parent
-- Conversation ID: d97dc0d5-039d-4c17-a4fb-673e53f09722
-- Updated: yes
-
-## Key Decisions Made
-- Proceeding to implement fixes for Iteration 3 audit failure.
-- Reached spawn limit, succeeding self.
-
-## Team Roster
-| Agent | Type | Work Item | Status | Conv ID |
-|-------|------|-----------|--------|---------|
-| Fix Explorer Iter3 1 | teamwork_preview_explorer | Plan audit fix | in-progress | 59670269-3f00-41eb-a4cc-3a0c58c276f5 |
-| Fix Explorer Iter3 2 | teamwork_preview_explorer | Plan audit fix | done | ae3a2269-1c8d-4b7d-8ef2-8c177d093897 |
-| Fix Explorer Iter3 3 | teamwork_preview_explorer | Plan audit fix | done | 85da70f7-b3cf-4c5b-bbfb-a8e6f9700c9d |
-| Worker Fix 3.1 | teamwork_preview_worker | Implement audit fix | in-progress | 49f945e6-515e-4c6d-8b3c-4932e90dfb28 |
-| Reviewer Fix3 1 | teamwork_preview_reviewer | Review audit fix | in-progress | 51d34e76-a67c-49b3-be70-f563d6d0423e |
-| Reviewer Fix3 2 | teamwork_preview_reviewer | Review audit fix | in-progress | 20e70b30-8a27-4f69-958b-648101b0a32a |
-| Auditor Fix3 1 | teamwork_preview_auditor | Forensic audit fix | done | 7d1fb253-1f87-4681-b92e-29b5cc72d59d |
-| Worker Visual 1 | teamwork_preview_worker | Visual audit screenshot | in-progress | efa5100b-efed-4ed2-9063-b45dd532da0b |
+- Conversation ID: 376614b5-d6bb-44bb-9ce4-454cd07fcf6a
+- Updated: 2026-06-10T13:16:00Z
 
 ## Succession Status
-- Succession required: no
-- Spawn count: 4 / 16
-- Pending subagents: 1
-- Predecessor: d97dc0d5-039d-4c17-a4fb-673e53f09722
-- Successor: not yet spawned
+- Succession required: yes
+- Spawn count: 24 / 16
+- Pending subagents: 1 (Gen 3 Challenger)
+- Predecessor: none
+- Successor: 5364617e-a88c-47df-8849-13437b3b6589
 
 ## Active Timers
-- Heartbeat cron: 7d56eaa1-74cf-47f9-88a6-5ad4812573a4/task-9
-- Safety timer: none
+- Heartbeat cron: killed
+- Safety timer: killed
 
 ## Artifact Index
-- c:\Users\Tanmay\OneDrive\Desktop\GradeFlow\gradeflow\.agents\orchestrator\PROJECT.md — Global index, milestones
-- c:\Users\Tanmay\OneDrive\Desktop\GradeFlow\gradeflow\.agents\orchestrator\progress.md — Progress tracking
+- c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/.agents/orchestrator/PROJECT.md
+- c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/.agents/orchestrator/progress.md
+- c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/.agents/orchestrator/handoff.md

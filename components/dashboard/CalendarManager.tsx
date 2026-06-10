@@ -84,21 +84,28 @@ export default function CalendarManager() {
     }
   };
 
+  // Safe local date parsing to avoid UTC offset issues
+  const parseLocalDate = (dateStr: string) => {
+    if (!dateStr) return new Date();
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
+
   // Next Up Widget Logic
   const upcomingEvents = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     return academicCalendar
-      .filter(evt => new Date(evt.startDate) >= today)
-      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+      .filter(evt => parseLocalDate(evt.startDate) >= today)
+      .sort((a, b) => parseLocalDate(a.startDate).getTime() - parseLocalDate(b.startDate).getTime())
       .slice(0, 3);
   }, [academicCalendar]);
 
   const getDaysUntil = (dateStr: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const target = new Date(dateStr);
+    const target = parseLocalDate(dateStr);
     const diffTime = target.getTime() - today.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };

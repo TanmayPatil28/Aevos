@@ -101,8 +101,8 @@ export default function ManualCalculator() {
         gradePoint = result.points;
         gradeStr = result.grade;
       } else {
-        gradePoint = score;
-        const matchingScale = preset.gradeScale.find(g => gradePoint >= g.points);
+        const matchingScale = preset.gradeScale.find(g => score >= g.points);
+        gradePoint = matchingScale ? matchingScale.points : 0;
         gradeStr = matchingScale ? matchingScale.grade : "F";
       }
 

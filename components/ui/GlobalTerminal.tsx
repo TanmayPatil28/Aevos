@@ -241,7 +241,7 @@ export default function GlobalTerminal() {
       setGhostText("");
       return;
     }
-    const completions = getCompletions();
+    const completions = getCompletions().map(c => typeof c === 'string' ? c : (c as any).value || (c as any).name || String(c));
     // Also add aliases
     const allCompletions = [
       ...completions,

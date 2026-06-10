@@ -11,14 +11,16 @@ import RevaluationEngineWidget from "@/components/backlog/RevaluationEngineWidge
 import PlacementScannerWidget from "@/components/backlog/PlacementScannerWidget";
 import UnifiedSimulator from "@/components/backlog/UnifiedSimulator";
 import ResourceMatcherWidget from "@/components/backlog/ResourceMatcherWidget";
+import RecoveryPathwaysWidget from "@/components/backlog/RecoveryPathwaysWidget";
 
 import TimeTravelSimulatorWidget from "@/components/backlog/deep-dive/TimeTravelSimulatorWidget";
 import ROIRankerWidget from "@/components/backlog/deep-dive/ROIRankerWidget";
 import GraceMarksPredictorWidget from "@/components/backlog/deep-dive/GraceMarksPredictorWidget";
 import SafetyNetWidget from "@/components/backlog/deep-dive/SafetyNetWidget";
+import AIStudyTimelineWidget from "@/components/backlog/deep-dive/AIStudyTimelineWidget";
 import StudySquadWidget from "@/components/backlog/deep-dive/StudySquadWidget";
 import HistoricalAnalyticsWidget from "@/components/backlog/deep-dive/HistoricalAnalyticsWidget";
-import { Zap, Edit2, Check, X } from "lucide-react";
+import { Zap, Edit2, Check, X, BarChart2, Compass, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function BacklogCommandCenter() {
@@ -28,21 +30,28 @@ export default function BacklogCommandCenter() {
   const updateCourse = useUSMStore((state) => state.updateCourse);
 
   const [analysis, setAnalysis] = useState<BacklogAnalysis | null>(null);
-  const [initialPlan, setInitialPlan] = useState<RecoveryPlanResult | null>(null);
+  const [pathways, setPathways] = useState<any>(null);
+  const [selectedPathwayType, setSelectedPathwayType] = useState<"SAFE" | "BALANCED" | "AGGRESSIVE">("BALANCED");
+  
   const [selectedDeepDiveCourseId, setSelectedDeepDiveCourseId] = useState<string | null>(null);
   const [timeTravelTargetGrade, setTimeTravelTargetGrade] = useState<string>("A");
   
   const [isEditingGrade, setIsEditingGrade] = useState(false);
   const [manualGrade, setManualGrade] = useState("O");
+  const [activeTab, setActiveTab] = useState<"ANALYTICS" | "SIMULATIONS" | "ACTION_PLAN">("ANALYTICS");
 
   useEffect(() => {
     const timeTravel = selectedDeepDiveCourseId ? { courseId: selectedDeepDiveCourseId, targetGrade: timeTravelTargetGrade } : undefined;
     const res = BacklogEngine.analyzeBacklogs(courses, currentSem - 1, semesterHistory, career, presetId, timeTravel);
     setAnalysis(res);
     
-    // Auto-generate a baseline aggressive plan to pre-fill the simulator
-    const plan = BacklogEngine.generateStrategy(courses, currentSem, 28, "AGGRESSIVE");
-    setInitialPlan(plan);
+    // Generate all 3 plans
+    const safePlan = BacklogEngine.generateStrategy(courses, currentSem, "SAFE");
+    const balancedPlan = BacklogEngine.generateStrategy(courses, currentSem, "BALANCED");
+    const aggressivePlan = BacklogEngine.generateStrategy(courses, currentSem, "AGGRESSIVE");
+    
+    setPathways({ SAFE: safePlan, BALANCED: balancedPlan, AGGRESSIVE: aggressivePlan });
+    
   }, [courses, currentSem, semesterHistory, career, presetId, selectedDeepDiveCourseId, timeTravelTargetGrade]);
 
   useEffect(() => {
@@ -52,13 +61,20 @@ export default function BacklogCommandCenter() {
   }, [analysis, selectedDeepDiveCourseId]);
 
   const handleSavePlan = (finalPlan: { [courseId: string]: number }) => {
-    Object.entries(finalPlan).forEach(([courseId, semester]) => {
-      updateCourseRecoverySemester(courseId, semester);
+    const activeBacklogs = courses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase()));
+    activeBacklogs.forEach(c => {
+      if (finalPlan[c.id]) {
+        updateCourseRecoverySemester(c.id, finalPlan[c.id]);
+      } else {
+        updateCourseRecoverySemester(c.id, null);
+      }
     });
     // Can add a toast notification here
   };
 
-  if (!analysis || !initialPlan) {
+  const currentPlan = pathways ? pathways[selectedPathwayType] : null;
+
+  if (!analysis || !currentPlan) {
     return (
       <FocusModeWrapper title="Recovery Command Center">
         <div className="flex h-[60vh] items-center justify-center">
@@ -107,10 +123,20 @@ export default function BacklogCommandCenter() {
             <CGPACeilingChart data={analysis.cgpaCeiling} />
           </div>
 
+          {/* Pathways Row (Full width) */}
+          <div className="col-span-1 md:col-span-12">
+            <RecoveryPathwaysWidget 
+              pathways={pathways} 
+              selectedType={selectedPathwayType} 
+              onSelect={setSelectedPathwayType} 
+            />
+          </div>
+
           {/* Middle Row: Simulator (8 cols) & Revaluation (4 cols) */}
           <div className="col-span-1 md:col-span-8 min-h-[400px]">
              <UnifiedSimulator 
-              initialPlan={initialPlan} 
+              key={selectedPathwayType} // force remount when pathway changes so state refreshes
+              initialPlan={currentPlan} 
               courses={courses} 
               currentSemester={currentSem} 
               onSave={handleSavePlan} 
@@ -206,36 +232,69 @@ export default function BacklogCommandCenter() {
                 </div>
               </div>
 
+                <div className="flex gap-4 mb-6 border-b border-white/10 pb-4">
+                  <button 
+                    onClick={() => setActiveTab("ANALYTICS")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === "ANALYTICS" ? "bg-[#bf5af2]/20 text-[#bf5af2]" : "text-white/50 hover:text-white/80"}`}
+                  >
+                    <BarChart2 size={18} /> Analytics & ROI
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab("SIMULATIONS")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === "SIMULATIONS" ? "bg-[#bf5af2]/20 text-[#bf5af2]" : "text-white/50 hover:text-white/80"}`}
+                  >
+                    <Compass size={18} /> Simulations
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab("ACTION_PLAN")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === "ACTION_PLAN" ? "bg-[#bf5af2]/20 text-[#bf5af2]" : "text-white/50 hover:text-white/80"}`}
+                  >
+                    <Users size={18} /> Action Plan
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10">
-                  <div className="col-span-1 md:col-span-4 min-h-[300px]">
-                    <HistoricalAnalyticsWidget course={selectedCourse} />
-                  </div>
-                  <div className="col-span-1 md:col-span-4 min-h-[300px]">
-                    <TimeTravelSimulatorWidget 
-                      course={selectedCourse} 
-                      courses={courses} 
-                      history={semesterHistory} 
-                      currentCgpa={currentCgpa} 
-                      targetGrade={timeTravelTargetGrade}
-                      setTargetGrade={setTimeTravelTargetGrade}
-                    />
-                  </div>
-                  <div className="col-span-1 md:col-span-4 min-h-[300px]">
-                     <ROIRankerWidget 
-                       courses={courses} 
-                       history={semesterHistory} 
-                       onSelectCourse={(id) => setSelectedDeepDiveCourseId(id)}
-                     />
-                  </div>
-                  <div className="col-span-1 md:col-span-4 min-h-[300px]">
-                    <GraceMarksPredictorWidget course={selectedCourse} courses={courses} />
-                  </div>
-                  <div className="col-span-1 md:col-span-4 min-h-[300px]">
-                    <SafetyNetWidget />
-                  </div>
-                  <div className="col-span-1 md:col-span-4 min-h-[300px]">
-                    <StudySquadWidget course={selectedCourse} />
-                  </div>
+                  {activeTab === "ANALYTICS" && (
+                    <>
+                      <div className="col-span-1 md:col-span-6 min-h-[300px]">
+                        <HistoricalAnalyticsWidget course={selectedCourse} />
+                      </div>
+                      <div className="col-span-1 md:col-span-6 min-h-[300px]">
+                         <ROIRankerWidget 
+                           courses={courses} 
+                           history={semesterHistory} 
+                           onSelectCourse={(id) => setSelectedDeepDiveCourseId(id)}
+                         />
+                      </div>
+                    </>
+                  )}
+                  {activeTab === "SIMULATIONS" && (
+                    <>
+                      <div className="col-span-1 md:col-span-6 min-h-[300px]">
+                        <TimeTravelSimulatorWidget 
+                          course={selectedCourse} 
+                          courses={courses} 
+                          history={semesterHistory} 
+                          currentCgpa={currentCgpa} 
+                          targetGrade={timeTravelTargetGrade}
+                          setTargetGrade={setTimeTravelTargetGrade}
+                        />
+                      </div>
+                      <div className="col-span-1 md:col-span-6 min-h-[300px]">
+                        <GraceMarksPredictorWidget course={selectedCourse} courses={courses} />
+                      </div>
+                    </>
+                  )}
+                  {activeTab === "ACTION_PLAN" && (
+                    <>
+                      <div className="col-span-1 md:col-span-6 min-h-[300px]">
+                        <AIStudyTimelineWidget course={selectedCourse} />
+                      </div>
+                      <div className="col-span-1 md:col-span-6 min-h-[300px]">
+                        <StudySquadWidget course={selectedCourse} />
+                      </div>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}

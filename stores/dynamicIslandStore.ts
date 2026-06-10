@@ -105,6 +105,36 @@ interface DynamicIslandState {
 
 // --- STORE ---
 
+// --- PRIORITY QUEUE FOR ACTIVITIES ---
+const ACTIVITY_PRIORITY: Record<ActivityType, number> = {
+  bunk_calculator: 100, // Highest Priority (Critical Alerts)
+  exam_countdown: 90,
+  schedule: 80,
+  timer: 70,
+  progress: 60,
+  music: 50,
+  academic_status: 40,
+  time_context: 30,
+};
+
+// Sort function: Highest priority first. User-triggered (non-contextual) always beats contextual.
+const sortActivities = (activities: LiveActivity[]) => {
+  return [...activities].sort((a, b) => {
+    // 1. Manual user activities override automatic contextual ones
+    if (a.isContextual !== b.isContextual) {
+      return a.isContextual ? 1 : -1;
+    }
+    // 2. Sort by type priority
+    const priorityA = ACTIVITY_PRIORITY[a.type] || 0;
+    const priorityB = ACTIVITY_PRIORITY[b.type] || 0;
+    if (priorityA !== priorityB) {
+      return priorityB - priorityA;
+    }
+    // 3. Fallback: newer is higher priority
+    return 0;
+  });
+};
+
 export const useDynamicIslandStore = create<DynamicIslandState>((set) => ({
   activities: [],
   activeAlert: null,
@@ -117,13 +147,7 @@ export const useDynamicIslandStore = create<DynamicIslandState>((set) => ({
   addActivity: (activity) =>
     set((state) => {
       const filtered = state.activities.filter((a) => a.id !== activity.id);
-      const newActivities = [...filtered, activity];
-      // Sort: user activities (non-contextual) always first
-      newActivities.sort((a, b) => {
-        if (a.isContextual === b.isContextual) return 0;
-        return a.isContextual ? 1 : -1;
-      });
-      return { activities: newActivities };
+      return { activities: sortActivities([...filtered, activity]) };
     }),
 
   removeActivity: (id) =>
@@ -133,11 +157,12 @@ export const useDynamicIslandStore = create<DynamicIslandState>((set) => ({
     })),
 
   updateActivity: (id, updates) =>
-    set((state) => ({
-      activities: state.activities.map((a) =>
+    set((state) => {
+      const updated = state.activities.map((a) =>
         a.id === id ? { ...a, ...updates } : a
-      ),
-    })),
+      );
+      return { activities: sortActivities(updated) };
+    }),
 
   promoteActivity: (id) =>
     set((state) => {

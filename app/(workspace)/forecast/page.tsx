@@ -5,7 +5,8 @@ import NeuralDecisionTree from "@/components/forecast/NeuralDecisionTree";
 import ForecastStatusBar from "@/components/forecast/ForecastStatusBar";
 import { useUSMStore } from "@/stores/usmStore";
 import { StudentState } from "@/lib/forecasting/decisionTypes";
-import PredictiveForecastModule from "@/components/forecast/PredictiveForecastModule";
+import dynamic from "next/dynamic";
+const PredictiveForecastModule = dynamic(() => import("@/components/forecast/PredictiveForecastModule"), { ssr: false });
 
 export default function NeuralDecisionEnginePage() {
   const currentCgpa = useUSMStore(state => state.academic.currentCgpa) || 7.0;

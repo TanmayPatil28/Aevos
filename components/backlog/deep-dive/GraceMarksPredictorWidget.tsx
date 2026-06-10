@@ -8,19 +8,9 @@ export default function GraceMarksPredictorWidget({ course, courses }: { course:
   const { isEligible, requiredMarks } = BacklogEngine.checkGraceMarksEligibility(courses, course);
   const [applied, setApplied] = useState(false);
   const [showRulebook, setShowRulebook] = useState(false);
-  const [showApplyProgress, setShowApplyProgress] = useState(false);
-  const [applyStep, setApplyStep] = useState(0);
 
   const handleApply = () => {
-    setShowApplyProgress(true);
-    setApplyStep(0);
-    setTimeout(() => setApplyStep(1), 1000); // Verifying
-    setTimeout(() => setApplyStep(2), 2500); // Submitting
-    setTimeout(() => {
-      setApplyStep(3); // Done
-      setApplied(true);
-      setTimeout(() => setShowApplyProgress(false), 1500);
-    }, 4000);
+    setApplied(true);
   };
 
   return (
@@ -47,7 +37,7 @@ export default function GraceMarksPredictorWidget({ course, courses }: { course:
               </p>
               <button 
                 onClick={handleApply}
-                disabled={applied || showApplyProgress}
+                disabled={applied}
                 className={`w-full py-2.5 rounded-xl font-semibold text-[15px] transition-all flex items-center justify-center gap-2 ${
                   applied ? "bg-[#30D158] text-white" : "bg-[#FFD60A] text-black hover:bg-[#FFD60A]/90 active:scale-[0.98]"
                 }`}
@@ -112,44 +102,6 @@ export default function GraceMarksPredictorWidget({ course, courses }: { course:
         </div>
       </IOSSheetModal>
 
-      <IOSSheetModal 
-        isOpen={showApplyProgress} 
-        onClose={() => {}} // Disabled close during progress
-        title="Processing Application"
-      >
-        <div className="flex flex-col items-center justify-center py-10 space-y-8">
-          <div className="relative">
-            {applyStep >= 3 ? (
-              <CheckCircle2 className="text-[#30D158]" size={64} />
-            ) : (
-              <div className="w-16 h-16 border-4 border-[#2C2C2E] border-t-[#0A84FF] rounded-full animate-spin" />
-            )}
-          </div>
-          
-          <div className="w-full space-y-4 px-6">
-            <div className="flex items-center gap-3">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${applyStep >= 1 ? 'bg-[#30D158] text-white' : 'bg-[#2C2C2E] text-[#8E8E93]'}`}>
-                {applyStep >= 1 && <Check size={14} />}
-              </div>
-              <p className={`text-[15px] ${applyStep >= 1 ? 'text-white' : 'text-[#8E8E93]'}`}>Verifying eligibility with Ordinance DB...</p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${applyStep >= 2 ? 'bg-[#30D158] text-white' : 'bg-[#2C2C2E] text-[#8E8E93]'}`}>
-                {applyStep >= 2 && <Check size={14} />}
-              </div>
-              <p className={`text-[15px] ${applyStep >= 2 ? 'text-white' : 'text-[#8E8E93]'}`}>Drafting automated Section-B application...</p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${applyStep >= 3 ? 'bg-[#30D158] text-white' : 'bg-[#2C2C2E] text-[#8E8E93]'}`}>
-                {applyStep >= 3 && <Check size={14} />}
-              </div>
-              <p className={`text-[15px] ${applyStep >= 3 ? 'text-white' : 'text-[#8E8E93]'}`}>Submitting to digital Exam Cell</p>
-            </div>
-          </div>
-        </div>
-      </IOSSheetModal>
     </>
   );
 }

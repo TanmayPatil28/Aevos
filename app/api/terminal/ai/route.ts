@@ -2,8 +2,17 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
+import { createClient } from "@/lib/supabase/server";
+
 export async function POST(req: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const { prompt, context } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
@@ -11,7 +20,7 @@ export async function POST(req: Request) {
     }
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-3.5-flash"
+      model: "gemini-2.5-flash"
     });
 
     const systemPrompt = `You are the GradeFlow Terminal AI, a highly advanced academic and career advisor embedded natively in a hacker-style terminal.
@@ -86,7 +95,7 @@ Terminal Environment:
           for await (const chunk of result.stream) {
             controller.enqueue(encoder.encode(chunk.text()));
           }
-        } catch(e: any) {
+        } catch(e) {
           console.error("Stream error:", e);
         }
         controller.close();
@@ -100,7 +109,7 @@ Terminal Environment:
         "Connection": "keep-alive"
       },
     });
-  } catch (error: any) {
-    return new Response(error.message, { status: 500 });
+  } catch (error) {
+    return new Response("Internal Server Error", { status: 500 });
   }
 }

@@ -68,12 +68,14 @@ Here is my timetable (paste your timetable text/image below):
 
 export default function TimetableManager() {
   const { courses, timetable, setTimetable } = useUSMStore();
-  const [activeTab, setActiveTab] = useState<"VISUAL" | "JSON" | "AI_PROMPT" | "SETTINGS">("VISUAL");
+  const [activeTab, setActiveTab] = useState<"VISUAL" | "JSON" | "AI_PROMPT" | "AI_SCANNER" | "SETTINGS">("VISUAL");
   const [jsonInput, setJsonInput] = useState("");
   const [syncStatus, setSyncStatus] = useState<"IDLE" | "SUCCESS" | "ERROR">("IDLE");
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [selectedBatch, setSelectedBatch] = useState<string>("ALL");
   const [promptCopied, setPromptCopied] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
   
   // Split-pane active day state
   const [selectedDay, setSelectedDay] = useState<typeof DAYS_OF_WEEK[number]>("monday");
@@ -114,6 +116,60 @@ export default function TimetableManager() {
     const entries = timetable[day] || [];
     if (selectedBatch === "ALL") return entries;
     return entries.filter(e => !e.batch || e.batch === "ALL" || e.batch === selectedBatch);
+  };
+
+  const handleAiScan = async (file: File) => {
+    if (!file) return;
+    setIsScanning(true);
+    setScanError(null);
+    try {
+      // Convert to base64
+      const buffer = await file.arrayBuffer();
+      const base64String = Buffer.from(buffer).toString('base64');
+      const mimeType = file.type;
+      const base64Image = `data:${mimeType};base64,${base64String}`;
+
+      const response = await fetch('/api/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'timetable',
+          image: base64Image,
+          courses: courses
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to parse timetable.');
+      }
+
+      const parsedTimetable = await response.json();
+      
+      // We assume the schema validation in the API returns the exact structure we need
+      const sanitized: Partial<TimetableState> = {};
+      for (const day of Object.keys(parsedTimetable)) {
+        if (DAYS_OF_WEEK.includes(day as any)) {
+          sanitized[day as keyof TimetableState] = parsedTimetable[day].map((e: any) => ({
+            id: Math.random().toString(36).substring(7),
+            courseId: e.courseId,
+            type: e.type || "LECTURE",
+            startTime: e.startTime || "09:00",
+            endTime: e.endTime || "10:00",
+            room: e.room || "",
+            batch: e.batch || "ALL",
+            faculty: e.faculty || ""
+          }));
+        }
+      }
+
+      setTimetable(sanitized as TimetableState);
+      setActiveTab("VISUAL");
+    } catch (err: any) {
+      setScanError(err.message || 'Unknown error occurred during scanning.');
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleJsonSubmit = () => {
@@ -250,6 +306,7 @@ export default function TimetableManager() {
         <div className="flex bg-white/[0.04] border border-white/[0.05] p-1 rounded-xl w-fit">
           {([
             { key: "VISUAL" as const, label: "VISUAL EDITOR" },
+            { key: "AI_SCANNER" as const, label: "AI SCANNER" },
             { key: "JSON" as const, label: "JSON IMPORT" },
             { key: "AI_PROMPT" as const, label: "AI PROMPT" },
             { key: "SETTINGS" as const, label: "SETTINGS & LOGS" }
@@ -258,10 +315,14 @@ export default function TimetableManager() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-1.5 rounded-lg text-[11px] font-bold tracking-wider transition-all flex items-center gap-1.5 ${
-                activeTab === tab.key ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"
+                activeTab === tab.key 
+                  ? tab.key === "AI_SCANNER" 
+                    ? "bg-gradient-to-r from-[#A855F7]/20 to-[#4F8EF7]/20 text-white shadow-sm border border-white/10" 
+                    : "bg-white/10 text-white shadow-sm" 
+                  : "text-white/40 hover:text-white/70"
               }`}
             >
-              {tab.key === "AI_PROMPT" && <Sparkles className="w-3 h-3" />}
+              {(tab.key === "AI_PROMPT" || tab.key === "AI_SCANNER") && <Sparkles className={`w-3 h-3 ${tab.key === "AI_SCANNER" ? "text-[#A855F7]" : ""}`} />}
               {tab.label}
             </button>
           ))}
@@ -440,6 +501,69 @@ export default function TimetableManager() {
                         ))
                       )}
                     </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ─── AI SCANNER TAB ─── */}
+          {activeTab === "AI_SCANNER" && (
+            <motion.div
+              key="ai_scanner"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              <div className="bg-gradient-to-br from-[#131C31] to-[#1D1D1F] border border-[#A855F7]/20 rounded-2xl p-6 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-[#A855F7]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <div className="relative z-10 flex flex-col items-center justify-center text-center py-8">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#A855F7]/20 to-[#4F8EF7]/20 border border-white/10 flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(168,85,247,0.15)] relative">
+                    <Sparkles className="w-8 h-8 text-[#A855F7] absolute -top-2 -right-2 drop-shadow-md" />
+                    <Upload className="w-6 h-6 text-white" />
+                  </div>
+                  <h4 className="text-white font-bold text-lg mb-2">Upload Timetable Image</h4>
+                  <p className="text-white/50 text-sm max-w-sm mb-6">
+                    Drop a screenshot of your timetable here. Our AI will automatically parse it and build your visual schedule.
+                  </p>
+                  
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleAiScan(e.target.files[0])}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                      disabled={isScanning || courses.length === 0}
+                    />
+                    <button 
+                      disabled={isScanning || courses.length === 0}
+                      className="px-6 py-3 bg-gradient-to-r from-[#A855F7] to-[#4F8EF7] text-white rounded-xl font-bold text-xs tracking-wider disabled:opacity-50 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center gap-2"
+                    >
+                      {isScanning ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ANALYZING IMAGE...
+                        </>
+                      ) : (
+                        "SELECT IMAGE"
+                      )}
+                    </button>
+                  </div>
+                  
+                  {courses.length === 0 && (
+                    <div className="mt-4 text-rose-400 text-xs font-bold bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20">
+                      Please add your courses first before scanning a timetable!
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {scanError && (
+                <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 flex items-start gap-3 text-rose-400">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="text-[11px] leading-relaxed font-mono">
+                    <strong>Scan Failed:</strong> {scanError}
                   </div>
                 </div>
               )}

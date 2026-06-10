@@ -14,8 +14,9 @@ import { OSModeContent } from "./OSModeSwitcher";
 import NavbarMobileDrawer from "./NavbarMobileDrawer";
 import JarvisCommandCenter from "./JarvisCommandCenter";
 import { useDynamicIslandStore } from "@/stores/dynamicIslandStore";
+import { useUSMStore } from "@/stores/usmStore";
 import { useShallow } from "zustand/react/shallow";
-import { MinimalActivity, MinimalSecondaryActivity, ExpandedActivity, IslandAlertView } from "./dynamic-island/LiveActivities";
+import { MinimalActivity, MinimalSecondaryActivity, ExpandedActivity, IslandAlertView, FocusTimerActivity } from "./dynamic-island/LiveActivities";
 import ExamCountdownPill from "./dynamic-island/ExamCountdownPill";
 import StreakBadge from "./dynamic-island/StreakBadge";
 import { useScrollMetrics } from "@/lib/hooks/useScrollMetrics";
@@ -72,6 +73,7 @@ export default function Navbar({ mainLinks, intelligenceModules }: { mainLinks: 
   );
 
   const { activities, activeAlert, expandedId, setExpandedId, removeActivity, dismissAlert, promoteActivity } = islandState;
+  const isFocusActive = useUSMStore(state => state.focus.isFocusActive);
 
   // Island Logic
   const hasAlert = activeAlert !== null;
@@ -83,7 +85,7 @@ export default function Navbar({ mainLinks, intelligenceModules }: { mainLinks: 
   const secondaryActivity = activities[1];
 
   // If there's an alert or active menu, the island takes its massive squircle form.
-  const isSquircle = activeMenu !== "" || hasAlert || expandedId !== null;
+  const isSquircle = activeMenu !== "" || hasAlert || expandedId !== null || (isFocusActive && isIslandHovered && activeMenu === "");
   const isDimmed = isScrolled && !isIslandHovered && !isSquircle && !attentionWake;
 
   // Snap to Attention
@@ -363,6 +365,12 @@ export default function Navbar({ mainLinks, intelligenceModules }: { mainLinks: 
               {!activeAlert && expandedId && (
                 <div className="border-t border-white/5 mt-2 flex justify-center">
                   <ExpandedActivity activity={activities.find(a => a.id === expandedId)!} />
+                </div>
+              )}
+
+              {!activeAlert && !expandedId && isFocusActive && activeMenu === "" && (
+                <div className="border-t border-white/5 mt-2 flex justify-center w-full min-w-[300px]">
+                  <FocusTimerActivity />
                 </div>
               )}
 

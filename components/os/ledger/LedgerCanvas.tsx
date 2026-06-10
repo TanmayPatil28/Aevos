@@ -21,7 +21,15 @@ export default function LedgerCanvas() {
         label: "Add Semester",
         icon: "add",
         primary: true,
-        onClick: () => {}
+        onClick: () => {
+          const newTerm = {
+            id: `term_${Date.now()}`,
+            name: `Semester ${terms.length + 1}`,
+            order: terms.length + 1,
+            status: "PLANNED" as const
+          };
+          useDomainStore.getState().addTerm(newTerm);
+        }
       }
     ]);
 

@@ -54,54 +54,81 @@ export const intelligenceEngine = {
       let score = 100;
       const breakdown: IntelligenceResult["breakdown"] = [];
 
-      // CGPA Check
-      if (cgpa >= company.cgpaCutoff + 1.0) {
+      // Robust CGPA Scaling Check
+      // A high CGPA should provide buffer for other weaknesses.
+      if (cgpa >= company.cgpaCutoff + 1.5) {
+        breakdown.push({ factor: "CGPA", status: "Strong", message: `Exceptional (${cgpa}), provides strong buffer` });
+        score += 10; // Bonus
+      } else if (cgpa >= company.cgpaCutoff + 0.5) {
         breakdown.push({ factor: "CGPA", status: "Strong", message: `Comfortably above ${company.cgpaCutoff} cutoff` });
       } else if (cgpa >= company.cgpaCutoff) {
         breakdown.push({ factor: "CGPA", status: "Moderate", message: `Meets ${company.cgpaCutoff} cutoff` });
         score -= 5;
       } else {
         const gapVal = (company.cgpaCutoff - cgpa).toFixed(2);
+        const gapPenalty = Math.min(50, parseFloat(gapVal) * 30); // E.g., 0.5 gap = 15 penalty
         breakdown.push({ factor: "CGPA", status: "Weak", message: `Below ${company.cgpaCutoff} cutoff`, gap: `+${gapVal} CGPA Required` });
-        score -= 40;
+        score -= (30 + gapPenalty);
       }
 
-      // Backlogs Check
+      // Robust Backlogs Penalty Check
+      // Exponential penalty to harshly punish multiple backlogs
       if (backlogs === 0) {
         breakdown.push({ factor: "Backlogs", status: "Strong", message: "Clear standing" });
       } else if (backlogs <= company.maxBacklogs) {
         breakdown.push({ factor: "Backlogs", status: "Moderate", message: `Within limit of ${company.maxBacklogs}` });
-        score -= 10;
+        score -= (backlogs * 5); // Minor penalty per backlog even if allowed
       } else {
         const excess = backlogs - company.maxBacklogs;
+        const backlogPenalty = 30 + Math.pow(excess, 2) * 10; // 1 excess = 40, 2 excess = 70
         breakdown.push({ factor: "Backlogs", status: "Risk", message: `Exceeds max allowed (${company.maxBacklogs})`, gap: `Clear ${excess} Backlog(s)` });
-        score -= 50;
+        score -= backlogPenalty;
       }
 
-      // Skills Check
+      // Semantic / Partial Skills Match
       if (company.requiredSkills && company.requiredSkills.length > 0) {
-        const isMatch = (req: string) => userSkills.some(u => 
-          u.includes(req.toLowerCase()) || req.toLowerCase().includes(u)
-        );
-        const matchedSkills = company.requiredSkills.filter(isMatch);
-        const missingSkillsList = company.requiredSkills.filter(req => !isMatch(req));
-        const skillMatchRatio = matchedSkills.length / company.requiredSkills.length;
+        const checkSkillMatch = (req: string) => {
+          const reqLower = req.toLowerCase();
+          for (const u of userSkills) {
+            if (u === reqLower || u.includes(reqLower) || reqLower.includes(u)) return 1.0;
+            // Partial equivalence mapping (manual fallback)
+            if ((reqLower === "react" && u === "nextjs") || (reqLower === "next.js" && u === "react")) return 0.5;
+            if ((reqLower === "node" && u === "express") || (reqLower === "express" && u === "node")) return 0.5;
+            if ((reqLower === "aws" && u === "gcp") || (reqLower === "azure" && u === "aws")) return 0.3;
+          }
+          return 0;
+        };
+
+        let totalSkillScore = 0;
+        const missingSkillsList: string[] = [];
+
+        company.requiredSkills.forEach(req => {
+          const matchVal = checkSkillMatch(req);
+          totalSkillScore += matchVal;
+          if (matchVal < 1.0) missingSkillsList.push(req);
+        });
+
+        const skillMatchRatio = totalSkillScore / company.requiredSkills.length;
         
         if (skillMatchRatio === 1) {
-          breakdown.push({ factor: "Skills", status: "Strong", message: "Matches all required skills" });
-        } else if (skillMatchRatio >= 0.5) {
-          breakdown.push({ factor: "Skills", status: "Moderate", message: `Matches ${matchedSkills.length}/${company.requiredSkills.length} skills`, gap: `Acquire: ${missingSkillsList.join(", ")}` });
-          score -= 10;
+          breakdown.push({ factor: "Skills", status: "Strong", message: "Matches all required skills perfectly" });
+        } else if (skillMatchRatio >= 0.7) {
+          breakdown.push({ factor: "Skills", status: "Moderate", message: `Strong match (${Math.round(skillMatchRatio * 100)}%)`, gap: missingSkillsList.length > 0 ? `Refine: ${missingSkillsList.join(", ")}` : undefined });
+          score -= 5;
+        } else if (skillMatchRatio >= 0.4) {
+          breakdown.push({ factor: "Skills", status: "Moderate", message: `Partial match (${Math.round(skillMatchRatio * 100)}%)`, gap: `Acquire: ${missingSkillsList.slice(0, 3).join(", ")}` });
+          score -= 15;
         } else {
           breakdown.push({ factor: "Skills", status: "Weak", message: `Missing most required skills`, gap: `Acquire: ${missingSkillsList.slice(0, 3).join(", ")}` });
-          score -= 25;
+          score -= 30;
         }
       }
 
       // Credits Check
       if (earnedCredits < company.requiredCredits) {
-         score -= 20;
-         breakdown.push({ factor: "Credits", status: "Weak", message: `Need ${company.requiredCredits - earnedCredits} more credits` });
+         const creditGap = company.requiredCredits - earnedCredits;
+         score -= Math.min(30, creditGap * 2);
+         breakdown.push({ factor: "Credits", status: "Weak", message: `Need ${creditGap} more credits` });
       }
 
       score = Math.max(0, Math.min(100, score));

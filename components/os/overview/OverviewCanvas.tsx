@@ -4,7 +4,11 @@ import { useDomainStore } from "@/stores/os/domainStore";
 import { useUIStore } from "@/stores/os/uiStore";
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
+import dynamic from "next/dynamic";
+const LineChart = dynamic(() => import('recharts').then(mod => mod.LineChart), { ssr: false });
+const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false });
 import { COPY } from "@/lib/os/constants/copy";
 import { useUSMStore } from "@/stores/usmStore";
 

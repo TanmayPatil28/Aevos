@@ -1,5 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import { memorizeUserDetail, retrieveMemories } from "@/lib/ai/memory";
+import { getGeminiKey } from "@/lib/career/ai-keys";
+import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
+
+const jarvisPayloadSchema = z.object({
+  query: z.string().min(1),
+  studentContext: z.string().optional()
+});
 
 const SYSTEM_PROMPT = (studentContext: string, memoryContext: string) => `You are JARVIS — the GradeFlow AI Operating System's Central Nervous System. You are not just a chatbot; you are the proactive intelligence engine driving the entire OS. You have COMPLETE real-time access to this student's entire academic and career profile.
 
@@ -21,7 +29,7 @@ You MUST respond with valid JSON only. No markdown, no code blocks.
     { "label": "Metric", "value": "Value", "color": "blue|green|amber|red|purple|cyan" }
   ],
   "action": {
-    "type": "navigate|mark_attendance|set_target_cgpa|set_exam_countdown|show_alert|set_streak|generate_resume|memorize|none",
+    "type": "navigate|mark_attendance|set_target_cgpa|set_exam_countdown|show_alert|set_streak|generate_resume|memorize|generate_backlog_plan|none",
     "route": "/path (if navigate)",
     "courseId": "course_id (if mark_attendance)",
     "attendanceAction": "ATTENDED|BUNKED (if mark_attendance)",
@@ -39,6 +47,17 @@ You MUST respond with valid JSON only. No markdown, no code blocks.
       "summary": "Professional summary paragraph tailored to the company based on student grades and skills (if generate_resume)",
       "skills": ["Array of highly relevant skills mapped from student context (if generate_resume)"],
       "coursework": ["Array of passed courses highly relevant to the company (if generate_resume)"]
+    },
+    "backlogPlan": {
+      "courseName": "string (if generate_backlog_plan)",
+      "difficulty": "EASY|MEDIUM|HARD (if generate_backlog_plan)",
+      "weeks": [
+        {
+          "weekNumber": 1,
+          "focus": "string (e.g. Core Fundamentals)",
+          "tasks": ["string", "string"]
+        }
+      ]
     }
   },
   "followUp": "Suggested next question",
@@ -53,6 +72,7 @@ ACTION GUIDELINES:
 - If user says "remind me about DBMS exam on June 20" → action.type = "set_exam_countdown"
 - If user says "open calculator" → action.type = "navigate", route = "/calculator"
 - If user says "build my Google resume" or "generate a resume" → action.type = "generate_resume", provide 'resumeData' based on their CGPA and skills.
+- If user says "create a study plan for DBMS backlog" → action.type = "generate_backlog_plan", provide a tailored 4-week 'backlogPlan'.
 - If user tells you an important fact to remember (e.g., "I want to work at Microsoft") → action.type = "memorize", value = "User's target company is Microsoft"
 - Always include 2-3 suggestedActions as clickable follow-ups
 - Use 2-4 highlights max with appropriate colors
@@ -67,16 +87,29 @@ Remember: You have FULL access to this data. Compute real answers. Be JARVIS.`;
 
 export async function POST(req: Request) {
   try {
-    const { query, studentContext } = await req.json();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!query) {
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const jsonBody = await req.json();
+    const parsed = jarvisPayloadSchema.safeParse(jsonBody);
+    
+    if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: "No query provided" }),
+        JSON.stringify({ error: "Invalid payload", details: parsed.error.format() }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
+    
+    const { query, studentContext } = parsed.data;
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = getGeminiKey();
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: "Missing GEMINI_API_KEY" }),
@@ -105,16 +138,16 @@ export async function POST(req: Request) {
     const resultText = response.text || "{}";
 
     // Parse the JSON response from Gemini
-    let parsed: Record<string, any>;
+    let parsedJson: Record<string, any>;
     try {
-      parsed = JSON.parse(resultText);
+      parsedJson = JSON.parse(resultText);
 
       // Handle server-side memorize action
-      if (parsed.action?.type === "memorize" && parsed.action?.value) {
-        await memorizeUserDetail(parsed.action.value);
+      if (parsedJson.action?.type === "memorize" && parsedJson.action?.value) {
+        await memorizeUserDetail(parsedJson.action.value);
       }
     } catch {
-      parsed = {
+      parsedJson = {
         responseType: "advice",
         title: "JARVIS Response",
         message: resultText,
@@ -126,14 +159,14 @@ export async function POST(req: Request) {
     }
 
     // Extract the message for streaming, keep the rest as metadata
-    const message = (parsed.message as string) || "";
+    const message = (parsedJson.message as string) || "";
     const metadata = {
-      responseType: parsed.responseType || "data_card",
-      title: parsed.title || "JARVIS",
-      highlights: parsed.highlights || [],
-      action: parsed.action || { type: "none" },
-      followUp: parsed.followUp || null,
-      suggestedActions: parsed.suggestedActions || [],
+      responseType: parsedJson.responseType || "data_card",
+      title: parsedJson.title || "JARVIS",
+      highlights: parsedJson.highlights || [],
+      action: parsedJson.action || { type: "none" },
+      followUp: parsedJson.followUp || null,
+      suggestedActions: parsedJson.suggestedActions || [],
     };
 
     // Stream the response: first line is JSON metadata, then message chunks
@@ -189,23 +222,10 @@ export async function POST(req: Request) {
       },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.stack || error.message : "JARVIS encountered an unexpected error.";
-    console.error("JARVIS Error:", message);
-    
-    // DEBUG: Write error to a file so the agent can read it
-    const fs = require('fs');
-    fs.appendFileSync('jarvis-error.log', new Date().toISOString() + '\\n' + message + '\\n\\n');
+    console.error("JARVIS Error:", error);
 
     return new Response(
-      JSON.stringify({
-        responseType: "error",
-        title: "System Error",
-        message: String(message),
-        highlights: [],
-        action: { type: "none" },
-        followUp: "Try asking your question differently.",
-        suggestedActions: [],
-      }),
+      JSON.stringify({ error: "Internal Server Error" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },

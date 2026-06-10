@@ -3,13 +3,30 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 import { getGeminiKey } from '@/lib/career/ai-keys';
 
+import { createClient } from "@/lib/supabase/server";
+
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const data = await request.formData();
     const file = data.get('file') as File;
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File size must be less than 5MB' }, { status: 400 });
+    }
+
+    if (file.type !== 'application/pdf') {
+      return NextResponse.json({ error: 'Invalid file type. Only PDF is allowed' }, { status: 400 });
     }
 
     // Convert file to buffer
@@ -54,10 +71,10 @@ export async function POST(request: Request) {
     const parsedData = JSON.parse(cleanedText);
 
     return NextResponse.json(parsedData);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Resume Parse Error:', error);
     return NextResponse.json(
-      { error: 'Failed to parse resume', details: error.message },
+      { error: 'Failed to parse resume', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

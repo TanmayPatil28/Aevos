@@ -4,8 +4,17 @@ import { ROLE_SKILL_MAP } from '@/lib/career/careerData';
 
 import { getGeminiKey } from '@/lib/career/ai-keys';
 
+import { createClient } from "@/lib/supabase/server";
+
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { userSkills, targetRole } = await request.json();
 
     if (!userSkills || !targetRole) {
@@ -16,8 +25,6 @@ export async function POST(request: Request) {
     if (!apiKey) {
       return NextResponse.json({ error: 'Missing GEMINI_API_KEY' }, { status: 500 });
     }
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const roleSkills = ROLE_SKILL_MAP[targetRole] || ROLE_SKILL_MAP["Frontend Developer"];
     const allRequired = Object.values(roleSkills).flat();
@@ -36,17 +43,62 @@ export async function POST(request: Request) {
       "readinessPercentage": 85
     }`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    // Clean markdown if present
-    const cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-    const parsedData = JSON.parse(cleanedText);
+    const geminiPayload = {
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.1
+      }
+    };
 
+    const modelsToTry = [
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-2.0-flash-lite",
+      "gemini-pro-latest"
+    ];
+
+    let generatedJsonText = null;
+    let lastError = null;
+
+    for (const model of modelsToTry) {
+      try {
+        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(geminiPayload)
+        });
+
+        if (!geminiResponse.ok) {
+          const errText = await geminiResponse.text();
+          throw new Error(`Model ${model} failed: ${errText}`);
+        }
+
+        const geminiData = await geminiResponse.json();
+        generatedJsonText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (generatedJsonText) {
+          break; // Successfully got JSON, exit the loop!
+        }
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        console.warn(`[Skill Gap Fallback] ${errorMessage}`);
+        lastError = errorMessage;
+      }
+    }
+
+    if (!generatedJsonText) {
+      throw new Error(`All Gemini models failed. Last error: ${lastError}`);
+    }
+
+    const parsedData = JSON.parse(generatedJsonText);
     return NextResponse.json(parsedData);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Skill Gap AI Error:', error);
     return NextResponse.json(
-      { error: 'Failed to analyze skill gap', details: error.message, stack: error.stack },
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }

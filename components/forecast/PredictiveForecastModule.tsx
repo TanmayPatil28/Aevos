@@ -3,15 +3,14 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUSMStore } from "@/stores/usmStore";
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-  Tooltip
-} from "recharts";
+import dynamic from "next/dynamic";
+const Radar = dynamic(() => import('recharts').then(mod => mod.Radar), { ssr: false });
+const RadarChart = dynamic(() => import('recharts').then(mod => mod.RadarChart), { ssr: false });
+const PolarGrid = dynamic(() => import('recharts').then(mod => mod.PolarGrid), { ssr: false });
+const PolarAngleAxis = dynamic(() => import('recharts').then(mod => mod.PolarAngleAxis), { ssr: false });
+const PolarRadiusAxis = dynamic(() => import('recharts').then(mod => mod.PolarRadiusAxis), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
 import { Crosshair, Target, Zap, BookOpen, CheckCircle, Code, Shield } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -64,6 +63,7 @@ export default function PredictiveForecastModule() {
   const academic = useUSMStore((state) => state.academic);
   const courses = useUSMStore((state) => state.courses) || [];
   const career = useUSMStore((state) => state.career);
+  const interventions = useUSMStore((state) => state.interventions) || [];
 
   // Calculate actual base metrics
   const baseCgpa = academic.currentCgpa || 6.5;
@@ -75,13 +75,38 @@ export default function PredictiveForecastModule() {
   const attendedClasses = courses.reduce((sum, c) => sum + ((c.attendanceTotal || 0) - (c.attendanceBunked || 0)), 0);
   const baseAttendance = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 75;
 
-  // Base Projects (Mocked base of 1 for now)
-  const baseProjects = 1;
+  // Base Projects
+  const baseProjects = career.projects || 1;
 
   // Local Projection State
   const [targetSgpa, setTargetSgpa] = useState<number>(8.0);
   const [targetAttendance, setTargetAttendance] = useState<number>(80);
   const [activeMissions, setActiveMissions] = useState<Set<string>>(new Set());
+
+  const activeMissionsList = useMemo(() => {
+    if (!interventions || interventions.length === 0) return AI_MISSIONS;
+    return interventions.map((inv, idx) => {
+      let icon = BookOpen;
+      if (inv.category === "ATTENDANCE") icon = CheckCircle;
+      else if (inv.category === "BACKLOG") icon = Shield;
+      else if (inv.category === "CAREER") icon = Code;
+      else if (inv.category === "ACADEMIC") icon = Zap;
+      
+      let impact: any = {};
+      if (inv.category === "ATTENDANCE") impact = { attendance: +10, cgpa: +0.1 };
+      else if (inv.category === "BACKLOG") impact = { backlogs: -1, cgpa: +0.2 };
+      else if (inv.category === "CAREER") impact = { projects: +1, skills: +2 };
+      else impact = { cgpa: +0.1, skills: +1 };
+
+      return {
+        id: inv.id || `mission-${idx}`,
+        title: inv.title,
+        description: inv.description,
+        icon,
+        impact
+      };
+    });
+  }, [interventions]);
 
   // Derive Projected Metrics
   const projectedMetrics = useMemo(() => {
@@ -104,7 +129,7 @@ export default function PredictiveForecastModule() {
 
     // Apply AI Missions
     activeMissions.forEach((missionId) => {
-      const m = AI_MISSIONS.find((x) => x.id === missionId);
+      const m = activeMissionsList.find((x) => x.id === missionId);
       if (m) {
         if (m.impact.cgpa) pCgpa += m.impact.cgpa;
         if (m.impact.backlogs) pBacklogs += m.impact.backlogs;
@@ -287,7 +312,7 @@ export default function PredictiveForecastModule() {
 
           <div className="flex flex-col gap-3">
             <AnimatePresence>
-              {AI_MISSIONS.map((mission) => {
+              {activeMissionsList.map((mission) => {
                 const isActive = activeMissions.has(mission.id);
                 const Icon = mission.icon;
                 return (

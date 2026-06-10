@@ -3,9 +3,9 @@ import { Toaster } from "react-hot-toast";
 import NavbarServer from "@/components/NavbarServer";
 import Footer from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import SmartTimetableController from "@/components/dynamic-island/SmartTimetableController";
-import BunkCalculatorController from "@/components/dynamic-island/BunkCalculatorController";
-import InterventionAlertBridge from "@/components/dynamic-island/InterventionAlertBridge";
+const SmartTimetableController = dynamic(() => import("@/components/dynamic-island/SmartTimetableController"), { ssr: false });
+const BunkCalculatorController = dynamic(() => import("@/components/dynamic-island/BunkCalculatorController"), { ssr: false });
+const InterventionAlertBridge = dynamic(() => import("@/components/dynamic-island/InterventionAlertBridge"), { ssr: false });
 
 import NextTopLoader from "nextjs-toploader";
 import dynamic from "next/dynamic";
@@ -53,7 +53,7 @@ import { AcademicHydrationBoundary } from "@/components/providers/AcademicHydrat
 const DiagnosticOverlay = dynamic(() => import("@/components/layout/DiagnosticOverlay"), { ssr: false });
 const BackgroundEffects = dynamic(() => import("@/components/BackgroundEffects"), { ssr: false });
 import IslandTestControls from "@/components/dynamic-island/IslandTestControls";
-import ContextualIslandController from "@/components/dynamic-island/ContextualIslandController";
+const ContextualIslandController = dynamic(() => import("@/components/dynamic-island/ContextualIslandController"), { ssr: false });
 import { BackgroundSyncWorker } from "@/components/providers/BackgroundSyncWorker";
 
 export default function RootLayout({
@@ -142,7 +142,7 @@ export default function RootLayout({
           <SmartTimetableController />
           <BunkCalculatorController />
           <InterventionAlertBridge />
-          <IslandTestControls />
+          {process.env.NODE_ENV === "development" && <IslandTestControls />}
       </body>
     </html>
   );
