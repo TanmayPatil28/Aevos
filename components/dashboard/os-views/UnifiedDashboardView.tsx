@@ -41,8 +41,8 @@ export default function UnifiedDashboardView() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Academic Half */}
-        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:bg-white/[0.02] transition-all">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><GraduationCap className="w-48 h-48 text-blue-400" /></div>
+        <div className="lg:col-span-6 bg-[#1c1c1e] border border-white/[0.05] shadow-[0_0_20px_rgba(0,0,0,0.2)] p-8 rounded-[32px] relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:border-white/10 hover:shadow-[0_0_30px_rgba(0,0,0,0.4)] transition-all duration-500">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-700"><GraduationCap className="w-48 h-48 text-blue-400" /></div>
           
           <div>
             <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
@@ -56,16 +56,16 @@ export default function UnifiedDashboardView() {
           </div>
 
           <button 
-            onClick={() => setMode("academic")}
-            className="mt-8 flex items-center gap-2 w-max px-5 py-2.5 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-bold text-sm transition-colors"
+            onClick={() => setMode("OPTIMIZATION")}
+            className="mt-8 flex items-center justify-center gap-2 w-max px-6 py-3 rounded-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 font-bold text-sm transition-colors shadow-[0_0_15px_rgba(59,130,246,0.1)]"
           >
             Enter Academic OS <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
         {/* Career Half */}
-        <div className="lg:col-span-6 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:bg-white/[0.02] transition-all">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Briefcase className="w-48 h-48 text-purple-400" /></div>
+        <div className="lg:col-span-6 bg-[#1c1c1e] border border-white/[0.05] shadow-[0_0_20px_rgba(0,0,0,0.2)] p-8 rounded-[32px] relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:border-white/10 hover:shadow-[0_0_30px_rgba(0,0,0,0.4)] transition-all duration-500">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-700"><Briefcase className="w-48 h-48 text-purple-400" /></div>
           
           <div>
             <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
@@ -82,8 +82,8 @@ export default function UnifiedDashboardView() {
           </div>
 
           <button 
-            onClick={() => setMode("career")}
-            className="mt-8 flex items-center gap-2 w-max px-5 py-2.5 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 font-bold text-sm transition-colors"
+            onClick={() => setMode("FOCUS")}
+            className="mt-8 flex items-center justify-center gap-2 w-max px-6 py-3 rounded-full bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 font-bold text-sm transition-colors shadow-[0_0_15px_rgba(168,85,247,0.1)]"
           >
             Enter Career OS <ArrowRight className="w-4 h-4" />
           </button>
@@ -91,9 +91,11 @@ export default function UnifiedDashboardView() {
 
       </div>
 
-      <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] ring-1 ring-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
+      <div className="bg-[#1c1c1e] border border-white/[0.05] shadow-[0_0_20px_rgba(0,0,0,0.2)] p-8 rounded-[32px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden group hover:border-white/10 transition-all duration-500">
         <div className="relative z-10">
-          <h3 className="text-white font-bold text-xl mb-2">Explore all modules</h3>
+          <h3 className="text-white font-bold text-xl mb-2 flex items-center gap-2">
+            <LayoutDashboard className="w-5 h-5 text-[#0a84ff]" /> Explore all modules
+          </h3>
           <p className="text-slate-400 text-sm max-w-xl">Use the Dynamic Island toggle below to morph this dashboard to your current goals.</p>
         </div>
       </div>
@@ -106,3 +108,5 @@ export default function UnifiedDashboardView() {
     </motion.div>
   );
 }
+
+

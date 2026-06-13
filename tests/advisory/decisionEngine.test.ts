@@ -126,6 +126,7 @@ export function runDecisionEngineTests(): boolean {
       code: "MAT-301",
       name: "Advanced Mathematics",
       credits: 4,
+      semester: 1,
       cieMarks: 12, // Under VTU 40% threshold (16/40 is min pass)
       attendanceTotal: 20,
       attendanceBunked: 0
@@ -172,6 +173,7 @@ export function runDecisionEngineTests(): boolean {
       code: "PHY-101",
       name: "Engineering Physics",
       credits: 4,
+      semester: 1,
       cieMarks: 35,
       attendanceTotal: 10,
       attendanceBunked: 6 // 4/10 attended = 40% < 75% -> High Attendance Risk
@@ -208,8 +210,10 @@ export function runDecisionEngineTests(): boolean {
   store.setPresetId("vtu");
   // Set declining history: sem 1 sgpa = 9.0, sem 2 sgpa = 7.0 (Slope = -2.0)
   store.setSemesterHistory([
-    { semester: 1, sgpa: 9.0, credits: 20, earnedCredits: 20 },
-    { semester: 2, sgpa: 7.0, credits: 20, earnedCredits: 20 }
+    { semester: 1, sgpa: 9.0, credits: 20,
+      earnedCredits: 20 },
+    { semester: 2, sgpa: 7.0, credits: 20,
+      earnedCredits: 20 }
   ]);
   // Also provide highly secure attendance for SafeBunk
   store.setCourses([
@@ -218,6 +222,7 @@ export function runDecisionEngineTests(): boolean {
       code: "ENG-101",
       name: "Professional Communication",
       credits: 2,
+      semester: 1,
       cieMarks: 38,
       attendanceTotal: 20,
       attendanceBunked: 1 // 19/20 = 95% -> LOW Risk + Secure
@@ -308,3 +313,4 @@ if (require.main === module) {
   const success = runDecisionEngineTests();
   process.exit(success ? 0 : 1);
 }
+

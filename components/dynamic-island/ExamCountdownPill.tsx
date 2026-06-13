@@ -42,7 +42,7 @@ const urgencyConfig = {
 };
 
 export default function ExamCountdownPill() {
-  const { examCountdown, isExamPillExpanded, setExamPillExpanded, clearExamCountdown, updateExamCountdown } = useDynamicIslandStore();
+  const { examCountdown, isExamPillExpanded, setExamPillExpanded, clearExamCountdown, setExamCountdown } = useDynamicIslandStore();
 
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
 

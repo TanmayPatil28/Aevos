@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname === '/onboarding' || pathname?.startsWith('/auth')) return null;
   return (
     <footer className="bg-surface-container-low w-full py-12 mt-auto border-t border-outline-variant/15">
       <div className="flex flex-col md:flex-row justify-between items-center px-12 max-w-7xl mx-auto">

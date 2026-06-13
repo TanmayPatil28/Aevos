@@ -1,41 +1,28 @@
-## 2026-06-09T06:52:42Z
+# Original User Request
 
-# Teamwork Project Prompt — Draft
+## 2026-06-11T04:17:33Z
 
-> Status: Launched
-> Goal: Craft prompt → get user approval → delegate to teamwork_preview
+Build an Advanced Placement Intelligence Engine for the GradeFlow OS. It features a target-aware multi-agent resume parsing pipeline that generates a JD-targeted ATS resume. It uses AI to extrapolate projects based on academic history, provides UI transparency highlights for extrapolated data, and features an interactive action checklist for students to boost their readiness score.
 
-Perform a complete production readiness audit of the entire GradeFlow codebase. The audit must discover and fix flaws, bugs, bad UX, performance issues, and security risks across all routes and components. 
-
-Working directory: `c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow`
+Working directory: c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow
 Integrity mode: development
 
 ## Requirements
 
-### R1. Comprehensive Discovery and Mapping
-Create a complete map of the system including all routes, components, and data flows. Audit the architecture for technical debt and dead code.
+### R1. Database Schema
+Update `prisma/schema.prisma` to include a `CareerProfile` model linked 1-to-1 with the `User`. It must store `resumeText`, `skills`, `projects`, `atsScore`, and `actionPlan`.
 
-### R2. Feature-by-Feature Audit and Fix
-Perform click-by-click validation and code review for all features (GPA Calculator, Semester Planner, Grade Predictor, etc.). Fix all critical bugs, data corruption risks, security vulnerabilities, and UX issues found.
+### R2. Mocked API Route
+Update `/api/parse/resume/route.ts` to simulate the multi-agent pipeline. It should accept a file and a Target JD, and return a mocked, highly detailed JSON response containing skills, an ATS score, an action plan checklist, and extrapolated projects tagged with `isAIGenerated: true`. It must upsert this mock data into the database.
 
-### R3. API & Database Audit
-Audit every API endpoint for validation, auth, and security risks. Audit Prisma schema for efficiency and safety. Implement necessary fixes.
-
-### R4. Security, Performance & Accessibility
-Conduct a production security review, check bundle sizes/hydration overhead, test mobile responsiveness, and generate an accessibility score. Apply high-priority fixes.
-
-### R5. Master Report Generation
-Generate a comprehensive master report detailing executive summary, launch readiness, feature audit results, fixes applied, remaining risks, and a final launch recommendation.
-
-## Verification Resources
-The `tests` directory contains existing test suites.
+### R3. UI Integration
+Upgrade `ResumeUploadTarget.tsx` to include an input for a Job Description URL/text and show mock multi-step loading states. Upgrade `JarvisResumeModal.tsx` to render the ATS template and visually highlight the mocked extrapolated bullet points.
 
 ## Acceptance Criteria
 
-### Testing & Verification
-- [ ] Existing tests in the `tests` directory must pass successfully before and after any fixes are applied to ensure no regressions occur.
-- [ ] An agent-as-judge script or explicit manual UI/UX verification process must be used to validate UI/UX fixes.
+### Backend Verification
+- [ ] Running `npx prisma db push` and `npx prisma generate` succeeds without errors.
+- [ ] A programmatic test or manual curl to `/api/parse/resume` successfully returns the mock JSON and creates a `CareerProfile` record in the database.
 
-### Audit Completeness
-- [ ] The final master report must include all sections requested: Executive Summary, Findings (Critical to Low), Feature Audit Results, API/Database/Security/Performance/Mobile/Accessibility Audit Results, Fixes Applied, Remaining Risks, and Final Recommendation.
-- [ ] Every feature listed in the prompt (GPA Calculator, Semester Planner, Grade Predictor, Backlog Optimizer, Multi Semester System, Dashboard, Timeline, Landing Page, Authentication) must have a Pass/Fail record in the report.
+### Frontend Verification
+- [ ] The Next.js dev server (`npm run dev`) builds the `Placement Radar` page and `JarvisResumeModal` components without TypeScript errors or build failures.

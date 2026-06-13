@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FileSearch, CheckCircle2, IndianRupee, Check, ShieldCheck } from "lucide-react";
 import { RevaluationAnalysis } from "@/lib/backlog-intelligence/engine";
 import IOSSheetModal from "@/components/ui/IOSSheetModal";
+import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
 
 export default function RevaluationEngineWidget({ analysisData, coursesList }: { analysisData: { [courseId: string]: RevaluationAnalysis }, coursesList: any[] }) {
   const [showApplyModal, setShowApplyModal] = useState(false);
@@ -42,11 +43,11 @@ export default function RevaluationEngineWidget({ analysisData, coursesList }: {
 
   return (
     <>
-      <div className="p-6 rounded-[32px] bg-[#1C1C1E] flex flex-col h-full">
+      <div className="p-6 rounded-[2rem] bg-[#1c1c1e] border border-white/[0.05] flex flex-col h-full">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h3 className="text-[17px] font-semibold text-white flex items-center gap-2 tracking-tight">
-              <FileSearch className="text-[#bf5af2]" size={20} /> Reval Engine
+            <h3 className="text-[17px] font-bold text-white flex items-center gap-2 tracking-wide">
+              <FileSearch className="text-[#fb923c] drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]" size={20} /> Reval Engine
             </h3>
             <p className="text-[15px] text-[#8E8E93] mt-1 tracking-tight">Statistical Pass Probability</p>
           </div>
@@ -54,39 +55,41 @@ export default function RevaluationEngineWidget({ analysisData, coursesList }: {
 
         <div className="flex-1 flex flex-col justify-center">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center p-4 bg-[#bf5af2]/10 rounded-full mb-3">
-              <span className="text-3xl font-black text-[#bf5af2]">{(bestData.passProbability * 100).toFixed(0)}%</span>
+            <div className="inline-flex items-center justify-center p-4 bg-[#fb923c]/10 rounded-full mb-3 border border-[#fb923c]/20">
+              <span className="text-3xl font-black text-[#fb923c]">{(bestData.passProbability * 100).toFixed(0)}%</span>
             </div>
-            <p className="text-[15px] text-[#8E8E93] font-medium tracking-tight">
+            <p className="text-[15px] text-[#8E8E93] font-bold tracking-tight">
               Best Chance: <span className="text-white font-semibold">{bestCourseCode}</span>
             </p>
           </div>
 
           <div className="space-y-3 mb-4">
-            <div className="p-3 rounded-2xl bg-[#2C2C2E] flex justify-between items-center text-[15px]">
-              <span className="text-[#8E8E93]">AI Recommendation</span>
-              <span className={`font-semibold ${bestData.recommendation.includes("REVAL") ? "text-[#30D158]" : "text-[#FF9F0A]"}`}>
+            <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.05] flex justify-between items-center text-[15px]">
+              <span className="text-[#8E8E93] font-bold text-[11px] uppercase tracking-widest">AI Recommendation</span>
+              <span className={`font-bold text-[11px] uppercase tracking-widest ${bestData.recommendation.includes("REVAL") ? "text-[#10b981]" : "text-[#f43f5e]"}`}>
                 {bestData.recommendation.replace("_", " ")}
               </span>
             </div>
-            <div className="p-3 rounded-2xl bg-[#2C2C2E] flex justify-between items-center text-[15px]">
-              <span className="text-[#8E8E93]">Est. Total Cost</span>
+            <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.05] flex justify-between items-center text-[15px]">
+              <span className="text-[#8E8E93] font-bold text-[11px] uppercase tracking-widest">Est. Total Cost</span>
               <span className="font-semibold text-white flex items-center tracking-tight">
                 <IndianRupee size={14} className="mr-0.5 text-[#8E8E93]"/>{totalCost}
               </span>
             </div>
           </div>
 
-          <button 
-            onClick={() => {
-              setSelectedCourses([bestCandidateId]);
-              setPaymentDone(false);
-              setShowApplyModal(true);
-            }}
-            className="w-full py-3 rounded-xl bg-[#bf5af2] text-white font-semibold text-[15px] hover:bg-[#bf5af2]/90 active:scale-[0.98] transition-all"
-          >
-            Apply for Revaluation
-          </button>
+          <MagneticWrapper strength={0.4}>
+            <button 
+              onClick={() => {
+                setSelectedCourses([bestCandidateId]);
+                setPaymentDone(false);
+                setShowApplyModal(true);
+              }}
+              className="w-full py-3 rounded-xl bg-[#fb923c]/10 text-[#fb923c] border border-[#fb923c]/30 font-bold text-[13px] tracking-wider uppercase hover:bg-[#fb923c]/20 active:scale-[0.98] transition-all"
+            >
+              Apply for Revaluation
+            </button>
+          </MagneticWrapper>
         </div>
       </div>
 

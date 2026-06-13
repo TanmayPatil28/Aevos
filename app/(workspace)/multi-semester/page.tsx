@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import dynamic from "next/dynamic";
 const MultiSemesterChart = dynamic(() => import("@/components/MultiSemesterChart"), { ssr: false });
 import { useUniversity } from "@/components/providers/UniversityProvider";

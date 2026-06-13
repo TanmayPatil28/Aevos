@@ -51,7 +51,7 @@ function buildStateFromPersona(personaId: string): USMStoreState {
     queueSyncAction: () => {},
     clearSyncActions: () => {},
     resetStore: () => {},
-  } as USMStoreState;
+  } as unknown as USMStoreState;
 }
 
 // ─── Test Runner ─────────────────────────────────────────────────────────────

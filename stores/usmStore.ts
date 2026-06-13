@@ -4,6 +4,17 @@ import { AcademicIdentityState } from "../types/academicProfile";
 
 // ─── Type Definitions ─────────────────────────────────────────────────────────
 
+export interface StudentDetails {
+  fullName: string;
+  institution: string;
+  branch: string;
+  field: string;
+  division: string;
+  prnNumber: string;
+  currentYear: string;
+  isOnboarded: boolean;
+}
+
 export interface AcademicState {
   currentCgpa: number;
   completedSemesters: number;
@@ -90,6 +101,13 @@ import { AcademicIntervention, AcademicHealthScore, WorkspaceContextType } from 
 import { AcademicEventBus } from "../lib/events/AcademicEventBus";
 import { InterventionEngine } from "../lib/academic-intelligence/interventions/InterventionEngine";
 
+export interface CareerProject {
+  name: string;
+  techStack: string[];
+  impact: string;
+  isAIGenerated?: boolean;
+}
+
 export interface CareerState {
   targetCompanies: string[];
   wesGpaEquivalent: number;
@@ -99,7 +117,7 @@ export interface CareerState {
   skills: string[];
   targetRole: string;
   targetPackage: string;
-  projects: number;
+  projects: CareerProject[];
 }
 
 export interface WorkspaceState {
@@ -127,18 +145,27 @@ export interface SemesterHistoryEntry {
   earnedCredits: number;
 }
 
+export interface SubTask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface AcademicEvent {
   id: string;
   name: string;
   startDate: string; // YYYY-MM-DD
   endDate?: string;  // YYYY-MM-DD
-  type: "EXAM" | "HOLIDAY" | "EVENT" | "FEST" | "OTHER";
+  type: "EXAM" | "HOLIDAY" | "EVENT" | "FEST" | "OTHER" | "DEADLINE";
+  subtasks?: SubTask[];
 }
 
 export interface USMStoreState {
   // Identity & Preset
   presetId: string; // e.g. "sppu", "vtu", "jntuh"
+  activeInstitution: "jspm_university_wagholi" | "rscoe_autonomous_tathawade" | "sppu_affiliated" | "unknown";
   identity: AcademicIdentityState;
+  studentDetails: StudentDetails | null;
   
   // Core Slices
   academic: AcademicState;
@@ -156,12 +183,15 @@ export interface USMStoreState {
 
   // Actions
   setPresetId: (presetId: string) => void;
+  setActiveInstitution: (institution: USMStoreState["activeInstitution"]) => void;
+  setStudentDetails: (details: StudentDetails) => void;
   setAcademic: (academic: Partial<AcademicState>) => void;
   setCourses: (courses: CourseState[]) => void;
   updateCourse: (courseId: string, updates: Partial<CourseState>) => void;
   updateCourseRecoverySemester: (courseId: string, semester: number | null) => void;
   setTimetable: (timetable: Partial<TimetableState>) => void;
   setAcademicCalendar: (events: AcademicEvent[]) => void;
+  updateEventSubtasks: (eventId: string, subtasks: SubTask[]) => void;
   addAttendanceHistoryEvent: (event: Omit<AttendanceHistoryEvent, "id" | "timestamp">) => void;
   undoAttendanceHistoryEvent: (eventId: string) => void;
   addHoliday: (dateStr: string) => void;
@@ -260,7 +290,7 @@ const initialCareer: CareerState = {
   skills: [],
   targetRole: "Frontend Developer",
   targetPackage: "Service (3-6LPA)",
-  projects: 1
+  projects: []
 };
 
 const initialSync: OfflineSyncState = {
@@ -312,6 +342,8 @@ export const useUSMStore = create<USMStoreState>()(
   persist(
     (set, get) => ({
       presetId: "sppu",
+      activeInstitution: "unknown",
+      studentDetails: null,
       identity: initialIdentity,
       academic: { ...initialAcademic, completedSemesters: 5, activeBacklogsCount: 2 },
       courses: [
@@ -421,6 +453,14 @@ export const useUSMStore = create<USMStoreState>()(
         get().queueSyncAction("SEMESTER_UPDATE", { presetId });
       },
 
+      setActiveInstitution: (activeInstitution) => {
+        set({ activeInstitution });
+      },
+
+      setStudentDetails: (studentDetails) => {
+        set({ studentDetails });
+      },
+
       setAcademic: (academicUpdates) => {
         set((state) => ({
           academic: { ...state.academic, ...academicUpdates },
@@ -505,6 +545,14 @@ export const useUSMStore = create<USMStoreState>()(
             holidays: Array.from(newHolidays)
           };
         });
+      },
+
+      updateEventSubtasks: (eventId, subtasks) => {
+        set((state) => ({
+          academicCalendar: state.academicCalendar.map(evt => 
+            evt.id === eventId ? { ...evt, subtasks } : evt
+          )
+        }));
       },
 
       addAttendanceHistoryEvent: (event) => {
@@ -726,6 +774,8 @@ export const useUSMStore = create<USMStoreState>()(
       resetStore: () => {
         set({
           presetId: "sppu",
+          activeInstitution: "unknown",
+          studentDetails: null,
           identity: initialIdentity,
           academic: initialAcademic,
           courses: [],

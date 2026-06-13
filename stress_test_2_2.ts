@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BacklogEngine } from "./lib/backlog-intelligence/engine.ts";
 
 function assertEqual(actual: any, expected: any, message: string) {

@@ -115,7 +115,7 @@ export default function OverviewCanvas() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         
         {/* Left Column: Academic */}
-        {(mode === "unified" || mode === "academic") && (
+        {(mode === "DEFAULT" || mode === "OPTIMIZATION") && (
           <div className="flex flex-col gap-10 animate-fade-in duration-700 delay-150 fill-mode-both ease-os-smooth">
             <h2 className="text-xl font-semibold text-slate-100 border-b border-slate-800 pb-2">Academic Trajectory</h2>
             
@@ -227,7 +227,7 @@ export default function OverviewCanvas() {
         )}
 
         {/* Right Column: Career */}
-        {(mode === "unified" || mode === "career") && (
+        {(mode === "DEFAULT" || mode === "FOCUS") && (
           <div className="flex flex-col gap-10 animate-fade-in duration-700 delay-300 fill-mode-both ease-os-smooth">
             <h2 className="text-xl font-semibold text-slate-100 border-b border-slate-800 pb-2">Career & Placement</h2>
             

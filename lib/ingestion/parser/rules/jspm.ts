@@ -33,20 +33,20 @@ export class JspmDocumentParser implements AcademicDocumentParser {
     // Convert the normalized payload to ParsedAcademicDocument
     const confidence = isJson ? 100 : 90; // Lower confidence for plain text parsing
 
-    const semesterHistory: ParsedSemester[] = payload.semesterHistory.map((sem) => ({
+    const semesterHistory: ParsedSemester[] = payload.semesterHistory.map((sem: any) => ({
       semester: { value: sem.semester, confidence },
       sgpa: { value: sem.sgpa, confidence },
       credits: { value: sem.credits, confidence },
       earnedCredits: { value: sem.earnedCredits, confidence },
-      courses: sem.courses?.map((c) => ({
+      courses: sem.courses?.map((c: any) => ({
         code: { value: c.code, confidence },
         name: { value: c.name, confidence },
         credits: { value: c.credits, confidence },
-        grade: { value: c.grade, confidence },
+        grade: { value: c.grade || "", confidence },
       })),
     }));
 
-    const currentSemesterCourses: ParsedCurrentCourse[] | undefined = payload.currentSemesterCourses?.map((c) => ({
+    const currentSemesterCourses: ParsedCurrentCourse[] | undefined = payload.currentSemesterCourses?.map((c: any) => ({
       code: { value: c.code, confidence },
       name: { value: c.name, confidence },
       credits: { value: c.credits, confidence },
@@ -138,7 +138,7 @@ export class JspmDocumentParser implements AcademicDocumentParser {
       }
 
       // Alternatively, "Semester 1", "Semester 2"
-      const semHeaderMatch = line.match(/(?:Semester|Sem)\s*[:=-]?\s*(\d+)/i);
+      const semHeaderMatch = line.match(/(?:Semester|sem: any)\s*[:=-]?\s*(\d+)/i);
       if (semHeaderMatch) {
         const semNum = parseInt(semHeaderMatch[1], 10);
         const academicYear = semNum <= 2 ? "2024-25" : semNum <= 4 ? "2025-26" : "2026-27";
@@ -174,7 +174,7 @@ export class JspmDocumentParser implements AcademicDocumentParser {
     elements.push({ studentProfile });
     termsMap.forEach((term) => {
       // If the courses in a term don't have any grade, set status to Not Published
-      const hasGrades = term.courses.some((c) => c.grade !== null);
+      const hasGrades = term.courses.some((c: any) => c.grade !== null);
       if (!hasGrades && term.courses.length > 0) {
         term.performance.status = "Not Published";
       } else if (term.academicTerm.term === "Summer Term") {

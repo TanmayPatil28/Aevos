@@ -2,6 +2,7 @@ import { USMStoreState, CourseState } from "../usmStore";
 import { getPresetById } from "../../lib/presets/presetRegistry";
 import { createSelector } from "./memo";
 import { pluggableRegulationEngine } from "../../lib/academic-intelligence/regulations/regulationEngine";
+import { JSPM_CONFIGS } from "../../lib/presets/institutions/jspm";
 
 export interface DerivedSemesterCredits {
   totalActiveCredits: number;
@@ -125,8 +126,15 @@ export const selectDerivedGPA = createSelector((state: USMStoreState): {
       (currentCgpa * earnedCredits + sgpa * totalCredits) / (earnedCredits + totalCredits);
   }
 
-  // Convert CGPA to percentage using the pluggable regulation engine
-  let percentage = pluggableRegulationEngine.convertToPercentage(derivedCgpa, "cgpa", state.presetId);
+  // Convert CGPA to percentage using the Institution Configuration or fallback to regulation engine
+  let percentage = 0;
+  const activeInstitution = state.activeInstitution as keyof typeof JSPM_CONFIGS;
+  if (activeInstitution && JSPM_CONFIGS[activeInstitution]) {
+    percentage = JSPM_CONFIGS[activeInstitution].percentageConversion.calculate(derivedCgpa);
+  } else {
+    percentage = pluggableRegulationEngine.convertToPercentage(derivedCgpa, "cgpa", state.presetId);
+  }
+  
   percentage = Math.max(0, Math.min(100, percentage));
 
   return {

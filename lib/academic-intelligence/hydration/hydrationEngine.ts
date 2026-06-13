@@ -42,6 +42,7 @@ export function validateSnapshotPayload(rawPayload: unknown): AcademicProfile {
       id: c.id,
       code: c.code,
       name: c.name,
+      semester: typeof c.semester === "number" ? c.semester : 1,
       credits: c.credits,
       grade: c.grade,
       cieMarks: typeof c.cieMarks === "number" ? c.cieMarks : 0,

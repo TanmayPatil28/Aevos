@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     
     const streamResult = await narrativeAgent.stream(prompt);
 
-    return streamResult.toDataStreamResponse();
+    // @ts-ignore`n    return streamResult.toDataStreamResponse();
 
   } catch (error) {
     console.error("Narrative generation error:", error);

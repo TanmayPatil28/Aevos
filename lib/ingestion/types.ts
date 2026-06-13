@@ -78,3 +78,37 @@ export interface NormalizedImportPayload {
   parserVersion: string;
   detectedInstitution: string;
 }
+
+export interface ImportCourseData {
+  code: string;
+  name: string;
+  credits: number;
+  grade?: string;
+  cieMarks?: number;
+  attendanceTotal?: number;
+  attendanceBunked?: number;
+}
+
+export interface ImportSemesterData {
+  semester: number;
+  sgpa: number;
+  credits: number;
+  earnedCredits: number;
+  courses?: ImportCourseData[];
+}
+
+export interface AcademicImportPayload {
+  presetId: string;
+  currentCgpa: number;
+  targetCgpa: number;
+  activeBacklogsCount: number;
+  semesterHistory: ImportSemesterData[];
+  currentSemesterCourses?: ImportCourseData[];
+}
+
+export interface ImportValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  parsedData?: AcademicImportPayload;
+}

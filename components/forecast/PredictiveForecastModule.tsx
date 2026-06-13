@@ -76,7 +76,7 @@ export default function PredictiveForecastModule() {
   const baseAttendance = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 75;
 
   // Base Projects
-  const baseProjects = career.projects || 1;
+  const baseProjects = career.projects.length;
 
   // Local Projection State
   const [targetSgpa, setTargetSgpa] = useState<number>(8.0);
@@ -87,15 +87,15 @@ export default function PredictiveForecastModule() {
     if (!interventions || interventions.length === 0) return AI_MISSIONS;
     return interventions.map((inv, idx) => {
       let icon = BookOpen;
-      if (inv.category === "ATTENDANCE") icon = CheckCircle;
-      else if (inv.category === "BACKLOG") icon = Shield;
-      else if (inv.category === "CAREER") icon = Code;
-      else if (inv.category === "ACADEMIC") icon = Zap;
+      if ((inv as any).category === "ATTENDANCE") icon = CheckCircle;
+      else if ((inv as any).category === "BACKLOG") icon = Shield;
+      else if ((inv as any).category === "CAREER") icon = Code;
+      else if ((inv as any).category === "ACADEMIC") icon = Zap;
       
       let impact: any = {};
-      if (inv.category === "ATTENDANCE") impact = { attendance: +10, cgpa: +0.1 };
-      else if (inv.category === "BACKLOG") impact = { backlogs: -1, cgpa: +0.2 };
-      else if (inv.category === "CAREER") impact = { projects: +1, skills: +2 };
+      if ((inv as any).category === "ATTENDANCE") impact = { attendance: +10, cgpa: +0.1 };
+      else if ((inv as any).category === "BACKLOG") impact = { backlogs: -1, cgpa: +0.2 };
+      else if ((inv as any).category === "CAREER") impact = { projects: +1, skills: +2 };
       else impact = { cgpa: +0.1, skills: +1 };
 
       return {
@@ -344,7 +344,7 @@ export default function PredictiveForecastModule() {
                         <div className="flex flex-wrap gap-2 mt-3">
                           {Object.entries(mission.impact).map(([key, val]) => (
                             <div key={key} className="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider bg-white/10 text-white/70">
-                              {val > 0 ? '+' : ''}{val} {key}
+                              {(val as number) > 0 ? '+' : ''}{(val as number)} {key}
                             </div>
                           ))}
                         </div>
@@ -370,7 +370,7 @@ function StatBox({ label, val, diff, inverse = false }: { label: string, val: st
   return (
     <div className="bg-[#111113] border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
       <span className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-1">{label}</span>
-      <span className="text-2xl font-black text-white font-mono">{val}</span>
+      <span className="text-2xl font-black text-white font-mono">{(val as number)}</span>
       {!isNeutral && (
         <div className={cn(
           "text-[10px] font-bold mt-1",

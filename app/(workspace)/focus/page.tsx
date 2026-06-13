@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, RotateCcw, Brain, Coffee, Flame, AlertOctagon } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useUSMStore } from "@/stores/usmStore";
 
 const MODE_DURATIONS = {

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useDeferredValue } from "react";
 import Link from "next/link";
 import { Plus, Save, ArrowRight, RotateCcw, Activity, Calculator, ChevronDown, CheckCircle2, ShieldCheck } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useUSMStore, CourseState } from "@/stores/usmStore";
 import { resolveActiveAcademicContext } from "@/stores/selectors/academic";
 import PageContainer from "@/components/layout/PageContainer";

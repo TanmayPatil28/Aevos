@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useUSMStore } from "@/stores/usmStore";
 import { getStudentDayIndex } from "@/lib/dateUtils";
+import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 
 import { AttendanceForecastingEngine } from "@/lib/academic-intelligence/engines/simulation/AttendanceForecastingEngine";
 
@@ -42,7 +44,7 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
 
   if (!activeCourse) {
     return (
-      <div className="bg-[#1D1D1F] border border-white/[0.05] text-center py-12 rounded-[2rem] shadow-none relative overflow-hidden group">
+      <div className="bg-[#1c1c1e] border border-white/[0.05] text-center py-12 rounded-[2rem] shadow-none relative overflow-hidden group">
         <AlertCircle className="w-8 h-8 text-white/20 mx-auto mb-3" />
         <h3 className="text-white font-bold text-lg">No Active Courses Found</h3>
         <p className="text-sm text-white/40 mt-1">Please register courses in the planner or import an academic JSON first.</p>
@@ -104,12 +106,12 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
       
       {/* Smart Bunk Recommendations (Left Panel) */}
       <div className="lg:col-span-1 space-y-6">
-        <div className="bg-[#1D1D1F] border border-white/[0.05] p-6 rounded-[2rem] shadow-none space-y-8 relative overflow-hidden group">
-          <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#4F8EF7]/10 rounded-full blur-3xl pointer-events-none transition-colors duration-500" />
+        <div className="bg-white/[0.02] border border-white/5 backdrop-blur-md p-6 rounded-[2rem] shadow-none space-y-8 relative overflow-hidden group">
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#10b981]/10 rounded-full blur-3xl pointer-events-none transition-colors duration-500" />
           
           <div className="relative z-10">
             <h3 className="text-base font-bold text-white tracking-wide flex items-center gap-2">
-              <Bot className="w-5 h-5 text-[#4F8EF7] drop-shadow-[0_0_8px_rgba(79,142,247,0.5)]" />
+              <Bot className="w-5 h-5 text-[#10b981] drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
               AI Bunk Scheduler
             </h3>
             <p className="text-xs text-white/40 mt-1">
@@ -120,17 +122,13 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
           {/* Select Course dropdown */}
           <div className="space-y-2 relative z-10">
             <label className="text-[10px] uppercase font-bold text-white/50 tracking-wider">Select Course</label>
-            <select
+            <CustomSelect
               value={selectedCourseId}
-              onChange={(e) => handleCourseChange(e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-[#4F8EF7]/50 focus:bg-white/[0.08] transition-colors appearance-none cursor-pointer hover:bg-white/[0.06]"
-            >
-              {courses.map((c) => (
-                <option key={c.id} value={c.id} className="bg-[#131C31] text-white">
-                  {c.name} ({c.code})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => handleCourseChange(val)}
+              options={courses.map((c) => ({ label: `${c.name} (${c.code})`, value: c.id }))}
+              buttonClassName="w-full flex items-center justify-between gap-2 bg-white/[0.04] border border-white/10 hover:bg-white/[0.06] rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-[#10b981]/50 transition-colors cursor-pointer"
+              dropdownClassName="left-0 w-full min-w-[250px]"
+            />
           </div>
 
           <div className="h-[1px] bg-white/[0.08] relative z-10" />
@@ -139,23 +137,21 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
           <div className="space-y-4 relative z-10">
             <div className="flex justify-between items-center">
               <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider">Recommended Bunks</span>
-              <span className="text-[9px] text-[#4F8EF7] font-mono">{projection.smartBunks.length} Scheduled</span>
+              <span className="text-[9px] text-[#10b981] font-mono bg-[#10b981]/10 px-2 py-0.5 rounded-full border border-[#10b981]/20">{projection.smartBunks.length} Scheduled</span>
             </div>
             
             {projection.smartBunks.length > 0 ? (
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+              <div className="space-y-1 max-h-48 overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {projection.smartBunks.map((date, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-white/[0.03] border border-white/5 p-3 rounded-xl hover:bg-white/[0.06] transition-colors">
+                  <div key={idx} className="flex items-center justify-between hover:bg-white/[0.04] p-2 rounded-lg transition-colors group cursor-default">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-emerald-400" />
-                      </div>
+                      <div className="relative w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                       <div>
-                        <div className="text-xs font-bold text-white">{new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}</div>
+                        <div className="text-xs font-bold text-white/90 group-hover:text-white transition-colors">{new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}</div>
                         <div className="text-[10px] text-white/40">{new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                       </div>
                     </div>
-                    <span className="text-[10px] text-emerald-400/80 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-md">Smart Bunk</span>
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400/50 group-hover:text-emerald-400 transition-colors" />
                   </div>
                 ))}
               </div>
@@ -168,14 +164,12 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
             )}
           </div>
 
-          <div className="bg-white/[0.02] p-5 rounded-xl border border-white/5 space-y-3 text-xs relative z-10 mt-6">
-            <span className="font-bold text-white block uppercase tracking-wider text-[10px] text-white/50 mb-4">Semester Projection</span>
-            <div className="flex justify-between items-center text-white/70">
-              <span>Classes Left in Sem:</span>
-              <span className="font-mono font-bold text-white bg-white/5 px-2 py-1 rounded-md">
-                {projection.projectedPercentage > 0 ? Math.max(0, Math.round((projection.projectedAttended / (projection.projectedPercentage / 100)) - (conducted || 0))) : 0}
-              </span>
-            </div>
+          {/* Minimal Inline Semester Projection */}
+          <div className="flex justify-between items-center text-white/50 text-[11px] relative z-10 pt-2 border-t border-white/[0.04]">
+            <span className="uppercase font-bold tracking-wider">Classes Left in Sem</span>
+            <span className="font-mono font-bold text-white">
+              {projection.projectedPercentage > 0 ? Math.max(0, Math.round((projection.projectedAttended / (projection.projectedPercentage / 100)) - (conducted || 0))) : 0}
+            </span>
           </div>
 
         </div>
@@ -183,7 +177,7 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
 
       {/* Math Projection Visualization & Outcome (Right Panel) */}
       <div className="lg:col-span-2 space-y-6">
-        <div className="bg-[#1D1D1F] border border-white/[0.05] p-6 rounded-[2rem] shadow-none space-y-8 relative overflow-hidden h-full">
+        <div className="bg-white/[0.02] border border-white/5 backdrop-blur-md p-6 rounded-[2rem] shadow-none space-y-8 relative overflow-hidden h-full">
           
           <div className="flex justify-between items-center relative z-10">
             <h3 className="text-base font-bold text-white tracking-wide">
@@ -209,12 +203,12 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
             
             {/* Visual Gauge Comparison */}
-            <div className="bg-[#222224] border border-white/5 rounded-2xl p-6 flex flex-col justify-between items-center text-center space-y-6">
-              <span className="text-xs text-white/50 font-medium uppercase tracking-widest">End of Semester</span>
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex flex-col justify-between items-center text-center space-y-6">
+              <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest">End of Semester</span>
               
               <div className="relative flex items-center justify-center">
                 {/* SVG circular track rings */}
-                <svg className="w-40 h-40 transform -rotate-90">
+                <svg className="w-40 h-40 transform -rotate-90 drop-shadow-[0_0_15px_currentColor] transition-all duration-700 ease-in-out" style={{ color: projectedStatus.text.replace('text-', '') }}>
                   <circle
                     cx="80"
                     cy="80"
@@ -273,14 +267,17 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
             <div className="space-y-4">
               
               {/* Compliance status banner */}
-              <div className={`p-5 rounded-2xl border ${projectedStatus.bg} ${projectedStatus.border} ${projectedStatus.glow} text-center space-y-1.5 transition-all duration-500`}>
-                <span className="text-[10px] uppercase font-bold tracking-widest block text-white/50">Projected Health</span>
-                <span className={`text-xl font-bold uppercase tracking-wide block ${projectedStatus.text}`}>
-                  {projection.projectedPercentage >= minAttendance ? "SAFE STANDING" : "DETENTION RISK"}
-                </span>
-                <span className="text-[11px] text-white/40 font-mono block mt-1">
-                  University baseline: <strong className="text-white/70">{minAttendance}%</strong>
-                </span>
+              <div className={`p-5 rounded-2xl border ${projectedStatus.bg} ${projectedStatus.border} ${projectedStatus.glow} text-center space-y-1.5 transition-all duration-500 relative overflow-hidden`}>
+                <div className={`absolute inset-0 bg-gradient-to-t from-transparent to-white/[0.02] ${projectedStatus.text === 'text-rose-400' ? 'animate-pulse' : ''}`} />
+                <div className="relative z-10">
+                  <span className="text-[10px] uppercase font-bold tracking-widest block text-white/50">Projected Health</span>
+                  <span className={`text-xl font-bold uppercase tracking-wide block drop-shadow-md ${projectedStatus.text}`}>
+                    {projection.projectedPercentage >= minAttendance ? "SAFE STANDING" : "DETENTION RISK"}
+                  </span>
+                  <span className="text-[10px] text-white/40 font-mono block mt-1">
+                    University baseline: <strong className="text-white/70">{minAttendance}%</strong>
+                  </span>
+                </div>
               </div>
 
               {/* Action items based on math */}
@@ -318,37 +315,53 @@ export default function BunkScheduler({ courses }: BunkSchedulerProps) {
 
           </div>
 
-          {/* Mathematical Explainability Note */}
-          <div className="bg-[#4F8EF7]/5 border border-[#4F8EF7]/10 p-5 rounded-xl flex items-start gap-4 relative z-10 mt-auto">
-            <Info className="w-5 h-5 text-[#4F8EF7] shrink-0 mt-0.5 opacity-80" />
-            <div className="space-y-1.5 text-xs text-[#4F8EF7]/70">
-              <span className="font-bold block text-[#4F8EF7] uppercase tracking-wider text-[10px]">Mathematical Explanation</span>
-              <p className="leading-relaxed text-[11px] font-medium">
-                The projection is calculated using: <code className="font-mono text-[#4F8EF7]/90 bg-[#4F8EF7]/10 px-1 py-0.5 rounded ml-1 mr-1">Projected% = (Attended + SimulatedAttended) / (Conducted + SimulatedBunks + SimulatedAttended) * 100</code>.
-                Safe bunks and recovery limits adjust continuously using discrete floor/ceil functions.
-              </p>
+          {/* Mathematical Explainability Note (Terminal Style) */}
+          <div className="bg-[#0D1117] border border-white/[0.05] rounded-xl relative z-10 mt-auto overflow-hidden shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
+            <div className="flex items-center px-3 py-2 bg-white/[0.02] border-b border-white/[0.02]">
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+              </div>
+              <span className="ml-3 text-[10px] text-white/30 font-mono font-bold tracking-wider">math_projection.js</span>
+            </div>
+            <div className="p-4 flex items-start gap-3">
+              <div className="text-[10px] text-white/20 font-mono text-right select-none flex flex-col leading-relaxed">
+                <span>1</span><span>2</span><span>3</span>
+              </div>
+              <div className="space-y-1.5 text-[11px] font-mono text-[#a5d6ff] leading-relaxed">
+                <p>
+                  <span className="text-[#ff7b72]">const</span> projection <span className="text-[#ff7b72]">=</span> (Attended <span className="text-[#ff7b72]">+</span> SimulatedAttended) <span className="text-[#ff7b72]">/</span><br />
+                  <span className="pl-4">(Conducted <span className="text-[#ff7b72]">+</span> SimulatedBunks <span className="text-[#ff7b72]">+</span> SimulatedAttended)</span> <span className="text-[#ff7b72]">*</span> <span className="text-[#79c0ff]">100</span>;
+                </p>
+                <p className="text-white/40 italic">
+                  // Safe bunks and recovery limits adjust continuously using discrete floor/ceil functions.
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Sync Button */}
           <div className="relative z-10 pt-4 flex justify-end mt-auto">
-            <button 
-              onClick={handleSyncToCloud}
-              disabled={isSyncing}
-              className="flex items-center gap-2 px-6 py-3 bg-[#4F8EF7]/10 hover:bg-[#4F8EF7]/20 text-[#4F8EF7] border border-[#4F8EF7]/30 rounded-xl font-bold text-xs transition-all w-full sm:w-auto justify-center disabled:opacity-50"
-            >
-              {isSyncing ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 animate-pulse" />
-                  SYNCING TO ACADEMIC RECORD...
-                </>
-              ) : (
-                <>
-                  <CloudUpload className="w-4 h-4" />
-                  SYNC SIMULATION TO CLOUD
-                </>
-              )}
-            </button>
+            <MagneticWrapper strength={0.4}>
+              <button 
+                onClick={handleSyncToCloud}
+                disabled={isSyncing}
+                className="flex items-center gap-2 px-6 py-3 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/30 rounded-xl font-bold text-xs transition-all w-full sm:w-auto justify-center disabled:opacity-50"
+              >
+                {isSyncing ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 animate-pulse" />
+                    SYNCING TO ACADEMIC RECORD...
+                  </>
+                ) : (
+                  <>
+                    <CloudUpload className="w-4 h-4" />
+                    SYNC SIMULATION TO CLOUD
+                  </>
+                )}
+              </button>
+            </MagneticWrapper>
           </div>
 
         </div>

@@ -58,8 +58,11 @@ model User {
   plans             Plan[]
   sessions          Session[]
   skillProgress     SkillProgress[]
+  interviewSessions InterviewSession[]
   memories          UserMemory[]
   chatMemories      ChatMemory[]
+  careerProfile     CareerProfile?
+  dynamicRoadmaps   DynamicRoadmap[]
 
   @@index([activeSnapshotId])
   @@map("users")
@@ -253,3 +256,47 @@ model ChatMemory {
   @@map("chat_memory")
 }
 
+model CareerProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  resumeText    String
+  skills        String[]
+  projects      Json
+  atsScore      Int
+  actionPlan    Json
+  detailedAudit Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("career_profiles")
+}
+
+model InterviewSession {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  targetRole  String
+  transcript  Json     @default("[]")
+  finalScore  Int?
+  feedback    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("interview_sessions")
+}
+
+model DynamicRoadmap {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  targetRole  String
+  targetJd    String
+  nodes       Json     @default("[]")
+  edges       Json     @default("[]")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("dynamic_roadmaps")
+}

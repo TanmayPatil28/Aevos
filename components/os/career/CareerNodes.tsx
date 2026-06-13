@@ -38,7 +38,7 @@ const BaseNode = ({ data, selected, children, className, isCompleted }: { data: 
   );
 };
 
-export function GoldenNode({ data, selected }: NodeProps<RoadmapNodeData>) {
+export function GoldenNode({ data, selected }: NodeProps<import("@/lib/career/roadmaps/ai-ml").CareerNode>) {
   // Using an injected property if we enhance the data, but for now we assume it's passed or tracked globally
   // We'll manage completion state via CSS variables or a wrapper if needed.
   return (
@@ -52,7 +52,7 @@ export function GoldenNode({ data, selected }: NodeProps<RoadmapNodeData>) {
   );
 }
 
-export function AlternativeNode({ data, selected }: NodeProps<RoadmapNodeData>) {
+export function AlternativeNode({ data, selected }: NodeProps<import("@/lib/career/roadmaps/ai-ml").CareerNode>) {
   return (
     <BaseNode 
       data={data} 
@@ -64,7 +64,7 @@ export function AlternativeNode({ data, selected }: NodeProps<RoadmapNodeData>) 
   );
 }
 
-export function BonusNode({ data, selected }: NodeProps<RoadmapNodeData>) {
+export function BonusNode({ data, selected }: NodeProps<import("@/lib/career/roadmaps/ai-ml").CareerNode>) {
   return (
     <BaseNode 
       data={data} 

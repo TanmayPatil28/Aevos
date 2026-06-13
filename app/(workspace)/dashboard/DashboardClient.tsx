@@ -6,27 +6,20 @@ import Link from "next/link";
 import { useUSMStore } from "@/stores/usmStore";
 
 import ExpandableTrustPanel from "@/components/dashboard/ExpandableTrustPanel";
-import { AlertCircle, Target, TrendingUp, Activity, Compass, ArrowRight, Briefcase, LayoutGrid } from "lucide-react";
-import { AcademicIdentityBar } from "@/components/dashboard/identity/AcademicIdentityBar";
-import WorkspaceContent from "@/components/layout/WorkspaceContent";
+import { AlertCircle, Target, TrendingUp, Compass, ArrowRight, RefreshCw, GraduationCap, Briefcase, LayoutGrid, Activity } from "lucide-react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
-import { PageHero } from "@/components/ui/PageHero";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import DocumentVault from "@/components/DocumentVault";
 
 // OS Views
 const AcademicDashboardView = dynamic(() => import("@/components/dashboard/os-views/AcademicDashboardView"), { 
   ssr: false,
-  loading: () => <div className="h-[600px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
+  loading: () => <div className="h-[600px] w-full rounded-[2rem] bg-zinc-900/50 animate-pulse border border-zinc-800" />
 });
 const CareerDashboardView = dynamic(() => import("@/components/dashboard/os-views/CareerDashboardView"), { 
   ssr: false,
-  loading: () => <div className="h-[600px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
-});
-const UnifiedDashboardView = dynamic(() => import("@/components/dashboard/os-views/UnifiedDashboardView"), { 
-  ssr: false,
-  loading: () => <div className="h-[600px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
+  loading: () => <div className="h-[600px] w-full rounded-[2rem] bg-zinc-900/50 animate-pulse border border-zinc-800" />
 });
 
 const DataSyncDrawer = dynamic(() => import("@/components/dashboard/sync/DataSyncDrawer").then(mod => mod.DataSyncDrawer), { ssr: false });
@@ -48,6 +41,7 @@ export default function DashboardClient({
   const store = useUSMStore();
   const searchParams = useSearchParams();
   const [isSyncDrawerOpen, setIsSyncDrawerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   const hasHydratedRef = React.useRef(false);
   const [mounted, setMounted] = useState(false);
   
@@ -221,12 +215,12 @@ export default function DashboardClient({
 
   if (!mounted) {
     return (
-      <div className="relative min-h-screen bg-black">
-        <WorkspaceContent className="space-y-8 relative z-10 pt-8 pb-24">
-          <div className="h-16 w-full rounded-2xl bg-white/5 animate-pulse border border-white/10" />
-          <div className="h-32 w-full max-w-2xl rounded-2xl bg-white/5 animate-pulse border border-white/10" />
-          <div className="h-[600px] w-full rounded-[2rem] bg-white/5 animate-pulse border border-white/10" />
-        </WorkspaceContent>
+      <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-[#0a84ff]/30 selection:text-white pb-40 font-sans">
+        <div className="px-6 md:px-12 max-w-[1400px] mx-auto space-y-8 relative z-10 pt-8 pb-24">
+          <div className="h-16 w-full rounded-2xl bg-zinc-900/50 animate-pulse border border-zinc-800" />
+          <div className="h-32 w-full max-w-2xl rounded-2xl bg-zinc-900/50 animate-pulse border border-zinc-800" />
+          <div className="h-[600px] w-full rounded-[2rem] bg-zinc-900/50 animate-pulse border border-zinc-800" />
+        </div>
       </div>
     );
   }
@@ -234,16 +228,18 @@ export default function DashboardClient({
   // Adaptive Empty State
   if (!store.identity.hasAuthoritativeData) {
     return (
-      <WorkspaceContent className="min-h-[80vh] flex flex-col justify-center gap-12">
-        <DataSyncEngine isHero />
-        
-        <div className="max-w-md mx-auto w-full pt-8 border-t border-white/5 text-center">
-          <p className="text-sm text-slate-500 mb-4">Need to clear corrupted backend records? Note: this cannot be undone.</p>
-          <div className="mx-auto max-w-xs">
-            <ResetDataButton />
+      <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-[#0a84ff]/30 selection:text-white pb-40 font-sans">
+        <div className="px-6 md:px-12 max-w-[1400px] mx-auto min-h-[80vh] flex flex-col justify-center gap-12 relative z-10 pt-8">
+          <DataSyncEngine isHero />
+          
+          <div className="max-w-md mx-auto w-full pt-8 border-t border-zinc-800 text-center">
+            <p className="text-sm text-zinc-500 mb-4">Need to clear corrupted backend records? Note: this cannot be undone.</p>
+            <div className="mx-auto max-w-xs">
+              <ResetDataButton />
+            </div>
           </div>
         </div>
-      </WorkspaceContent>
+      </div>
     );
   }
 
@@ -265,163 +261,211 @@ export default function DashboardClient({
   const setMode = store.setWorkspaceMode;
 
   return (
-    <div className="relative min-h-screen bg-black">
-      {/* Immersive Ambient Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div 
-          className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/20 mix-blend-screen blur-[120px] rounded-full animate-[ambient-pulse-1_10s_ease-in-out_infinite]"
-          style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
-        />
-        <div 
-          className="absolute top-[40%] -right-[10%] w-[60%] h-[60%] bg-blue-500/10 mix-blend-screen blur-[120px] rounded-full animate-[ambient-pulse-2_15s_ease-in-out_2s_infinite]"
-          style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
-        />
-      </div>
+    <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-[#0a84ff]/30 selection:text-white pb-40 font-sans">
+      
+      {/* Subtle Monochrome Gradient */}
+      <motion.div 
+        className="fixed top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] pointer-events-none z-0 opacity-30"
+      >
+      </motion.div>
 
-      <WorkspaceContent className="space-y-8 relative z-10 pb-24">
-        
-        {/* 1. Identity Layer */}
-        <AcademicIdentityBar onSyncClick={() => setIsSyncDrawerOpen(true)} />
-
-        {/* 2. Intelligence Layer */}
-        
-        {/* Contextual Header replaced with PageHero */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-8">
-          <PageHero
-            headline={isSimulation ? activeScenario.name : isRecovery ? "Get Back on Track" : isOptimization ? "Optimize Your Grades" : "Academic Overview"}
-            description={isSimulation ? "Strategy Sandbox Active. Your original academic records are safely locked." : isRecovery ? "We've mapped out a clear path to help you clear your backlogs and stabilize your grades." : "Your academic standing is healthy. Focus on CGPA optimization and strategic skill acquisition."}
-            className="mb-0 max-w-2xl"
-          />
+      {/* Standardized Hero Section */}
+      <section className="relative z-10 w-full flex flex-col items-start justify-center pt-16 pb-8 px-6 md:px-12 max-w-[1400px] mx-auto border-b border-zinc-800/50 mb-8">
+        <div className="w-full flex flex-col items-start text-left gap-8">
           
-          {/* Academic Health Score Mini Widget using AnimatedCounter */}
-          {healthScore && !isSimulation && mode !== "career" && (
-            <div className="hidden md:flex flex-col items-end bg-[#1c1c1e]/60 backdrop-blur-xl p-4 rounded-3xl border border-white/10 ring-1 ring-white/5">
-              <span className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-1">Health Score</span>
-              <div className="flex items-baseline gap-1">
-                <AnimatedCounter target={healthScore.overall} className="text-4xl font-black text-white" />
-                <span className="text-sm text-slate-500">/100</span>
-              </div>
+          {/* Upper Header: Title, Description, and Mode Toggle */}
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 w-full">
+            <div className="max-w-2xl">
+              <h1 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+                {isSimulation ? activeScenario.name : isRecovery ? "Get Back on Track" : isOptimization ? "Academic Strategy" : "Command Center"}
+              </h1>
+              <p className="text-zinc-400 text-sm md:text-base leading-relaxed">
+                {isSimulation 
+                  ? "Strategy Sandbox Active. Your original academic records are safely locked." 
+                  : isRecovery 
+                    ? "We've mapped out a clear path to help you clear your backlogs and stabilize your grades." 
+                    : "The intelligence engine tracks your academic margins in real-time. Explore precise recovery paths and career milestones to dominate your trajectory."}
+              </p>
             </div>
-          )}
-          
-          {isSimulation && (
-            <button 
-              onClick={() => store.clearSimulationScenarios()}
-              className="px-6 py-3 bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 ring-1 ring-white/5 hover:bg-white/10 text-white rounded-full text-sm font-bold transition-all"
-            >
-              Exit Sandbox
-            </button>
-          )}
-        </div>
-
-      {/* Priority Intervention Inbox */}
-      {interventions.length > 0 && !isSimulation && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Compass className="w-5 h-5 text-indigo-400" />
-            Priority Action Inbox
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {interventions.map(inv => {
-              const tierColor = 
-                inv.priorityTier === "CRITICAL" ? "border-rose-500/50 bg-rose-500/5" :
-                inv.priorityTier === "HIGH" ? "border-amber-500/50 bg-amber-500/5" :
-                "border-indigo-500/30 bg-indigo-500/5";
+            
+            {/* Integrated Mode Toggle */}
+            <div className="flex items-center bg-[#111] border border-zinc-800/80 rounded-full p-1.5 shadow-xl shrink-0 mt-2 lg:mt-0">
+              <button
+                onClick={() => setMode("OPTIMIZATION")}
+                className={`relative flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${mode !== "FOCUS" ? "text-black" : "text-zinc-500 hover:text-zinc-300"}`}
+              >
+                {mode !== "FOCUS" && (
+                  <motion.div
+                    layoutId="activeTabDashboardHeader"
+                    className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <GraduationCap size={16} className="relative z-10" />
+                <span className="relative z-10">Academic</span>
+              </button>
               
-              const Icon = inv.type === "RISK" ? AlertCircle : inv.type === "MILESTONE" ? TrendingUp : Target;
-
-              return (
-                <div key={inv.id} className={`p-5 rounded-xl border ${tierColor}`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2 text-white font-bold">
-                      <Icon className="w-4 h-4 opacity-80" />
-                      {inv.title}
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
-                      {inv.priorityTier} PRIORITY
+              <button
+                onClick={() => setMode("FOCUS")}
+                className={`relative flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${mode === "FOCUS" ? "text-black" : "text-zinc-500 hover:text-zinc-300"}`}
+              >
+                {mode === "FOCUS" && (
+                  <motion.div
+                    layoutId="activeTabDashboardHeader"
+                    className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <Briefcase size={16} className="relative z-10" />
+                <span className="relative z-10">Career</span>
+              </button>
+            </div>
+          </div>
+          
+          {/* Lower Header: Secondary Filters and Health Widget */}
+          <div className="w-full flex flex-wrap lg:flex-nowrap items-center justify-between gap-4">
+            {/* Filters */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar w-full lg:w-auto">
+              <button 
+                onClick={() => setActiveTab("overview")}
+                className={`shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${activeTab === "overview" ? "bg-white text-black" : "bg-[#111] border border-zinc-800/80 text-zinc-400 hover:text-white"}`}
+              >
+                <LayoutGrid className="w-4 h-4" /> Overview
+              </button>
+              <button 
+                onClick={() => setActiveTab("critical")}
+                className={`shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${activeTab === "critical" ? "bg-white text-black" : "bg-[#111] border border-zinc-800/80 text-zinc-400 hover:text-white"}`}
+              >
+                Critical Issues
+              </button>
+              <button 
+                onClick={() => setActiveTab("milestones")}
+                className={`shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${activeTab === "milestones" ? "bg-white text-black" : "bg-[#111] border border-zinc-800/80 text-zinc-400 hover:text-white"}`}
+              >
+                Upcoming Milestones
+              </button>
+              {isSimulation ? (
+                <button 
+                  onClick={() => store.clearSimulationScenarios()}
+                  className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-500 hover:bg-rose-500/20 transition-all text-xs font-bold"
+                >
+                  Exit Sandbox
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setActiveTab("simulations")}
+                  className={`shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${activeTab === "simulations" ? "bg-white text-black" : "bg-[#111] border border-zinc-800/80 text-zinc-400 hover:text-white"}`}
+                >
+                  Simulations
+                </button>
+              )}
+            </div>
+            
+            {/* Right Side Widgets (Sync + Health) */}
+            <div className="flex items-center gap-3 shrink-0">
+              <button 
+                onClick={() => setIsSyncDrawerOpen(true)}
+                className="flex items-center justify-center p-3 rounded-full bg-[#111] border border-zinc-800/80 text-zinc-500 hover:text-white transition-all shadow-lg"
+                title="Sync Data"
+              >
+                <RefreshCw size={15} />
+              </button>
+              
+              {healthScore && !isSimulation && mode !== "FOCUS" && (
+                <div className="flex items-center gap-4 bg-[#111] border border-zinc-800/80 px-5 py-2.5 rounded-full shadow-lg">
+                  <div className="flex items-center gap-2 border-r border-zinc-800/80 pr-4">
+                    <Activity className={`w-4 h-4 ${healthScore.overall < 40 ? "text-rose-500" : healthScore.overall < 70 ? "text-amber-500" : "text-emerald-500"}`} />
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold hidden sm:inline">Health</span>
+                    <span className={`text-[10px] uppercase tracking-widest font-black ${healthScore.overall < 40 ? "text-rose-500" : healthScore.overall < 70 ? "text-amber-500" : "text-emerald-500"}`}>
+                      {healthScore.overall < 40 ? "CRITICAL" : healthScore.overall < 70 ? "AT RISK" : "OPTIMAL"}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-300 mb-4">{inv.description}</p>
-                  
-                  {inv.actionTrigger && (
-                    <Link href={
-                      inv.actionTrigger.toLowerCase().includes("backlog") ? "/backlog" :
-                      inv.actionTrigger.toLowerCase().includes("placement") ? "/placement" :
-                      inv.actionTrigger.toLowerCase().includes("attendance") ? "/attendance" :
-                      inv.actionTrigger.toLowerCase().includes("forecast") ? "/forecast" :
-                      "/planner"
-                    } className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded transition-colors w-max mt-2">
-                      {inv.actionTrigger.toLowerCase().includes("backlog") ? "View Next Steps" : "Explore Options"}
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  )}
-
-                  <ExpandableTrustPanel explanation={inv.explanation} />
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-500 hidden sm:inline">Score</span>
+                    <span className="text-xs font-black text-white">{healthScore.overall.toFixed(1)}</span>
+                  </div>
                 </div>
-              );
-            })}
+              )}
+            </div>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Smart Morphing OS Views */}
-      <AnimatePresence mode="wait">
-        {mode === "academic" && (
-          <AcademicDashboardView key="academic-view" />
+      {/* Desktop Content Area */}
+      <div className="relative z-10 w-full px-6 md:px-12 max-w-[1400px] mx-auto space-y-8">
+        
+        {/* Priority Intervention Inbox */}
+        {interventions.length > 0 && !isSimulation && activeTab !== "simulations" && (
+          <div className="space-y-4">
+            {(activeTab === "overview" || activeTab === "critical" || activeTab === "milestones") && (
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Compass className="w-5 h-5 text-zinc-500" />
+                {activeTab === "critical" ? "Critical Issues" : activeTab === "milestones" ? "Milestones" : "Priority Action Inbox"}
+              </h2>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {interventions
+                .filter(inv => {
+                  if (activeTab === "critical") return inv.type === "RISK" || inv.priorityTier === "CRITICAL";
+                  if (activeTab === "milestones") return inv.type === "MILESTONE" || inv.type === "TARGET";
+                  return true;
+                })
+                .map(inv => {
+                const Icon = inv.type === "RISK" ? AlertCircle : inv.type === "MILESTONE" ? TrendingUp : Target;
+
+                return (
+                  <div key={inv.id} className={`p-6 rounded-[24px] bg-transparent border border-zinc-800 transition-colors hover:border-zinc-700`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2 text-white font-bold">
+                        <Icon className="w-4 h-4 text-zinc-400" />
+                        {inv.title}
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
+                        {inv.priorityTier} PRIORITY
+                      </span>
+                    </div>
+                    <p className="text-sm text-zinc-400 mb-4">{inv.description}</p>
+                    
+                    {inv.actionTrigger && (
+                      <Link href={
+                        inv.actionTrigger.toLowerCase().includes("backlog") ? "/backlog" :
+                        inv.actionTrigger.toLowerCase().includes("placement") ? "/placement" :
+                        inv.actionTrigger.toLowerCase().includes("attendance") ? "/attendance" :
+                        inv.actionTrigger.toLowerCase().includes("forecast") ? "/forecast" :
+                        "/planner"
+                      } className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0a84ff] bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 px-3 py-1.5 rounded-full transition-colors w-max mt-2">
+                        {inv.actionTrigger.toLowerCase().includes("backlog") ? "View Next Steps" : "Explore Options"}
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
+
+                    <ExpandableTrustPanel explanation={inv.explanation} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
-        {mode === "career" && (
-          <CareerDashboardView key="career-view" />
+
+        {/* Smart Morphing OS Views */}
+        {(activeTab === "overview" || activeTab === "simulations") && (
+          <AnimatePresence mode="wait">
+            {mode !== "FOCUS" && (
+              <AcademicDashboardView key="academic-view" />
+            )}
+            {mode === "FOCUS" && (
+              <CareerDashboardView key="career-view" />
+            )}
+          </AnimatePresence>
         )}
-        {mode === "unified" && (
-          <UnifiedDashboardView key="unified-view" />
-        )}
-      </AnimatePresence>
 
-
-
-      {/* 3. Sync Layer (Drawer) */}
-      <DataSyncDrawer 
-        isOpen={isSyncDrawerOpen} 
-        onClose={() => setIsSyncDrawerOpen(false)} 
-      />
-
-      </WorkspaceContent>
-
-      {/* Floating Dynamic Island Mode Toggle */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 rounded-full p-1.5 flex items-center shadow-2xl ring-1 ring-white/5">
-          <button
-            onClick={() => setMode("academic")}
-            aria-label="Academic Mode"
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-              mode === "academic" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <Activity className="w-4 h-4" />
-            <span className="hidden md:inline">Academic</span>
-          </button>
-          <button
-            onClick={() => setMode("unified")}
-            aria-label="Unified Mode"
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-              mode === "unified" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            <span className="hidden md:inline">Unified</span>
-          </button>
-          <button
-            onClick={() => setMode("career")}
-            aria-label="Career Mode"
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-              mode === "career" ? "bg-white text-black shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <Briefcase className="w-4 h-4" />
-            <span className="hidden md:inline">Career</span>
-          </button>
-        </div>
+        {/* 3. Sync Layer (Drawer) */}
+        <DataSyncDrawer 
+          isOpen={isSyncDrawerOpen} 
+          onClose={() => setIsSyncDrawerOpen(false)} 
+        />
       </div>
     </div>
   );
 }
+

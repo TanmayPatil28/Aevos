@@ -45,7 +45,8 @@ export async function matchInternshipsForProfile(academicProfile: any) {
             company: z.string(),
             url: z.string(),
             score: z.number().describe("A score from 0 to 100 indicating how well the internship matches the profile"),
-            rationale: z.string().describe("A brief explanation of why this is a good match based on the user's coursework and skills")
+            rationale: z.string().describe("A brief explanation of why this is a good match based on the user's coursework and skills"),
+            requiredSkills: z.array(z.string()).optional().default([]).describe("A list of 3-5 technical skills or tools required/preferred for this internship")
           })
         )
       }),

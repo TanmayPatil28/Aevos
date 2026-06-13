@@ -131,3 +131,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await prisma.$transaction(async (tx: any) => {
+      // 1. Remove active pointer
+      await tx.user.update({
+        where: { id: user.id },
+        data: { activeSnapshotId: null },
+      });
+      // 2. Delete all snapshots for user
+      await tx.academicSnapshot.deleteMany({
+        where: { userId: user.id },
+      });
+    });
+
+    return NextResponse.json({ success: true, message: "All academic data wiped." }, { status: 200 });
+  } catch (error) {
+    console.error("[AcademicSnapshots DELETE Error]", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}

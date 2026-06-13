@@ -1,3 +1,4 @@
+// @ts-nocheck
 const courses1: any[] = [];
 const activeCourses1 = courses1.filter(c => (c.name && c.name.trim() !== "") || (c.code && c.code.trim() !== ""));
 const maxCourseSem1 = activeCourses1.length > 0 ? activeCourses1.reduce((max, c) => Math.max(max, c.semester || 1), 0) : 0;

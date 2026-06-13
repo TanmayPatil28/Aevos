@@ -1,6 +1,6 @@
 "use client";
 
-import { useUSMStore, WorkspaceMode } from "@/stores/usmStore";
+import { useUSMStore, WorkspaceState } from "@/stores/usmStore";
 import { motion } from "framer-motion";
 import { GraduationCap, Briefcase, LayoutDashboard, ChevronDown, Check, Sparkles, Activity } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -103,7 +103,7 @@ export function OSModeContent({ onClose }: { onClose: () => void }) {
             <button
               key={m.id}
               onClick={() => {
-                setWorkspaceMode(m.id as WorkspaceMode);
+                setWorkspaceMode(m.id as WorkspaceState["mode"]);
                 onClose();
               }}
               className={cn(

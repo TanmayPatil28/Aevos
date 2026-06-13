@@ -7,7 +7,7 @@ import { Drawer } from "vaul";
 import { X, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import UniversitySelector from "@/components/UniversitySelector";
-import { useUSMStore, WorkspaceMode } from "@/stores/usmStore";
+import { useUSMStore, WorkspaceState } from "@/stores/usmStore";
 import { OS_MODES } from "@/components/OSModeSwitcher";
 import { createClient } from "@/lib/supabase/client";
 import { useNavbarNavigation } from "@/lib/hooks/useNavbarNavigation";
@@ -99,7 +99,7 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen, onOpenJarvis, ma
                     <button
                       key={m.id}
                       onClick={() => {
-                         setWorkspaceMode(m.id as WorkspaceMode);
+                         setWorkspaceMode(m.id as WorkspaceState["mode"]);
                          setIsOpen(false);
                       }}
                       className={cn(

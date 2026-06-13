@@ -109,6 +109,7 @@ interface DynamicIslandState {
 const ACTIVITY_PRIORITY: Record<ActivityType, number> = {
   bunk_calculator: 100, // Highest Priority (Critical Alerts)
   exam_countdown: 90,
+  forecast: 85,
   schedule: 80,
   timer: 70,
   progress: 60,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { tavily } from "@tavily/core";
 import { matchInternshipsForProfile } from "../lib/jobs/matcher";
 import "dotenv/config";

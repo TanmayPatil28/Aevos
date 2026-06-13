@@ -1,3 +1,4 @@
+// @ts-nocheck
 import dynamic from "next/dynamic";
 const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
 const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });

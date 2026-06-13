@@ -7,7 +7,7 @@ import {
   UploadCloud, Send, Sparkles, Loader2, Flame, AlertCircle, 
   Zap, BookOpen, CheckCircle2, CornerDownLeft, Search 
 } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 import { uploadToStorage } from "@/lib/supabase/storage";
 import { cn } from "@/lib/cn";

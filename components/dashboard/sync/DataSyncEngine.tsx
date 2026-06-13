@@ -8,11 +8,12 @@ import { detectInstitution } from "@/lib/ingestion/detectionEngine";
 import { SPPUParser } from "@/lib/ingestion/parsers/SPPUParser";
 import { DigicampusParser } from "@/lib/ingestion/parsers/DigicampusParser";
 import { normalizeExtraction } from "@/lib/ingestion/normalizationEngine";
-import { computeImportDiff } from "@/lib/ingestion/diffEngine";
+import { computeImportDiff, mergeProfiles } from "@/lib/ingestion/diffEngine";
 import { RawInputForm } from "@/components/ingestion/RawInputForm";
 import { ImportVerificationModal } from "@/components/ingestion/ImportVerificationModal";
 import { diagnostics } from "@/lib/diagnostics";
 import { useNetworkState } from "@/lib/hooks/useNetworkState";
+import jspmPreset from "@/lib/presets/curriculum/jspm_comp_eng_2023.json";
 
 interface DataSyncEngineProps {
   onSuccess?: () => void;
@@ -81,12 +82,13 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
       } : null;
 
       const importDiff = computeImportDiff(activeProfile as any, canonicalProfile);
+      const mergedProfile = mergeProfiles(activeProfile as any, canonicalProfile);
 
       // Merge parser warnings with diff warnings
       importDiff.warnings = [...parserResult.validationWarnings, ...importDiff.warnings];
 
       setPayload({
-        profile: canonicalProfile,
+        profile: mergedProfile,
         confidenceScore: parserResult.confidenceScore,
         parserVersion: parserResult.parserVersion,
         detectedInstitution: parserResult.detectedInstitution
@@ -99,6 +101,68 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
       diagnostics.error("DataSyncEngine", "Normalization failed", err);
       setPipelineState("failed");
       setPipelineError(`Normalization failed: ${err.message}`);
+    }
+  };
+
+  const handleLoadPreset = () => {
+    try {
+      setPipelineState("parsing");
+      // Simulate slight delay
+      setTimeout(() => {
+        const courses = jspmPreset.semesters.flatMap(sem => 
+          sem.courses.map(c => ({
+            id: `course_${c.code}`,
+            code: c.code,
+            name: c.name,
+            semester: sem.semesterIndex,
+            credits: c.credits,
+            grade: "NA", // Preset has no grades yet
+            cieMarks: 0,
+            seeMarks: 0,
+            attendanceTotal: 0,
+            attendanceBunked: 0
+          }))
+        );
+
+        const canonicalProfile = {
+          courses,
+          academic: {
+            currentCgpa: 0,
+            completedSemesters: 0,
+            earnedCredits: 0,
+            activeBacklogsCount: 0,
+            targetCgpa: 0,
+            semesterStartDate: "2026-06-01",
+            semesterEndDate: "2026-12-01"
+          },
+          semesterHistory: []
+        };
+
+        const activeProfile = store.identity.hasAuthoritativeData ? {
+          studentIdentity: store.identity.studentIdentity || { name: "User" },
+          presetId: store.presetId,
+          institution: store.identity.institution || store.presetId,
+          regulation: store.identity.regulation || "unknown",
+          academic: store.academic,
+          courses: store.courses,
+          semesterHistory: store.semesterHistory
+        } : null;
+
+        const importDiff = computeImportDiff(activeProfile as any, canonicalProfile as any);
+        const mergedProfile = mergeProfiles(activeProfile as any, canonicalProfile as any);
+
+        setPayload({
+          profile: mergedProfile,
+          confidenceScore: 100, // Presets are 100% confident
+          parserVersion: "preset_v1",
+          detectedInstitution: jspmPreset.institution
+        });
+        setDiff(importDiff);
+        setPipelineState("verifying");
+      }, 500);
+    } catch (err: any) {
+      setPipelineState("failed");
+      setPipelineError(`Failed to load preset: ${err.message}`);
     }
   };
 
@@ -173,10 +237,31 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
 
       {/* Input Pipeline */}
       {["idle", "detecting", "parsing", "normalizing", "diffing"].includes(pipelineState) && (
-        <RawInputForm 
-          onAnalyze={handleAnalyze} 
-          isLoading={pipelineState !== "idle" && pipelineState !== "failed"} 
-        />
+        <div className="space-y-6">
+          <RawInputForm 
+            onAnalyze={handleAnalyze} 
+            isLoading={pipelineState !== "idle" && pipelineState !== "failed"} 
+          />
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-slate-800" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#0B0F19] px-2 text-slate-500">Or use official preset</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleLoadPreset}
+            disabled={pipelineState !== "idle" && pipelineState !== "failed"}
+            className="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-500/30 rounded-xl hover:bg-blue-500/5 hover:border-blue-500/50 transition-all text-slate-300"
+          >
+            <span className="material-symbols-outlined text-3xl text-blue-400 mb-2">auto_stories</span>
+            <span className="font-bold text-sm">Load Curriculum Preset</span>
+            <span className="text-xs text-slate-500 mt-1">JSPM Wagholi • Computer Engineering • 2023 Pattern</span>
+          </button>
+        </div>
       )}
 
       {/* Verification Modal */}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
 import NavbarServer from "@/components/NavbarServer";
 import Footer from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -55,6 +55,7 @@ const BackgroundEffects = dynamic(() => import("@/components/BackgroundEffects")
 import IslandTestControls from "@/components/dynamic-island/IslandTestControls";
 const ContextualIslandController = dynamic(() => import("@/components/dynamic-island/ContextualIslandController"), { ssr: false });
 import { BackgroundSyncWorker } from "@/components/providers/BackgroundSyncWorker";
+import { LenisProvider } from "@/components/providers/LenisProvider";
 
 export default function RootLayout({
   children,
@@ -85,12 +86,14 @@ export default function RootLayout({
                 <ErrorBoundary>
                   <AcademicStateProvider>
                     <AcademicHydrationBoundary>
-                      <BackgroundSyncWorker />
-                      <NavbarServer />
-                      <main id="main-content" tabIndex={-1} className="outline-none">
-                        {children}
-                      </main>
-                      <Footer />
+                      <LenisProvider>
+                        <BackgroundSyncWorker />
+                        <NavbarServer />
+                        <main id="main-content" tabIndex={-1} className="outline-none">
+                          {children}
+                        </main>
+                        <Footer />
+                      </LenisProvider>
                     </AcademicHydrationBoundary>
                   </AcademicStateProvider>
                 </ErrorBoundary>
@@ -100,42 +103,9 @@ export default function RootLayout({
           <DiagnosticOverlay />
           <Toaster 
             position="bottom-center"
+            theme="dark"
             toastOptions={{
-              duration: 3500,
-              style: {
-                background: 'rgba(20, 20, 20, 0.85)',
-                color: '#f5f5f5',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '1rem',
-                backdropFilter: 'blur(24px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                padding: '16px 20px',
-                fontSize: '14px',
-                fontWeight: '500',
-                fontFamily: 'var(--font-body), Inter, system-ui, sans-serif',
-                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05) inset',
-                maxWidth: '420px',
-              },
-              success: {
-                style: {
-                  borderLeft: '3px solid #34d399',
-                  boxShadow: '0 16px 48px rgba(0, 0, 0, 0.4), 0 0 20px rgba(52, 211, 153, 0.1)',
-                },
-                iconTheme: {
-                  primary: '#34d399',
-                  secondary: '#111',
-                },
-              },
-              error: {
-                style: {
-                  borderLeft: '3px solid #f87171',
-                  boxShadow: '0 16px 48px rgba(0, 0, 0, 0.4), 0 0 20px rgba(248, 113, 113, 0.1)',
-                },
-                iconTheme: {
-                  primary: '#f87171',
-                  secondary: '#111',
-                },
-              },
+              className: 'dynamic-pill-toast'
             }}
           />
           <ContextualIslandController />

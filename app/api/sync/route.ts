@@ -36,6 +36,7 @@ export async function POST(request: Request) {
             if (Array.isArray(payload.courses)) {
               const uniqueCourses = Array.from(new Map(payload.courses.map((c: any) => [c.code, c])).values());
               for (const c of uniqueCourses as any[]) {
+                if (!c.code) continue;
                 let course = await tx.course.findUnique({ where: { code: c.code } });
                 if (!course) {
                   course = await tx.course.create({

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 // Simple custom SVG icons to match the premium feel, avoiding external heavy font packages if possible.
 function GoogleIcon(props: React.ComponentProps<"svg">) {

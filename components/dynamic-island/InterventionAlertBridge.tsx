@@ -25,9 +25,9 @@ export default function InterventionAlertBridge() {
 
       // Map severity to alert type
       let alertType: 'info' | 'success' | 'warning' | 'error' = 'info';
-      if (inv.severity === 'CRITICAL' || inv.severity === 'HIGH') {
+      if (inv.priorityTier === 'CRITICAL' || inv.priorityTier === 'HIGH') {
         alertType = 'error';
-      } else if (inv.severity === 'MEDIUM') {
+      } else if (inv.priorityTier === 'MEDIUM') {
         alertType = 'warning';
       }
 
@@ -37,7 +37,7 @@ export default function InterventionAlertBridge() {
         type: alertType,
         title: inv.title,
         message: inv.description,
-        duration: inv.severity === 'CRITICAL' ? 8000 : 5000, // Longer for critical
+        duration: inv.priorityTier === 'CRITICAL' ? 8000 : 5000, // Longer for critical
       });
     });
 

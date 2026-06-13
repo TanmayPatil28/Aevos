@@ -3,7 +3,7 @@ import * as ai from "ai";
 import * as tavilyCore from "@tavily/core";
 
 // Mocking Tavily
-const mockSearch = async (query, options) => {
+const mockSearch = async (query: any, options: any) => {
   console.log(`[Mock] Tavily search called with query: "${query}"`);
   return { results: [{ title: "Software Eng Intern", company: "TechCorp", url: "http" }] };
 };

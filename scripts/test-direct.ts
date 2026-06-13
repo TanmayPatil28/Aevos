@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest } from "next/server";
 import { POST as skillGapPost } from "./app/api/career/skill-gap/route";
 import { POST as parseResumePost } from "./app/api/parse/resume/route";

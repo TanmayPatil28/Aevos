@@ -5,7 +5,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { DraggableNumberInput } from "@/components/ui/DraggableNumberInput";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { calculateRequiredGPA, getDifficultyLevel, sgpaToPercentage as calcSgpaToPercentage } from "@/lib/presets";
 import { useUniversity } from "@/components/providers/UniversityProvider";
 import AnimatedCounter from "@/components/AnimatedCounter";

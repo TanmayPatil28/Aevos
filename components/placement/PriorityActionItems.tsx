@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowRight, PlayCircle, Lock, Target } from "lucide-react";
 import { IntelligenceResult, SkillGapResult } from "@/lib/career/intelligenceEngine";
+import { cn } from "@/lib/cn";
 
 export default function PriorityActionItems({ 
   eligibility, 
@@ -47,46 +48,47 @@ export default function PriorityActionItems({
   }
 
   return (
-    <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 relative overflow-hidden h-full shadow-2xl">
-      
-      <div className="flex items-center gap-3 mb-6 relative z-10">
-        <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
-          <Target className="w-5 h-5 text-[#0a84ff]" />
-        </div>
-        <h3 className="text-sm font-semibold text-white/50 uppercase tracking-widest">Priority Actions</h3>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2 px-2">
+        <h4 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider">Priority Actions</h4>
       </div>
 
-      <div className="flex flex-col gap-0 bg-white/5 border border-white/5 rounded-3xl overflow-hidden relative z-10">
+      <div className="flex flex-col bg-[#1c1c1e] rounded-[20px] overflow-hidden">
         {actions.slice(0, 3).map((action, i) => (
-          <div key={i} className={`group flex items-start gap-4 p-5 bg-white/0 hover:bg-white/[0.05] transition-all duration-300 ${i !== actions.slice(0,3).length - 1 ? 'border-b border-white/[0.05]' : ''}`}>
-            <div className="mt-1">
-              {action.type === "critical" && <div className="w-3 h-3 rounded-full bg-[#ff453a] shadow-[0_0_10px_rgba(255,69,58,0.5)]" />}
-              {action.type === "warning" && <div className="w-3 h-3 rounded-full bg-[#ff9f0a] shadow-[0_0_10px_rgba(255,159,10,0.5)]" />}
-              {action.type === "info" && <div className="w-3 h-3 rounded-full bg-[#0a84ff] shadow-[0_0_10px_rgba(10,132,255,0.5)]" />}
-            </div>
-            <div className="flex-1">
-              <h4 className="text-white font-semibold text-base mb-1">{action.title}</h4>
-              <p className="text-white/50 text-sm leading-relaxed mb-3">{action.desc}</p>
-              
-              {action.title.includes("Acquire") || action.title.includes("Next Skill") ? (
-                <button 
-                  onClick={() => {
-                    import("react-hot-toast").then((mod) => {
-                      mod.toast.success(`Added "${action.title.replace('Acquire: ', '').replace('Next Skill: ', '')}" to your learning planner!`);
-                    });
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-xs font-semibold w-fit border border-white/5 text-white/80"
-                >
-                  <PlayCircle className="w-3.5 h-3.5" />
-                  Add to Planner
-                </button>
-              ) : null}
+          <div key={i} className={cn(
+            "flex flex-col p-4",
+            i !== actions.slice(0,3).length - 1 && "border-b border-white/[0.05]"
+          )}>
+            <div className="flex items-start gap-4">
+              <div className="mt-0.5">
+                {action.type === "critical" && <div className="w-3 h-3 rounded-full bg-[#ff3b30]" />}
+                {action.type === "warning" && <div className="w-3 h-3 rounded-full bg-[#ff9f0a]" />}
+                {action.type === "info" && <div className="w-3 h-3 rounded-full bg-[#0a84ff]" />}
+              </div>
+              <div className="flex-1 flex flex-col">
+                <span className="text-[15px] font-medium text-white">{action.title}</span>
+                <span className="text-[13px] text-[#86868b] leading-relaxed mt-1">{action.desc}</span>
+                
+                {(action.title.includes("Acquire") || action.title.includes("Next Skill")) && (
+                  <button 
+                    onClick={() => {
+                      import("sonner").then((mod) => {
+                        mod.toast.success(`Added "${action.title.replace('Acquire: ', '').replace('Next Skill: ', '')}" to your learning planner!`);
+                      });
+                    }}
+                    className="flex items-center gap-2 mt-3 text-[13px] font-medium text-[#0a84ff] bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 px-3 py-1.5 rounded-full self-start transition-colors"
+                  >
+                    <PlayCircle className="w-4 h-4" />
+                    Add to Planner
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
         {actions.length === 0 && (
-           <div className="p-6 text-center text-white/50 text-sm">
-             You are perfectly positioned. No critical actions required!
+           <div className="p-4 text-center text-[#86868b] text-[13px]">
+             No critical actions required at this time.
            </div>
         )}
       </div>

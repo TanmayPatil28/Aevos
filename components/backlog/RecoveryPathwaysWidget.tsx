@@ -2,6 +2,7 @@ import React from "react";
 import { Shield, Scale, Flame, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { RecoveryPlanResult } from "@/lib/backlog-intelligence/engine";
+import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
 
 interface PathwayProps {
   type: "SAFE" | "BALANCED" | "AGGRESSIVE";
@@ -72,39 +73,40 @@ export default function RecoveryPathwaysWidget({ pathways, selectedType, onSelec
           }
 
           return (
-            <button
-              key={card.type}
-              onClick={card.onSelect}
-              className={cn(
-                "relative text-left p-5 rounded-2xl border transition-all duration-300 outline-none focus-visible:ring-2 overflow-hidden flex flex-col h-full",
-                card.isActive ? `bg-[#1c1c1e] ${config.border} ${config.shadow}` : `bg-[#1c1c1e]/50 border-white/5 hover:border-white/20 hover:bg-[#1c1c1e] ${config.bgHover}`
-              )}
-            >
-              {card.isActive && (
-                <div className={cn(`absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full blur-[50px] opacity-20 ${config.blob}`)} />
-              )}
-              
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className={cn("flex items-center gap-2", config.text)}>
-                  <Icon size={20} />
-                  <span className="font-bold tracking-widest text-sm">{card.type}</span>
+            <MagneticWrapper key={card.type} strength={0.2}>
+              <button
+                onClick={card.onSelect}
+                className={cn(
+                  "relative text-left p-5 rounded-[2rem] border transition-all duration-300 outline-none focus-visible:ring-2 overflow-hidden flex flex-col h-full w-full",
+                  card.isActive ? `bg-[#1c1c1e] ${config.border} ${config.shadow}` : `bg-white/[0.02] border-white/[0.05] hover:border-white/20 hover:bg-white/[0.04] ${config.bgHover}`
+                )}
+              >
+                {card.isActive && (
+                  <div className={cn(`absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full blur-[50px] opacity-20 ${config.blob}`)} />
+                )}
+                
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className={cn("flex items-center gap-2", config.text)}>
+                    <Icon size={20} />
+                    <span className="font-bold tracking-widest text-sm">{card.type}</span>
+                  </div>
+                  <div className={cn("text-xs font-bold px-2 py-1 rounded-md", config.bgLight, config.text)}>
+                    Max {card.plan.maxCredits} Cr/Sem
+                  </div>
                 </div>
-                <div className={cn("text-xs font-bold px-2 py-1 rounded-md", config.bgLight, config.text)}>
-                  Max {card.plan.maxCredits} Cr/Sem
+
+                <p className="text-sm text-white/70 leading-relaxed mb-4 flex-1 relative z-10">
+                  {card.plan.insight}
+                </p>
+
+                <div className="pt-4 border-t border-white/5 flex items-center justify-between mt-auto relative z-10">
+                  <span className="text-xs text-white/40 font-medium">Unplannable Backlogs:</span>
+                  <span className={cn("text-sm font-bold", card.plan.unplannableCourses.length > 0 ? "text-red-400" : "text-white/80")}>
+                    {card.plan.unplannableCourses.length}
+                  </span>
                 </div>
-              </div>
-
-              <p className="text-sm text-white/70 leading-relaxed mb-4 flex-1 relative z-10">
-                {card.plan.insight}
-              </p>
-
-              <div className="pt-4 border-t border-white/5 flex items-center justify-between mt-auto relative z-10">
-                <span className="text-xs text-white/40 font-medium">Unplannable Backlogs:</span>
-                <span className={cn("text-sm font-bold", card.plan.unplannableCourses.length > 0 ? "text-red-400" : "text-white/80")}>
-                  {card.plan.unplannableCourses.length}
-                </span>
-              </div>
-            </button>
+              </button>
+            </MagneticWrapper>
           );
         })}
       </div>

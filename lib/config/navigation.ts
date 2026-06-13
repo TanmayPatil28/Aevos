@@ -35,7 +35,8 @@ export const INTELLIGENCE_MODULES = [
     category: "Career Intelligence",
     accent: { headerDot: "bg-purple-400", hoverIcon: "group-hover:bg-purple-500/10 group-hover:border-purple-500/20 group-hover:text-purple-400" },
     items: [
-      { name: "Placement Radar", href: "/placement", iconName: "Briefcase", desc: "Eligibility check & skill gap analysis", role: "user" }
+      { name: "Placement Radar", href: "/placement", iconName: "Briefcase", desc: "Eligibility check & skill gap analysis", role: "user" },
+      { name: "Internship Matcher", href: "/internships", iconName: "Briefcase", desc: "AI-matched internships based on your profile", role: "user" }
     ]
   },
   {

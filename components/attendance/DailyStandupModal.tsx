@@ -104,10 +104,10 @@ export default function DailyStandupModal() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="fixed bottom-6 right-6 z-50 w-[370px] bg-[#1D1D1F] border border-white/10 rounded-[2rem] p-6 shadow-2xl overflow-hidden"
+          className="fixed bottom-6 right-6 z-50 w-[370px] bg-[#1c1c1e] border border-white/[0.05] rounded-[2rem] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden"
         >
           {/* Ambient Glow */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#4F8EF7]/10 blur-3xl pointer-events-none rounded-full" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#10b981]/10 blur-3xl pointer-events-none rounded-full" />
           
           <button 
             onClick={dismissForToday}
@@ -117,8 +117,8 @@ export default function DailyStandupModal() {
           </button>
 
           <div className="flex items-center gap-3 mb-4 relative z-10">
-            <div className="w-10 h-10 rounded-full bg-[#4F8EF7]/10 border border-[#4F8EF7]/20 flex items-center justify-center shadow-[0_0_15px_rgba(79,142,247,0.2)]">
-              <CalendarCheck className="w-5 h-5 text-[#4F8EF7]" />
+            <div className="w-10 h-10 rounded-full bg-[#10b981]/10 border border-[#10b981]/20 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+              <CalendarCheck className="w-5 h-5 text-[#10b981] drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-white tracking-tight">Daily Standup</h3>

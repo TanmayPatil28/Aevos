@@ -118,12 +118,12 @@ export const DigicampusParser: AcademicParser = {
       }));
 
       // Calculate simple SGPA if missing
-      let sgpa = node.performance?.majorSGPA;
+      let sgpa = node.performance?.majorSGPA ?? node.performance?.sgpa ?? node.performance?.SGPA ?? node.sgpa;
       if (typeof sgpa !== "number") {
          sgpa = parseFloat(sgpa) || 0;
       }
       
-      let earnedCredits = courses.reduce((acc: number, c: any) => c.grade !== "F" && c.grade !== "FF" ? acc + c.credits : acc, 0);
+      let earnedCredits = courses.reduce((acc: number, c: any) => !["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((c.grade || "").toUpperCase()) ? acc + c.credits : acc, 0);
       let totalCredits = courses.reduce((acc: number, c: any) => acc + c.credits, 0);
 
       semesters.push({

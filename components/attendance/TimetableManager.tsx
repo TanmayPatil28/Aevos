@@ -16,24 +16,116 @@ import {
   AlertCircle,
   Bot,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  Database,
+  FileJson
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
+import Editor from "react-simple-code-editor";
+import Prism from "prismjs";
+import "prismjs/components/prism-json";
+import "prismjs/themes/prism-tomorrow.css";
 import HistorySettingsTab from "./HistorySettingsTab";
 
 const DAYS_OF_WEEK = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 const BATCHES = ["ALL", "H1", "H2", "H3"] as const;
 
+import { CustomSelect } from "@/components/ui/CustomSelect";
+
+const TimePickerPopover = ({ value, onChange, className = "" }: { value: string; onChange: (v: string) => void; className?: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const hoursContainerRef = React.useRef<HTMLDivElement>(null);
+  const minsContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const [hh, mm] = value.split(":");
+  const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
+  const minutes = ["00", "15", "30", "45"];
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (hoursContainerRef.current) {
+        const hBtn = hoursContainerRef.current.querySelector(`[data-val="${hh}"]`);
+        if (hBtn) hBtn.scrollIntoView({ block: "center" });
+      }
+      if (minsContainerRef.current) {
+        const mBtn = minsContainerRef.current.querySelector(`[data-val="${mm}"]`);
+        if (mBtn) mBtn.scrollIntoView({ block: "center" });
+      }
+    }
+  }, [isOpen, hh, mm]);
+
+  return (
+    <div className={`relative ${className}`}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-[65px] flex items-center justify-center gap-1 bg-transparent text-[13px] font-mono font-medium text-white/90 hover:text-white outline-none cursor-pointer rounded px-1 border border-transparent hover:border-white/10 hover:bg-white/[0.02] focus:border-[#10b981]/50 focus:bg-[#10b981]/5 transition-all"
+      >
+        {value}
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: -5, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -5, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max bg-[#1a1a1c]/95 backdrop-blur-xl border border-white/[0.08] shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl z-50 overflow-hidden flex p-1.5 gap-1"
+            >
+              {/* Hours */}
+              <div ref={hoursContainerRef} className="h-48 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-0.5 px-0.5 scroll-smooth">
+                {hours.map(h => (
+                  <button
+                    key={`h-${h}`}
+                    data-val={h}
+                    onClick={() => {
+                      onChange(`${h}:${mm}`);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-mono transition-colors ${h === hh ? "bg-white/[0.1] text-white font-bold" : "text-white/60 hover:bg-white/[0.06] hover:text-white"}`}
+                  >
+                    {h}
+                  </button>
+                ))}
+              </div>
+              <div className="w-[1px] bg-white/5 my-2" />
+              {/* Minutes */}
+              <div ref={minsContainerRef} className="h-48 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-0.5 px-0.5 scroll-smooth">
+                {minutes.map(m => (
+                  <button
+                    key={`m-${m}`}
+                    data-val={m}
+                    onClick={() => {
+                      onChange(`${hh}:${m}`);
+                      setIsOpen(false);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-mono transition-colors ${m === mm ? "bg-white/[0.1] text-white font-bold" : "text-white/60 hover:bg-white/[0.06] hover:text-white"}`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 function generateAIPrompt(courses: { id: string; code: string; name: string }[]): string {
-  const courseList = courses.map(c => `  - "${c.code}" (courseId: "${c.id}", name: "${c.name}")`).join("\n");
+  const courseList = courses.map(c => `  - "${c.code}" (name: "${c.name}")`).join("\n");
   
   return `I need you to convert my university timetable into a JSON format for GradeFlow. Here is the exact JSON schema I need:
 
 {
   "monday": [
     {
-      "courseId": "<use the courseId from the list below>",
+      "courseId": "<use the exact course code from the list below>",
       "type": "LECTURE" | "PRACTICAL" | "LAB" | "TUTORIAL",
       "startTime": "HH:MM",
       "endTime": "HH:MM",
@@ -53,7 +145,7 @@ My registered courses are:
 ${courseList}
 
 RULES:
-1. Use ONLY the courseId values from the list above.
+1. Use ONLY the exact Course Codes from the list above for the courseId field.
 2. Use 24-hour time format (e.g., "08:15", "14:30").
 3. If a class is for ALL batches, set batch to "ALL".
 4. If a class is batch-specific (like H1, H2, H3), set the batch field accordingly.
@@ -178,9 +270,10 @@ export default function TimetableManager() {
       
       let parsed;
       try {
-        parsed = JSON.parse(jsonInput) as Partial<TimetableState>;
+        const cleanedJson = jsonInput.replace(/```json/gi, '').replace(/```/g, '').trim();
+        parsed = JSON.parse(cleanedJson) as Partial<TimetableState>;
       } catch (e) {
-        throw new Error("Invalid JSON format. Please check your syntax.");
+        throw new Error("Invalid JSON format. Please ensure you pasted raw JSON without markdown formatting errors.");
       }
 
       if (!parsed || typeof parsed !== 'object') {
@@ -203,8 +296,12 @@ export default function TimetableManager() {
 
         sanitized[dayKey] = entries.map((e: any, index: number) => {
           if (!e.courseId) throw new Error(`Missing "courseId" for class #${index + 1} on ${day}.`);
-          if (!courses.find(c => c.id === e.courseId)) {
-            throw new Error(`Invalid "courseId" "${e.courseId}" on ${day}. It does not match any of your registered courses.`);
+          
+          // Try to find by ID first, then fallback to checking if they pasted a course code by accident
+          const matchedCourse = courses.find(c => c.id === e.courseId || c.code === e.courseId);
+          
+          if (!matchedCourse) {
+            throw new Error(`Invalid "courseId" "${e.courseId}" on ${day}. This doesn't match your current courses. (If you recently used "Reset All Data", your courses were deleted. Please re-add your courses in the Academic Dashboard, then generate a NEW prompt to get the updated JSON!).`);
           }
           if (e.startTime && !/^([01]\d|2[0-3]):?([0-5]\d)$/.test(e.startTime)) {
             throw new Error(`Invalid startTime "${e.startTime}" on ${day}. Must be HH:MM format.`);
@@ -212,7 +309,7 @@ export default function TimetableManager() {
           
           return {
             id: e.id || Math.random().toString(36).substring(7),
-            courseId: e.courseId,
+            courseId: matchedCourse.id, // always use the actual resolved ID
             type: e.type || "LECTURE",
             startTime: e.startTime || "09:00",
             endTime: e.endTime || "10:00",
@@ -241,58 +338,63 @@ export default function TimetableManager() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "LECTURE": return "text-[#A855F7] border-[#A855F7]/30 bg-[#A855F7]/10";
-      case "PRACTICAL": return "text-[#4F8EF7] border-[#4F8EF7]/30 bg-[#4F8EF7]/10";
-      case "LAB": return "text-emerald-400 border-emerald-400/30 bg-emerald-400/10";
-      case "TUTORIAL": return "text-amber-400 border-amber-400/30 bg-amber-400/10";
-      default: return "text-white border-white/20 bg-white/5";
+      case "LECTURE": return "bg-[#A855F7] shadow-[0_0_8px_rgba(168,85,247,0.6)]";
+      case "PRACTICAL": return "bg-[#4F8EF7] shadow-[0_0_8px_rgba(79,142,247,0.6)]";
+      case "LAB": return "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]";
+      case "TUTORIAL": return "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]";
+      default: return "bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]";
     }
   };
+
 
   // Count total entries
   const totalEntries = DAYS_OF_WEEK.reduce((acc, day) => acc + (timetable[day]?.length || 0), 0);
   const filteredTotal = DAYS_OF_WEEK.reduce((acc, day) => acc + getFilteredEntries(day).length, 0);
 
   return (
-    <div className="w-full bg-[#1D1D1F] border border-white/5 rounded-[2rem] p-6 md:p-8 shadow-none relative overflow-hidden">
+    <div className="w-full bg-[#1c1c1e] border border-white/[0.04] rounded-[32px] p-6 md:p-8 shadow-[0_0_20px_rgba(0,0,0,0.2)] relative overflow-hidden">
       
       {/* Header */}
-      <div className="relative z-10 flex flex-col gap-6 mb-8">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div>
-            <h3 className="text-xl font-bold text-white tracking-wide flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#A855F7]" />
+      <div className="relative z-10 flex flex-col gap-5 mb-6">
+        {/* Top Row: Context & Global Filter */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          
+          <div className="flex items-center gap-4 flex-wrap">
+            <h3 className="text-xl font-bold text-white/90 tracking-wide flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-white/80" />
               Timetable Intelligence
             </h3>
-            <p className="text-xs text-white/40 mt-1.5 max-w-lg leading-relaxed">
-              Configure your weekly schedule to enable AI Auto-Pilot, daily standup prompts, and smart placement planning. Select your batch to see only your classes.
-            </p>
+            
+            {/* Inline Stats */}
             {totalEntries > 0 && (
-              <div className="flex items-center gap-3 mt-3">
-                <span className="text-[10px] font-mono text-emerald-400/80 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
-                  {totalEntries} TOTAL CLASSES
+              <div className="flex items-center gap-2.5 border-l border-white/10 pl-4 py-1">
+                <span className="text-[10px] font-mono text-white/50 tracking-widest uppercase">
+                  {totalEntries} Classes
                 </span>
                 {selectedBatch !== "ALL" && (
-                  <span className="text-[10px] font-mono text-[#A855F7]/80 bg-[#A855F7]/10 border border-[#A855F7]/20 px-2.5 py-1 rounded-lg">
-                    {filteredTotal} FOR {selectedBatch}
-                  </span>
+                  <>
+                    <span className="w-1 h-1 rounded-full bg-white/20" />
+                    <span className="text-[10px] font-mono text-[#10b981]/80 tracking-widest uppercase font-bold">
+                      {filteredTotal} for {selectedBatch}
+                    </span>
+                  </>
                 )}
               </div>
             )}
           </div>
 
           {/* Batch Selector */}
-          <div className="flex flex-col gap-2">
-            <span className="text-[9px] uppercase font-bold text-white/40 tracking-widest">Your Batch</span>
-            <div className="flex bg-white/[0.04] border border-white/[0.06] p-1 rounded-xl">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Batch</span>
+            <div className="flex gap-1.5 bg-white/[0.02] p-1 rounded-full border border-white/[0.05]">
               {BATCHES.map(batch => (
                 <button
                   key={batch}
                   onClick={() => setSelectedBatch(batch)}
-                  className={`px-3.5 py-1.5 rounded-lg text-[11px] font-bold tracking-wider transition-all ${
+                  className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wider transition-all ${
                     selectedBatch === batch 
-                      ? "bg-[#A855F7]/20 text-[#A855F7] shadow-[0_0_10px_rgba(168,85,247,0.15)] border border-[#A855F7]/30" 
-                      : "text-white/40 hover:text-white/70 border border-transparent"
+                      ? "bg-white text-black shadow-[0_2px_10px_rgba(255,255,255,0.15)]" 
+                      : "text-white/50 hover:text-white/90"
                   }`}
                 >
                   {batch}
@@ -302,27 +404,27 @@ export default function TimetableManager() {
           </div>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex bg-white/[0.04] border border-white/[0.05] p-1 rounded-xl w-fit">
+        {/* Bottom Row: Navigation */}
+        <div className="flex flex-wrap gap-2">
           {([
             { key: "VISUAL" as const, label: "VISUAL EDITOR" },
             { key: "AI_SCANNER" as const, label: "AI SCANNER" },
-            { key: "JSON" as const, label: "JSON IMPORT" },
             { key: "AI_PROMPT" as const, label: "AI PROMPT" },
+            { key: "JSON" as const, label: "JSON IMPORT" },
             { key: "SETTINGS" as const, label: "SETTINGS & LOGS" }
           ]).map(tab => (
             <button 
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-1.5 rounded-lg text-[11px] font-bold tracking-wider transition-all flex items-center gap-1.5 ${
+              className={`px-5 py-2.5 rounded-full text-[11px] font-bold tracking-wider transition-all flex items-center gap-1.5 ${
                 activeTab === tab.key 
-                  ? tab.key === "AI_SCANNER" 
-                    ? "bg-gradient-to-r from-[#A855F7]/20 to-[#4F8EF7]/20 text-white shadow-sm border border-white/10" 
-                    : "bg-white/10 text-white shadow-sm" 
-                  : "text-white/40 hover:text-white/70"
+                  ? "bg-white text-black shadow-[0_2px_10px_rgba(255,255,255,0.15)]" 
+                  : "bg-white/[0.04] text-white/60 hover:bg-white/[0.08] hover:text-white/90"
               }`}
             >
-              {(tab.key === "AI_PROMPT" || tab.key === "AI_SCANNER") && <Sparkles className={`w-3 h-3 ${tab.key === "AI_SCANNER" ? "text-[#A855F7]" : ""}`} />}
+              {(tab.key === "AI_PROMPT" || tab.key === "AI_SCANNER") && (
+                <Sparkles className={`w-3.5 h-3.5 ${activeTab === tab.key ? "text-black" : "opacity-40"}`} />
+              )}
               {tab.label}
             </button>
           ))}
@@ -343,37 +445,61 @@ export default function TimetableManager() {
               className="relative"
             >
               {courses.length === 0 ? (
-                <div className="p-8 text-center border border-dashed border-white/10 rounded-2xl bg-white/[0.02]">
-                  <p className="text-white/50 text-sm">Please add courses in the Calculator first to build a timetable.</p>
+                <div className="p-8 text-center border border-dashed border-white/10 rounded-2xl bg-white/[0.03]">
+                  <p className="text-white/70 text-sm">Please add courses in the Calculator first to build a timetable.</p>
                 </div>
               ) : (
-                <div className="flex flex-col md:flex-row gap-6 bg-white/[0.015] border border-white/[0.05] rounded-2xl overflow-hidden min-h-[400px]">
+                <div className="flex flex-col md:flex-row gap-6 border-t border-white/[0.06] pt-6 overflow-hidden min-h-[400px]">
                   
                   {/* LEFT PANE: Days List */}
-                  <div className="w-full md:w-[220px] shrink-0 border-b md:border-b-0 md:border-r border-white/20 bg-black/20 p-4 space-y-1">
+                  <div 
+                    className="w-full md:w-[220px] shrink-0 space-y-1 outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
+                    onKeyDown={(e) => {
+                      const currentIndex = DAYS_OF_WEEK.indexOf(selectedDay);
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setSelectedDay(DAYS_OF_WEEK[(currentIndex + 1) % DAYS_OF_WEEK.length]);
+                      } else if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setSelectedDay(DAYS_OF_WEEK[(currentIndex - 1 + DAYS_OF_WEEK.length) % DAYS_OF_WEEK.length]);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="tablist"
+                    aria-label="Days of the week"
+                  >
                     {DAYS_OF_WEEK.map(day => {
                       const count = getFilteredEntries(day).length;
                       const isActive = selectedDay === day;
                       return (
                         <button
                           key={day}
+                          role="tab"
+                          aria-selected={isActive}
                           onClick={() => setSelectedDay(day)}
-                          className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
+                          className={`w-full relative flex items-center justify-between px-4 py-3 rounded-full transition-colors duration-200 outline-none ${
                             isActive 
-                              ? "bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] text-white" 
-                              : "hover:bg-white/[0.04] text-white/50 hover:text-white/80"
+                              ? "text-black" 
+                              : "text-white/60 hover:text-white/90 hover:bg-white/[0.04]"
                           }`}
                         >
-                          <span className="text-[11px] font-bold uppercase tracking-widest">{day}</span>
-                          <div className="flex items-center gap-2">
+                          {isActive && (
+                            <motion.div
+                              layoutId="activeDayPill"
+                              className="absolute inset-0 bg-white rounded-full shadow-[0_2px_10px_rgba(255,255,255,0.15)]"
+                              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                          )}
+                          <span className="relative z-10 text-[11px] font-bold uppercase tracking-widest">{day}</span>
+                          <div className="relative z-10 flex items-center gap-2">
                             {count > 0 && (
-                              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                                isActive ? "bg-[#A855F7]/20 text-[#A855F7]" : "bg-white/[0.05] text-white/40"
+                              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded transition-colors duration-200 ${
+                                isActive ? "bg-black/10 text-black font-bold" : "bg-white/[0.08] text-white/60"
                               }`}>
                                 {count}
                               </span>
                             )}
-                            {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-50" />}
+                            {isActive && <ChevronRight className="w-3.5 h-3.5 text-black opacity-60" />}
                           </div>
                         </button>
                       );
@@ -381,124 +507,154 @@ export default function TimetableManager() {
                   </div>
 
                   {/* RIGHT PANE: Day Editor */}
-                  <div className="flex-1 p-4 md:p-6 overflow-hidden flex flex-col">
+                  <div className="flex-1 overflow-hidden flex flex-col border border-white/[0.08] bg-white/[0.02] rounded-3xl p-6 shadow-sm">
                     {/* Right Pane Header */}
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex justify-between items-center mb-4 border-b border-white/[0.06] pb-4">
                       <div className="flex items-center gap-3">
                         <h4 className="text-lg font-bold text-white uppercase tracking-widest">{selectedDay}</h4>
-                        <span className="text-xs text-white/40 font-mono bg-white/[0.03] px-2 py-1 rounded-lg">
+                        <span className="text-[10px] text-white/60 font-mono tracking-widest uppercase">
                           {getFilteredEntries(selectedDay).length} CLASSES
                         </span>
                       </div>
-                      <button 
-                        onClick={() => addEntry(selectedDay)}
-                        className="px-4 py-2 bg-[#A855F7]/10 hover:bg-[#A855F7]/20 text-[#A855F7] border border-[#A855F7]/30 rounded-xl font-bold text-[10px] tracking-wider transition-colors flex items-center gap-1.5"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> ADD CLASS
-                      </button>
+                      <MagneticWrapper strength={0.4}>
+                        <button 
+                          onClick={() => addEntry(selectedDay)}
+                          className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.1] text-white rounded-full font-bold text-[10px] tracking-widest transition-colors flex items-center gap-1.5"
+                        >
+                          <Plus className="w-3.5 h-3.5 opacity-90" /> ADD CLASS
+                        </button>
+                      </MagneticWrapper>
                     </div>
 
-                    {/* Classes List */}
-                    <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 space-y-3 pr-2">
+                    {/* Spreadsheet Table Wrapper */}
+                    <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 pr-2">
                       {getFilteredEntries(selectedDay).length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center py-12 text-center opacity-50">
-                          <Calendar className="w-12 h-12 text-white/20 mb-3" />
+                        <div className="h-full flex flex-col items-center justify-center py-12 text-center opacity-70">
+                          <Calendar className="w-12 h-12 text-white/40 mb-3" />
                           <p className="text-sm text-white font-medium">No classes scheduled</p>
-                          <p className="text-xs text-white/60 mt-1">Enjoy your free day!</p>
+                          <p className="text-xs text-white/80 mt-1">Enjoy your free day!</p>
                         </div>
                       ) : (
-                        [...getFilteredEntries(selectedDay)]
-                          .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                          .map(entry => (
-                            <div 
-                              key={entry.id} 
-                              className="group bg-white/[0.02] border border-white/[0.05] hover:border-white/10 hover:bg-white/[0.04] transition-colors rounded-xl p-3 flex flex-wrap lg:flex-nowrap items-center gap-3 relative"
-                            >
-                              {/* Type Indicator Line */}
-                              <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r bg-white/20 group-hover:bg-white/40 transition-colors" />
-
-                              {/* Course Select */}
-                              <div className="w-full lg:w-48 xl:w-64 pl-3">
-                                <select 
-                                  value={entry.courseId}
-                                  onChange={(e) => updateEntry(selectedDay, entry.id, { courseId: e.target.value })}
-                                  className="w-full bg-transparent text-sm font-bold text-white outline-none cursor-pointer appearance-none truncate"
+                        <table className="w-full text-left border-collapse min-w-[850px]">
+                          <thead>
+                            <tr className="border-b border-white/[0.04]">
+                              <th className="pb-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-widest w-[35%]">Course Details</th>
+                              <th className="pb-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-widest w-[25%]">Timing</th>
+                              <th className="pb-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-widest w-[20%]">Location</th>
+                              <th className="pb-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-widest w-[15%]">Batch</th>
+                              <th className="pb-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-widest text-center w-[5%]">Act</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[...getFilteredEntries(selectedDay)]
+                              .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                              .map(entry => (
+                                <tr 
+                                  key={entry.id} 
+                                  className="group bg-white/[0.01] hover:bg-white/[0.03] border-b border-white/[0.02] transition-all"
                                 >
-                                  {courses.map(c => (
-                                    <option key={c.id} value={c.id} className="bg-[#131C31] text-white">{c.code} — {c.name}</option>
-                                  ))}
-                                </select>
-                              </div>
+                                  {/* 1. Course Details */}
+                                  <td className="px-4 py-1.5 align-middle">
+                                    <div className="flex items-center gap-3 w-full max-w-[340px]">
+                                      <div className="font-bold text-white flex-1 min-w-0">
+                                        <CustomSelect 
+                                          value={entry.courseId}
+                                          options={courses.map(c => ({ label: c.name, value: c.id }))}
+                                          onChange={(val) => updateEntry(selectedDay, entry.id, { courseId: val })}
+                                        />
+                                      </div>
+                                      <div className="w-[125px] shrink-0">
+                                        <CustomSelect 
+                                          value={entry.type}
+                                          options={[
+                                            { label: "LECTURE", value: "LECTURE" },
+                                            { label: "PRACTICAL", value: "PRACTICAL" },
+                                            { label: "LAB", value: "LAB" },
+                                            { label: "TUTORIAL", value: "TUTORIAL" },
+                                          ]}
+                                          onChange={(val) => updateEntry(selectedDay, entry.id, { type: val as any })}
+                                          buttonClassName="w-full flex items-center justify-between gap-2 bg-transparent outline-none truncate text-left rounded-full border border-white/5 hover:bg-white/[0.04] px-3 py-1.5 transition-all"
+                                          dropdownClassName="left-0 w-max min-w-[140px]"
+                                          renderSelected={(opt) => (
+                                            <div className="flex items-center gap-2.5">
+                                              <div className={`w-1.5 h-1.5 rounded-full ${getTypeColor(opt?.value || "LECTURE")}`} />
+                                              <span className="text-[9px] font-bold text-white/80 hover:text-white uppercase tracking-widest">{opt?.label}</span>
+                                            </div>
+                                          )}
+                                          renderOption={(opt) => (
+                                            <div className="flex items-center gap-2.5 py-0.5">
+                                              <div className={`w-1.5 h-1.5 rounded-full ${getTypeColor(opt.value)}`} />
+                                              <span className="text-[9px] font-bold uppercase tracking-widest">{opt.label}</span>
+                                            </div>
+                                          )}
+                                        />
+                                      </div>
+                                    </div>
+                                  </td>
 
-                              {/* Type Select */}
-                              <div className="w-28 shrink-0">
-                                <select 
-                                  value={entry.type}
-                                  onChange={(e) => updateEntry(selectedDay, entry.id, { type: e.target.value as any })}
-                                  className={`w-full px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider outline-none cursor-pointer appearance-none border transition-colors ${getTypeColor(entry.type)}`}
-                                >
-                                  <option value="LECTURE" className="bg-[#131C31] text-white">LECTURE</option>
-                                  <option value="PRACTICAL" className="bg-[#131C31] text-white">PRACTICAL</option>
-                                  <option value="LAB" className="bg-[#131C31] text-white">LAB</option>
-                                  <option value="TUTORIAL" className="bg-[#131C31] text-white">TUTORIAL</option>
-                                </select>
-                              </div>
+                                  {/* 2. Timing */}
+                                  <td className="px-4 py-1.5 align-middle">
+                                    <div className="flex items-center gap-2 w-fit">
+                                      <TimePickerPopover 
+                                        value={entry.startTime} 
+                                        onChange={(val) => updateEntry(selectedDay, entry.id, { startTime: val })} 
+                                      />
+                                      <span className="text-white/20 text-[10px] font-bold">→</span>
+                                      <TimePickerPopover 
+                                        value={entry.endTime} 
+                                        onChange={(val) => updateEntry(selectedDay, entry.id, { endTime: val })} 
+                                      />
+                                    </div>
+                                  </td>
 
-                              {/* Time Input */}
-                              <div className="flex items-center gap-1.5 bg-black/20 rounded-lg px-2.5 py-1.5 shrink-0 border border-white/[0.05]">
-                                <Clock className="w-3 h-3 text-white/30" />
-                                <input 
-                                  type="time" 
-                                  value={entry.startTime} 
-                                  onChange={(e) => updateEntry(selectedDay, entry.id, { startTime: e.target.value })} 
-                                  className="bg-transparent text-[11px] font-mono text-white/70 outline-none w-[54px]" 
-                                />
-                                <span className="text-white/20 text-[10px]">—</span>
-                                <input 
-                                  type="time" 
-                                  value={entry.endTime} 
-                                  onChange={(e) => updateEntry(selectedDay, entry.id, { endTime: e.target.value })} 
-                                  className="bg-transparent text-[11px] font-mono text-white/70 outline-none w-[54px]" 
-                                />
-                              </div>
+                                  {/* 3. Location */}
+                                  <td className="px-4 py-1.5 align-middle">
+                                    <div className="w-full max-w-[140px]">
+                                      <input 
+                                        type="text" 
+                                        value={entry.room || ""} 
+                                        onChange={(e) => updateEntry(selectedDay, entry.id, { room: e.target.value })}
+                                        placeholder="Add room..."
+                                        className="w-full bg-transparent text-[13px] font-medium text-white/90 hover:text-white outline-none placeholder:text-white/20 truncate transition-all cursor-text rounded px-2 py-1 -ml-2 border border-transparent hover:border-white/10 hover:bg-white/[0.02] focus:border-[#10b981]/50 focus:bg-[#10b981]/5"
+                                      />
+                                    </div>
+                                  </td>
 
-                              {/* Room & Batch (Grow to fill) */}
-                              <div className="flex flex-1 items-center gap-2 min-w-[150px]">
-                                <div className="flex-1 flex items-center gap-1.5 bg-black/20 rounded-lg px-2.5 py-1.5 border border-white/[0.05]">
-                                  <MapPin className="w-3 h-3 text-white/30 shrink-0" />
-                                  <input 
-                                    type="text" 
-                                    value={entry.room || ""} 
-                                    onChange={(e) => updateEntry(selectedDay, entry.id, { room: e.target.value })}
-                                    placeholder="Room..."
-                                    className="w-full bg-transparent text-[11px] text-white/70 outline-none placeholder:text-white/20 truncate"
-                                  />
-                                </div>
-                                <div className="w-20 flex items-center gap-1.5 bg-black/20 rounded-lg px-2.5 py-1.5 border border-white/[0.05]">
-                                  <Users className="w-3 h-3 text-white/30 shrink-0" />
-                                  <select 
-                                    value={entry.batch || "ALL"}
-                                    onChange={(e) => updateEntry(selectedDay, entry.id, { batch: e.target.value })}
-                                    className="w-full bg-transparent text-[11px] text-white/70 outline-none cursor-pointer appearance-none"
-                                  >
-                                    <option value="ALL" className="bg-[#131C31]">ALL</option>
-                                    <option value="H1" className="bg-[#131C31]">H1</option>
-                                    <option value="H2" className="bg-[#131C31]">H2</option>
-                                    <option value="H3" className="bg-[#131C31]">H3</option>
-                                  </select>
-                                </div>
-                              </div>
+                                  {/* 4. Batch */}
+                                  <td className="px-4 py-1.5 align-middle">
+                                    <div className="w-[85px]">
+                                      <CustomSelect 
+                                        value={entry.batch || "ALL"}
+                                        options={[
+                                          { label: "ALL", value: "ALL" },
+                                          { label: "H1", value: "H1" },
+                                          { label: "H2", value: "H2" },
+                                          { label: "H3", value: "H3" },
+                                        ]}
+                                        onChange={(val) => updateEntry(selectedDay, entry.id, { batch: val })}
+                                        buttonClassName="w-full flex items-center justify-between gap-1 bg-transparent outline-none truncate text-left rounded hover:bg-white/[0.04] px-2 py-1 transition-all"
+                                        dropdownClassName="right-0 w-max min-w-[80px]"
+                                        renderSelected={(opt) => (
+                                          <span className="text-[13px] font-medium text-white/90 truncate">{opt?.label}</span>
+                                        )}
+                                      />
+                                    </div>
+                                  </td>
 
-                              {/* Delete Action */}
-                              <button 
-                                onClick={() => removeEntry(selectedDay, entry.id)}
-                                className="p-2 ml-auto text-white/20 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0"
-                                title="Delete Class"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                        ))
+                                  {/* 5. Actions */}
+                                  <td className="px-4 py-1.5 align-middle text-center">
+                                    <button 
+                                      onClick={() => removeEntry(selectedDay, entry.id)}
+                                      className="p-2.5 text-white/30 hover:text-rose-400 bg-black/0 hover:bg-rose-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 mx-auto block"
+                                      title="Delete Class"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </td>
+                                </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       )}
                     </div>
                   </div>
@@ -516,47 +672,52 @@ export default function TimetableManager() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-4"
             >
-              <div className="bg-gradient-to-br from-[#131C31] to-[#1D1D1F] border border-[#A855F7]/20 rounded-2xl p-6 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-[#A855F7]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                <div className="relative z-10 flex flex-col items-center justify-center text-center py-8">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#A855F7]/20 to-[#4F8EF7]/20 border border-white/10 flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(168,85,247,0.15)] relative">
-                    <Sparkles className="w-8 h-8 text-[#A855F7] absolute -top-2 -right-2 drop-shadow-md" />
-                    <Upload className="w-6 h-6 text-white" />
+              <div className="bg-[#18181b] border border-white/[0.04] rounded-full relative overflow-hidden flex flex-col md:flex-row items-center justify-between py-4 px-5">
+                
+                <div className="flex items-center gap-4 text-left">
+                  {/* Solid Flat Icon */}
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-[#EAB308]/10 flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-[#EAB308]" />
                   </div>
-                  <h4 className="text-white font-bold text-lg mb-2">Upload Timetable Image</h4>
-                  <p className="text-white/50 text-sm max-w-sm mb-6">
-                    Drop a screenshot of your timetable here. Our AI will automatically parse it and build your visual schedule.
-                  </p>
-                  
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => e.target.files?.[0] && handleAiScan(e.target.files[0])}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                      disabled={isScanning || courses.length === 0}
-                    />
-                    <button 
-                      disabled={isScanning || courses.length === 0}
-                      className="px-6 py-3 bg-gradient-to-r from-[#A855F7] to-[#4F8EF7] text-white rounded-xl font-bold text-xs tracking-wider disabled:opacity-50 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center gap-2"
-                    >
-                      {isScanning ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          ANALYZING IMAGE...
-                        </>
-                      ) : (
-                        "SELECT IMAGE"
-                      )}
-                    </button>
+
+                  <div>
+                    <h4 className="text-white font-bold text-[15px] mb-0.5">AI Timetable Scanner</h4>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">
+                      Drop a screenshot to automatically build schedule
+                    </p>
                   </div>
-                  
-                  {courses.length === 0 && (
-                    <div className="mt-4 text-rose-400 text-xs font-bold bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20">
-                      Please add your courses first before scanning a timetable!
-                    </div>
-                  )}
                 </div>
+                
+                <div className="relative shrink-0 mt-4 md:mt-0 w-full md:w-auto">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => e.target.files?.[0] && handleAiScan(e.target.files[0])}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-20"
+                    disabled={isScanning || courses.length === 0}
+                  />
+                  <button 
+                    disabled={isScanning || courses.length === 0}
+                    className="w-full md:w-auto px-6 py-2.5 bg-[#EAB308] text-black rounded-full font-bold text-[13px] disabled:opacity-50 hover:bg-[#EAB308]/90 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isScanning ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                        ANALYZING...
+                      </>
+                    ) : (
+                      "Select Image"
+                    )}
+                  </button>
+                </div>
+
+                {courses.length === 0 && (
+                  <div className="absolute inset-0 bg-rose-500/10 backdrop-blur-sm z-30 flex items-center justify-center rounded-full">
+                    <span className="text-rose-400 text-[11px] font-bold tracking-widest uppercase bg-black/50 px-4 py-2 rounded-full border border-rose-500/20">
+                      Please add courses first
+                    </span>
+                  </div>
+                )}
               </div>
 
               {scanError && (
@@ -577,29 +738,58 @@ export default function TimetableManager() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="space-y-4"
+              className="space-y-5"
             >
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4">
-                <textarea 
-                  value={jsonInput}
-                  onChange={(e) => setJsonInput(e.target.value)}
-                  placeholder='Paste your timetable JSON here...
-
-{
-  "monday": [
-    { "courseId": "...", "type": "LECTURE", "startTime": "08:15", "endTime": "09:15", "room": "B-218", "batch": "ALL", "faculty": "Dr. Name" }
-  ],
-  "tuesday": [...],
-  ...
-}'
-                  className="w-full h-56 bg-transparent text-xs font-mono text-white/70 outline-none resize-none placeholder:text-white/15 leading-relaxed"
-                />
+              {/* Code Editor Container */}
+              <div className="bg-[#09090b] border border-white/[0.08] focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 rounded-2xl overflow-hidden transition-all duration-300 shadow-inner group">
+                {/* Editor Header */}
+                <div className="bg-[#121214] border-b border-white/[0.04] px-4 py-2.5 flex items-center justify-between transition-colors group-focus-within:bg-[#18181b]">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest flex items-center gap-1.5">
+                    <FileJson className="w-3.5 h-3.5 opacity-50" />
+                    timetable_payload.json
+                  </span>
+                </div>
+                
+                {/* Editor Body */}
+                <div className="relative">
+                  <div className="absolute left-0 top-0 bottom-0 w-10 bg-[#121214]/50 border-r border-white/[0.02] flex flex-col items-center py-4 text-[10px] font-mono text-white/20 select-none pointer-events-none z-10 overflow-hidden">
+                    {Array.from({ length: 50 }).map((_, i) => <span key={i} className="leading-[1.4rem]">{i + 1}</span>)}
+                  </div>
+                  <Editor 
+                    value={jsonInput}
+                    onValueChange={code => setJsonInput(code)}
+                    highlight={code => Prism.highlight(code, Prism.languages.json, 'json')}
+                    padding={16}
+                    style={{
+                      fontFamily: '"Fira Code", "JetBrains Mono", monospace',
+                      fontSize: 13,
+                      lineHeight: '1.4rem',
+                      paddingLeft: 56,
+                      height: 224,
+                      overflowY: 'auto',
+                    }}
+                    className="w-full bg-transparent text-white/90 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    textareaClassName="outline-none"
+                  />
+                </div>
               </div>
 
-              <div className="bg-[#4F8EF7]/5 border border-[#4F8EF7]/10 rounded-xl p-4 flex items-start gap-3">
-                <Bot className="w-4 h-4 text-[#4F8EF7] mt-0.5 shrink-0" />
-                <div className="text-[11px] text-[#4F8EF7]/80 leading-relaxed">
-                  <strong className="text-[#4F8EF7]">Pro Tip:</strong> Use the <button onClick={() => setActiveTab("AI_PROMPT")} className="underline underline-offset-2 font-bold hover:text-white transition-colors">AI Prompt</button> tab to generate a ready-made prompt. Copy it, paste into ChatGPT, Gemini, or Claude along with your timetable image, and paste the output JSON here.
+              {/* Minimal Monochrome Pro Tip */}
+              <div className="bg-[#18181b] border border-white/[0.04] rounded-xl p-4 flex items-start gap-4">
+                <div className="w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center shrink-0 border border-white/[0.02]">
+                  <Bot className="w-4 h-4 text-white/40" />
+                </div>
+                <div className="text-[12px] text-white/50 leading-relaxed pt-0.5">
+                  <strong className="text-white/80 tracking-wide mr-1 font-bold">PRO TIP:</strong> 
+                  Use the <button onClick={() => setActiveTab("AI_PROMPT")} className="text-white/80 hover:text-white font-bold underline underline-offset-4 decoration-white/20 transition-colors mx-1">AI Prompt</button> tab to generate a ready-made prompt. 
+                  Paste it into ChatGPT, Gemini, or Claude along with your timetable image, and copy-paste the output JSON straight into this editor.
                 </div>
               </div>
 
@@ -612,18 +802,23 @@ export default function TimetableManager() {
                 </div>
               )}
 
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-[10px] text-white/30 font-mono">
-                  <span>Supports: room, batch, faculty, type fields</span>
+              {/* Footer Actions */}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
+                <div className="flex items-center gap-2 text-[10px] text-white/30 font-mono bg-[#18181b] px-3 py-1.5 rounded-md border border-white/[0.04]">
+                  <Database className="w-3.5 h-3.5 opacity-40" />
+                  <span>Supports: room, batch, faculty, type</span>
                 </div>
-                <button
-                  onClick={handleJsonSubmit}
-                  className="px-6 py-2.5 bg-[#A855F7]/20 text-[#A855F7] border border-[#A855F7]/30 rounded-xl font-bold text-[11px] tracking-wider hover:bg-[#A855F7]/30 transition-all flex items-center gap-2"
-                >
-                  {syncStatus === "SUCCESS" ? <><CheckCircle2 className="w-4 h-4" /> SYNCED</> : 
-                   syncStatus === "ERROR" ? <><AlertCircle className="w-4 h-4 text-rose-400" /> PARSE ERROR</> :
-                   <><Upload className="w-4 h-4" /> IMPORT JSON</>}
-                </button>
+                
+                <MagneticWrapper strength={0.4}>
+                  <button
+                    onClick={handleJsonSubmit}
+                    className="w-full sm:w-auto px-8 py-3.5 bg-white text-black hover:bg-white/90 rounded-full font-bold text-[12px] tracking-widest transition-transform flex items-center justify-center gap-2.5 hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    {syncStatus === "SUCCESS" ? <><CheckCircle2 className="w-4 h-4" /> SUCCESSFULLY SYNCED</> : 
+                     syncStatus === "ERROR" ? <><AlertCircle className="w-4 h-4 text-black" /> PARSE ERROR</> :
+                     <><FileJson className="w-4 h-4 opacity-90" /> IMPORT TIMETABLE</>}
+                  </button>
+                </MagneticWrapper>
               </div>
             </motion.div>
           )}
@@ -635,77 +830,111 @@ export default function TimetableManager() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="space-y-5"
+              className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6"
             >
-              {/* Instruction Banner */}
-              <div className="bg-gradient-to-r from-[#A855F7]/10 to-[#4F8EF7]/10 border border-[#A855F7]/15 rounded-2xl p-5">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-[#A855F7]" />
-                  AI-Powered Timetable Import
-                </h4>
-                <div className="space-y-3 text-[11px] text-white/60 leading-relaxed">
-                  <div className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">1</span>
-                    <span>Click <strong className="text-white">Copy AI Prompt</strong> below to copy the pre-built prompt to your clipboard.</span>
+              {/* Left Column: Prompt Preview Editor */}
+              <div className="bg-[#09090b] border border-white/[0.08] focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 rounded-2xl overflow-hidden transition-all duration-300 shadow-inner group flex flex-col h-[340px]">
+                {/* Editor Header */}
+                <div className="bg-[#121214] border-b border-white/[0.04] px-4 py-2.5 flex items-center justify-between transition-colors group-focus-within:bg-[#18181b]">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                    </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">2</span>
-                    <span>Open your preferred AI tool and paste the prompt along with your timetable screenshot or text.</span>
+                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest flex items-center gap-1.5">
+                    <FileJson className="w-3.5 h-3.5 opacity-50" />
+                    generated_prompt.txt
+                  </span>
+                </div>
+                
+                {/* Editor Body */}
+                <div className="relative flex-1 bg-transparent">
+                  <div className="absolute left-0 top-0 bottom-0 w-10 bg-[#121214]/50 border-r border-white/[0.02] flex flex-col items-center py-4 text-[10px] font-mono text-white/20 select-none pointer-events-none z-10 overflow-hidden">
+                    {Array.from({ length: 50 }).map((_, i) => <span key={i} className="leading-[1.4rem]">{i + 1}</span>)}
                   </div>
-                  <div className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">3</span>
-                    <span>Copy the generated JSON output and paste it into the <button onClick={() => setActiveTab("JSON")} className="text-[#4F8EF7] underline underline-offset-2 font-bold hover:text-white transition-colors">JSON Import</button> tab.</span>
+                  <div className="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <Editor 
+                      value={courses.length === 0 ? "⚠️ No courses found. Please add courses in the Calculator first to generate a personalized AI prompt." : aiPrompt}
+                      onValueChange={() => {}}
+                      highlight={code => Prism.highlight(code, Prism.languages.json, 'json')}
+                      padding={16}
+                      style={{
+                        fontFamily: '"Fira Code", "JetBrains Mono", monospace',
+                        fontSize: 13,
+                        lineHeight: '1.4rem',
+                        paddingLeft: 56,
+                        minHeight: '100%',
+                      }}
+                      className="w-full bg-transparent text-white/90 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                      textareaClassName="outline-none"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* AI Tool Quick Links */}
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { name: "ChatGPT", url: "https://chatgpt.com", color: "#10A37F" },
-                  { name: "Gemini", url: "https://gemini.google.com", color: "#4285F4" },
-                  { name: "Claude", url: "https://claude.ai", color: "#D4A574" }
-                ].map(tool => (
-                  <a
-                    key={tool.name}
-                    href={tool.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-lg text-[10px] font-bold tracking-wider text-white/60 hover:text-white transition-all"
+              {/* Right Column: Instructions, Links, and Copy Button */}
+              <div className="flex flex-col gap-5">
+                {/* Minimal Instructions */}
+                <div className="bg-[#18181b] border border-white/[0.04] rounded-2xl p-5 flex-1">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+                    <Bot className="w-4 h-4 text-white/50" />
+                    Import Steps
+                  </h4>
+                  <div className="space-y-4 text-[11px] text-white/60 leading-relaxed">
+                    <div className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">1</span>
+                      <span>Copy the prompt to your clipboard.</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">2</span>
+                      <span>Paste it into your preferred AI tool with your timetable screenshot.</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">3</span>
+                      <span>Paste the generated JSON into the <button onClick={() => setActiveTab("JSON")} className="text-white hover:underline font-bold underline-offset-2">JSON Import</button> tab.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Quick Links */}
+                <div className="flex gap-2">
+                  {[
+                    { name: "ChatGPT", url: "https://chatgpt.com", color: "#10A37F", icon: "●" },
+                    { name: "Gemini", url: "https://gemini.google.com", color: "#8B5CF6", icon: "✦" },
+                    { name: "Claude", url: "https://claude.ai", color: "#D4A574", icon: "⯁" }
+                  ].map(tool => (
+                    <a
+                      key={tool.name}
+                      href={tool.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3.5 bg-[#121214] hover:bg-[#18181b] border border-white/[0.05] hover:border-white/[0.15] rounded-full text-[10px] font-bold tracking-widest text-white/50 hover:text-white transition-all duration-300 group hover:shadow-[0_0_15px_rgba(255,255,255,0.03)]"
+                    >
+                      <span style={{ color: tool.color }} className="text-[12px] leading-none opacity-80 group-hover:opacity-100 group-hover:scale-125 transition-all drop-shadow-md">
+                        {tool.icon}
+                      </span>
+                      {tool.name}
+                    </a>
+                  ))}
+                </div>
+
+                {/* Copy Button */}
+                <MagneticWrapper strength={0.4}>
+                  <button
+                    onClick={handleCopyPrompt}
+                    disabled={courses.length === 0}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white text-black hover:bg-white/90 rounded-2xl font-bold text-[11px] tracking-widest transition-transform disabled:opacity-30 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 shadow-sm"
                   >
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tool.color }} />
-                    {tool.name}
-                    <ExternalLink className="w-2.5 h-2.5 opacity-50" />
-                  </a>
-                ))}
+                    {promptCopied ? (
+                      <><CheckCircle2 className="w-4 h-4" /> COPIED!</>
+                    ) : (
+                      <><Copy className="w-4 h-4" /> COPY PROMPT</>
+                    )}
+                  </button>
+                </MagneticWrapper>
               </div>
-
-              {/* Pre-built Prompt Preview */}
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden">
-                <div className="flex justify-between items-center px-4 py-3 border-b border-white/20 bg-white/[0.02]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Generated Prompt Preview</span>
-                  <span className="text-[9px] font-mono text-white/30">{courses.length} courses detected</span>
-                </div>
-                <pre className="p-4 text-[11px] font-mono text-white/50 leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
-                  {courses.length === 0 
-                    ? "⚠️ No courses found. Please add courses in the Calculator first to generate a personalized AI prompt."
-                    : aiPrompt
-                  }
-                </pre>
-              </div>
-
-              {/* Copy Button */}
-              <button
-                onClick={handleCopyPrompt}
-                disabled={courses.length === 0}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#A855F7]/20 to-[#4F8EF7]/20 hover:from-[#A855F7]/30 hover:to-[#4F8EF7]/30 text-white border border-[#A855F7]/30 rounded-xl font-bold text-xs tracking-wider transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(168,85,247,0.1)] hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]"
-              >
-                {promptCopied ? (
-                  <><CheckCircle2 className="w-4 h-4 text-emerald-400" /> COPIED TO CLIPBOARD!</>
-                ) : (
-                  <><Copy className="w-4 h-4" /> COPY AI PROMPT</>
-                )}
-              </button>
             </motion.div>
           )}
 

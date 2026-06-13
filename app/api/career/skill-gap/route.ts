@@ -23,7 +23,18 @@ export async function POST(request: Request) {
 
     const apiKey = getGeminiKey();
     if (!apiKey) {
-      return NextResponse.json({ error: 'Missing GEMINI_API_KEY' }, { status: 500 });
+      const roleSkills = ROLE_SKILL_MAP[targetRole] || ROLE_SKILL_MAP["Frontend Developer"];
+      const allRequired = Object.values(roleSkills).flat();
+      const normalizedUser = userSkills.map((s: string) => s.toLowerCase().trim());
+      const presentSkills = allRequired.filter(req => normalizedUser.some((u: string) => req.toLowerCase().includes(u) || u.includes(req.toLowerCase())));
+      const missingSkills = allRequired.filter(req => !presentSkills.includes(req));
+      
+      return NextResponse.json({
+        role: targetRole,
+        missingSkills,
+        presentSkills,
+        readinessPercentage: Math.round((presentSkills.length / allRequired.length) * 100) || 0
+      });
     }
 
     const roleSkills = ROLE_SKILL_MAP[targetRole] || ROLE_SKILL_MAP["Frontend Developer"];

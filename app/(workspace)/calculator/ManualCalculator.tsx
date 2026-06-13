@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useMemo, useRef, useDeferredValue } from "react";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calculator, Plus, RotateCcw, Save, CheckCircle2, X, Target, ArrowRight } from "lucide-react";
 import { getPresetById, convertPercentageToGrade, calculateSGPA } from "@/lib/presets";
@@ -187,22 +187,34 @@ export default function ManualCalculator() {
                   <div className="flex items-center gap-3 relative z-10">
                     {/* Mode Toggle */}
                     <div className="flex bg-[#2c2c2e] p-1 rounded-full relative">
-                      <div
-                        className="absolute inset-y-1 bg-[#4F8EF7] rounded-full transition-all duration-300 ease-out z-0"
-                        style={{ width: 'calc(50% - 4px)', left: usePercentage ? '4px' : 'calc(50%)' }}
-                      />
-                      <button
+                      <motion.button
                         onClick={() => setUsePercentage(true)}
-                        className={`relative z-10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 ${usePercentage ? 'text-white' : 'text-[#86868b] hover:text-[#F5F5F7]'}`}
+                        whileTap={{ scale: 0.95 }}
+                        className={`relative px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 outline-none ${usePercentage ? 'text-black' : 'text-[#86868b] hover:text-[#F5F5F7]'}`}
                       >
-                        Percent
-                      </button>
-                      <button
+                        {usePercentage && (
+                          <motion.div
+                            layoutId="percentGradesBg"
+                            className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                            transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
+                          />
+                        )}
+                        <span className="relative z-10">Percent</span>
+                      </motion.button>
+                      <motion.button
                         onClick={() => setUsePercentage(false)}
-                        className={`relative z-10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 ${!usePercentage ? 'text-white' : 'text-[#86868b] hover:text-[#F5F5F7]'}`}
+                        whileTap={{ scale: 0.95 }}
+                        className={`relative px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 outline-none ${!usePercentage ? 'text-black' : 'text-[#86868b] hover:text-[#F5F5F7]'}`}
                       >
-                        Grades
-                      </button>
+                        {!usePercentage && (
+                          <motion.div
+                            layoutId="percentGradesBg"
+                            className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                            transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
+                          />
+                        )}
+                        <span className="relative z-10">Grades</span>
+                      </motion.button>
                     </div>
 
                     <button

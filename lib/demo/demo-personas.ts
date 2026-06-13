@@ -97,7 +97,8 @@ export const demoPersonas: Record<string, DemoPersona> = {
       branch: "Computer Science",
       skills: ["Java", "Python", "React", "DSA"],
       targetRole: "Software Development Engineer",
-      targetPackage: "Product (15LPA+)"
+      targetPackage: "Product (15LPA+)",
+      projects: []
     },
     risk: {
       attendanceRisk: "LOW",
@@ -180,7 +181,8 @@ export const demoPersonas: Record<string, DemoPersona> = {
       branch: "Computer Science",
       skills: ["Java", "HTML", "CSS"],
       targetRole: "Frontend Developer",
-      targetPackage: "Service (3-6LPA)"
+      targetPackage: "Service (3-6LPA)",
+      projects: []
     },
     risk: {
       attendanceRisk: "MEDIUM",
@@ -262,7 +264,8 @@ export const demoPersonas: Record<string, DemoPersona> = {
       branch: "Computer Science",
       skills: ["HTML"],
       targetRole: "Frontend Developer",
-      targetPackage: "Service (3-6LPA)"
+      targetPackage: "Service (3-6LPA)",
+      projects: []
     },
     risk: {
       attendanceRisk: "HIGH",

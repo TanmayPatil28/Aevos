@@ -59,43 +59,51 @@ export default function UnifiedCalculatorPage() {
       {/* Sticky Dynamic Island Navigation - Right Aligned on Desktop */}
       <div className="sticky top-6 z-[100] w-full px-4 md:px-8 max-w-[1400px] mx-auto flex justify-center xl:justify-end pointer-events-none xl:-mt-36 mb-10">
         <div className="pointer-events-auto">
-          <motion.div 
-            layout
-            className="relative overflow-hidden flex items-center p-1.5 bg-[#1D1D1F] border border-white/5 rounded-full"
-          >
-            {/* Active Highlight Background */}
-            <div 
-              className="absolute top-1.5 bottom-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 transition-all duration-500 ease-in-out z-0"
-              style={{
-                left: mode === "simulator" ? "6px" : "50%",
-                width: "calc(50% - 6px)",
-              }}
-            />
-            
-            <button
+          <div className="relative flex items-center p-1.5 bg-[#1D1D1F] border border-white/5 rounded-full">
+            <motion.button
               onClick={() => setMode("simulator")}
-              className={`relative z-10 flex items-center justify-center gap-2 px-6 py-3 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold transition-colors duration-300 w-40 md:w-48 ${
+              whileTap={{ scale: 0.95 }}
+              className={`relative flex items-center justify-center gap-2 px-6 py-3 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold transition-colors duration-300 w-40 md:w-48 outline-none ${
                 mode === "simulator" 
-                  ? "text-white drop-shadow-md" 
-                  : "text-white/50 hover:text-white"
+                  ? "text-black" 
+                  : "text-white/50 hover:text-white/90"
               }`}
             >
-              <Layers size={16} className={mode === "simulator" ? "text-white" : "text-white/50"} />
-              Active Simulator
-            </button>
+              {mode === "simulator" && (
+                <motion.div
+                  layoutId="calculatorModeBg"
+                  className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                  transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <Layers size={16} className={mode === "simulator" ? "text-black" : "text-white/50"} />
+                Active Simulator
+              </span>
+            </motion.button>
             
-            <button
+            <motion.button
               onClick={() => setMode("manual")}
-              className={`relative z-10 flex items-center justify-center gap-2 px-6 py-3 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold transition-colors duration-300 w-40 md:w-48 ${
+              whileTap={{ scale: 0.95 }}
+              className={`relative flex items-center justify-center gap-2 px-6 py-3 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold transition-colors duration-300 w-40 md:w-48 outline-none ${
                 mode === "manual" 
-                  ? "text-white drop-shadow-md" 
-                  : "text-white/50 hover:text-white"
+                  ? "text-black" 
+                  : "text-white/50 hover:text-white/90"
               }`}
             >
-              <Edit3 size={16} className={mode === "manual" ? "text-white" : "text-white/50"} />
-              Manual Sandbox
-            </button>
-          </motion.div>
+              {mode === "manual" && (
+                <motion.div
+                  layoutId="calculatorModeBg"
+                  className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                  transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <Edit3 size={16} className={mode === "manual" ? "text-black" : "text-white/50"} />
+                Manual Sandbox
+              </span>
+            </motion.button>
+          </div>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AlertTriangle, CheckCircle2, ShieldAlert, ChevronRight, FileText } from "lucide-react";
 import { ATKTRulesStatus } from "@/lib/backlog-intelligence/engine";
 import IOSSheetModal from "@/components/ui/IOSSheetModal";
+import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
 
 export default function ATKTRulesWidget({ status }: { status: ATKTRulesStatus }) {
   const [showOrdinance, setShowOrdinance] = useState(false);
@@ -11,11 +12,10 @@ export default function ATKTRulesWidget({ status }: { status: ATKTRulesStatus })
 
   return (
     <>
-      <div className={`p-6 rounded-[32px] flex flex-col h-full ${
-        isDanger ? "bg-[#FF453A]/10 border border-[#FF453A]/20" : 
-        isWarning ? "bg-[#FF9F0A]/10 border border-[#FF9F0A]/20" : 
-        "bg-[#30D158]/10 border border-[#30D158]/20"
-      }`}>
+      <div className="p-6 rounded-[2rem] flex flex-col h-full bg-[#1c1c1e] border border-white/[0.05] relative overflow-hidden group">
+        <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl pointer-events-none transition-colors duration-500 ${
+          isDanger ? "bg-[#FF453A]/10" : isWarning ? "bg-[#FF9F0A]/10" : "bg-[#30D158]/10"
+        }`} />
         <div className="flex items-center gap-3 w-full justify-between mb-4">
           <h3 className={`text-[17px] font-semibold flex items-center gap-2 tracking-tight ${
             isDanger ? "text-[#FF453A]" : isWarning ? "text-[#FF9F0A]" : "text-[#30D158]"
@@ -48,16 +48,18 @@ export default function ATKTRulesWidget({ status }: { status: ATKTRulesStatus })
           </div>
         )}
 
-        <button 
-          onClick={() => setShowOrdinance(true)}
-          className={`w-full mt-4 py-3 rounded-xl font-semibold text-[15px] hover:opacity-80 active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${
-            isDanger ? "bg-[#FF453A] text-white" : 
-            isWarning ? "bg-[#FF9F0A] text-black" : 
-            "bg-[#30D158] text-black"
-          }`}
-        >
-          Read Full Ordinance
-        </button>
+        <MagneticWrapper strength={0.4}>
+          <button 
+            onClick={() => setShowOrdinance(true)}
+            className={`w-full mt-4 py-3 rounded-xl font-bold text-[13px] tracking-wider transition-all flex items-center justify-center gap-2 ${
+              isDanger ? "bg-[#FF453A]/10 text-[#FF453A] border border-[#FF453A]/30 hover:bg-[#FF453A]/20" : 
+              isWarning ? "bg-[#FF9F0A]/10 text-[#FF9F0A] border border-[#FF9F0A]/30 hover:bg-[#FF9F0A]/20" : 
+              "bg-[#30D158]/10 text-[#30D158] border border-[#30D158]/30 hover:bg-[#30D158]/20"
+            }`}
+          >
+            READ FULL ORDINANCE
+          </button>
+        </MagneticWrapper>
       </div>
 
       <IOSSheetModal 

@@ -9,7 +9,7 @@ export function reconcileImportPayload(
   payload: AcademicImportPayload,
   store: Pick<
     USMStoreState,
-    "setPresetId" | "setAcademic" | "setSemesterHistory" | "setCourses" | "resetSimulation"
+    "setPresetId" | "setAcademic" | "setSemesterHistory" | "setCourses" | "clearSimulationScenarios"
   >
 ): void {
   // 1. Set the active preset
@@ -48,10 +48,11 @@ export function reconcileImportPayload(
     seeMarks: undefined,
     attendanceTotal: c.attendanceTotal ?? 0,
     attendanceBunked: c.attendanceBunked ?? 0,
+    semester: payload.semesterHistory.length + 1 // Add a default semester or logic since TS requires semester property
   }));
 
   store.setCourses(courses);
 
   // 5. Reset active simulations to prevent outdated state mismatches
-  store.resetSimulation();
+  store.clearSimulationScenarios();
 }

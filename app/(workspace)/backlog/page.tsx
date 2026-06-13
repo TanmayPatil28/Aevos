@@ -21,7 +21,8 @@ import AIStudyTimelineWidget from "@/components/backlog/deep-dive/AIStudyTimelin
 import StudySquadWidget from "@/components/backlog/deep-dive/StudySquadWidget";
 import HistoricalAnalyticsWidget from "@/components/backlog/deep-dive/HistoricalAnalyticsWidget";
 import { Zap, Edit2, Check, X, BarChart2, Compass, Users } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { PageHero } from "@/components/ui/PageHero";
 
 export default function BacklogCommandCenter() {
   const { courses, semesterHistory, career, presetId, academic } = useUSMStore();
@@ -39,6 +40,10 @@ export default function BacklogCommandCenter() {
   const [isEditingGrade, setIsEditingGrade] = useState(false);
   const [manualGrade, setManualGrade] = useState("O");
   const [activeTab, setActiveTab] = useState<"ANALYTICS" | "SIMULATIONS" | "ACTION_PLAN">("ANALYTICS");
+
+  const { scrollY } = useScroll();
+  const glowY = useTransform(scrollY, [0, 500], [0, 150]);
+  const glowOpacity = useTransform(scrollY, [0, 300], [0.6, 0]);
 
   useEffect(() => {
     const timeTravel = selectedDeepDiveCourseId ? { courseId: selectedDeepDiveCourseId, targetGrade: timeTravelTargetGrade } : undefined;
@@ -105,15 +110,30 @@ export default function BacklogCommandCenter() {
 
   return (
     <FocusModeWrapper title="Recovery Command Center">
-      <div className="w-full max-w-[1600px] mx-auto min-h-screen pb-32 pt-6">
+      <div className="w-full relative max-w-[1600px] mx-auto min-h-screen pb-32 pt-6">
         
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white tracking-tight mb-2">Recovery Command Center</h1>
-          <p className="text-white/50 text-lg">Unified intelligence dashboard for backlog recovery planning.</p>
+        {/* Background Ambient Glows */}
+        <motion.div 
+          style={{ y: glowY, opacity: glowOpacity }}
+          className="fixed top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] pointer-events-none z-0"
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-[#f43f5e]/15 via-transparent to-transparent blur-[160px] rounded-full mix-blend-screen transition-colors duration-1000" />
+        </motion.div>
+
+        <div className="mb-8 relative z-10 flex flex-col items-start text-left">
+          <PageHero 
+            headline={<motion.span 
+              className="text-transparent bg-clip-text"
+              style={{ backgroundImage: 'linear-gradient(to right, #f43f5e, #fb923c, #f43f5e)', backgroundSize: '200% auto', display: 'inline-block' }}
+              animate={{ backgroundPosition: ['0% center', '200% center'] }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+            >Recovery Command Center.</motion.span>}
+            description="Unified intelligence dashboard for backlog recovery planning. Analyze ATKT rules, chart your CGPA ceiling, and simulate recovery pathways."
+          />
         </div>
 
         {/* Dashboard Masonry Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-min">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-min relative z-10">
           
           {/* Top Row: ATKT & CGPA Graph (4 cols + 8 cols) */}
           <div className="col-span-1 md:col-span-4 min-h-[300px]">

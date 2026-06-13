@@ -7,7 +7,7 @@ import {
   Timer, TrendingUp, AlertCircle, Play, Pause,
   SkipBack, SkipForward, BookOpen, Clock,
   ClipboardList, Flame, Zap, CheckCircle2,
-  Search, Command, Sparkles, ArrowRight, Mail
+  Search, Command, Sparkles, ArrowRight, Mail, Coffee
 } from "lucide-react";
 import { LiveActivity, IslandAlert, useDynamicIslandStore } from "@/stores/dynamicIslandStore";
 import { useUSMStore } from "@/stores/usmStore";

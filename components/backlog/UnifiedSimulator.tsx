@@ -3,6 +3,7 @@ import { SlidersHorizontal, BookOpen, AlertCircle, Save, CheckCircle2 } from "lu
 import { CourseState } from "@/stores/usmStore";
 import { RecoveryPlanResult } from "@/lib/backlog-intelligence/engine";
 import IOSSheetModal from "@/components/ui/IOSSheetModal";
+import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
 
 export default function UnifiedSimulator({ 
   initialPlan, 
@@ -50,22 +51,24 @@ export default function UnifiedSimulator({
 
   return (
     <>
-      <div className="p-6 rounded-[32px] bg-[#1C1C1E] h-full flex flex-col">
+      <div className="p-6 rounded-[2rem] bg-[#1c1c1e] border border-white/[0.05] h-full flex flex-col">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-[17px] font-semibold text-white flex items-center gap-2 tracking-tight">
-              <SlidersHorizontal className="text-[#0A84FF]" size={20} /> Recovery Timeline
+            <h3 className="text-[17px] font-bold text-white flex items-center gap-2 tracking-wide">
+              <SlidersHorizontal className="text-[#fb923c] drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]" size={20} /> Recovery Timeline
             </h3>
           </div>
-          <button 
-            onClick={() => {
-              setIsSaved(false);
-              setShowConfirmModal(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#0A84FF] text-white text-[15px] font-semibold hover:bg-[#0A84FF]/90 transition-all active:scale-[0.98]"
-          >
-            <Save size={16} /> Commit Strategy
-          </button>
+          <MagneticWrapper strength={0.4}>
+            <button 
+              onClick={() => {
+                setIsSaved(false);
+                setShowConfirmModal(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#fb923c]/20 text-[#fb923c] border border-[#fb923c]/30 text-[13px] font-bold tracking-wider hover:bg-[#fb923c]/30 transition-all active:scale-[0.98] uppercase"
+            >
+              <Save size={16} /> Commit Strategy
+            </button>
+          </MagneticWrapper>
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
@@ -77,12 +80,12 @@ export default function UnifiedSimulator({
               <div className="flex flex-wrap gap-2">
                 {unplanned.map(c => (
                   <div key={c.id} className="group relative">
-                    <span className="px-3 py-1.5 rounded-xl bg-[#FF453A]/20 text-white text-[13px] font-semibold cursor-pointer">
+                    <span className="px-3 py-1.5 rounded-xl bg-[#f43f5e]/20 border border-[#f43f5e]/30 text-[#f43f5e] text-[13px] font-bold tracking-wider cursor-pointer shadow-[0_0_10px_rgba(244,63,94,0.15)]">
                       {c.code}
                     </span>
-                    <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-[#2C2C2E] border border-white/5 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] z-20 overflow-hidden min-w-[140px]">
+                    <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-[#1c1c1e] border border-white/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] z-20 overflow-hidden min-w-[140px]">
                       {availableSemesters.map(s => (
-                        <button key={s} onClick={() => handleMove(c, s)} className="px-4 py-2 text-[13px] text-white text-left hover:bg-[#3A3A3C] font-medium border-b border-white/5 last:border-0 transition-colors">
+                        <button key={s} onClick={() => handleMove(c, s)} className="px-4 py-2 text-[13px] text-white/70 text-left hover:bg-white/[0.04] font-bold tracking-wider border-b border-white/5 last:border-0 transition-colors uppercase">
                           Move to Sem {s}
                         </button>
                       ))}
@@ -97,25 +100,25 @@ export default function UnifiedSimulator({
             {availableSemesters.map(sem => {
               const semCourses = activeBacklogs.filter(c => plan[c.id] === sem);
               return (
-                <div key={sem} className="p-4 rounded-2xl bg-[#2C2C2E]">
+                <div key={sem} className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/5">
-                    <h4 className="text-white text-[15px] font-semibold flex items-center gap-2 tracking-tight">
-                      <BookOpen size={16} className="text-[#0A84FF]" /> Semester {sem}
+                    <h4 className="text-white text-[15px] font-bold flex items-center gap-2 tracking-wide uppercase">
+                      <BookOpen size={16} className="text-[#fb923c]" /> Semester {sem}
                     </h4>
-                    <span className="text-[13px] text-[#8E8E93] font-medium">{semCourses.length} backlogs</span>
+                    <span className="text-[11px] text-[#8E8E93] font-bold tracking-widest uppercase">{semCourses.length} backlogs</span>
                   </div>
                   <div className="flex flex-wrap gap-2 min-h-[30px]">
                     {semCourses.map(c => (
                       <div key={c.id} className="group relative">
-                        <span className="px-3 py-1.5 rounded-xl bg-[#3A3A3C] text-white text-[13px] font-semibold cursor-pointer">
+                        <span className="px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-[13px] font-bold tracking-wider cursor-pointer">
                           {c.code}
                         </span>
-                        <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-[#2C2C2E] border border-white/5 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] z-20 overflow-hidden min-w-[140px]">
-                          <button onClick={() => handleMove(c, "UNPLANNED")} className="px-4 py-2 text-[13px] text-left hover:bg-[#3A3A3C] font-semibold text-[#FF453A] border-b border-white/5 transition-colors">
+                        <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-[#1c1c1e] border border-white/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] z-20 overflow-hidden min-w-[140px]">
+                          <button onClick={() => handleMove(c, "UNPLANNED")} className="px-4 py-2 text-[13px] text-left hover:bg-white/[0.04] font-bold tracking-wider text-[#f43f5e] border-b border-white/5 transition-colors uppercase">
                             Unplan
                           </button>
                           {availableSemesters.filter(s => s !== sem).map(s => (
-                            <button key={s} onClick={() => handleMove(c, s)} className="px-4 py-2 text-[13px] text-white text-left hover:bg-[#3A3A3C] font-medium border-b border-white/5 last:border-0 transition-colors">
+                            <button key={s} onClick={() => handleMove(c, s)} className="px-4 py-2 text-[13px] text-white/70 text-left hover:bg-white/[0.04] font-bold tracking-wider border-b border-white/5 last:border-0 transition-colors uppercase">
                               Move to Sem {s}
                             </button>
                           ))}
@@ -145,36 +148,38 @@ export default function UnifiedSimulator({
               </p>
             </div>
 
-            <div className="bg-[#2C2C2E] rounded-2xl overflow-hidden">
+            <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden">
               <div className="flex justify-between items-center p-4 border-b border-white/5">
-                <span className="text-[15px] text-[#8E8E93]">Planned Backlogs</span>
+                <span className="text-[13px] text-[#8E8E93] font-bold uppercase tracking-wider">Planned Backlogs</span>
                 <span className="text-[17px] font-bold text-white">{Object.keys(plan).length}</span>
               </div>
               <div className="flex justify-between items-center p-4">
-                <span className="text-[15px] text-[#8E8E93]">Unplanned (At Risk)</span>
-                <span className={`text-[17px] font-bold ${unplanned.length > 0 ? "text-[#FF453A]" : "text-white"}`}>
+                <span className="text-[13px] text-[#8E8E93] font-bold uppercase tracking-wider">Unplanned (At Risk)</span>
+                <span className={`text-[17px] font-bold ${unplanned.length > 0 ? "text-[#f43f5e]" : "text-white"}`}>
                   {unplanned.length}
                 </span>
               </div>
             </div>
 
             {unplanned.length > 0 && (
-              <div className="p-4 bg-[#FF453A]/10 rounded-2xl">
-                <p className="text-[13px] text-[#FF453A] font-medium leading-relaxed">
-                  <strong>Warning:</strong> You have {unplanned.length} unplanned backlogs. These will not be tracked in your active study plan, increasing the risk of missing them before graduation.
+              <div className="p-4 bg-[#f43f5e]/10 rounded-2xl">
+                <p className="text-[13px] text-[#f43f5e] font-bold tracking-wide leading-relaxed">
+                  <strong className="text-white">Warning:</strong> You have {unplanned.length} unplanned backlogs. These will not be tracked in your active study plan, increasing the risk of missing them before graduation.
                 </p>
               </div>
             )}
 
-            <button 
-              onClick={executeSave}
-              disabled={isSaving}
-              className={`w-full py-3.5 rounded-xl font-semibold text-[17px] transition-all flex items-center justify-center gap-2 ${
-                isSaving ? "bg-[#0A84FF]/70 text-white" : "bg-[#0A84FF] text-white active:scale-[0.98]"
-              }`}
-            >
-              {isSaving ? "Saving to Profile..." : "Confirm & Save"}
-            </button>
+            <MagneticWrapper strength={0.4}>
+              <button 
+                onClick={executeSave}
+                disabled={isSaving}
+                className={`w-full py-3.5 rounded-xl font-bold text-[13px] tracking-wider uppercase transition-all flex items-center justify-center gap-2 ${
+                  isSaving ? "bg-[#fb923c]/20 text-[#fb923c] border border-[#fb923c]/30" : "bg-[#fb923c]/20 text-[#fb923c] border border-[#fb923c]/30 hover:bg-[#fb923c]/30 active:scale-[0.98]"
+                }`}
+              >
+                {isSaving ? "Saving to Profile..." : "Confirm & Save"}
+              </button>
+            </MagneticWrapper>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">

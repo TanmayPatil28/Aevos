@@ -48,70 +48,46 @@ export default function FluidDataWave() {
       <div className="absolute inset-0 opacity-60">
         <svg viewBox="0 0 100 400" preserveAspectRatio="none" className="w-full h-full">
           {/* Wave 1 */}
-          <motion.path
+          <path
             d="M 50,0 Q 20,100 50,200 T 50,400"
             fill="none"
             stroke="url(#gradient1)"
             strokeWidth="3"
             style={{ filter: "blur(4px)" }}
-            animate={{
-              d: [
-                "M 50,0 Q 20,100 50,200 T 50,400",
-                "M 50,0 Q 80,100 50,200 T 50,400",
-                "M 50,0 Q 20,100 50,200 T 50,400"
-              ]
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
+          >
+            <animate attributeName="d" values="M 50,0 Q 20,100 50,200 T 50,400; M 50,0 Q 80,100 50,200 T 50,400; M 50,0 Q 20,100 50,200 T 50,400" dur="8s" repeatCount="indefinite" />
+          </path>
           {/* Wave 2 */}
-          <motion.path
+          <path
             d="M 50,0 Q 80,130 50,200 T 50,400"
             fill="none"
             stroke="url(#gradient2)"
             strokeWidth="4"
             style={{ filter: "blur(6px)" }}
-            animate={{
-              d: [
-                "M 50,0 Q 80,130 50,200 T 50,400",
-                "M 50,0 Q 10,130 50,200 T 50,400",
-                "M 50,0 Q 80,130 50,200 T 50,400"
-              ]
-            }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          />
+          >
+            <animate attributeName="d" values="M 50,0 Q 80,130 50,200 T 50,400; M 50,0 Q 10,130 50,200 T 50,400; M 50,0 Q 80,130 50,200 T 50,400" dur="12s" repeatCount="indefinite" />
+          </path>
           {/* Wave 3 */}
-          <motion.path
+          <path
             d="M 50,0 Q 0,80 50,250 T 50,400"
             fill="none"
             stroke="url(#gradient3)"
             strokeWidth="2"
             style={{ filter: "blur(2px)" }}
-            animate={{
-              d: [
-                "M 50,0 Q 0,80 50,250 T 50,400",
-                "M 50,0 Q 100,80 50,250 T 50,400",
-                "M 50,0 Q 0,80 50,250 T 50,400"
-              ]
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
+          >
+            <animate attributeName="d" values="M 50,0 Q 0,80 50,250 T 50,400; M 50,0 Q 100,80 50,250 T 50,400; M 50,0 Q 0,80 50,250 T 50,400" dur="10s" repeatCount="indefinite" />
+          </path>
           
           {/* Sharp Core Wave */}
-          <motion.path
+          <path
             d="M 50,0 Q 20,100 50,200 T 50,400"
             fill="none"
             stroke="white"
             strokeWidth="0.5"
             strokeOpacity="0.4"
-            animate={{
-              d: [
-                "M 50,0 Q 20,100 50,200 T 50,400",
-                "M 50,0 Q 80,100 50,200 T 50,400",
-                "M 50,0 Q 20,100 50,200 T 50,400"
-              ]
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
+          >
+            <animate attributeName="d" values="M 50,0 Q 20,100 50,200 T 50,400; M 50,0 Q 80,100 50,200 T 50,400; M 50,0 Q 20,100 50,200 T 50,400" dur="8s" repeatCount="indefinite" />
+          </path>
 
           <defs>
             <linearGradient id="gradient1" x1="0" y1="0" x2="0" y2="1">

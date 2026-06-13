@@ -12,7 +12,7 @@ import {
   NodeMouseHandler,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { nodeTypes, CareerNode } from './CareerNodes';
+import { nodeTypes } from './CareerNodes'; import { CareerNode } from '@/lib/career/roadmaps/ai-ml';
 import { useUIStore } from '@/stores/os/uiStore';
 
 interface SkillTreeClientProps {

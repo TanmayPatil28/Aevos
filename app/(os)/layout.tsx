@@ -2,6 +2,8 @@ import OSNavbar from "@/components/os/navigation/OSNavbar";
 import OSContextBar from "@/components/os/navigation/OSContextBar";
 import OSMobileNav from "@/components/os/navigation/OSMobileNav";
 import OSInspector from "@/components/os/inspector/OSInspector";
+import JarvisResumeModal from "@/components/ai/JarvisResumeModal";
+import JarvisInterviewModal from "@/components/ai/JarvisInterviewModal";
 
 export default function OSLayout({
   children,
@@ -25,6 +27,8 @@ export default function OSLayout({
 
       <OSInspector />
       <OSMobileNav />
+      <JarvisResumeModal />
+      <JarvisInterviewModal />
     </div>
   );
 }

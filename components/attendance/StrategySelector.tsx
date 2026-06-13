@@ -63,65 +63,40 @@ const strategies: {
   }
 ];
 
+import { cn } from "@/lib/cn";
+
 export default function StrategySelector({ currentStrategy, onStrategyChange }: StrategySelectorProps) {
   return (
     <div className="flex flex-col gap-4 w-full">
-      <h2 className="text-[10px] font-black text-white/40 tracking-[0.2em] uppercase mb-1 px-1">
-        Burnout Strategy
-      </h2>
-      <div className="flex flex-col gap-3 w-full">
+      <div 
+        className="flex items-center gap-2 overflow-x-auto pb-2 -mb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full"
+        style={{ WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)', maskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}
+      >
         {strategies.map((strategy) => {
           const Icon = strategy.icon;
           const isActive = currentStrategy === strategy.id;
           return (
             <motion.button
-              layout
               key={strategy.id}
               onClick={() => onStrategyChange(strategy.id)}
-              transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              className={`group flex overflow-hidden relative w-full text-left transition-all duration-300 ${
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                "relative px-4 py-2 rounded-full text-[12px] font-medium transition-colors duration-300 whitespace-nowrap border outline-none",
                 isActive 
-                  ? `bg-[#1c1c1e] ${strategy.activeBorder} ${strategy.glow} rounded-[20px] p-5 border scale-[1.02] z-20` 
-                  : "bg-white/[0.03] border-white/5 text-white/50 hover:bg-white/[0.06] hover:border-white/10 hover:text-white/80 rounded-full py-3.5 px-5 border z-10"
-              }`}
+                  ? "text-black border-transparent bg-white shadow-[0_0_15px_rgba(255,255,255,0.1)]" 
+                  : "bg-[#111111] text-zinc-400 hover:text-white/90 hover:bg-[#1A1A1A] border-white/[0.04]"
+              )}
             >
-              <motion.div layout className="flex items-start gap-4 w-full">
-                {/* ICON CONTAINER */}
-                <motion.div 
-                  layout
-                  className={`flex flex-shrink-0 items-center justify-center w-7 h-7 rounded-full border transition-colors mt-0.5 ${
-                    isActive 
-                      ? `${strategy.color} border-current bg-current/10` 
-                      : "border-white/20 group-hover:border-white/40 text-white/60 group-hover:text-white"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                </motion.div>
-
-                {/* TEXT CONTENT */}
-                <div className="flex flex-col flex-1 min-w-0 pr-2">
-                  <motion.span 
-                    layout 
-                    className={`font-bold tracking-wide text-sm transition-colors duration-300 ${
-                      isActive ? "text-white" : "text-white/70 group-hover:text-white"
-                    }`}
-                  >
-                    {strategy.label}
-                  </motion.span>
-                  
-                  {isActive && (
-                    <motion.p
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-xs leading-relaxed text-white/50 mt-1.5 font-medium"
-                    >
-                      {strategy.desc}
-                    </motion.p>
-                  )}
-                </div>
-              </motion.div>
+              {isActive && (
+                <motion.div
+                  layoutId="activeStrategyBg"
+                  className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                  transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
+                />
+              )}
+              <span className="relative z-10">
+                {strategy.label}
+              </span>
             </motion.button>
           );
         })}

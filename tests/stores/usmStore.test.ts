@@ -124,30 +124,33 @@ function runStoreTests() {
       code: "CS-301",
       name: "Theory of Computation",
       credits: 4,
+      semester: 3,
       grade: "A", // 8 GP in SPPU
       cieMarks: 40,
-      attendanceTotal: 30,
-      attendanceBunked: 3, // 27/30 = 90%
+      attendanceTotal: 40,
+      attendanceBunked: 5,
     },
     {
       id: "c2",
       code: "CS-302",
       name: "Database Systems",
       credits: 4,
+      semester: 3,
       grade: "B+", // 7 GP in SPPU
       cieMarks: 42,
-      attendanceTotal: 30,
-      attendanceBunked: 9, // 21/30 = 70% (Below 75%)
+      attendanceTotal: 40,
+      attendanceBunked: 2,
     },
     {
       id: "c3",
       code: "CS-303",
       name: "Operating Systems Lab",
       credits: 2,
+      semester: 3,
       grade: "O", // 10 GP in SPPU
       cieMarks: 48,
       attendanceTotal: 20,
-      attendanceBunked: 2, // 18/20 = 90%
+      attendanceBunked: 0,
     }
   ];
 

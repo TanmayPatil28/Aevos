@@ -90,8 +90,8 @@ export function computeImportDiff(activeProfile: AcademicProfile | null, incomin
       if (actCourse.grade !== incCourse.grade) {
         coursesUpdated.push(incCourse.code);
         
-        const isOldBacklog = ["F", "FF", "FAIL", "ABSENT", "AB"].includes((actCourse.grade || "").toUpperCase());
-        const isNewPass = !["F", "FF", "FAIL", "ABSENT", "AB"].includes((incCourse.grade || "").toUpperCase());
+        const isOldBacklog = ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((actCourse.grade || "").toUpperCase());
+        const isNewPass = !["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((incCourse.grade || "").toUpperCase());
 
         if (isOldBacklog && isNewPass) {
           backlogsResolved.push(incCourse.code);
@@ -116,5 +116,55 @@ export function computeImportDiff(activeProfile: AcademicProfile | null, incomin
     sgpaChanges,
     warnings,
     profileUpdated,
+  };
+}
+
+export function mergeProfiles(activeProfile: AcademicProfile | null, incomingProfile: AcademicProfile): AcademicProfile {
+  if (!activeProfile || !activeProfile.courses || activeProfile.courses.length === 0) {
+    return incomingProfile;
+  }
+
+  const mergedCourses = [...activeProfile.courses];
+  incomingProfile.courses.forEach(incomingCourse => {
+    const existingIndex = mergedCourses.findIndex(c => 
+      c.id === incomingCourse.id || (c.code && incomingCourse.code && c.code === incomingCourse.code && c.semester === incomingCourse.semester)
+    );
+    if (existingIndex >= 0) {
+      mergedCourses[existingIndex] = {
+        ...mergedCourses[existingIndex],
+        ...incomingCourse,
+        semester: mergedCourses[existingIndex].semester
+      };
+    } else {
+      mergedCourses.push(incomingCourse);
+    }
+  });
+
+  const mergedHistory = [...activeProfile.semesterHistory];
+  incomingProfile.semesterHistory.forEach(incomingSem => {
+    const existingIndex = mergedHistory.findIndex(h => h.semester === incomingSem.semester);
+    if (existingIndex >= 0) {
+      mergedHistory[existingIndex] = { ...mergedHistory[existingIndex], ...incomingSem };
+    } else {
+      mergedHistory.push(incomingSem);
+    }
+  });
+
+  const totalCredits = mergedHistory.reduce((sum, h) => sum + h.credits, 0);
+  const totalPoints = mergedHistory.reduce((sum, h) => sum + (h.sgpa * h.credits), 0);
+  const currentCgpa = totalCredits > 0 ? parseFloat((totalPoints / totalCredits).toFixed(2)) : activeProfile.academic.currentCgpa;
+
+  return {
+    ...activeProfile,
+    studentIdentity: incomingProfile.studentIdentity?.name !== "Unknown Student" ? incomingProfile.studentIdentity : activeProfile.studentIdentity,
+    courses: mergedCourses,
+    semesterHistory: mergedHistory.sort((a, b) => a.semester - b.semester),
+    academic: {
+      ...activeProfile.academic,
+      ...incomingProfile.academic,
+      currentCgpa,
+      completedSemesters: mergedHistory.length,
+      earnedCredits: mergedHistory.reduce((sum, h) => sum + h.earnedCredits, 0),
+    }
   };
 }

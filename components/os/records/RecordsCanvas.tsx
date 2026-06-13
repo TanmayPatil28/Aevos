@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUIStore } from "@/stores/os/uiStore";
-import { useEffect } from "react";
+import { useUSMStore } from "@/stores/usmStore";
+import { useDomainStore } from "@/stores/os/domainStore";
 import UploadZone from "./UploadZone";
 import ReviewImport from "./ReviewImport";
 import Link from "next/link";
@@ -12,7 +13,39 @@ export type RecordsState = "IDLE" | "UPLOADING" | "REVIEW" | "SUCCESS";
 
 export default function RecordsCanvas() {
   const { setContextBar, clearContextBar } = useUIStore();
+  const resetUSM = useUSMStore(state => state.resetStore);
+  const resetDomain = useDomainStore(state => state.resetStore);
   const [flowState, setFlowState] = useState<RecordsState>("IDLE");
+  const [isWiping, setIsWiping] = useState(false);
+
+  const handleWipeData = async () => {
+    if (!window.confirm("Are you sure you want to completely wipe all your academic data? This cannot be undone.")) return;
+    setIsWiping(true);
+    try {
+      await fetch("/api/academic/snapshots", { method: "DELETE" });
+      resetUSM();
+      if (resetDomain) resetDomain();
+      alert("Academic data has been wiped. You can now start fresh.");
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to wipe data.");
+    } finally {
+      setIsWiping(false);
+    }
+  };
+
+  const handleFixSGPA = async () => {
+    try {
+      const res = await fetch("/api/academic/fix", { method: "POST" });
+      const data = await res.json();
+      alert(data.message || "Fixed SGPA successfully!");
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fix SGPA.");
+    }
+  };
 
   useEffect(() => {
     setContextBar(COPY.RECORDS.TITLE, []);
@@ -36,11 +69,30 @@ export default function RecordsCanvas() {
       
       {/* Page Header (Only show when not in success state) */}
       {flowState !== "SUCCESS" && (
-        <div className="text-center sm:text-left space-y-2 mt-4">
-          <h1 className="text-3xl font-bold text-slate-100">{COPY.RECORDS.TITLE}</h1>
-          <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
-            {COPY.RECORDS.SUBTITLE}
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-4 gap-4">
+          <div className="text-center sm:text-left space-y-2">
+            <h1 className="text-3xl font-bold text-slate-100">{COPY.RECORDS.TITLE}</h1>
+            <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
+              {COPY.RECORDS.SUBTITLE}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleFixSGPA}
+              className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-sm font-medium rounded-lg border border-blue-500/20 transition-colors flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">build</span>
+              Fix SGPA 0 Bug
+            </button>
+            <button 
+              onClick={handleWipeData}
+              disabled={isWiping}
+              className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-medium rounded-lg border border-red-500/20 transition-colors flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+              {isWiping ? "Wiping..." : "Factory Reset Data"}
+            </button>
+          </div>
         </div>
       )}
 

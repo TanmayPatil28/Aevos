@@ -25,7 +25,7 @@ import { useNavbarNavigation } from "@/lib/hooks/useNavbarNavigation";
 
 const SPRING_PHYSICS = { type: "spring", stiffness: 400, damping: 30, mass: 0.8 };
 
-function NavbarFallback({ error }: { error: Error }) {
+function NavbarFallback({ error }: { error: any }) {
   return (
     <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 text-red-400 rounded-full border border-red-500/20 text-xs font-bold">
       <AlertCircle size={14} />
@@ -118,6 +118,7 @@ export default function Navbar({ mainLinks, intelligenceModules }: { mainLinks: 
   }, [pathname, setExpandedId, setIsMobileOpen, setActiveMenu]);
 
   if (!mounted) return null;
+  if (pathname === '/onboarding' || pathname?.startsWith('/auth')) return null;
 
   return (
     <>

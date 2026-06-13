@@ -49,11 +49,11 @@ export default function DynamicIsland({
 
       const data = await res.json();
       syncParsedResume(data);
-      import("react-hot-toast").then((module) => {
+      import("sonner").then((module) => {
         module.toast.success("Resume parsed successfully! Skills updated.");
       });
     } catch (err) {
-      import("react-hot-toast").then((module) => {
+      import("sonner").then((module) => {
         module.toast.error("Error parsing resume.");
       });
     } finally {
@@ -95,13 +95,13 @@ export default function DynamicIsland({
               onClick={() => onModeChange("matrix")}
               className={cn(
                 "relative flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300",
-                mode === "matrix" ? "text-white" : "text-white/40 hover:text-white/70"
+                mode === "matrix" ? "text-black" : "text-white/40 hover:text-white/70"
               )}
             >
               {mode === "matrix" && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 bg-white/10 border border-white/10 rounded-full"
+                  className="absolute inset-0 bg-white rounded-full shadow-md"
                   transition={{ type: "spring", stiffness: 500, damping: 35 }}
                 />
               )}
@@ -113,13 +113,13 @@ export default function DynamicIsland({
               onClick={() => onModeChange("radar")}
               className={cn(
                 "relative flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300",
-                mode === "radar" ? "text-white" : "text-white/40 hover:text-white/70"
+                mode === "radar" ? "text-black" : "text-white/40 hover:text-white/70"
               )}
             >
               {mode === "radar" && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 bg-white/10 border border-white/10 rounded-full"
+                  className="absolute inset-0 bg-white rounded-full shadow-md"
                   transition={{ type: "spring", stiffness: 500, damping: 35 }}
                 />
               )}

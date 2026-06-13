@@ -1,0 +1,34 @@
+{
+  "institution": "jspm_university_wagholi",
+  "branch": "Computer Engineering",
+  "pattern": "2023",
+  "semesters": [
+    {
+      "semesterIndex": 1,
+      "totalCredits": 22,
+      "courses": [
+        { "code": "231GETB01", "name": "Electronics and Computer Workshop", "credits": 1 },
+        { "code": "231GEEB01", "name": "Foundations of Electrical and Electronics Engineering", "credits": 2 },
+        { "code": "231GEEB02", "name": "Foundations of Electrical and Electronics Engineering Lab", "credits": 1 },
+        { "code": "231GMEB02", "name": "Engineering Graphics and Design", "credits": 2 },
+        { "code": "230GMEB03", "name": "Engineering Graphics and Design Lab", "credits": 1 },
+        { "code": "231GPHB01", "name": "Optics and Modern Physics", "credits": 2.5 },
+        { "code": "230GPHB02", "name": "Optics and Modern Physics Lab", "credits": 1 },
+        { "code": "231GMAB02", "name": "Univariate Calculus", "credits": 4 }
+      ]
+    },
+    {
+      "semesterIndex": 2,
+      "totalCredits": 22,
+      "courses": [
+        { "code": "231GMAB01", "name": "Differential Equations and Linear Algebra", "credits": 4 },
+        { "code": "231GCYB01", "name": "Chemistry for Computer Engineers", "credits": 2.5 },
+        { "code": "230GCYB02", "name": "Chemistry for Computer Engineers Lab", "credits": 1 },
+        { "code": "231GCSB01", "name": "Programming for Problem Solving", "credits": 3 },
+        { "code": "230GCSB02", "name": "Programming for Problem Solving Lab", "credits": 1.5 },
+        { "code": "231GMEB01", "name": "Engineering Mechanics", "credits": 3 },
+        { "code": "231GMEB02_L", "name": "Engineering Mechanics Lab", "credits": 1 }
+      ]
+    }
+  ]
+}

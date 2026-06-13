@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createClient } from "@/lib/supabase/client";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { OAuthProviders } from "./OAuthProviders";
 import { Loader2, Mail, Lock, User, ArrowRight } from "lucide-react";
 

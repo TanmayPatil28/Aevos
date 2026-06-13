@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FileText, Loader2, Download, Trash2, ShieldCheck, Upload } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { uploadToStorage } from "@/lib/supabase/storage";
 import DocumentReader from "./ui/DocumentReader";
 import InsightPreviewModal from "./ui/InsightPreviewModal";

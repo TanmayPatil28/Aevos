@@ -43,7 +43,7 @@ export function normalizeExtraction(model: IntermediateExtractionModel): Academi
     // Process courses
     sem.courses.forEach(c => {
       // Determine backlog logic: if grade is F, Backlog, etc.
-      if (c.grade && ["F", "FF", "FAIL", "ABSENT", "AB"].includes(c.grade.toUpperCase())) {
+      if (c.grade && ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes(c.grade.toUpperCase())) {
         activeBacklogsCount++;
       }
 

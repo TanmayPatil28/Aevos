@@ -31,9 +31,22 @@ interface UIState {
     summary: string;
     skills: string[];
     coursework: string[];
+    atsScore?: number;
+    actionPlan?: string[];
+    projects?: {
+      name: string;
+      techStack: string[];
+      impact: string;
+      isAIGenerated?: boolean;
+    }[];
   } | null;
   setResumeData: (data: UIState["activeResumeData"]) => void;
   closeResume: () => void;
+
+  // JARVIS Interview State
+  activeInterviewData: { targetJD: string; detailedAudit: any } | null;
+  setInterviewData: (data: UIState["activeInterviewData"]) => void;
+  closeInterview: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -50,4 +63,8 @@ export const useUIStore = create<UIState>((set) => ({
   activeResumeData: null,
   setResumeData: (data) => set({ activeResumeData: data }),
   closeResume: () => set({ activeResumeData: null }),
+
+  activeInterviewData: null,
+  setInterviewData: (data) => set({ activeInterviewData: data }),
+  closeInterview: () => set({ activeInterviewData: null }),
 }));

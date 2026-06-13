@@ -284,7 +284,7 @@ export default function TimelinePage() {
                               <span className="text-sm text-white/90 font-bold leading-tight">{course.name}</span>
                               <div className="mt-2 flex justify-between items-center">
                                 <span className="text-xs text-white/50">{course.code}</span>
-                                <span className={clsx("text-xs font-black", course.grade === 'F' ? 'text-red-400' : 'text-emerald-400')}>{course.grade || '-'}</span>
+                                <span className={clsx("text-xs font-black", ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((course.grade || "").toUpperCase()) ? 'text-red-400' : 'text-emerald-400')}>{course.grade || '-'}</span>
                               </div>
                             </div>
                           ))}
