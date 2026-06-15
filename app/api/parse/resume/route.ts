@@ -8,16 +8,10 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Fallback logic for userId to allow testing without being logged in
-    let userId = user?.id;
+    const userId = user?.id;
     
     if (!userId) {
-      const firstUser = await prisma.user.findFirst();
-      if (firstUser) {
-        userId = firstUser.id;
-      } else {
-        return NextResponse.json({ error: 'Unauthorized and no fallback user found' }, { status: 401 });
-      }
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const data = await request.formData();

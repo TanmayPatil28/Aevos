@@ -11,6 +11,7 @@
     "test:presets": "npx tsx scripts/test-presets.ts",
     "test:unit": "npx tsx scripts/test-unit.ts",
     "test:stability": "npx tsx scripts/test-data-stability.ts",
+    "test:schemas": "npx tsx scripts/test-db-schemas.ts",
     "screenshot": "node screenshot.js"
   },
   "dependencies": {

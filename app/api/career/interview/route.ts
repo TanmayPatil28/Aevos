@@ -11,15 +11,7 @@ export async function POST(req: Request) {
   try {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    let userId = user?.id;
-
-    if (!userId) {
-      // Fallback to the first user found in the User table
-      const firstUser = await prisma.user.findFirst();
-      if (firstUser) {
-        userId = firstUser.id;
-      }
-    }
+    const userId = user?.id;
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

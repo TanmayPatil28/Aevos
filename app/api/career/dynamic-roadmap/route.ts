@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -42,9 +43,17 @@ RETURN ONLY VALID JSON. No markdown backticks.
 
 export async function POST(req: Request) {
   try {
-    const { targetRole, targetJd, userId } = await req.json();
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
 
-    if (!targetRole || !targetJd || !userId) {
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { targetRole, targetJd } = await req.json();
+
+    if (!targetRole || !targetJd) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 

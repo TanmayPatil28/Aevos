@@ -6,15 +6,7 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    let userId = user?.id;
-
-    if (!userId) {
-      // Fallback to the first user found in the User table
-      const firstUser = await prisma.user.findFirst();
-      if (firstUser) {
-        userId = firstUser.id;
-      }
-    }
+    const userId = user?.id;
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,6 +26,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     let body;
     try {
       body = await req.json();
@@ -44,22 +44,6 @@ export async function POST(req: NextRequest) {
     const { skills } = body;
     if (!skills || !Array.isArray(skills)) {
       return NextResponse.json({ error: "Missing or invalid skills array" }, { status: 400 });
-    }
-
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    let userId = user?.id;
-
-    if (!userId) {
-      // Fallback to the first user found in the User table
-      const firstUser = await prisma.user.findFirst();
-      if (firstUser) {
-        userId = firstUser.id;
-      }
-    }
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const updatedProfile = await prisma.careerProfile.upsert({

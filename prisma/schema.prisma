@@ -63,6 +63,7 @@ model User {
   chatMemories      ChatMemory[]
   careerProfile     CareerProfile?
   dynamicRoadmaps   DynamicRoadmap[]
+  backlogRecords    BacklogRecord[]
 
   @@index([activeSnapshotId])
   @@map("users")
@@ -118,8 +119,10 @@ model Course {
   name        String
   credits     Int
   prereqs     String[]
-  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at")
-  enrollments Enrollment[]
+  updatedAt      DateTime        @default(now()) @updatedAt @map("updated_at")
+  enrollments    Enrollment[]
+  timetableSlots TimetableSlot[]
+  backlogRecords BacklogRecord[]
 
   @@map("courses")
 }
@@ -300,3 +303,87 @@ model DynamicRoadmap {
   @@index([userId, createdAt(sort: Desc)])
   @@map("dynamic_roadmaps")
 }
+
+enum BacklogStatus {
+  PENDING
+  REGISTERED
+  EXAM_SCHEDULED
+  CLEARED
+  VOIDED
+}
+
+model AcademicCalendarEvent {
+  id           String   @id @default(cuid())
+  university   String   @default("jspm")
+  title        String
+  description  String?
+  eventType    String   @map("event_type")
+  startDate    DateTime @map("start_date")
+  endDate      DateTime @map("end_date")
+  academicYear String   @map("academic_year")
+  semester     String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([university])
+  @@index([startDate, endDate])
+  @@map("academic_calendar_events")
+}
+
+model TimetableSlot {
+  id           String   @id @default(cuid())
+  courseId     String   @map("course_id")
+  dayOfWeek    Int      @map("day_of_week")
+  startTime    String   @map("start_time")
+  endTime      String   @map("end_time")
+  room         String
+  instructor   String?
+  section      String?
+  semester     String
+  academicYear String   @map("academic_year")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([dayOfWeek])
+  @@map("timetable_slots")
+}
+
+model BacklogRecord {
+  id               String        @id @default(cuid())
+  userId           String        @map("user_id")
+  courseId         String        @map("course_id")
+  originalSemester String        @map("original_semester")
+  originalGrade    String        @map("original_grade")
+  status           BacklogStatus @default(PENDING)
+  attemptsCount    Int           @default(0) @map("attempts_count")
+  nextExamDate     DateTime?     @map("next_exam_date")
+  recoveryPathway  String?       @map("recovery_pathway")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course           Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("backlog_records")
+}
+
+model ATKTRule {
+  id                   String   @id @default(cuid())
+  university           String   @unique
+  maxBacklogsAllowed   Int      @map("max_backlogs_allowed")
+  recoveryWindowMonths Int      @map("recovery_window_months")
+  allowSummerTerm      Boolean  @default(true) @map("allow_summer_term")
+  minGpaToRecover      Float    @map("min_gpa_to_recover")
+  description          String?
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("atkt_rules")
+}
+
