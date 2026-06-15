@@ -217,6 +217,8 @@ const STAGGER_ANIMATION = {
 export function ExpandedActivity({ activity }: { activity: LiveActivity }) {
   const time = useLiveTimer(activity);
   const updateActivity = useDynamicIslandStore((s) => s.updateActivity);
+  const updateCourse = useUSMStore(s => s.updateCourse);
+  const addAttendanceHistoryEvent = useUSMStore(s => s.addAttendanceHistoryEvent);
 
   // --- TIMER ---
   if (activity.type === 'timer') {
@@ -424,10 +426,6 @@ export function ExpandedActivity({ activity }: { activity: LiveActivity }) {
   // --- BUNK CALCULATOR ---
   if (activity.type === 'bunk_calculator') {
     const stats = activity.metadata?.allStats || [];
-    
-    // Quick-Action Store Wiring
-    const updateCourse = useUSMStore(s => s.updateCourse);
-    const addAttendanceHistoryEvent = useUSMStore(s => s.addAttendanceHistoryEvent);
     
     const handleLogAttendance = (e: React.MouseEvent, courseId: string, bunkedCount: number, totalCount: number, isBunk: boolean, courseName: string) => {
       e.stopPropagation();

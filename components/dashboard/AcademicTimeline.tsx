@@ -10,6 +10,8 @@ interface AcademicTimelineProps {
 }
 
 export default function AcademicTimeline({ history }: AcademicTimelineProps) {
+  const { maxGradePoint } = useUniversity();
+
   if (history.length === 0) {
     return (
       <div className="bg-[#000000] border border-slate-800 p-6 rounded-xl h-[500px] flex flex-col items-center justify-center text-center">
@@ -24,7 +26,6 @@ export default function AcademicTimeline({ history }: AcademicTimelineProps) {
     );
   }
 
-  const { maxGradePoint } = useUniversity();
   const sortedHistory = [...history].sort((a, b) => a.semester - b.semester);
   
   // Dynamic scale based on active grading system
