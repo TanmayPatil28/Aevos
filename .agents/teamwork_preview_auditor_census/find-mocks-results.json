@@ -1,0 +1,317 @@
+[
+  {
+    "file": "components/ai/JarvisInterviewModal.tsx",
+    "line": 28,
+    "content": "{ role: 'jarvis', content: 'Hello. I am JARVIS. I will be conducting your mock interview today for the target role. We will cover 5 questions. Shall we begin?' }"
+  },
+  {
+    "file": "components/ai/JarvisResumeModal.tsx",
+    "line": 415,
+    "content": "Start AI Mock Interview"
+  },
+  {
+    "file": "components/attendance/AssignmentIntelligence.tsx",
+    "line": 7,
+    "content": "// Mock data for upcoming critical assignments"
+  },
+  {
+    "file": "components/attendance/AssignmentIntelligence.tsx",
+    "line": 8,
+    "content": "const mockAssignments = ["
+  },
+  {
+    "file": "components/attendance/AssignmentIntelligence.tsx",
+    "line": 43,
+    "content": "{mockAssignments.map((assignment) => ("
+  },
+  {
+    "file": "components/attendance/BunkScheduler.tsx",
+    "line": 334,
+    "content": "<span className=\"text-[#ff7b72]\">const</span> projection <span className=\"text-[#ff7b72]\">=</span> (Attended <span className=\"text-[#ff7b72]\">+</span> SimulatedAttended) <span className=\"text-[#ff7b72]\">/</span><br />"
+  },
+  {
+    "file": "components/attendance/BunkScheduler.tsx",
+    "line": 335,
+    "content": "<span className=\"pl-4\">(Conducted <span className=\"text-[#ff7b72]\">+</span> SimulatedBunks <span className=\"text-[#ff7b72]\">+</span> SimulatedAttended)</span> <span className=\"text-[#ff7b72]\">*</span> <span className=\"text-[#79c0ff]\">100</span>;"
+  },
+  {
+    "file": "components/backlog/deep-dive/StudySquadWidget.tsx",
+    "line": 23,
+    "content": "// Mock data for peer networking"
+  },
+  {
+    "file": "components/backlog/deep-dive/StudySquadWidget.tsx",
+    "line": 56,
+    "content": "// Simulate someone typing a response"
+  },
+  {
+    "file": "components/backlog/deep-dive/TimeTravelSimulatorWidget.tsx",
+    "line": 69,
+    "content": "<div className=\"text-[13px] text-[#8E8E93] font-semibold uppercase tracking-wide mb-1\">Simulated</div>"
+  },
+  {
+    "file": "components/calculator/SimulatorGuide.tsx",
+    "line": 61,
+    "content": "Every change instantly updates your Simulated SGPA and Projected CGPA, giving you immediate feedback on your academic strategy."
+  },
+  {
+    "file": "components/dashboard/CalendarManager.tsx",
+    "line": 169,
+    "content": "const mockSubtasks = ["
+  },
+  {
+    "file": "components/dashboard/CalendarManager.tsx",
+    "line": 171,
+    "content": "{ id: `st_${Date.now()}_2`, title: `Complete 3 official mock test papers`, completed: false },"
+  },
+  {
+    "file": "components/dashboard/CalendarManager.tsx",
+    "line": 174,
+    "content": "updateEventSubtasks(eventId, mockSubtasks);"
+  },
+  {
+    "file": "components/dashboard/CalendarManager.tsx",
+    "line": 771,
+    "content": "{evt.type === 'EXAM' ? \"High priority day. Ensure you have reviewed all mock tests. Aim for 8 hours of sleep the night before.\" :"
+  },
+  {
+    "file": "components/dashboard/sync/DataSyncEngine.tsx",
+    "line": 37,
+    "content": "// Simulate slight delay for UX (engine is very fast)"
+  },
+  {
+    "file": "components/dashboard/sync/DataSyncEngine.tsx",
+    "line": 110,
+    "content": "// Simulate slight delay"
+  },
+  {
+    "file": "components/dynamic-island/ContextualIslandController.tsx",
+    "line": 61,
+    "content": "// If no data is available, do not show fake mock data! Show a generic status instead."
+  },
+  {
+    "file": "components/dynamic-island/IslandTestControls.tsx",
+    "line": 100,
+    "content": "<div className=\"text-white/30 text-[10px] uppercase tracking-widest mt-1\">Mock Activities</div>"
+  },
+  {
+    "file": "components/dynamic-island/IslandTestControls.tsx",
+    "line": 148,
+    "content": "// Simulate progress"
+  },
+  {
+    "file": "components/dynamic-island/IslandTestControls.tsx",
+    "line": 162,
+    "content": "▶ Simulate Sync"
+  },
+  {
+    "file": "components/forecast/NeuralDecisionTree.tsx",
+    "line": 7,
+    "content": "import ProUpgradeModal from \"./ProUpgradeModal\";"
+  },
+  {
+    "file": "components/forecast/NeuralDecisionTree.tsx",
+    "line": 194,
+    "content": "<ProUpgradeModal"
+  },
+  {
+    "file": "components/forecast/ProUpgradeModal.tsx",
+    "line": 8,
+    "content": "interface ProUpgradeModalProps {"
+  },
+  {
+    "file": "components/forecast/ProUpgradeModal.tsx",
+    "line": 13,
+    "content": "export default function ProUpgradeModal({ isOpen, onClose }: ProUpgradeModalProps) {"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 7,
+    "content": "// ─── HIGH-FIDELITY DOM MOCKUPS ──────────────────────────────────────────"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 9,
+    "content": "export function SidebarMockup() {"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 32,
+    "content": "export function TopbarMockup() {"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 46,
+    "content": "export function AcademicDashboardMockup() {"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 49,
+    "content": "<SidebarMockup />"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 51,
+    "content": "<TopbarMockup />"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 94,
+    "content": "export function CareerDashboardMockup() {"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 110,
+    "content": "<TopbarMockup />"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 247,
+    "content": "<AcademicDashboardMockup />"
+  },
+  {
+    "file": "components/LandingInteractives.tsx",
+    "line": 250,
+    "content": "<CareerDashboardMockup />"
+  },
+  {
+    "file": "components/os/career/SkillTreeClient.tsx",
+    "line": 12,
+    "content": "NodeMouseHandler,"
+  },
+  {
+    "file": "components/os/career/SkillTreeClient.tsx",
+    "line": 42,
+    "content": "const onNodeClick: NodeMouseHandler = useCallback("
+  },
+  {
+    "file": "components/os/identity/CareerIdentityGraph.tsx",
+    "line": 11,
+    "content": "{/* Visual Graph Representation (Simulated Radar/Node) */}"
+  },
+  {
+    "file": "components/os/identity/github/EngineeringSignals.tsx",
+    "line": 58,
+    "content": "Recruiters look for signals beyond CRUD apps. Here is what your code demonstrates."
+  },
+  {
+    "file": "components/os/identity/github/EngineeringSignals.tsx",
+    "line": 88,
+    "content": "\"This profile demonstrates intermediate production engineering capability.\""
+  },
+  {
+    "file": "components/os/identity/linkedin/ProfileSimulator.tsx",
+    "line": 8,
+    "content": "const [simulationComplete, setSimulationComplete] = useState(true); // For UI demo purposes, keep it true initially"
+  },
+  {
+    "file": "components/os/inspector/RoadmapNodeContent.tsx",
+    "line": 13,
+    "content": "// For MVP v1 without a working DB connection, we'll use local state to simulate."
+  },
+  {
+    "file": "components/os/inspector/RoadmapNodeContent.tsx",
+    "line": 19,
+    "content": "// Mock API call since DB is down"
+  },
+  {
+    "file": "components/os/overview/OverviewCanvas.tsx",
+    "line": 130,
+    "content": "We can help you simulate the impact of clearing {backlogs.length > 1 ? 'these' : 'this'} next semester."
+  },
+  {
+    "file": "components/os/records/RecordsCanvas.tsx",
+    "line": 161,
+    "content": "{/* Mock History Item */}"
+  },
+  {
+    "file": "components/os/records/RecordsCanvas.tsx",
+    "line": 174,
+    "content": "{/* Mock History Item 2 */}"
+  },
+  {
+    "file": "components/os/records/ReviewImport.tsx",
+    "line": 15,
+    "content": "// Generate a unique ID for the mocked term"
+  },
+  {
+    "file": "components/os/records/ReviewImport.tsx",
+    "line": 26,
+    "content": "// 2. Add mocked courses"
+  },
+  {
+    "file": "components/os/records/ReviewImport.tsx",
+    "line": 54,
+    "content": "{/* Mocked Data Table */}"
+  },
+  {
+    "file": "components/os/records/UploadZone.tsx",
+    "line": 11,
+    "content": "// Mock upload interaction"
+  },
+  {
+    "file": "components/os/records/UploadZone.tsx",
+    "line": 14,
+    "content": "// Simulate network parsing delay"
+  },
+  {
+    "file": "components/panels/PredictorPanel.tsx",
+    "line": 260,
+    "content": "const simulatedCredits = courses.reduce((sum, c) => sum + c.credits, 0);"
+  },
+  {
+    "file": "components/panels/PredictorPanel.tsx",
+    "line": 274,
+    "content": "const projectedCgpa = (currentCgpa * earnedCredits + path.projectedSgpa * simulatedCredits) / (earnedCredits + simulatedCredits);"
+  },
+  {
+    "file": "components/panels/PredictorPanel.tsx",
+    "line": 280,
+    "content": "}, [matrix, currentCgpa, earnedCredits, simulatedCredits, targetCgpa, lockedGrade]);"
+  },
+  {
+    "file": "components/placement/CompanyDeepDivePanel.tsx",
+    "line": 90,
+    "content": "{/* Mock Historical Data */}"
+  },
+  {
+    "file": "components/placement/CompanyDeepDivePanel.tsx",
+    "line": 93,
+    "content": "<TrendingUp size={14} /> Historical Data (Mock)"
+  },
+  {
+    "file": "components/placement/CompanyDeepDivePanel.tsx",
+    "line": 110,
+    "content": "<Users size={14} /> Selection Process (Mock)"
+  },
+  {
+    "file": "components/placement/SandboxPanel.tsx",
+    "line": 155,
+    "content": "<p className=\"text-[11px] text-white/30 mt-0.5\">Simulate different metrics</p>"
+  },
+  {
+    "file": "components/placement/TopperBenchmark.tsx",
+    "line": 12,
+    "content": "// Mock Percentile Calculation"
+  },
+  {
+    "file": "components/planner/CareerHubModule.tsx",
+    "line": 17,
+    "content": "// Removed mock CAREER_DATABASE and ROADMAPS"
+  },
+  {
+    "file": "components/planner/ScenarioSimulator.tsx",
+    "line": 20,
+    "content": "description: \"Simulates the impact of an active backlog on your recovery and GPA trend.\","
+  },
+  {
+    "file": "components/ui/terminal/commandRegistry.ts",
+    "line": 957,
+    "content": "{ text: \"sandbox enter\", description: \"Enter simulated environment\", type: \"command\" as const },"
+  },
+  {
+    "file": "components/ui/terminal/commandRegistry.ts",
+    "line": 958,
+    "content": "{ text: \"sandbox exit\", description: \"Exit simulated environment\", type: \"command\" as const },"
+  }
+]

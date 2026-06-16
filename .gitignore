@@ -39,3 +39,5 @@ next-env.d.ts
 dev.db
 
 external_keys_backup.env
+
+testsprite_tests\tmp\config.json

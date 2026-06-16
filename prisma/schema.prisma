@@ -199,6 +199,7 @@ model SkillProgress {
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roadmapId, nodeId])
+  @@index([userId])
   @@map("skill_progress")
 }
 
@@ -211,6 +212,7 @@ model MilestoneProgress {
   skillProgress   SkillProgress @relation(fields: [skillProgressId], references: [id], onDelete: Cascade)
 
   @@unique([skillProgressId, milestoneId])
+  @@index([skillProgressId])
   @@map("milestone_progress")
 }
 

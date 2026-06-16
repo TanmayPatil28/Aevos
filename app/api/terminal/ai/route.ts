@@ -1,10 +1,26 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { rateLimit } from "@/lib/rateLimit";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || 
+             req.headers.get("x-real-ip") || 
+             "127.0.0.1";
+  
+  const limitResult = rateLimit(ip, 30, 60000);
+  if (!limitResult.success) {
+    return new Response(
+      JSON.stringify({ error: "Too Many Requests", message: "Rate limit exceeded. Please try again in a minute." }),
+      {
+        status: 429,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
+  }
+
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

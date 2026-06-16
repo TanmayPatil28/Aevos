@@ -1,0 +1,44 @@
+version: "2"
+type: backend
+tech_stack:
+  - TypeScript
+  - Next.js (App Router)
+  - Prisma
+  - Supabase Postgres
+  - Google GenAI SDK
+features:
+  - name: Career Skills API
+    description: CRUD operations for career skills
+    files:
+      - app/api/career/skills/route.ts
+    endpoints:
+      - method: GET
+        path: /api/career/skills
+        description: List all skills for the user
+        auth_required: true
+        response_schema:
+          "200": Skill[]
+      - method: POST
+        path: /api/career/skills
+        description: Add a new skill
+        auth_required: true
+        request_schema:
+          body:
+            name: string
+        response_schema:
+          "200": Skill
+  - name: Internship Matcher
+    description: Match internships using Gemini
+    files:
+      - app/actions/matchInternships.ts
+    endpoints:
+      - method: POST
+        path: /api/match
+        description: Match internships based on current skills
+        auth_required: true
+        request_schema:
+          body:
+            skills: string[]
+        response_schema:
+          "200": Internship[]
+known_limitations: []

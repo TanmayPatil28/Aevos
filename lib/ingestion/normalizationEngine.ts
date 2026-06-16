@@ -86,5 +86,16 @@ export function normalizeExtraction(model: IntermediateExtractionModel): Academi
     },
     courses,
     semesterHistory,
+    timetable: model.timetable || {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+      saturday: [],
+      sunday: [],
+    },
+    academicCalendar: model.academicCalendar || [],
+    backlogs: model.backlogs || [],
   };
 }

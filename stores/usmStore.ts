@@ -160,6 +160,26 @@ export interface AcademicEvent {
   subtasks?: SubTask[];
 }
 
+export interface BacklogState {
+  id: string;
+  courseId: string;
+  courseCode: string;
+  courseName: string;
+  originalSemester: number;
+  originalGrade: string;
+  status: "PENDING" | "REGISTERED" | "EXAM_SCHEDULED" | "CLEARED" | "VOIDED";
+  attemptsCount: number;
+  nextExamDate?: string | null;
+  recoveryPathway?: string | null;
+  recoveryPlan?: {
+    studyPlan: string;
+    dailyHours: number;
+    recoveryProbability: number;
+    resources: string[];
+    aiPlanGenerationFailed?: boolean;
+  } | null;
+}
+
 export interface USMStoreState {
   // Identity & Preset
   presetId: string; // e.g. "sppu", "vtu", "jntuh"
@@ -180,6 +200,7 @@ export interface USMStoreState {
   holidays: string[]; // YYYY-MM-DD strings
   academicCalendar: AcademicEvent[];
   focus: FocusState;
+  backlogs: BacklogState[];
 
   // Actions
   setPresetId: (presetId: string) => void;
@@ -196,6 +217,8 @@ export interface USMStoreState {
   undoAttendanceHistoryEvent: (eventId: string) => void;
   addHoliday: (dateStr: string) => void;
   removeHoliday: (dateStr: string) => void;
+  setBacklogs: (backlogs: BacklogState[]) => void;
+  updateBacklog: (id: string, updates: Partial<BacklogState>) => void;
   
   // Simulation Actions
   addSimulationScenario: (scenario: SimulationScenario) => void;
@@ -367,6 +390,7 @@ export const useUSMStore = create<USMStoreState>()(
       holidays: [],
       academicCalendar: [],
       focus: initialFocus,
+      backlogs: [],
       
       interventions: [],
       workspaceContexts: ["DEFAULT"],
@@ -516,6 +540,18 @@ export const useUSMStore = create<USMStoreState>()(
       setTimetable: (updates) => {
         set((state) => ({
           timetable: { ...state.timetable, ...updates }
+        }));
+      },
+
+      setBacklogs: (backlogs) => {
+        set({ backlogs });
+      },
+
+      updateBacklog: (id, updates) => {
+        set((state) => ({
+          backlogs: state.backlogs.map((b) =>
+            b.id === id ? { ...b, ...updates } : b
+          ),
         }));
       },
 
@@ -791,6 +827,7 @@ export const useUSMStore = create<USMStoreState>()(
           interventions: [],
           workspaceContexts: ["DEFAULT"],
           healthScore: null,
+          backlogs: [],
         });
       },
 
@@ -927,7 +964,8 @@ export const useUSMStore = create<USMStoreState>()(
             timetable: profile.timetable || state.timetable || initialTimetable,
             attendanceHistory: profile.attendanceHistory || state.attendanceHistory || [],
             holidays: profile.holidays || state.holidays || [],
-            academicCalendar: profile.academicCalendar || state.academicCalendar || []
+            academicCalendar: profile.academicCalendar || state.academicCalendar || [],
+            backlogs: profile.backlogs || []
           };
         });
         get().evaluateInterventions();
@@ -940,7 +978,7 @@ export const useUSMStore = create<USMStoreState>()(
     {
       name: "gradeflow-usm-storage",
       storage: createJSONStorage(() => typeof window !== "undefined" ? window.localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} }),
-      version: 3,
+      version: 4,
       migrate: (persistedState: any, version: number) => {
         if (version < 1) {
           return {
@@ -957,6 +995,7 @@ export const useUSMStore = create<USMStoreState>()(
             attendanceHistory: [],
             holidays: [],
             academicCalendar: [],
+            backlogs: [],
           };
         }
         if (version < 2) {
@@ -966,6 +1005,9 @@ export const useUSMStore = create<USMStoreState>()(
         if (version < 3) {
           // v2 -> v3: add identity slice
           persistedState.identity = initialIdentity;
+        }
+        if (version < 4) {
+          persistedState.backlogs = [];
         }
         return persistedState;
       },
@@ -998,6 +1040,7 @@ export const useUSMStore = create<USMStoreState>()(
             hydratedState.attendanceHistory = [];
             hydratedState.holidays = [];
             hydratedState.academicCalendar = [];
+            hydratedState.backlogs = [];
           }
           // Ensure new fields exist for v1/v2 hydrations
           if (!Array.isArray(hydratedState.semesterHistory)) {
@@ -1017,6 +1060,9 @@ export const useUSMStore = create<USMStoreState>()(
           }
           if (!Array.isArray(hydratedState.academicCalendar)) {
             hydratedState.academicCalendar = [];
+          }
+          if (!hydratedState.backlogs || !Array.isArray(hydratedState.backlogs)) {
+            hydratedState.backlogs = [];
           }
           
           // Re-evaluate interventions to ensure they are synchronized with the hydrated state

@@ -6,8 +6,118 @@ import { validateSnapshotPayload } from "@/lib/academic-intelligence/hydration/h
 import { generateStructuralHash } from "@/lib/academic-intelligence/hashing/structuralHash";
 import { z } from "zod";
 
+const studentIdentitySchema = z.object({
+  id: z.string().optional().nullable(),
+  name: z.string().optional().nullable(),
+  registrationId: z.string().optional().nullable(),
+});
+
+const academicStateSchema = z.object({
+  currentCgpa: z.number(),
+  completedSemesters: z.number(),
+  earnedCredits: z.number(),
+  activeBacklogsCount: z.number(),
+  targetCgpa: z.number(),
+  programme: z.string().optional().nullable(),
+  branch: z.string().optional().nullable(),
+  batchYear: z.number().optional().nullable(),
+  semesterStartDate: z.string().optional().nullable(),
+  semesterEndDate: z.string().optional().nullable(),
+});
+
+const courseStateSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  semester: z.number(),
+  credits: z.number(),
+  grade: z.string().optional().nullable(),
+  cieMarks: z.number(),
+  seeMarks: z.number().optional().nullable(),
+  attendanceTotal: z.number(),
+  attendanceBunked: z.number(),
+  recoverySemester: z.number().optional().nullable(),
+});
+
+const semesterHistoryEntrySchema = z.object({
+  semester: z.number(),
+  isBacklogClearance: z.boolean().optional().nullable(),
+  sgpa: z.number(),
+  credits: z.number(),
+  earnedCredits: z.number(),
+});
+
+const timetableEntrySchema = z.object({
+  id: z.string(),
+  courseId: z.string(),
+  type: z.enum(["LECTURE", "PRACTICAL", "LAB", "TUTORIAL"]),
+  startTime: z.string(),
+  endTime: z.string(),
+  room: z.string().optional().nullable(),
+  batch: z.string().optional().nullable(),
+  faculty: z.string().optional().nullable(),
+});
+
+const timetableSchema = z.object({
+  monday: z.array(timetableEntrySchema),
+  tuesday: z.array(timetableEntrySchema),
+  wednesday: z.array(timetableEntrySchema),
+  thursday: z.array(timetableEntrySchema),
+  friday: z.array(timetableEntrySchema),
+  saturday: z.array(timetableEntrySchema),
+  sunday: z.array(timetableEntrySchema),
+});
+
+const subTaskSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  completed: z.boolean(),
+});
+
+const academicEventSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  startDate: z.string(),
+  endDate: z.string().optional().nullable(),
+  type: z.enum(["EXAM", "HOLIDAY", "EVENT", "FEST", "OTHER", "DEADLINE"]),
+  subtasks: z.array(subTaskSchema).optional().nullable(),
+});
+
+const backlogSchema = z.object({
+  id: z.string(),
+  courseId: z.string(),
+  courseCode: z.string(),
+  courseName: z.string(),
+  originalSemester: z.number(),
+  originalGrade: z.string(),
+  status: z.enum(["PENDING", "REGISTERED", "EXAM_SCHEDULED", "CLEARED", "VOIDED"]),
+  attemptsCount: z.number(),
+  nextExamDate: z.string().optional().nullable(),
+  recoveryPathway: z.string().optional().nullable(),
+  recoveryPlan: z.object({
+    studyPlan: z.string(),
+    dailyHours: z.number(),
+    recoveryProbability: z.number(),
+    resources: z.array(z.string()),
+    aiPlanGenerationFailed: z.boolean().optional().nullable(),
+  }).optional().nullable(),
+});
+
+const academicProfileSchema = z.object({
+  studentIdentity: studentIdentitySchema,
+  institution: z.string(),
+  presetId: z.string(),
+  regulation: z.string(),
+  academic: academicStateSchema,
+  courses: z.array(courseStateSchema),
+  semesterHistory: z.array(semesterHistoryEntrySchema),
+  timetable: timetableSchema.optional().nullable(),
+  academicCalendar: z.array(academicEventSchema).optional().nullable(),
+  backlogs: z.array(backlogSchema).optional().nullable(),
+});
+
 const snapshotPayloadSchema = z.object({
-  academicProfile: z.any(),
+  academicProfile: academicProfileSchema,
   sourceType: z.string(),
   sourceInstitution: z.string(),
   snapshotType: z.string().optional().default("official_import"),

@@ -5,6 +5,8 @@
  * calculation engines, persistence layers, explainability systems, and AI infrastructure.
  */
 
+import "dotenv/config";
+
 // ─── Setup Global Browser Mock First to prevent hoisting issues ──────────────
 const storageMock = {
   store: {} as Record<string, string>,
@@ -43,6 +45,8 @@ const { runCareerTests } = require("../tests/career/placement.test");
 const { runAttendanceTests } = require("../tests/attendance/bunk.test");
 const { runDecisionEngineTests } = require("../tests/advisory/decisionEngine.test");
 const { runAIInfrastructureTests } = require("../tests/ai/infrastructure.test");
+const { runStartRecoveryValidationTests } = require("../tests/api/startRecoveryValidation.test");
+const { runRateLimitTests } = require("../tests/api/rateLimit.test");
 
 // CLI Colors
 const colors = {
@@ -141,6 +145,22 @@ async function executeAllTests() {
     console.error(err.stack || err);
   }
 
+  let validationSuccess = false;
+  try {
+    validationSuccess = runStartRecoveryValidationTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing start-recovery validation tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
+  let rateLimitSuccess = false;
+  try {
+    rateLimitSuccess = runRateLimitTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing rate limiter tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
   console.log(`\n${colors.bright}${colors.cyan}================================================================`);
   console.log(`📊 MASTER TEST RESULTS SUMMARY`);
   console.log(`================================================================${colors.reset}`);
@@ -205,9 +225,21 @@ async function executeAllTests() {
     console.error(`  ${colors.red}✗ FAIL:${colors.reset} AI Resilient Ingestion Infrastructure`);
   }
 
+  if (validationSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} Backlog Recovery Payload Zod Validation`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Backlog Recovery Payload Zod Validation`);
+  }
+
+  if (rateLimitSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} In-Memory Rate Limiter Helper`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} In-Memory Rate Limiter Helper`);
+  }
+
   console.log(`----------------------------------------------------------------`);
 
-  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && smartIngestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess && aiSuccess) {
+  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && smartIngestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess && aiSuccess && validationSuccess && rateLimitSuccess) {
     console.log(`\n🎉 ${colors.bright}${colors.green}ALL MASTER UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
     process.exit(0);
   } else {

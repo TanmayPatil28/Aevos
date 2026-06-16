@@ -44,6 +44,9 @@ export interface IntermediateExtractionModel {
       externalMarks?: number;
     }>;
   }>;
+  timetable?: AcademicProfile["timetable"];
+  academicCalendar?: AcademicProfile["academicCalendar"];
+  backlogs?: AcademicProfile["backlogs"];
 }
 
 export interface ParserResult {

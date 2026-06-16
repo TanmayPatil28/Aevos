@@ -1,18 +1,7 @@
 {
   "status": "commited",
-  "type": "frontend",
+  "type": "backend",
   "scope": "codebase",
   "localEndpoint": "http://localhost:3000",
-  "executionArgs": {
-    "projectName": "gradeflow",
-    "projectPath": "c:\\Users\\Tanmay\\OneDrive\\Desktop\\GradeFlow\\gradeflow",
-    "testIds": [],
-    "additionalInstruction": "Verify the following fixes:\n1. Calculator subject removal (TC001).\n2. Calculator result visibility (TC002).\n3. Planner and Backlog blank screen issues (TC004, TC011, TC014).\n4. Predictor CGPA mode (TC010, TC013).\n5. Dashboard data crashes (TC007).",
-    "serverMode": "development",
-    "envs": {
-      "API_KEY": "sk-user-YBNevBbbmiQ91iJMvnlxKnuQ7cjMfC8g3g1WpWKsrpf_FZx-BInH0l1N6145bGdSDzmFRAQlPGzHuwZhFV-XJ4-ch3s4ekf3S2rpagEIg432SSvDsgYeQ1-ccd0qT0gKYy8"
-    }
-  },
-  "serverPort": 50067,
-  "proxy": "http://603033cd-feb5-4dcf-ba04-a16a2940ee6c:V9H4gzmMwZecFvYRlP2XZ0uYwdfd48rN@tun.testsprite.com:8080"
+  "backendAuthType": "public"
 }

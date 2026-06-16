@@ -6,7 +6,7 @@ import { useUSMStore } from "@/stores/usmStore";
 import { useDynamicIslandStore } from "@/stores/dynamicIslandStore";
 import { Mic, MicOff, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useChat } from "@ai-sdk/react";
+import { useRouter } from "next/navigation";
 
 const SpeechRecognition = typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
@@ -24,14 +24,136 @@ export default function JarvisNervousSystem() {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
 
-  const { messages, isLoading, append } = useChat({
-    api: '/api/chat',
-    onFinish: (message) => {
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(message.content);
+  const [messages, setMessages] = useState<{ id: string; role: 'user' | 'assistant'; content: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const executeAction = (action: any) => {
+    switch (action.type) {
+      case "navigate":
+        if (action.route) {
+          setTimeout(() => { router.push(action.route!); }, 1500);
+        }
+        break;
+
+      case "mark_attendance":
+        if (action.courseId && action.attendanceAction) {
+          const store = useUSMStore.getState();
+          const course = store.courses.find((c: any) => c.id === action.courseId || c.code === action.courseId);
+          if (course) {
+            if (action.attendanceAction === "BUNKED") {
+              store.updateCourse(course.id, { attendanceBunked: course.attendanceBunked + 1 });
+            } else {
+              store.updateCourse(course.id, { attendanceTotal: course.attendanceTotal + 1 });
+            }
+            useDynamicIslandStore.getState().showAlert({
+              id: `jarvis-att-${Date.now()}`,
+              type: action.attendanceAction === "BUNKED" ? "warning" : "success",
+              title: action.attendanceAction === "BUNKED" ? "Bunk Recorded" : "Attendance Marked",
+              message: `${course.name} marked as ${action.attendanceAction.toLowerCase()}.`,
+              duration: 3000,
+            });
+          }
+        }
+        break;
+
+      case "set_target_cgpa":
+        if (action.value !== undefined) {
+          useUSMStore.getState().setAcademic({ targetCgpa: action.value });
+          useDynamicIslandStore.getState().showAlert({
+            id: `jarvis-target-${Date.now()}`,
+            type: "success",
+            title: "Target Updated",
+            message: `Target CGPA set to ${action.value}`,
+            duration: 3000,
+          });
+        }
+        break;
+    }
+  };
+
+  const submitQuery = async (queryText: string) => {
+    if (!queryText.trim()) return;
+
+    const userMsgId = Date.now().toString();
+    const newUserMessage = { id: userMsgId, role: 'user' as const, content: queryText };
+    
+    const assistantMsgId = (Date.now() + 1).toString();
+    const newAssistantMessage = { id: assistantMsgId, role: 'assistant' as const, content: "" };
+
+    setMessages(prev => [...prev, newUserMessage, newAssistantMessage]);
+    setIsLoading(true);
+
+    try {
+      const { buildJarvisContext } = await import("@/lib/ai/jarvisContextBuilder");
+      const currentRoute = typeof window !== "undefined" ? window.location.pathname : "/";
+      const studentContext = buildJarvisContext(currentRoute);
+
+      const res = await fetch("/api/jarvis/v2", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: queryText,
+          studentContext,
+          sessionId: "voice-session",
+          mode: "voice"
+        })
+      });
+
+      if (!res.ok) {
+        setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: "Could not reach JARVIS. Check your API key in .env.local." } : m));
+        setIsLoading(false);
+        return;
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No stream reader");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let completedText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === "metadata") {
+              if (parsed.action && parsed.action.type !== "none") {
+                executeAction(parsed.action);
+              }
+            } else if (parsed.type === "chunk") {
+              completedText += parsed.text;
+              setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: completedText } : m));
+            }
+          } catch (e) {
+          }
+        }
+      }
+
+      if ('speechSynthesis' in window && completedText) {
+        const utterance = new SpeechSynthesisUtterance(completedText);
         window.speechSynthesis.speak(utterance);
       }
+
+    } catch (error) {
+      console.error("Jarvis voice streaming error:", error);
+      setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: "Connection to JARVIS failed." } : m));
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const submitQueryRef = useRef(submitQuery);
+  useEffect(() => {
+    submitQueryRef.current = submitQuery;
   });
 
   useEffect(() => {
@@ -169,12 +291,12 @@ export default function JarvisNervousSystem() {
       recognition.onend = () => setIsListening(false);
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
-        append({ role: 'user', content: transcript });
+        submitQueryRef.current(transcript);
       };
 
       recognitionRef.current = recognition;
     }
-  }, [append]);
+  }, []);
 
   const toggleListen = () => {
     if (isListening) {

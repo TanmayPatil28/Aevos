@@ -69,6 +69,99 @@ export function validateSnapshotPayload(rawPayload: unknown): AcademicProfile {
     };
   });
 
+  // 5. Normalize & Validate Timetable
+  const normalizedTimetable = {
+    monday: [],
+    tuesday: [],
+    wednesday: [],
+    thursday: [],
+    friday: [],
+    saturday: [],
+    sunday: [],
+  };
+  if (payload.timetable && typeof payload.timetable === "object") {
+    const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+    for (const day of days) {
+      if (Array.isArray(payload.timetable[day])) {
+        (normalizedTimetable as any)[day] = payload.timetable[day].map((entry: any) => {
+          if (!entry.id || !entry.courseId || !entry.type || !entry.startTime || !entry.endTime) {
+            throw new HydrationError(`Invalid timetable entry under ${day}`);
+          }
+          return {
+            id: entry.id,
+            courseId: entry.courseId,
+            type: entry.type,
+            startTime: entry.startTime,
+            endTime: entry.endTime,
+            room: typeof entry.room === "string" ? entry.room : undefined,
+            batch: typeof entry.batch === "string" ? entry.batch : undefined,
+            faculty: typeof entry.faculty === "string" ? entry.faculty : undefined,
+          };
+        });
+      }
+    }
+  }
+
+  // 6. Normalize & Validate Academic Calendar
+  let normalizedCalendar: any[] = [];
+  if (Array.isArray(payload.academicCalendar)) {
+    normalizedCalendar = payload.academicCalendar.map((event: any) => {
+      if (!event.id || !event.name || !event.startDate || !event.type) {
+        throw new HydrationError("Invalid academic event in calendar.");
+      }
+      return {
+        id: event.id,
+        name: event.name,
+        startDate: event.startDate,
+        endDate: typeof event.endDate === "string" ? event.endDate : undefined,
+        type: event.type,
+        subtasks: Array.isArray(event.subtasks)
+          ? event.subtasks.map((st: any) => {
+              if (!st.id || !st.title) {
+                throw new HydrationError("Invalid subtask in academic event.");
+              }
+              return {
+                id: st.id,
+                title: st.title,
+                completed: typeof st.completed === "boolean" ? st.completed : false,
+              };
+            })
+          : [],
+      };
+    });
+  }
+
+  // 7. Normalize & Validate Backlogs
+  let normalizedBacklogs: any[] = [];
+  if (Array.isArray(payload.backlogs)) {
+    normalizedBacklogs = payload.backlogs.map((b: any) => {
+      if (!b.id || !b.courseId || !b.courseCode || !b.courseName || typeof b.originalSemester !== "number" || typeof b.originalGrade !== "string" || typeof b.attemptsCount !== "number" || !b.status) {
+        throw new HydrationError("Invalid backlog record detected.");
+      }
+      return {
+        id: b.id,
+        courseId: b.courseId,
+        courseCode: b.courseCode,
+        courseName: b.courseName,
+        originalSemester: b.originalSemester,
+        originalGrade: b.originalGrade,
+        status: b.status,
+        attemptsCount: b.attemptsCount,
+        nextExamDate: typeof b.nextExamDate === "string" ? b.nextExamDate : null,
+        recoveryPathway: typeof b.recoveryPathway === "string" ? b.recoveryPathway : null,
+        recoveryPlan: b.recoveryPlan && typeof b.recoveryPlan === "object"
+          ? {
+              studyPlan: typeof b.recoveryPlan.studyPlan === "string" ? b.recoveryPlan.studyPlan : "",
+              dailyHours: typeof b.recoveryPlan.dailyHours === "number" ? b.recoveryPlan.dailyHours : 0,
+              recoveryProbability: typeof b.recoveryPlan.recoveryProbability === "number" ? b.recoveryPlan.recoveryProbability : 0,
+              resources: Array.isArray(b.recoveryPlan.resources) ? b.recoveryPlan.resources : [],
+              aiPlanGenerationFailed: typeof b.recoveryPlan.aiPlanGenerationFailed === "boolean" ? b.recoveryPlan.aiPlanGenerationFailed : undefined,
+            }
+          : null,
+      };
+    });
+  }
+
   // Return the strictly validated and normalized profile
   return {
     studentIdentity: {
@@ -87,5 +180,8 @@ export function validateSnapshotPayload(rawPayload: unknown): AcademicProfile {
     },
     courses: normalizedCourses,
     semesterHistory: normalizedHistory,
+    timetable: normalizedTimetable,
+    academicCalendar: normalizedCalendar,
+    backlogs: normalizedBacklogs,
   };
 }

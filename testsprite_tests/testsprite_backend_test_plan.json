@@ -1,0 +1,17 @@
+[
+  {
+    "id": "TC001",
+    "title": "get_career_skills_list",
+    "description": "Verify that the GET /api/career/skills endpoint returns a 200 status with a list of skills for the authenticated user, ensuring authentication is required and response schema matches Skill[]"
+  },
+  {
+    "id": "TC002",
+    "title": "post_add_new_career_skill",
+    "description": "Verify that the POST /api/career/skills endpoint allows an authenticated user to add a new skill by providing a valid name in the request body, returns 200 status with the created Skill object, and enforces authentication"
+  },
+  {
+    "id": "TC003",
+    "title": "post_match_internships_based_on_skills",
+    "description": "Verify that the POST /api/match endpoint accepts an authenticated request with a body containing an array of skill strings, returns 200 status with a list of matched internships, and requires authentication"
+  }
+]

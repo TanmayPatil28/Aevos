@@ -3,14 +3,31 @@ import { saveMessage, getRecentConversationContext } from "@/lib/ai/chatMemory";
 import { getGeminiKey } from "@/lib/ai/keys";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rateLimit";
 
 const jarvisPayloadSchema = z.object({
   query: z.string().min(1),
   studentContext: z.string().optional(),
   sessionId: z.string().optional().default("default-session"),
+  mode: z.enum(["text", "voice"]).optional().default("text"),
 });
 
 export async function POST(req: Request) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || 
+             req.headers.get("x-real-ip") || 
+             "127.0.0.1";
+  
+  const limitResult = rateLimit(ip, 30, 60000);
+  if (!limitResult.success) {
+    return new Response(
+      JSON.stringify({ error: "Too Many Requests", message: "Rate limit exceeded. Please try again in a minute." }),
+      {
+        status: 429,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
+  }
+
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -32,14 +49,14 @@ export async function POST(req: Request) {
       );
     }
     
-    const { query, studentContext, sessionId } = parsed.data;
+    const { query, studentContext, sessionId, mode } = parsed.data;
 
     // 1. Persist the incoming user message
     await saveMessage(user.id, sessionId, "user", query);
 
     // 2. Build the full context
     const memoryContext = await getRecentConversationContext(user.id, sessionId, 10);
-    const fullPrompt = `
+    let fullPrompt = `
 STUDENT'S COMPLETE ACADEMIC PROFILE:
 ${studentContext || "No profile provided."}
 
@@ -49,6 +66,10 @@ ${memoryContext}
 USER'S LATEST MESSAGE: 
 ${query}
 `;
+
+    if (mode === "voice") {
+      fullPrompt += "\n\nVOICE MODE ACTIVE: Keep responses under 3 sentences for fluid voice conversation. Do not use markdown.\n";
+    }
 
     // Ensure the key is available for Mastra (using our rotation util)
     process.env.GOOGLE_GENERATIVE_AI_API_KEY = getGeminiKey();

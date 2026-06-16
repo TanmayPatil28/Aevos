@@ -1,4 +1,4 @@
-import { CourseState, AcademicState, SemesterHistoryEntry } from "../stores/usmStore";
+import { CourseState, AcademicState, SemesterHistoryEntry, TimetableState, AcademicEvent, BacklogState } from "../stores/usmStore";
 
 export interface TrustMetadata {
   confidenceScore: number;
@@ -41,4 +41,7 @@ export interface AcademicProfile {
   academic: AcademicState;
   courses: CourseState[];
   semesterHistory: SemesterHistoryEntry[];
+  timetable?: TimetableState;
+  academicCalendar?: AcademicEvent[];
+  backlogs?: BacklogState[];
 }
