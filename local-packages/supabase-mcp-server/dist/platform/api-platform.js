@@ -1,0 +1,2 @@
+import{a}from"../chunk-5PS6HETH.js";import"../chunk-YTLRXTCX.js";import"../chunk-LU6L7C36.js";import"../chunk-VCRYYVOD.js";export{a as createSupabaseApiPlatform};
+//# sourceMappingURL=api-platform.js.map

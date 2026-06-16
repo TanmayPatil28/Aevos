@@ -7,6 +7,9 @@ import { SKILL_TRACKS, SkillTrack } from "@/lib/career/skillsLedger";
 import { DynamicRoadmapModal } from "@/app/(workspace)/placement/components/DynamicRoadmapModal";
 import { cn } from "@/lib/cn";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { useUSMStore } from "@/stores/usmStore";
+import { useRouter } from "next/navigation";
 
 const DynamicIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
   const IconComponent = (LucideIcons as any)[iconName] || LucideIcons.Circle;
@@ -54,6 +57,47 @@ export default function PlacementSkillsMatrix() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
+
+  const router = useRouter();
+  const career = useUSMStore((state) => state.career);
+  const setCareer = useUSMStore((state) => state.setCareer);
+
+  useEffect(() => {
+    fetch("/api/career/skills")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.skills)) {
+          setCareer({ skills: data.skills });
+        }
+      })
+      .catch((err) => console.error("Error fetching skills:", err));
+  }, [setCareer]);
+
+  const handleToggleSkill = async (e: React.MouseEvent, skillTitle: string) => {
+    e.stopPropagation();
+    const currentSkills = career.skills || [];
+    let updatedSkills;
+    if (currentSkills.includes(skillTitle)) {
+      updatedSkills = currentSkills.filter(s => s !== skillTitle);
+    } else {
+      updatedSkills = [...currentSkills, skillTitle];
+    }
+    
+    // Update Zustand store
+    setCareer({ skills: updatedSkills });
+
+    // Persist to database
+    try {
+      await fetch("/api/career/skills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills: updatedSkills }),
+      });
+      router.refresh();
+    } catch (err) {
+      console.error("Error persisting skills:", err);
+    }
+  };
 
   const filteredTracks = useMemo(() => {
     // 1. Tokenize query for multi-word search (e.g., "AI Python" -> ["ai", "python"])
@@ -178,14 +222,27 @@ export default function PlacementSkillsMatrix() {
           >
             <div className="relative z-10 flex flex-col h-full">
               {/* Header: Icon, Category & Title Inline */}
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-10 h-10 shrink-0 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-center justify-center transition-colors group-hover:bg-white/[0.04] group-hover:border-white/[0.08] shadow-sm">
-                  <DynamicIcon iconName={track.iconName} className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" />
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 shrink-0 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-center justify-center transition-colors group-hover:bg-white/[0.04] group-hover:border-white/[0.08] shadow-sm">
+                    <DynamicIcon iconName={track.iconName} className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="flex flex-col pt-0.5">
+                    <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-zinc-500/80 mb-1">{track.category}</p>
+                    <h3 className="text-lg font-medium tracking-tight text-white/95 group-hover:text-white transition-colors leading-none">{track.title}</h3>
+                  </div>
                 </div>
-                <div className="flex flex-col pt-0.5">
-                  <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-zinc-500/80 mb-1">{track.category}</p>
-                  <h3 className="text-lg font-medium tracking-tight text-white/95 group-hover:text-white transition-colors leading-none">{track.title}</h3>
-                </div>
+
+                <button
+                  onClick={(e) => handleToggleSkill(e, track.title)}
+                  className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-md border transition-all hover:scale-105 active:scale-95 z-20 shrink-0 ${
+                    career.skills?.includes(track.title)
+                      ? "bg-indigo-500/25 text-indigo-300 border-indigo-500/40"
+                      : "bg-[#1c1c1e] text-zinc-400 border-white/10 hover:border-zinc-500 hover:text-zinc-200"
+                  }`}
+                >
+                  {career.skills?.includes(track.title) ? "✓ Acquired" : "+ Add to OS"}
+                </button>
               </div>
 
               {/* Data Row (Stat-Block) */}

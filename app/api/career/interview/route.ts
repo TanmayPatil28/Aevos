@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { google } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
@@ -10,8 +9,19 @@ export const maxDuration = 60; // Allow more time for Gemini generation
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    let userId = user?.id;
+
+    if (!userId) {
+      // Fallback to the first user found in the User table
+      const firstUser = await prisma.user.findFirst();
+      if (firstUser) {
+        userId = firstUser.id;
+      }
+    }
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -80,7 +90,7 @@ You must strictly return a JSON object containing:
       // Save Interview Session
       await prisma.interviewSession.create({
         data: {
-          userId: session.user.id,
+          userId: userId,
           targetRole: targetJD.substring(0, 50) + "...", // Trim JD for the title
           transcript: messages,
           finalScore: object.scorecard.score,

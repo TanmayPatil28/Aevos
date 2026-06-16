@@ -1,0 +1,2 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var _chunkUL3UWW45cjs = require('../chunk-UL3UWW45.cjs');require('../chunk-OGTB6M46.cjs');require('../chunk-PHWSETKC.cjs');require('../chunk-QX2UXNCU.cjs');exports.createSupabaseApiPlatform = _chunkUL3UWW45cjs.a;
+//# sourceMappingURL=api-platform.cjs.map

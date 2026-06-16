@@ -135,7 +135,8 @@ export function runIngestionTests(): boolean {
       setAcademic(acad: any) { this.academic = { ...this.academic, ...acad }; },
       setSemesterHistory(hist: any[]) { this.semesterHistory = hist; },
       setCourses(c: any[]) { this.courses = c; },
-      resetSimulation() { this.simulationResetCalled = true; }
+      resetSimulation() { this.simulationResetCalled = true; },
+      clearSimulationScenarios() { this.simulationResetCalled = true; }
     };
 
     const validationResult = validateImportPayload(validPayload);

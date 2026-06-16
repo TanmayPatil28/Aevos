@@ -129,7 +129,7 @@ export const selectDerivedGPA = createSelector((state: USMStoreState): {
   // Convert CGPA to percentage using the Institution Configuration or fallback to regulation engine
   let percentage = 0;
   const activeInstitution = state.activeInstitution as keyof typeof JSPM_CONFIGS;
-  if (activeInstitution && JSPM_CONFIGS[activeInstitution]) {
+  if (activeInstitution && activeInstitution !== "unknown" && JSPM_CONFIGS[activeInstitution]) {
     percentage = JSPM_CONFIGS[activeInstitution].percentageConversion.calculate(derivedCgpa);
   } else {
     percentage = pluggableRegulationEngine.convertToPercentage(derivedCgpa, "cgpa", state.presetId);

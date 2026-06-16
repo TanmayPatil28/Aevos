@@ -11,6 +11,7 @@ import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
 
 import InternshipLedgerRow, { InternshipMatch } from "./InternshipLedgerRow";
 import InternshipIntelligenceGuide from "./InternshipIntelligenceGuide";
+import CareerOSHeader from "@/components/placement/CareerOSHeader";
 
 interface InternshipsDashboardProps {
   matches: InternshipMatch[];
@@ -57,8 +58,13 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
         <div className={cn("absolute inset-0 blur-[160px] rounded-full mix-blend-screen transition-colors duration-1000", "bg-gradient-to-b from-white/[0.02] via-transparent to-transparent")} />
       </motion.div>
 
+      {/* Career OS Header */}
+      <div className="relative z-50 pt-24 px-6 md:px-12 max-w-[1400px] mx-auto">
+        <CareerOSHeader />
+      </div>
+
       {/* Hero Section */}
-      <section className="relative z-10 w-full flex flex-col items-start justify-center pt-36 pb-8 px-6 md:px-12 max-w-[1400px] mx-auto">
+      <section className="relative z-10 w-full flex flex-col items-start justify-center pt-12 pb-8 px-6 md:px-12 max-w-[1400px] mx-auto">
         <div className="w-full max-w-2xl flex flex-col items-start text-left">
           <PageHero 
             headline={<motion.span 

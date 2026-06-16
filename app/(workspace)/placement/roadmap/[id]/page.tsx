@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import SkillTreeClient from "@/components/os/career/SkillTreeClient";
 
 export default async function DynamicRoadmapPage({ params }: { params: { id: string } }) {

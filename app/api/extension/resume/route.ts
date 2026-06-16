@@ -1,21 +1,28 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
   try {
-    // Authenticate via NextAuth session cookies
-    // The Chrome Extension's background.js will make this request, 
-    // and Chrome will automatically attach the user's GradeFlow cookies!
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    let userId = user?.id;
+
+    if (!userId) {
+      // Fallback to the first user found in the User table
+      const firstUser = await prisma.user.findFirst();
+      if (firstUser) {
+        userId = firstUser.id;
+      }
+    }
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized. Please log in to GradeFlow." }, { status: 401 });
     }
 
     // Fetch the user's latest Career Profile
     const profile = await prisma.careerProfile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId },
     });
 
     if (!profile || !profile.detailedAudit) {

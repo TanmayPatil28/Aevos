@@ -700,7 +700,7 @@ export default function CalendarManager() {
                           exit={{ y: '100%', opacity: 0 }}
                           transition={{ type: "spring", damping: 25, stiffness: 200 }}
                           onClick={(e) => e.stopPropagation()}
-                          className="bg-[#1C1C1E]/95 backdrop-blur-2xl border-t border-x border-white/10 rounded-t-[32px] w-full max-w-[800px] shadow-[0_-20px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col relative h-[85vh]"
+                          className="bg-[#1C1C1E]/95 backdrop-blur-2xl border-t border-x border-white/10 rounded-t-[32px] w-full shadow-[0_-20px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col relative h-[85vh]"
                         >
                           {/* iOS Drag Handle */}
                           <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-white/20"></div>
@@ -710,9 +710,28 @@ export default function CalendarManager() {
                           </button>
 
                           {/* Header: Date & Intelligence */}
-                          <div className="w-full px-6 pt-10 pb-6 flex flex-col items-center justify-center">
-                            <h3 className="text-[34px] font-bold tracking-tight text-white leading-none mb-1">{format(selectedDate, 'EEEE')}</h3>
-                            <p className="text-[13px] text-white/50 uppercase tracking-widest">{format(selectedDate, 'MMMM do, yyyy')}</p>
+                          <div className="w-full p-8 pt-12 pb-6 flex flex-col">
+                            <div>
+                              <h3 className="text-3xl font-black tracking-tight text-white leading-none">{format(selectedDate, 'EEEE')}</h3>
+                              <p className="text-white/60 font-mono tracking-[0.2em] text-[10px] mt-2 uppercase">{format(selectedDate, 'MMMM do, yyyy')}</p>
+                            </div>
+
+                            <div className="mt-6">
+                              <div className="text-[9px] font-bold text-white/50 tracking-[0.2em] uppercase mb-3">Market Intelligence</div>
+                              
+                              <div className="flex gap-4">
+                                <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4 flex-1">
+                                  <div className="text-3xl font-light text-white mb-1">{agendaEvents.length}</div>
+                                  <div className="text-[10px] text-white/60">Events</div>
+                                </div>
+                                <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4 flex-1">
+                                  <div className="text-lg font-bold text-white mb-1 mt-1">
+                                    {agendaEvents.some(e => e.type === 'EXAM') ? 'High' : agendaEvents.length === 0 ? 'Zero' : 'Moderate'}
+                                  </div>
+                                  <div className="text-[10px] text-white/60 mt-2">Stress Level</div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                           
                           {/* Body: Scrollable Feed */}
@@ -722,75 +741,40 @@ export default function CalendarManager() {
                             onWheel={(e) => e.stopPropagation()}
                             onTouchMove={(e) => e.stopPropagation()}
                           >
-                            {/* iOS Settings Group: Intelligence */}
-                            <div className="mb-8">
-                              <div className="text-[13px] text-white/50 uppercase tracking-wide pl-4 mb-2">Market Intelligence</div>
-                              <div className="bg-white/[0.02] border border-white/[0.08] rounded-[24px] overflow-hidden">
-                                <div className="flex items-center justify-between pl-4 active:bg-white/[0.04] transition-colors cursor-pointer">
-                                  <div className="flex items-center gap-4 py-3 border-b border-white/5 w-full pr-4">
-                                    <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-                                      <Calendar className="w-4 h-4 text-blue-500" />
-                                    </div>
-                                    <span className="text-[17px] text-white flex-1">Events Scheduled</span>
-                                    <span className="text-[17px] text-white/50 flex shrink-0 items-center gap-2">
-                                      {agendaEvents.length} <ChevronDown className="w-4 h-4 text-white/20 -rotate-90" />
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between pl-4 active:bg-white/[0.04] transition-colors cursor-pointer">
-                                  <div className="flex items-center gap-4 py-3 w-full pr-4">
-                                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                      <Sparkles className="w-4 h-4 text-emerald-500" />
-                                    </div>
-                                    <span className="text-[17px] text-white flex-1">Stress Level</span>
-                                    <span className="text-[17px] text-white/50 flex shrink-0 items-center gap-2">
-                                      {agendaEvents.some(e => e.type === 'EXAM') ? 'High' : agendaEvents.length === 0 ? 'Zero' : 'Moderate'} <ChevronDown className="w-4 h-4 text-white/20 -rotate-90" />
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="text-[13px] text-white/50 uppercase tracking-wide pl-4 mb-2">Agenda ({agendaEvents.length})</div>
                             {agendaEvents.length === 0 ? (
-                              <div className="bg-white/[0.02] border border-white/[0.08] rounded-[24px] overflow-hidden py-10 flex flex-col items-center justify-center">
-                                <Sparkles className="w-6 h-6 text-white/20 mb-3" />
-                                <p className="text-white/50 text-[15px]">No events scheduled</p>
+                              <div className="h-full flex flex-col items-center justify-center py-10">
+                                <Sparkles className="w-6 h-6 text-white/20 mb-4" />
+                                <p className="text-white/60 font-bold text-[10px] uppercase tracking-widest">No Events Scheduled</p>
                               </div>
                             ) : (
-                              <div className="bg-white/[0.02] border border-white/[0.08] rounded-[24px] overflow-hidden">
-                                {agendaEvents.map((evt, i) => {
-                                  const isExam = evt.type === 'EXAM';
-                                  const isHoliday = evt.type === 'HOLIDAY';
-                                  
-                                  return (
-                                    <div key={evt.id} className="flex items-center pl-4 active:bg-white/[0.04] transition-colors cursor-pointer group relative">
-                                      {/* Icon Badge */}
-                                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mr-4 ${
-                                        isExam ? 'bg-red-500/10 text-red-500' :
-                                        isHoliday ? 'bg-emerald-500/10 text-emerald-500' :
-                                        'bg-blue-500/10 text-blue-500'
+                              <div className="space-y-4">
+                                {agendaEvents.map((evt) => (
+                                  <div key={evt.id} className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5">
+                                    <div className="flex items-center gap-3 mb-3">
+                                      <span className={`text-[9px] font-bold uppercase tracking-widest flex items-center gap-2 px-2 py-1 rounded ${
+                                        evt.type === 'EXAM' ? 'bg-[#A855F7]/20 text-[#A855F7]' :
+                                        evt.type === 'HOLIDAY' ? 'bg-emerald-400/20 text-emerald-400' :
+                                        'bg-[#4F8EF7]/20 text-[#4F8EF7]'
                                       }`}>
-                                        {isExam ? <AlertCircle className="w-5 h-5" /> : 
-                                         isHoliday ? <Sun className="w-5 h-5" /> : 
-                                         <Calendar className="w-5 h-5" />}
-                                      </div>
-                                      
-                                      {/* Content (with border) */}
-                                      <div className={`flex-1 py-3 pr-4 flex items-center justify-between ${i !== agendaEvents.length - 1 ? 'border-b border-white/5' : ''}`}>
-                                        <div className="flex flex-col justify-center">
-                                          <h4 className="text-[17px] font-semibold text-white tracking-tight">{evt.name}</h4>
-                                          <p className="text-[13px] text-white/50 mt-0.5 line-clamp-1">
-                                            {isExam ? 'High impact on CGPA • Prioritize deep work' :
-                                             isHoliday ? 'Zero stress detected • Disconnect completely' :
-                                             'Standard academic event • Review syllabus'}
-                                          </p>
-                                        </div>
-                                        <ChevronDown className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
-                                      </div>
+                                        {evt.type}
+                                      </span>
                                     </div>
-                                  );
-                                })}
+                                    <h4 className="text-lg text-white/90 font-bold mb-3">{evt.name}</h4>
+                                    
+                                    {/* Minimal AI Action Block */}
+                                    <div className="mt-4 pt-4 border-t border-white/[0.05]">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Bot className="w-3 h-3 text-white/40" />
+                                        <div className="text-[9px] font-bold text-white/50 uppercase tracking-[0.2em]">Auto-Synced AI Context</div>
+                                      </div>
+                                      <p className="text-[11px] text-white/70 leading-relaxed">
+                                        {evt.type === 'EXAM' ? "High priority day. Ensure you have reviewed all mock tests. Aim for 8 hours of sleep the night before." :
+                                         evt.type === 'HOLIDAY' ? "Zero stress detected. Disconnect completely to prevent long-term academic burnout." :
+                                         "Standard academic event. Review syllabus requirements beforehand."}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             )}
                           </div>

@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Sparkles, Search, Filter } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
 import { DynamicRoadmapModal } from "@/app/(workspace)/placement/components/DynamicRoadmapModal";
 import { SKILL_TRACKS, SkillTrack } from "@/lib/career/skillsLedger";
+import { useUSMStore } from "@/stores/usmStore";
+import { useRouter } from "next/navigation";
+import CareerOSHeader from "@/components/placement/CareerOSHeader";
 
 // Dynamic Icon Renderer
 const DynamicIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
@@ -30,6 +33,47 @@ export default function CareerOSPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
 
+  const router = useRouter();
+  const career = useUSMStore((state) => state.career);
+  const setCareer = useUSMStore((state) => state.setCareer);
+
+  useEffect(() => {
+    fetch("/api/career/skills")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.skills)) {
+          setCareer({ skills: data.skills });
+        }
+      })
+      .catch((err) => console.error("Error fetching skills:", err));
+  }, [setCareer]);
+
+  const handleToggleSkill = async (e: React.MouseEvent, skillTitle: string) => {
+    e.stopPropagation();
+    const currentSkills = career.skills || [];
+    let updatedSkills;
+    if (currentSkills.includes(skillTitle)) {
+      updatedSkills = currentSkills.filter(s => s !== skillTitle);
+    } else {
+      updatedSkills = [...currentSkills, skillTitle];
+    }
+    
+    // Update Zustand store
+    setCareer({ skills: updatedSkills });
+
+    // Persist to database
+    try {
+      await fetch("/api/career/skills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills: updatedSkills }),
+      });
+      router.refresh();
+    } catch (err) {
+      console.error("Error persisting skills:", err);
+    }
+  };
+
   const filteredTracks = useMemo(() => {
     return SKILL_TRACKS.filter((track) => {
       const matchesSearch = track.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -46,6 +90,7 @@ export default function CareerOSPage() {
 
   return (
     <div className="w-full min-h-screen flex flex-col pt-24 px-6 max-w-[1400px] mx-auto pb-32">
+      <CareerOSHeader />
       <PageHero 
         headline={<>The 2026 Technology Paradigm.<br/>Your Skills Matrix.</>}
         description="A massive, industry-validated ledger of the exact roles and technologies demanded by FAANG and elite startups. Click any skill to instantly generate a hyper-personalized, AI-driven learning roadmap."
@@ -101,20 +146,33 @@ export default function CareerOSPage() {
                   <DynamicIcon iconName={track.iconName} className="w-6 h-6 text-indigo-400 group-hover:text-indigo-300" />
                 </div>
                 
-                <div className="flex flex-col items-end gap-1">
-                  <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md border ${
-                    track.difficulty === "Advanced" ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
-                    track.difficulty === "Intermediate" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                    "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                  }`}>
-                    {track.difficulty}
-                  </span>
-                  
-                  {track.marketDemand === "Critical" && (
-                    <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                      <Sparkles className="w-3 h-3" /> Critical Demand
+                <div className="flex flex-col items-end gap-1.5">
+                  <button
+                    onClick={(e) => handleToggleSkill(e, track.title)}
+                    className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-md border transition-all hover:scale-105 active:scale-95 z-20 ${
+                      career.skills?.includes(track.title)
+                        ? "bg-indigo-500/25 text-indigo-300 border-indigo-500/40"
+                        : "bg-zinc-800/80 text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-200"
+                    }`}
+                  >
+                    {career.skills?.includes(track.title) ? "✓ Acquired" : "+ Add to OS"}
+                  </button>
+
+                  <div className="flex gap-1.5">
+                    <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md border ${
+                      track.difficulty === "Advanced" ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
+                      track.difficulty === "Intermediate" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                      "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                    }`}>
+                      {track.difficulty}
                     </span>
-                  )}
+                    
+                    {track.marketDemand === "Critical" && (
+                      <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                        <Sparkles className="w-3 h-3" /> Critical Demand
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

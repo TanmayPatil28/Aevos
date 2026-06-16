@@ -127,8 +127,8 @@ function runStoreTests() {
       semester: 3,
       grade: "A", // 8 GP in SPPU
       cieMarks: 40,
-      attendanceTotal: 40,
-      attendanceBunked: 5,
+      attendanceTotal: 30,
+      attendanceBunked: 3,
     },
     {
       id: "c2",
@@ -138,8 +138,8 @@ function runStoreTests() {
       semester: 3,
       grade: "B+", // 7 GP in SPPU
       cieMarks: 42,
-      attendanceTotal: 40,
-      attendanceBunked: 2,
+      attendanceTotal: 30,
+      attendanceBunked: 9,
     },
     {
       id: "c3",
@@ -150,7 +150,7 @@ function runStoreTests() {
       grade: "O", // 10 GP in SPPU
       cieMarks: 48,
       attendanceTotal: 20,
-      attendanceBunked: 0,
+      attendanceBunked: 2,
     }
   ];
 

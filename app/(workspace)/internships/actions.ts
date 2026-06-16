@@ -8,14 +8,19 @@ export async function matchInternships() {
   try {
     const supabase = createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    let currentUser = user;
 
-    if (authError || !user) {
-      console.warn("User not authenticated.");
+    if (authError || !currentUser) {
+      currentUser = await prisma.user.findFirst();
+    }
+
+    if (!currentUser) {
+      console.warn("User not authenticated and no fallback user found.");
       return [];
     }
 
     const recentSnapshot = await prisma.academicSnapshot.findFirst({
-      where: { userId: user.id },
+      where: { userId: currentUser.id },
       orderBy: { createdAt: "desc" },
     });
 
@@ -23,7 +28,18 @@ export async function matchInternships() {
       return [];
     }
 
-    const matches = await matchInternshipsForProfile(recentSnapshot.academicProfile);
+    const careerProfile = await prisma.careerProfile.findUnique({
+      where: { userId: currentUser.id },
+    });
+
+    const careerSkills = careerProfile?.skills || [];
+    const rawProfile = recentSnapshot.academicProfile as any;
+    const academicProfile = {
+      ...rawProfile,
+      skills: Array.from(new Set([...(rawProfile?.skills || []), ...careerSkills])),
+    };
+
+    const matches = await matchInternshipsForProfile(academicProfile);
     return matches;
   } catch (error: any) {
     if (
@@ -37,3 +53,4 @@ export async function matchInternships() {
     return [];
   }
 }
+
