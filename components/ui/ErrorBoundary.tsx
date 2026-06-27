@@ -26,7 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error in GradeFlow Boundary:", error, errorInfo);
+    console.error("Uncaught error in Aevos Boundary:", error, errorInfo);
   }
 
   private handleReset = () => {
@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
               System Anomaly Detected
             </h1>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              GradeFlow encountered a runtime calculation anomaly. This event has been logged. Let&apos;s get you back on track.
+              Aevos encountered a runtime calculation anomaly. This event has been logged. Let&apos;s get you back on track.
             </p>
 
             {this.state.error && (

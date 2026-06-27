@@ -69,7 +69,7 @@ export default function DynamicIsland({
       {/* ─── Main Dynamic Island Pill ─── */}
       <motion.div
         layout
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
         className={cn(
           "relative flex items-center bg-[#1a1a1a] rounded-full",
           "border border-white/[0.08]",
@@ -95,14 +95,14 @@ export default function DynamicIsland({
               onClick={() => onModeChange("matrix")}
               className={cn(
                 "relative flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300",
-                mode === "matrix" ? "text-black" : "text-white/40 hover:text-white/70"
+                mode === "matrix" ? "text-black" : "text-foreground/40 hover:text-foreground/70"
               )}
             >
               {mode === "matrix" && (
                 <motion.div
                   layoutId="activeTab"
                   className="absolute inset-0 bg-white rounded-full shadow-md"
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
                 />
               )}
               <Layers size={15} className="relative z-10" />
@@ -113,14 +113,14 @@ export default function DynamicIsland({
               onClick={() => onModeChange("radar")}
               className={cn(
                 "relative flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300",
-                mode === "radar" ? "text-black" : "text-white/40 hover:text-white/70"
+                mode === "radar" ? "text-black" : "text-foreground/40 hover:text-foreground/70"
               )}
             >
               {mode === "radar" && (
                 <motion.div
                   layoutId="activeTab"
                   className="absolute inset-0 bg-white rounded-full shadow-md"
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
                 />
               )}
               <Crosshair size={15} className="relative z-10" />
@@ -136,11 +136,11 @@ export default function DynamicIsland({
             onClick={() => setSandboxExpanded(!sandboxExpanded)}
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 mx-1.5 rounded-full transition-all duration-300",
-              sandboxExpanded ? "bg-white/10" : "hover:bg-white/5",
+              sandboxExpanded ? "bg-white/10" : "hover:bg-surface-raised",
             )}
           >
             <div className="relative">
-              <Beaker size={15} className={sandboxActive ? "text-[#0a84ff]" : "text-white/40"} />
+              <Beaker size={15} className={sandboxActive ? "text-[#0a84ff]" : "text-foreground/40"} />
               {sandboxActive && (
                 <motion.div
                   className="absolute -top-0.5 -right-0.5 w-[6px] h-[6px] bg-[#0a84ff] rounded-full"
@@ -163,7 +163,7 @@ export default function DynamicIsland({
             initial={{ opacity: 0, y: -10, scaleY: 0.8, height: 0 }}
             animate={{ opacity: 1, y: 0, scaleY: 1, height: "auto" }}
             exit={{ opacity: 0, y: -10, scaleY: 0.8, height: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
             style={{ originY: 0 }}
             className="overflow-hidden mt-3"
           >
@@ -175,9 +175,9 @@ export default function DynamicIsland({
                     "p-1.5 rounded-lg transition-all duration-300",
                     sandboxActive ? "bg-[#0a84ff] shadow-[0_0_15px_rgba(10,132,255,0.4)]" : "bg-white/10"
                   )}>
-                    <Beaker size={14} className="text-white" />
+                    <Beaker size={14} className="text-foreground" />
                   </div>
-                  <span className="text-xs font-bold text-white/80 uppercase tracking-[0.15em]">Sandbox Engine</span>
+                  <span className="text-xs font-bold text-foreground/80 uppercase tracking-[0.15em]">Sandbox Engine</span>
                 </div>
 
                 <div className="flex items-center gap-2.5">
@@ -193,14 +193,14 @@ export default function DynamicIsland({
                       layout
                       className="w-[18px] h-[18px] bg-white rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
                       animate={{ x: sandboxActive ? 18 : 0 }}
-                      transition={{ type: "spring", stiffness: 600, damping: 35 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
                     />
                   </button>
 
                   {/* Collapse */}
                   <button
                     onClick={() => setSandboxExpanded(false)}
-                    className="p-1 rounded-full bg-white/5 hover:bg-white/15 text-white/40 hover:text-white/80 transition-colors"
+                    className="p-1 rounded-full bg-surface-raised hover:bg-white/15 text-foreground/40 hover:text-foreground/80 transition-colors"
                   >
                     <ChevronDown size={14} className="rotate-180" />
                   </button>
@@ -215,7 +215,7 @@ export default function DynamicIsland({
                 {/* CGPA */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-baseline">
-                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">CGPA</label>
+                    <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-[0.2em]">CGPA</label>
                     <input
                       type="number" min="5" max="10" step="0.1"
                       value={cgpa}
@@ -228,7 +228,7 @@ export default function DynamicIsland({
                     <motion.div
                       className="absolute top-0 left-0 h-full bg-[#0a84ff] rounded-full"
                       animate={{ width: `${cgpaPercent}%` }}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
                     />
                     <input
                       type="range" min="5" max="10" step="0.1"
@@ -243,7 +243,7 @@ export default function DynamicIsland({
                 {/* Backlogs */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-baseline">
-                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Backlogs</label>
+                    <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-[0.2em]">Backlogs</label>
                     <input
                       type="number" min="0" max="10" step="1"
                       value={backlogs}
@@ -256,7 +256,7 @@ export default function DynamicIsland({
                     <motion.div
                       className="absolute top-0 left-0 h-full bg-[#ff453a] rounded-full"
                       animate={{ width: `${backlogsPercent}%` }}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
                     />
                     <input
                       type="range" min="0" max="10" step="1"
@@ -270,10 +270,10 @@ export default function DynamicIsland({
 
                 {/* AI Resume Uploader */}
                 <div className="pt-2">
-                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-2 block">Resume Parsing</label>
+                  <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-[0.2em] mb-2 block">Resume Parsing</label>
                   <label className={cn(
                     "flex flex-col items-center justify-center w-full h-20 rounded-xl border border-dashed transition-all cursor-pointer",
-                    isParsing ? "border-[#0a84ff]/50 bg-[#0a84ff]/5" : "border-white/10 hover:border-white/30 bg-white/5"
+                    isParsing ? "border-brand bg-brand" : "border-border hover:border-border-strong bg-surface-raised"
                   )}>
                     {isParsing ? (
                       <div className="flex items-center gap-2 text-[#0a84ff]">
@@ -281,7 +281,7 @@ export default function DynamicIsland({
                         <span className="text-[11px] font-semibold">Extracting Skills...</span>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center gap-1 text-white/50 hover:text-white/80 transition-colors">
+                      <div className="flex flex-col items-center gap-1 text-foreground/50 hover:text-foreground/80 transition-colors">
                         <UploadCloud size={16} />
                         <span className="text-[11px] font-medium">Upload PDF Resume</span>
                       </div>

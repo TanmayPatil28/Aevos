@@ -19,7 +19,7 @@ export function AuthBackground() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] backdrop-blur-md border border-white/[0.08] shadow-sm">
             <GraduationCap className="h-5 w-5 text-white/90" />
           </div>
-          <span className="text-xl font-semibold tracking-tight text-white/90">GradeFlow</span>
+          <span className="text-xl font-semibold tracking-tight text-white/90">Aevos</span>
         </motion.div>
 
         <motion.div
@@ -42,7 +42,7 @@ export function AuthBackground() {
           transition={{ duration: 1, delay: 0.6 }}
           className="flex items-center space-x-4 text-sm font-medium text-white/40"
         >
-          <span>© {new Date().getFullYear()} GradeFlow Inc.</span>
+          <span>© {new Date().getFullYear()} Aevos Inc.</span>
           <span className="h-1 w-1 rounded-full bg-white/20"></span>
           <a href="#" className="hover:text-white/80 transition-colors">Privacy Policy</a>
           <span className="h-1 w-1 rounded-full bg-white/20"></span>

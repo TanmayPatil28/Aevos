@@ -15,11 +15,11 @@ export default function GraceMarksPredictorWidget({ course, courses }: { course:
 
   return (
     <>
-      <div className="p-6 rounded-[32px] bg-[#1C1C1E] flex flex-col h-full">
+      <div className="p-6 rounded-[24px] bg-surface-raised border border-white/[0.04] shadow-none flex flex-col h-full">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h3 className="text-[17px] font-semibold text-white flex items-center gap-2 tracking-tight">
-              <Sparkles className="text-[#FFD60A]" size={20} /> Grace Predictor
+              <Sparkles className="text-status-warning" size={20} /> Grace Predictor
             </h3>
             <p className="text-[15px] text-[#8E8E93] mt-1 tracking-tight">Ordinance Verification</p>
           </div>
@@ -27,19 +27,19 @@ export default function GraceMarksPredictorWidget({ course, courses }: { course:
 
         <div className="flex-1 flex flex-col items-center justify-center text-center px-2">
           {isEligible ? (
-            <div className="w-full p-4 rounded-[24px] bg-[#FFD60A]/10 flex flex-col items-center">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#FFD60A]/20 text-[#FFD60A] mb-2">
+            <div className="w-full p-4 rounded-[24px] bg-surface border border-status-warning flex flex-col items-center">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-status-warning text-black mb-2">
                 <Sparkles size={20} />
               </div>
-              <h4 className="text-[17px] font-semibold text-[#FFD60A] mb-1 tracking-tight">Golden Pass Eligible</h4>
-              <p className="text-[13px] text-[#FFD60A]/80 leading-snug mb-3">
+              <h4 className="text-[17px] font-semibold text-status-warning mb-1 tracking-tight">Golden Pass Eligible</h4>
+              <p className="text-[13px] text-white/80 leading-snug mb-3">
                 You only need <strong>{requiredMarks} more mark{requiredMarks > 1 ? 's' : ''}</strong>. Eligible for ordinance grace.
               </p>
               <button 
                 onClick={handleApply}
                 disabled={applied}
                 className={`w-full py-2.5 rounded-xl font-semibold text-[15px] transition-all flex items-center justify-center gap-2 ${
-                  applied ? "bg-[#30D158] text-white" : "bg-[#FFD60A] text-black hover:bg-[#FFD60A]/90 active:scale-[0.98]"
+                  applied ? "bg-status-success text-white" : "bg-status-warning text-black hover:brightness-110 active:scale-[0.98]"
                 }`}
               >
                 {applied ? (
@@ -52,14 +52,14 @@ export default function GraceMarksPredictorWidget({ course, courses }: { course:
               </button>
             </div>
           ) : (
-            <div className="w-full p-5 rounded-[24px] bg-[#2C2C2E]">
+            <div className="w-full p-5 rounded-[24px] bg-surface border border-white/[0.04]">
               <h4 className="text-[15px] font-semibold text-white mb-2 tracking-tight">Not Eligible</h4>
               <p className="text-[13px] text-[#8E8E93] leading-snug max-w-[200px] mx-auto mb-4">
                 You do not meet the strict criteria for university grace marks on this subject.
               </p>
               <button 
                 onClick={() => setShowRulebook(true)}
-                className="flex items-center justify-center gap-1 mx-auto text-[13px] font-semibold text-[#0A84FF] hover:opacity-80 transition-opacity"
+                className="flex items-center justify-center gap-1 mx-auto text-[13px] font-semibold text-brand hover:opacity-80 transition-opacity"
               >
                 View Ordinance Rulebook <ChevronRight size={14} />
               </button>
@@ -74,8 +74,8 @@ export default function GraceMarksPredictorWidget({ course, courses }: { course:
         title="University Ordinance (Extract)"
       >
         <div className="space-y-6 text-[#8E8E93] text-[15px] leading-relaxed pb-8">
-          <div className="bg-[#2C2C2E] p-4 rounded-2xl flex items-center gap-4">
-            <FileText className="text-[#FF453A]" size={32} />
+          <div className="bg-surface border border-white/[0.04] p-4 rounded-2xl flex items-center gap-4">
+            <FileText className="text-status-critical" size={32} />
             <div>
               <h4 className="text-white font-semibold text-[17px]">Ordinance 0.229</h4>
               <p className="text-[13px]">Updated 2024</p>
@@ -96,7 +96,7 @@ export default function GraceMarksPredictorWidget({ course, courses }: { course:
             </p>
           </div>
           
-          <div className="p-4 bg-[#FF453A]/10 border border-[#FF453A]/20 rounded-xl text-[#FF453A]">
+          <div className="p-4 bg-surface border border-status-critical rounded-xl text-white">
             <strong>Your Status:</strong> You require more than the maximum allowable 3 marks, OR you have too many active backlogs to qualify for this ordinance.
           </div>
         </div>

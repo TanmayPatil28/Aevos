@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Target, Code2, Users, Lightbulb, Zap, FileText, CheckCircle2, XCircle, ChevronDown, Clock, BookOpen, AlertCircle, BarChart3, Download, RefreshCcw, Loader2 } from "lucide-react";
+import { Target, Code2, Users, Lightbulb, Zap, FileText, CheckCircle2, XCircle, ChevronDown, Clock, BookOpen, AlertCircle, BarChart3, Download, RefreshCcw, Loader2, Terminal } from "lucide-react";
 import { DEFAULT_RECRUITERS } from "@/lib/career/careerData";
 import FluidDataWave from "./FluidDataWave";
 import PlacementHealthMeter from "./PlacementHealthMeter";
 import TopperBenchmark from "./TopperBenchmark";
 import ExportPlanModal from "./ExportPlanModal";
 import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import Card from "@/components/ui/Card";
 
 interface GuideProps {
   pinnedCompany: string | null;
@@ -45,16 +48,43 @@ export default function CompanyIntelligenceGuide({
 
   if (!pinnedCompany) {
     return (
-      <div className="w-full mt-8 relative z-10 flex flex-col pb-8 border-b border-[#23252a]/50">
-        <div className="absolute inset-0 opacity-10">
-           <FluidDataWave />
-        </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 z-20 text-center">
-          <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl">
-            <Target className="text-white/70" size={32} />
+      <div className="w-full mt-6 relative z-10 flex flex-col items-center justify-center min-h-[300px] rounded-[24px] bg-surface-raised overflow-hidden py-8 shadow-sm">
+        
+        {/* Subtle Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-brand/5 to-transparent opacity-50" />
+        
+        {/* Minimal Tech Grid Pattern */}
+        <div 
+          className="absolute inset-0 opacity-40 pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0)", backgroundSize: "24px 24px" }}
+        />
+
+        <div className="relative z-20 flex flex-col items-center text-center px-6 max-w-md w-full">
+          
+          {/* Refined Icon Container */}
+          <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-surface shadow-sm mb-6">
+             <div className="absolute inset-0 bg-brand/5 rounded-2xl" />
+             <Target className="text-brand w-6 h-6 opacity-80" strokeWidth={1.5} />
           </div>
-          <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">Select a Target</h3>
-          <p className="text-[#86868b] max-w-xs font-medium text-sm">Pin a company from the ledger to unlock its detailed hiring intelligence and selection process.</p>
+          
+          {/* Clean Enterprise Typography */}
+          <h3 className="text-[18px] font-semibold text-foreground tracking-tight mb-2">
+            Target Selection Required
+          </h3>
+          
+          <p className="text-[14px] text-foreground-muted leading-relaxed mb-8">
+            Pin a company from your placement ledger to initiate the intelligence engine. Aevos will analyze your profile and generate precise hiring probabilities.
+          </p>
+
+          {/* Minimal Status Indicator */}
+          <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg bg-background shadow-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-40"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand opacity-80"></span>
+            </span>
+            <span className="text-[12px] font-medium text-foreground-muted tracking-wide">System Idle</span>
+          </div>
+
         </div>
       </div>
     );
@@ -140,7 +170,7 @@ export default function CompanyIntelligenceGuide({
   const rounds = dynamicRounds.length > 0 ? dynamicRounds : defaultRounds;
 
   return (
-    <div className="w-full relative z-10 flex flex-col pb-6">
+    <Card variant="default" className="w-full relative z-10 flex flex-col pb-6 !p-0 !bg-transparent !border-none !shadow-none">
       
       {/* Header */}
       <div className="pb-6 flex flex-col xl:flex-row gap-6 items-start xl:items-end justify-between px-2 pt-4">
@@ -154,49 +184,56 @@ export default function CompanyIntelligenceGuide({
               "text-[#34c759]"
             )}>{company.tier} Target</span>
           </div>
-          <h3 className="text-[34px] font-bold text-white tracking-tight leading-none">{company.name}</h3>
-          <p className="text-[#86868b] text-[15px] mt-1">Intelligence & Prep Guide</p>
+          <h3 className="text-[34px] font-bold text-foreground tracking-tight leading-none">{company.name}</h3>
+          <p className="text-foreground-muted text-[15px] mt-1">Intelligence & Prep Guide</p>
         </div>
 
-        <button 
+        <Button 
+          variant="ghost"
+          size="sm"
           onClick={() => setExportModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 text-[15px] font-medium text-[#0a84ff] bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 rounded-[14px] transition-all w-full sm:w-auto outline-none"
+          className="w-full sm:w-auto text-foreground-muted hover:text-foreground"
         >
-          <Download size={16} /> Export
-        </button>
+          <Download size={14} className="mr-1.5" /> Export
+        </Button>
       </div>
 
       <div className="flex flex-col gap-8">
         
         {/* Profile Stats & Metrics Accordion */}
-        <div className="flex flex-col bg-[#1c1c1e] rounded-[20px] overflow-hidden transition-all duration-300">
+        <Card variant="default" className="flex flex-col !p-0 transition-all duration-300">
           <button 
             onClick={() => setStatsExpanded(!statsExpanded)}
             className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors outline-none"
           >
-            <div className="flex items-center gap-4 text-white">
-              <div className="w-8 h-8 rounded-full bg-[#0a84ff] flex items-center justify-center">
-                <BarChart3 size={16} className="text-white" />
+            <div className="flex items-center gap-4 text-foreground">
+              <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center shadow-sm shadow-brand/20">
+                <BarChart3 size={16} className="text-black" />
               </div>
               <span className="font-medium text-[15px]">Profile Health Metrics</span>
             </div>
             <div className="flex items-center gap-2">
-              {!statsExpanded && <span className="text-[15px] text-[#86868b]">View</span>}
-              <ChevronDown size={16} className={cn("text-[#86868b] transition-transform duration-300", statsExpanded && "rotate-180")} />
+              {!statsExpanded && <span className="text-[15px] text-foreground-muted">View</span>}
+              <ChevronDown size={16} className={cn("text-foreground-muted transition-transform duration-300", statsExpanded && "rotate-180")} />
             </div>
           </button>
           
-          <AnimatePresence>
+          <AnimatePresence initial={false}>
             {statsExpanded && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ height: 0, opacity: 0, filter: "blur(8px)" }}
+                animate={{ height: "auto", opacity: 1, filter: "blur(0px)" }}
+                exit={{ height: 0, opacity: 0, filter: "blur(8px)" }}
+                transition={{ 
+                  height: { type: "spring", stiffness: 350, damping: 30, mass: 1 },
+                  opacity: { duration: 0.2 },
+                  filter: { duration: 0.2 }
+                }}
+                className="overflow-hidden"
               >
                 <div className="px-4 pb-4 pt-0">
                   <div className="h-px w-full bg-white/[0.05] mb-4" />
-                  <div className="flex flex-col md:flex-row items-stretch divide-y md:divide-y-0 md:divide-x divide-white/[0.05] bg-black/20 rounded-[14px] overflow-hidden">
+                  <div className="flex flex-col md:flex-row items-stretch divide-y md:divide-y-0 md:divide-x divide-white/[0.05] bg-background/20 rounded-[14px] overflow-hidden">
                     <PlacementHealthMeter readinessScore={readinessScore} averageEligibility={averageEligibility} />
                     <TopperBenchmark userCgpa={userCgpa} userCredits={userCredits} userSkillsCount={userSkills.length} branch={branch} />
                   </div>
@@ -204,17 +241,17 @@ export default function CompanyIntelligenceGuide({
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </Card>
         
         {/* 1. Live Profile vs Company Diff */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between px-2">
-            <h4 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider">Profile Match</h4>
+            <h4 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider">Profile Match</h4>
             <div className="flex items-center gap-2">
               {(!passesCgpa || !passesBacklogs) && onOptimizeSandbox && (
                 <button 
                   onClick={() => onOptimizeSandbox?.(Math.max(userCgpa, company.cgpaCutoff), Math.min(userBacklogs, company.maxBacklogs))}
-                  className="flex items-center gap-1.5 bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 px-3 py-1 rounded-full transition-all"
+                  className="flex items-center gap-1.5 bg-brand hover:bg-brand px-3 py-1 rounded-full transition-all"
                 >
                   <Zap size={10} className="text-[#0a84ff]" />
                   <span className="text-[11px] font-semibold text-[#0a84ff]">Optimize</span>
@@ -223,7 +260,7 @@ export default function CompanyIntelligenceGuide({
               {isSandboxActive && onResetSandbox && (
                 <button 
                   onClick={onResetSandbox}
-                  className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full transition-all"
+                  className="flex items-center gap-1.5 bg-surface-raised hover:bg-surface-overlay px-3 py-1 rounded-full transition-all"
                 >
                   <RefreshCcw size={10} className="text-[#ff3b30]" />
                   <span className="text-[11px] font-semibold text-[#ff3b30]">Reset</span>
@@ -233,50 +270,50 @@ export default function CompanyIntelligenceGuide({
           </div>
 
           {/* iOS Settings Grouped List */}
-          <div className="flex flex-col bg-[#1c1c1e] rounded-[20px] overflow-hidden">
+          <Card variant="default" className="flex flex-col !p-0">
             
             {/* CGPA Row */}
             <div className="flex items-center justify-between p-4 border-b border-white/[0.05]">
               <div className="flex items-center gap-4">
-                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", passesCgpa ? "bg-[#34c759]" : "bg-[#ff3b30]")}>
-                  {passesCgpa ? <CheckCircle2 size={18} className="text-white" /> : <XCircle size={18} className="text-white" />}
+                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shadow-sm", passesCgpa ? "bg-brand shadow-brand/20" : "bg-[#ff3b30] shadow-[#ff3b30]/20")}>
+                  {passesCgpa ? <CheckCircle2 size={16} className="text-black" /> : <XCircle size={16} className="text-black" />}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[15px] font-medium text-white">CGPA Requirement</span>
-                  <span className="text-[13px] text-[#86868b]">Min cutoff: {company.cgpaCutoff.toFixed(1)}</span>
+                  <span className="text-[15px] font-medium text-foreground">CGPA Requirement</span>
+                  <span className="text-[13px] text-foreground-muted">Min cutoff: {company.cgpaCutoff.toFixed(1)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[17px] text-[#86868b]">{userCgpa.toFixed(2)}</span>
+                <span className={cn("text-[17px] font-bold", passesCgpa ? "text-brand" : "text-[#ff3b30]")}>{userCgpa.toFixed(2)}</span>
               </div>
             </div>
 
             {/* Backlogs Row */}
             <div className="flex items-center justify-between p-4 border-b border-white/[0.05]">
               <div className="flex items-center gap-4">
-                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", passesBacklogs ? "bg-[#34c759]" : "bg-[#ff3b30]")}>
-                  {passesBacklogs ? <CheckCircle2 size={18} className="text-white" /> : <XCircle size={18} className="text-white" />}
+                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shadow-sm", passesBacklogs ? "bg-brand shadow-brand/20" : "bg-[#ff3b30] shadow-[#ff3b30]/20")}>
+                  {passesBacklogs ? <CheckCircle2 size={16} className="text-black" /> : <XCircle size={16} className="text-black" />}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[15px] font-medium text-white">Active Backlogs</span>
-                  <span className="text-[13px] text-[#86868b]">Max allowed: {company.maxBacklogs}</span>
+                  <span className="text-[15px] font-medium text-foreground">Active Backlogs</span>
+                  <span className="text-[13px] text-foreground-muted">Max allowed: {company.maxBacklogs}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[17px] text-[#86868b]">{userBacklogs}</span>
+                <span className={cn("text-[17px] font-bold", passesBacklogs ? "text-brand" : "text-[#ff3b30]")}>{userBacklogs}</span>
               </div>
             </div>
 
             {/* Skills Match Row */}
-            <div className="flex flex-col p-4">
-              <div className="text-[15px] font-medium text-white mb-3">Required Technical Stack</div>
-              <div className="flex flex-wrap gap-2">
-                {skillMatches.map(skill => {
+            <div className="flex flex-col p-4 pt-5">
+              <div className="text-[14px] font-bold text-foreground mb-3">Required Technical Stack</div>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                {skillMatches.map((skill, idx) => {
                   if (skill.isMatched) {
                     return (
-                      <div key={skill.name} className="flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-[10px] bg-[#34c759]/15 text-[#34c759] font-medium">
+                      <span key={skill.name} className="text-[13px] text-foreground-muted font-medium">
                         {skill.name}
-                      </div>
+                      </span>
                     );
                   }
                   
@@ -284,26 +321,25 @@ export default function CompanyIntelligenceGuide({
                     <button 
                       key={skill.name}
                       onClick={onNavigateToSkills}
-                      className="group flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-[10px] bg-white/5 text-[#86868b] hover:bg-white/10 hover:text-white transition-all outline-none cursor-pointer"
+                      className="text-[13px] text-[#ff3b30] font-medium hover:text-[#ff3b30]/80 transition-all cursor-pointer text-left outline-none"
                     >
                       {skill.name}
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[#ff3b30]/10 text-[#ff3b30] rounded-full uppercase tracking-wider ml-1">Missing</span>
                     </button>
                   );
                 })}
               </div>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* 2. Interactive Prep Journey */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2 px-2">
-            <h4 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider">Interview Process</h4>
+            <h4 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider">Interview Process</h4>
             {isLoadingRounds && <Loader2 size={12} className="animate-spin text-[#0a84ff]" />}
           </div>
           
-          <div className="flex flex-col bg-[#1c1c1e] rounded-[20px] overflow-hidden">
+          <Card variant="default" className="flex flex-col !p-0">
             {rounds.map((round, i) => {
               const isExpanded = expandedRound === i;
               
@@ -316,35 +352,53 @@ export default function CompanyIntelligenceGuide({
                     className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors outline-none"
                     onClick={() => setExpandedRound(isExpanded ? null : i)}
                   >
-                    <div className="flex items-center gap-4 text-white">
-                      <div className="w-8 h-8 rounded-full bg-[#0a84ff] flex items-center justify-center shrink-0">
-                        <round.icon size={16} className="text-white" />
+                    <div className="flex items-center gap-4 text-foreground">
+                      <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center shrink-0 shadow-sm shadow-brand/20">
+                        <round.icon size={16} className="text-black" />
                       </div>
                       <div className="flex flex-col items-start">
                         <span className="text-[15px] font-medium">{round.name}</span>
-                        <span className="text-[13px] text-[#86868b]">{round.duration}</span>
+                        <span className="text-[13px] text-foreground-muted">{round.duration}</span>
                       </div>
                     </div>
-                    <ChevronDown size={16} className={cn("text-[#86868b] transition-transform duration-300", isExpanded && "rotate-180")} />
+                    <ChevronDown size={16} className={cn("text-foreground-muted transition-transform duration-300", isExpanded && "rotate-180")} />
                   </button>
                   
-                  <AnimatePresence>
+                  <AnimatePresence initial={false}>
                     {isExpanded && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        initial={{ height: 0, opacity: 0, filter: "blur(8px)" }}
+                        animate={{ height: "auto", opacity: 1, filter: "blur(0px)" }}
+                        exit={{ height: 0, opacity: 0, filter: "blur(8px)" }}
+                        transition={{ 
+                          height: { type: "spring", stiffness: 350, damping: 30, mass: 1 },
+                          opacity: { duration: 0.2 },
+                          filter: { duration: 0.2 }
+                        }}
+                        className="overflow-hidden"
                       >
                         <div className="px-4 pb-4 pt-0 flex flex-col gap-3 ml-[48px]">
                           <div className="flex flex-col">
-                            <span className="text-[13px] font-medium text-white mb-1">Focus Area</span>
-                            <span className="text-[14px] text-[#86868b] leading-relaxed">{round.focus}</span>
+                            <span className="text-[13px] font-medium text-foreground mb-1">Focus Area</span>
+                            <span className="text-[14px] text-foreground-muted leading-relaxed">{round.focus}</span>
                           </div>
                           
-                          <div className="flex flex-col">
-                            <span className="text-[13px] font-medium text-white mb-1">Prep Strategy</span>
-                            <span className="text-[14px] text-[#0a84ff] leading-relaxed">{round.prep}</span>
+                          <div className="flex flex-col bg-surface-raised border-l-2 border-brand/50 rounded-r-xl p-4 mt-2">
+                            <div className="flex items-center gap-2 mb-3">
+                               <Lightbulb size={14} className="text-brand" />
+                               <span className="text-[13px] font-bold text-foreground uppercase tracking-wider">AI Prep Strategy</span>
+                            </div>
+                            <ul className="flex flex-col gap-2.5">
+                              {round.prep.split('. ').filter(Boolean).map((sentence: string, idx: number) => {
+                                const cleanSentence = sentence.trim() + (sentence.trim().endsWith('.') ? '' : '.');
+                                return (
+                                  <li key={idx} className="flex items-start gap-2.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-brand/60 mt-2 shrink-0" />
+                                    <span className="text-[14px] text-foreground-muted leading-relaxed">{cleanSentence}</span>
+                                  </li>
+                                );
+                              })}
+                            </ul>
                           </div>
                         </div>
                       </motion.div>
@@ -353,7 +407,7 @@ export default function CompanyIntelligenceGuide({
                 </div>
               )
             })}
-          </div>
+          </Card>
         </div>
 
       </div>
@@ -366,6 +420,6 @@ export default function CompanyIntelligenceGuide({
         userBacklogs={userBacklogs}
         userSkills={userSkills}
       />
-    </div>
+    </Card>
   );
 }

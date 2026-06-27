@@ -55,6 +55,14 @@ export default function IslandTestControls() {
           useUSMStore.getState().setTimetable({
             [today]: [{ id: 't1', courseId: 'c1', type: 'LECTURE', startTime: currentStartTime, endTime: currentEndTime, room: 'Lab 2' }]
           });
+          
+          showAlert({
+            id: `alert-tt-${Date.now()}`,
+            type: 'success',
+            title: 'Timetable Synced',
+            message: 'Live classes have been successfully fetched.',
+            duration: 3500,
+          });
         }}
         className="px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded hover:bg-indigo-500/30 text-left"
       >
@@ -68,6 +76,14 @@ export default function IslandTestControls() {
             { id: 'c2', code: 'CS102', name: 'Algorithms', semester: 1, credits: 4, cieMarks: 0, attendanceTotal: 40, attendanceBunked: 9 }, // 77.5% WARNING
             { id: 'c3', code: 'CS103', name: 'Operating Systems', semester: 1, credits: 4, cieMarks: 0, attendanceTotal: 40, attendanceBunked: 2 } // 95% SAFE
           ]);
+          
+          showAlert({
+            id: `alert-bunk-${Date.now()}`,
+            type: 'warning',
+            title: 'Attendance Risk Updated',
+            message: 'Bunk calculations are now active.',
+            duration: 3500,
+          });
         }}
         className="px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded hover:bg-indigo-500/30 text-left"
       >
@@ -88,6 +104,14 @@ export default function IslandTestControls() {
               context: { courseId: 'c1' },
               createdAt: Date.now()
             }]
+          });
+          
+          showAlert({
+            id: `alert-inv-${Date.now()}`,
+            type: 'error',
+            title: 'Intervention Triggered',
+            message: 'Critical detention risk added to system.',
+            duration: 4000,
           });
         }}
         className="px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded hover:bg-indigo-500/30 text-left"
@@ -203,30 +227,7 @@ export default function IslandTestControls() {
         Clear Exam
       </button>
 
-      {/* === STREAK === */}
-      <div className="h-px bg-white/10 my-1" />
-      <div className="text-white/30 text-[10px] uppercase tracking-widest">Academic Streak</div>
 
-      <button 
-        onClick={() => setStreak({ count: 7, type: 'study', label: 'day study streak' })}
-        className="px-3 py-1.5 bg-orange-500/20 text-orange-400 rounded hover:bg-orange-500/30 text-left"
-      >
-        🔥 Set 7-Day Study Streak
-      </button>
-
-      <button 
-        onClick={() => setStreak({ count: 15, type: 'attendance', label: 'day attendance streak' })}
-        className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 text-left"
-      >
-        🔥 Set 15-Day Attendance Streak
-      </button>
-
-      <button 
-        onClick={() => setStreak(null)}
-        className="px-3 py-1.5 bg-white/5 text-white/50 rounded hover:bg-white/10 text-left"
-      >
-        Clear Streak
-      </button>
 
       {/* === ALERTS === */}
       <div className="h-px bg-white/10 my-1" />

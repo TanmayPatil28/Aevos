@@ -1,0 +1,103 @@
+
+> gradeflow@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env
+
+[DEBUG] recursiveDelete: skipped for dir: C:\Users\Tanmay\OneDrive\Desktop\GradeFlow\gradeflow\.next
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/44) ...
+   Generating static pages (11/44) 
+   Generating static pages (22/44) 
+   Generating static pages (33/44) 
+ ✓ Generating static pages (44/44)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                              Size     First Load JS
+┌ ƒ /                                                    7.21 kB         147 kB
+├ ƒ /_not-found                                          152 B          88.3 kB
+├ ƒ /api/academic/backlogs                               0 B                0 B
+├ ƒ /api/academic/backlogs/[id]/mark-cleared             0 B                0 B
+├ ƒ /api/academic/backlogs/[id]/start-recovery           0 B                0 B
+├ ƒ /api/academic/backlogs/[id]/withdraw                 0 B                0 B
+├ ƒ /api/academic/backlogs/summary                       0 B                0 B
+├ ƒ /api/academic/calendar                               0 B                0 B
+├ ƒ /api/academic/calendar/[id]                          0 B                0 B
+├ ƒ /api/academic/calendar/[id]/weeks-remaining          0 B                0 B
+├ ƒ /api/academic/fix                                    0 B                0 B
+├ ƒ /api/academic/reset                                  0 B                0 B
+├ ƒ /api/academic/reset-semester                         0 B                0 B
+├ ƒ /api/academic/snapshots                              0 B                0 B
+├ ƒ /api/academic/timetable                              0 B                0 B
+├ ƒ /api/academic/timetable/[subjectId]/scheduled-count  0 B                0 B
+├ ƒ /api/academic/timetable/entry                        0 B                0 B
+├ ƒ /api/academic/timetable/today                        0 B                0 B
+├ ƒ /api/calculations                                    0 B                0 B
+├ ƒ /api/calculations/[id]                               0 B                0 B
+├ ƒ /api/career/dynamic-roadmap                          0 B                0 B
+├ ƒ /api/career/interview                                0 B                0 B
+├ ƒ /api/career/live-market                              0 B                0 B
+├ ƒ /api/career/prep-rounds                              0 B                0 B
+├ ƒ /api/career/progress                                 0 B                0 B
+├ ƒ /api/career/skill-gap                                0 B                0 B
+├ ƒ /api/career/skills                                   0 B                0 B
+├ ƒ /api/chat                                            0 B                0 B
+├ ƒ /api/documents                                       0 B                0 B
+├ ƒ /api/documents/preview                               0 B                0 B
+├ ƒ /api/export                                          0 B                0 B
+├ ƒ /api/extension/resume                                0 B                0 B
+├ ƒ /api/internships/agent                               0 B                0 B
+├ ƒ /api/jarvis                                          0 B                0 B
+├ ƒ /api/jarvis/v2                                       0 B                0 B
+├ ƒ /api/jobs                                            0 B                0 B
+├ ƒ /api/narrative                                       0 B                0 B
+├ ƒ /api/parse                                           0 B                0 B
+├ ƒ /api/parse/document                                  0 B                0 B
+├ ƒ /api/parse/extract-insights                          0 B                0 B
+├ ƒ /api/parse/resume                                    0 B                0 B
+├ ƒ /api/plans                                           0 B                0 B
+├ ƒ /api/plans/[id]                                      0 B                0 B
+├ ƒ /api/spotlight-intent                                0 B                0 B
+├ ƒ /api/sync                                            0 B                0 B
+├ ƒ /api/terminal/ai                                     0 B                0 B
+├ ƒ /attendance                                          37.3 kB         213 kB
+├ ƒ /auth                                                15.2 kB         242 kB
+├ ƒ /auth/callback                                       0 B                0 B
+├ ƒ /backlog                                             23.3 kB         181 kB
+├ ƒ /calculator                                          5.29 kB         145 kB
+├ ƒ /career                                              2.6 kB          360 kB
+├ ƒ /career/[roadmapId]                                  1.68 kB         146 kB
+├ ƒ /dashboard                                           7.61 kB         154 kB
+├ ƒ /focus                                               5.01 kB         148 kB
+├ ƒ /forecast                                            46.3 kB         211 kB
+├ ƒ /forecasting                                         5.83 kB          94 kB
+├ ƒ /identity                                            5.26 kB         150 kB
+├ ƒ /identity/github                                     5.73 kB         103 kB
+├ ƒ /identity/linkedin                                   5.05 kB         102 kB
+├ ƒ /internships                                         8.47 kB         166 kB
+├ ƒ /ledger                                              5.66 kB         150 kB
+├ ƒ /multi-semester                                      14.3 kB         185 kB
+├ ƒ /onboarding                                          3.59 kB         141 kB
+├ ƒ /overview                                            6.75 kB         158 kB
+├ ƒ /placement                                           25.9 kB         387 kB
+├ ƒ /placement/roadmap/[id]                              1.68 kB         146 kB
+├ ƒ /planner                                             20.7 kB         202 kB
+├ ƒ /records                                             5.79 kB         109 kB
+├ ƒ /showcase                                            11.2 kB         147 kB
+└ ƒ /timeline                                            5.3 kB          182 kB
++ First Load JS shared by all                            88.1 kB
+  ├ chunks/2117-287c3cb36426e0ea.js                      31.9 kB
+  ├ chunks/fd9d1056-d70b8c4cbb2131c8.js                  53.6 kB
+  └ other shared chunks (total)                          2.58 kB
+
+
+ƒ Middleware                                             80.9 kB
+
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -113,79 +113,71 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
   if (!result) return null;
 
   return (
-    <Card className="relative overflow-hidden border border-white/10" padding="xl">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 opacity-50" />
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full h-fit">
       
-      <div className="relative z-10 space-y-12">
-        {/* Header section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/20 pb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center border border-blue-500/20">
-              <BrainCircuit className="text-blue-400" size={28} />
-            </div>
-            <div>
-              <h3 className="font-headline text-3xl font-black text-white">Academic OS Engine</h3>
-              <p className="text-on-surface-variant mt-1 text-sm">Predictive path generation & risk assessment.</p>
-            </div>
-          </div>
+      {/* Controls & Overview (Left Column) */}
+      <div className="col-span-1 lg:col-span-4 flex flex-col h-fit gap-6">
+        <div className="relative z-10 flex flex-col gap-6">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white/50">Predictive Generation</h3>
 
-          <div className={`px-4 py-2 rounded-xl border flex flex-col items-end ${risk.color} bg-[#1D1D1F]`}>
-            <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">Risk Prediction</span>
-            <span className="font-black text-lg">{risk.level}</span>
+          <div className={`px-4 py-3 rounded-card-large border flex flex-col items-start ${risk.color} bg-white/5`}>
+              <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">Risk Prediction</span>
+              <span className="font-black text-xl">{risk.level}</span>
+            </div>
+          {/* Constraint Engine */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Settings2 size={16} className="text-white/50" />
+              <span className="text-[12px] leading-[16px] font-bold uppercase tracking-[0.12em] text-foreground-muted">Strategic Constraints</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {[
+                { id: "none", label: "No Constraints" },
+                { id: "focus_placements", label: "Focus on Placements (Less Time)" },
+                { id: "low_stress", label: "Low Stress Priority" },
+                { id: "max_attendance_buffer", label: "Maximize Attendance Buffer" }
+              ].map(constraint => (
+                <button
+                  key={constraint.id}
+                  onClick={() => setActiveConstraint(constraint.id)}
+                  className={`px-4 py-3 text-left rounded-full text-sm font-bold transition-all ${
+                    activeConstraint === constraint.id 
+                    ? "bg-white/10 text-white" 
+                    : "bg-transparent text-white/50 hover:bg-white/5"
+                  }`}
+                >
+                  {constraint.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Constraint Engine */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Settings2 size={16} className="text-white/50" />
-            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Strategic Constraints</span>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { id: "none", label: "No Constraints" },
-              { id: "focus_placements", label: "Focus on Placements (Less Time)" },
-              { id: "low_stress", label: "Low Stress Priority" },
-              { id: "max_attendance_buffer", label: "Maximize Attendance Buffer" }
-            ].map(constraint => (
-              <button
-                key={constraint.id}
-                onClick={() => setActiveConstraint(constraint.id)}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                  activeConstraint === constraint.id 
-                  ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)] border-transparent" 
-                  : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10"
-                }`}
-              >
-                {constraint.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 5 Optimized Paths */}
-        <div className="space-y-4">
-          <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Generated Strategic Paths</span>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Generated Strategic Paths (Right Column) */}
+      <div className="col-span-1 lg:col-span-8 flex flex-col h-fit gap-6">
+        <div className="space-y-6">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white/50">Generated Strategic Paths</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {paths.map(path => (
               <div 
                 key={path.id}
                 onClick={() => setExpandedPath(expandedPath === path.id ? null : path.id)}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col h-full ${
-                  expandedPath === path.id ? "bg-white/10 border-white/30" : "bg-[#1D1D1F] border-white/5 hover:bg-white/5 hover:border-white/20"
-                } ${path.isRecommended ? "ring-1 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : ""}`}
+                className={`p-6 rounded-card-large transition-all cursor-pointer flex flex-col h-full ${
+                  expandedPath === path.id ? "bg-white/10" : "bg-white/5 hover:bg-white/10"
+                } ${path.isRecommended ? "ring-1 ring-white/20" : ""}`}
               >
-                <div className={`w-8 h-8 rounded-full mb-4 flex items-center justify-center border ${path.color}`}>
+                <div className={`w-10 h-10 rounded-full mb-4 flex items-center justify-center border ${path.color}`}>
                   {path.icon}
                 </div>
                 <div className="mt-auto">
-                  <h4 className="font-bold text-white text-sm mb-1 leading-tight">{path.name}</h4>
-                  <div className="text-2xl font-black mb-1 font-mono">{path.targetGpa.toFixed(2)}</div>
-                  <div className="text-[10px] text-white/50 font-medium uppercase tracking-wider">{path.effortLevel} Effort</div>
+                  <h4 className="font-bold text-white text-base mb-1 leading-tight">{path.name}</h4>
+                  <div className="text-3xl font-black mb-1 font-mono">{path.targetGpa.toFixed(2)}</div>
+                  <div className="text-[10px] text-white/50 font-bold uppercase tracking-[0.12em]">{path.effortLevel} Effort</div>
                 </div>
                 
                 {path.isRecommended && (
-                  <div className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg border-2 border-black z-10">
+                  <div className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-surface-raised z-10">
                     <CheckCircle size={12} className="text-white" />
                   </div>
                 )}
@@ -201,22 +193,22 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="p-6 mt-4 rounded-2xl bg-white/5 border border-white/10">
+                <div className="p-6 mt-2 rounded-2xl bg-[#1D1D1F] border border-white/5">
                   <h4 className="text-lg font-bold text-white mb-2">{paths.find(p => p.id === expandedPath)?.name} Breakdown</h4>
                   <p className="text-sm text-white/70 mb-6">{paths.find(p => p.id === expandedPath)?.description}</p>
                   
                   {/* Tradeoff Visualization Map */}
-                  <div className="mt-6 border-t border-white/20 pt-4">
-                    <h5 className="text-xs uppercase tracking-widest text-on-surface-variant font-bold mb-4">Tradeoff Analysis</h5>
+                  <div className="mt-6 border-t border-white/10 pt-6">
+                    <h5 className="text-[10px] uppercase tracking-widest text-white/50 font-bold mb-4">Tradeoff Analysis</h5>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-xl bg-[#1D1D1F] border border-white/5">
+                      <div className="p-4 rounded-xl bg-black/40 border border-white/5">
                         <div className="text-[10px] text-white/40 uppercase font-bold mb-2 tracking-wider flex items-center gap-1">
                           <Target size={12} /> The Choice
                         </div>
                         <div className="text-sm font-bold text-white">{paths.find(p => p.id === expandedPath)?.name}</div>
                         <div className="text-xs text-white/60 mt-1">Target: {paths.find(p => p.id === expandedPath)?.targetGpa.toFixed(2)}</div>
                       </div>
-                      <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+                      <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/10">
                         <div className="text-[10px] text-emerald-400 uppercase font-bold mb-2 tracking-wider flex items-center gap-1">
                           <TrendingUp size={12} /> Primary Benefit
                         </div>
@@ -228,7 +220,7 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
                            'Mathematical maximum achievable'}
                         </div>
                       </div>
-                      <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/10">
+                      <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/10">
                         <div className="text-[10px] text-rose-400 uppercase font-bold mb-2 tracking-wider flex items-center gap-1">
                           <Activity size={12} /> Hidden Cost
                         </div>
@@ -247,27 +239,27 @@ export default function AcademicOptimizerModule({ preset, currentCgpa = 7.0, tar
             )}
           </AnimatePresence>
         </div>
-
-        {/* Statutory Matrix Component integrated seamlessly */}
-        <div className="pt-8 border-t border-white/20">
-          <CalculationBreakdown 
-            preset={preset}
-            type="cgpa"
-            semesters={[
-              {
-                semesterName: "Completed Semesters (Cumulative)",
-                credits: result.totalCredits || 0,
-                sgpa: currentCgpa || 0
-              },
-              ...Array.from({ length: result.remainingSems || remainingSemesters }).map((_, i) => ({
-                semesterName: `Semester ${completedSemesters + i + 1} (Planned)`,
-                credits: result.creditsPerSem || 20,
-                sgpa: result.requiredGPA
-              }))
-            ]}
-          />
-        </div>
       </div>
-    </Card>
+
+      {/* Statutory Matrix Component (Full Width Bottom) */}
+      <div className="col-span-1 lg:col-span-12 relative overflow-hidden h-fit">
+        <CalculationBreakdown 
+          preset={preset}
+          type="cgpa"
+          semesters={[
+            {
+              semesterName: "Completed Semesters (Cumulative)",
+              credits: result.totalCredits || 0,
+              sgpa: currentCgpa || 0
+            },
+            ...Array.from({ length: result.remainingSems || remainingSemesters }).map((_, i) => ({
+              semesterName: `Semester ${completedSemesters + i + 1} (Planned)`,
+              credits: result.creditsPerSem || 20,
+              sgpa: result.requiredGPA
+            }))
+          ]}
+        />
+      </div>
+    </div>
   );
 }

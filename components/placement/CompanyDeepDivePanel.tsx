@@ -31,7 +31,7 @@ export default function CompanyDeepDivePanel({ company, isOpen, onClose }: Compa
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 z-[200]"
+            className="fixed inset-0 bg-background/60 z-[200]"
           />
           
           {/* Panel */}
@@ -40,22 +40,22 @@ export default function CompanyDeepDivePanel({ company, isOpen, onClose }: Compa
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-[#1D1D1F] border-l border-white/20 z-[210] overflow-y-auto shadow-none"
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-[#1D1D1F] border-l border-border-strong z-[210] overflow-y-auto shadow-none"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-[#1D1D1F] border-b border-white/20 p-6 z-10 flex items-start justify-between">
+            <div className="sticky top-0 bg-[#1D1D1F] border-b border-border-strong p-6 z-10 flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <div className={cn("px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border", statusBg, statusColor)}>
                     {company.status}
                   </div>
-                  <span className="text-white/40 text-xs font-medium">Eligibility: {company.eligibilityScore}%</span>
+                  <span className="text-foreground/40 text-xs font-medium">Eligibility: {company.eligibilityScore}%</span>
                 </div>
-                <h2 className="text-3xl font-bold text-white tracking-tight">{company.name}</h2>
+                <h2 className="text-3xl font-bold text-foreground tracking-tight">{company.name}</h2>
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                className="p-2 rounded-full hover:bg-surface-overlay transition-colors text-foreground/50 hover:text-foreground"
               >
                 <X size={20} />
               </button>
@@ -66,7 +66,7 @@ export default function CompanyDeepDivePanel({ company, isOpen, onClose }: Compa
               
               {/* Intelligence Breakdown */}
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest flex items-center gap-2">
+                <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-widest flex items-center gap-2">
                   <Briefcase size={14} /> Criterion Analysis
                 </h3>
                 <div className="space-y-2">
@@ -79,8 +79,8 @@ export default function CompanyDeepDivePanel({ company, isOpen, onClose }: Compa
                         "bg-rose-500 shadow-[0_0_8px_#f43f5e]"
                       )} />
                       <div>
-                        <h4 className="text-sm font-bold text-white mb-1">{item.factor}</h4>
-                        <p className="text-xs text-white/60 leading-relaxed">{item.message}</p>
+                        <h4 className="text-sm font-bold text-foreground mb-1">{item.factor}</h4>
+                        <p className="text-xs text-foreground/60 leading-relaxed">{item.message}</p>
                       </div>
                     </div>
                   ))}
@@ -89,41 +89,41 @@ export default function CompanyDeepDivePanel({ company, isOpen, onClose }: Compa
 
               {/* Mock Historical Data */}
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest flex items-center gap-2">
+                <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-widest flex items-center gap-2">
                   <TrendingUp size={14} /> Historical Data (Mock)
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                    <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Avg CTC</div>
-                    <div className="text-xl font-bold text-white">12.5 LPA</div>
+                    <div className="text-[10px] uppercase tracking-wider text-foreground/40 font-bold mb-1">Avg CTC</div>
+                    <div className="text-xl font-bold text-foreground">12.5 LPA</div>
                   </div>
                   <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                    <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Recruitment</div>
-                    <div className="text-xl font-bold text-white">On-Campus</div>
+                    <div className="text-[10px] uppercase tracking-wider text-foreground/40 font-bold mb-1">Recruitment</div>
+                    <div className="text-xl font-bold text-foreground">On-Campus</div>
                   </div>
                 </div>
               </div>
 
               {/* Selection Process */}
               <div className="space-y-4 pb-12">
-                <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest flex items-center gap-2">
+                <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-widest flex items-center gap-2">
                   <Users size={14} /> Selection Process (Mock)
                 </h3>
-                <div className="relative pl-6 border-l border-white/20 space-y-6">
+                <div className="relative pl-6 border-l border-border-strong space-y-6">
                   <div className="relative">
-                    <div className="absolute -left-[29px] top-1 w-3 h-3 bg-black border-2 border-white/20 rounded-full" />
-                    <h4 className="text-sm font-bold text-white">Round 1: Online Assessment</h4>
-                    <p className="text-xs text-white/50 mt-1">Aptitude, Core CS subjects, 2 DSA questions.</p>
+                    <div className="absolute -left-[29px] top-1 w-3 h-3 bg-background border-2 border-border-strong rounded-full" />
+                    <h4 className="text-sm font-bold text-foreground">Round 1: Online Assessment</h4>
+                    <p className="text-xs text-foreground/50 mt-1">Aptitude, Core CS subjects, 2 DSA questions.</p>
                   </div>
                   <div className="relative">
-                    <div className="absolute -left-[29px] top-1 w-3 h-3 bg-black border-2 border-white/20 rounded-full" />
-                    <h4 className="text-sm font-bold text-white">Round 2: Technical Interview</h4>
-                    <p className="text-xs text-white/50 mt-1">System Design and deep dive into your projects.</p>
+                    <div className="absolute -left-[29px] top-1 w-3 h-3 bg-background border-2 border-border-strong rounded-full" />
+                    <h4 className="text-sm font-bold text-foreground">Round 2: Technical Interview</h4>
+                    <p className="text-xs text-foreground/50 mt-1">System Design and deep dive into your projects.</p>
                   </div>
                   <div className="relative">
-                    <div className="absolute -left-[29px] top-1 w-3 h-3 bg-black border-2 border-white/20 rounded-full" />
-                    <h4 className="text-sm font-bold text-white">Round 3: HR / Cultural Fit</h4>
-                    <p className="text-xs text-white/50 mt-1">Standard HR questions and situational judgment.</p>
+                    <div className="absolute -left-[29px] top-1 w-3 h-3 bg-background border-2 border-border-strong rounded-full" />
+                    <h4 className="text-sm font-bold text-foreground">Round 3: HR / Cultural Fit</h4>
+                    <p className="text-xs text-foreground/50 mt-1">Standard HR questions and situational judgment.</p>
                   </div>
                 </div>
               </div>

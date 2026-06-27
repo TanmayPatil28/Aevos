@@ -19,7 +19,7 @@ export default function UnifiedDynamicIsland({
       {/* ─── Main Dynamic Island Pill ─── */}
       <motion.div
         layout
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
         className={cn(
           "relative flex items-center bg-black rounded-full",
           "border border-white/[0.08]",
@@ -39,7 +39,7 @@ export default function UnifiedDynamicIsland({
               <motion.div
                 layoutId="activeTabDashboard"
                 className="absolute inset-0 bg-[#0a84ff] rounded-full shadow-[0_0_15px_rgba(10,132,255,0.4)]"
-                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
               />
             )}
             <GraduationCap size={15} className="relative z-10" />
@@ -57,7 +57,7 @@ export default function UnifiedDynamicIsland({
               <motion.div
                 layoutId="activeTabDashboard"
                 className="absolute inset-0 bg-[#0a84ff] rounded-full shadow-[0_0_15px_rgba(10,132,255,0.4)]"
-                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
               />
             )}
             <Briefcase size={15} className="relative z-10" />

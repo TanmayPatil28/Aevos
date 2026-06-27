@@ -2,7 +2,7 @@ import LedgerCanvas from "@/components/os/ledger/LedgerCanvas";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Ledger | GradeFlow OS",
+  title: "Ledger | Aevos",
   description: "Manage your academic courses and grades.",
 };
 

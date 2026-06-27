@@ -47,6 +47,7 @@ const { runDecisionEngineTests } = require("../tests/advisory/decisionEngine.tes
 const { runAIInfrastructureTests } = require("../tests/ai/infrastructure.test");
 const { runStartRecoveryValidationTests } = require("../tests/api/startRecoveryValidation.test");
 const { runRateLimitTests } = require("../tests/api/rateLimit.test");
+const { runDynamicIslandTests } = require("../tests/ui/dynamicIsland.test");
 
 // CLI Colors
 const colors = {
@@ -74,6 +75,7 @@ async function executeAllTests() {
   let attendanceSuccess = false;
   let advisorySuccess = false;
   let aiSuccess = false;
+  let dynamicIslandSuccess = false;
 
   try {
     enginesSuccess = runEnginesTests();
@@ -161,6 +163,13 @@ async function executeAllTests() {
     console.error(err.stack || err);
   }
 
+  try {
+    dynamicIslandSuccess = runDynamicIslandTests();
+  } catch (err: any) {
+    console.error(`\n${colors.red}💥 CRITICAL ERROR executing Dynamic Island tests:${colors.reset}`);
+    console.error(err.stack || err);
+  }
+
   console.log(`\n${colors.bright}${colors.cyan}================================================================`);
   console.log(`📊 MASTER TEST RESULTS SUMMARY`);
   console.log(`================================================================${colors.reset}`);
@@ -237,9 +246,15 @@ async function executeAllTests() {
     console.error(`  ${colors.red}✗ FAIL:${colors.reset} In-Memory Rate Limiter Helper`);
   }
 
+  if (dynamicIslandSuccess) {
+    console.log(`  ${colors.green}✓ PASS:${colors.reset} Dynamic Island Clone Refinements & Physics`);
+  } else {
+    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Dynamic Island Clone Refinements & Physics`);
+  }
+
   console.log(`----------------------------------------------------------------`);
 
-  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && smartIngestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess && aiSuccess && validationSuccess && rateLimitSuccess) {
+  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && smartIngestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess && aiSuccess && validationSuccess && rateLimitSuccess && dynamicIslandSuccess) {
     console.log(`\n🎉 ${colors.bright}${colors.green}ALL MASTER UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
     process.exit(0);
   } else {

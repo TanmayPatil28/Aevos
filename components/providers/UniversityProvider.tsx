@@ -63,7 +63,7 @@ export function UniversityProvider({ children }: { children: ReactNode }) {
             setIsolatedPresetId(rawPreset.id);
             setIsolatedPresetName(rawPreset.name);
             setSelectedUniId("custom_10");
-            console.error(`[GradeFlow Trust Telemetry] Isolated preset loaded as fallback: ${rawPreset.id}`);
+            console.error(`[Aevos Trust Telemetry] Isolated preset loaded as fallback: ${rawPreset.id}`);
           } else {
             setSelectedUniId("jspm");
           }
@@ -111,7 +111,7 @@ export function UniversityProvider({ children }: { children: ReactNode }) {
         setIsolatedPresetId(rawPreset.id);
         setIsolatedPresetName(rawPreset.name);
         setSelectedUniId("custom_10");
-        console.error(`[GradeFlow Trust Telemetry] Isolated preset loaded as fallback: ${rawPreset.id}`);
+        console.error(`[Aevos Trust Telemetry] Isolated preset loaded as fallback: ${rawPreset.id}`);
       }
     }
   };

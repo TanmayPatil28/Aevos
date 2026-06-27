@@ -1,6 +1,6 @@
 # Mock-Data Forensic Census Report
 
-This report presents a complete census of every component within the GradeFlow codebase displaying simulated, hardcoded, or `setTimeout`-faked data.
+This report presents a complete census of every component within the Aevos codebase displaying simulated, hardcoded, or `setTimeout`-faked data.
 
 ---
 

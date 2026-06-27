@@ -6,6 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createPortal } from "react-dom";
+import Card from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
+
+const MotionCard = motion(Card);
 
 interface DynamicRoadmapModalProps {
   isOpen: boolean;
@@ -13,9 +17,10 @@ interface DynamicRoadmapModalProps {
   userId: string;
   resumeText?: string;
   initialRole?: string;
+  inline?: boolean;
 }
 
-export function DynamicRoadmapModal({ isOpen, onClose, userId, resumeText = "", initialRole = "" }: DynamicRoadmapModalProps) {
+export function DynamicRoadmapModal({ isOpen, onClose, userId, resumeText = "", initialRole = "", inline = false }: DynamicRoadmapModalProps) {
   const router = useRouter();
   const [targetRole, setTargetRole] = useState(initialRole);
   const [targetJd, setTargetJd] = useState("");
@@ -108,36 +113,38 @@ export function DynamicRoadmapModal({ isOpen, onClose, userId, resumeText = "", 
   };
 
   const containerVariants = {
-    hidden: { opacity: 0, scale: 0.98, y: 15, filter: "blur(10px)" },
+    hidden: { opacity: 0, scale: 0.95, y: 20, filter: "blur(10px)" },
     visible: { 
       opacity: 1, scale: 1, y: 0, filter: "blur(0px)",
-      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.08, delayChildren: 0.1 }
+      transition: { type: "spring", stiffness: 300, damping: 25, staggerChildren: 0.08, delayChildren: 0.05 }
     },
-    exit: { opacity: 0, scale: 0.98, y: 10, filter: "blur(10px)" }
+    exit: { opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 15, filter: "blur(5px)" },
-    visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+    hidden: { opacity: 0, y: 20, filter: "blur(5px)" },
+    visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", stiffness: 300, damping: 25 } }
   };
 
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4 md:p-6">
+        <div className={inline ? "font-sans w-full h-full flex items-center justify-center" : "font-sans fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-xl p-4 md:p-6"}>
           <style>{`
             @keyframes shimmer {
               100% { transform: translateX(100%); }
             }
           `}</style>
-          <motion.div 
-            ref={modalRef}
+          <MotionCard 
+            ref={modalRef as any}
             onMouseMove={handleMouseMove}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="group relative w-full max-w-4xl overflow-hidden rounded-[2rem] border border-white/[0.06] bg-[#09090b] shadow-[0_0_80px_rgba(0,0,0,0.8)] flex flex-col md:flex-row"
+            variant="accent"
+            padding="xl"
+            className={`group flex flex-col md:flex-row !p-0 shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/[0.06] ${inline ? "w-full h-full" : "w-full max-w-4xl"}`}
           >
             {/* Dynamic Cursor Spotlight Effect */}
             <div 
@@ -154,27 +161,31 @@ export function DynamicRoadmapModal({ isOpen, onClose, userId, resumeText = "", 
             />
 
             {/* LEFT COLUMN */}
-            <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col relative z-10">
-              <motion.div variants={itemVariants} className="flex items-start justify-between mb-10">
+            <div className={`w-full md:w-3/5 flex flex-col relative z-10 ${inline ? "p-6 md:p-8 pb-24 md:pb-24" : "p-8 md:p-12 overflow-y-auto"}`}>
+              <motion.div variants={itemVariants} className={`flex items-start justify-between shrink-0 ${inline ? "mb-4" : "mb-10"}`}>
                 <div>
-                  <h2 className="text-3xl font-medium tracking-tight text-white/95">
+                  <h2 className={`${inline ? "text-2xl" : "text-3xl"} font-medium tracking-tight text-brand`}>
                     Generate Roadmap
                   </h2>
-                  <p className="mt-3 text-[14px] text-zinc-400/80 font-medium leading-[1.618] max-w-md">
-                    JARVIS will analyze your resume against the target job description to create a personalized, day-by-day upskilling roadmap.
-                  </p>
+                  {!inline && (
+                    <p className="mt-3 text-[14px] text-foreground-muted/80 font-medium leading-[1.618] max-w-md">
+                      JARVIS will analyze your resume against the target job description to create a personalized, day-by-day upskilling roadmap.
+                    </p>
+                  )}
                 </div>
-                <button 
-                  onClick={onClose}
-                  className="md:hidden text-zinc-500 transition-colors hover:text-white"
-                >
-                  <X className="h-5 w-5" strokeWidth={1.5} />
-                </button>
+                {!inline && (
+                  <button 
+                    onClick={onClose}
+                    className="md:hidden text-foreground-muted transition-colors hover:text-foreground"
+                  >
+                    <X className="h-5 w-5" strokeWidth={1.5} />
+                  </button>
+                )}
               </motion.div>
 
-              <motion.div variants={itemVariants} className="space-y-8 flex-grow">
-                <div className="space-y-3">
-                  <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500/80">
+              <motion.div variants={itemVariants} className={`flex-grow ${inline ? "space-y-4" : "space-y-8"}`}>
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground-muted/80">
                     Target Role
                   </label>
                   <input
@@ -182,65 +193,65 @@ export function DynamicRoadmapModal({ isOpen, onClose, userId, resumeText = "", 
                     placeholder="e.g., AI/ML Engineer, Full Stack Developer..."
                     value={targetRole}
                     onChange={(e) => setTargetRole(e.target.value)}
-                    className="w-full rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 text-[15px] text-white/90 placeholder:text-zinc-600 focus:border-white/20 focus:bg-white/[0.04] focus:outline-none focus:ring-4 focus:ring-white/[0.02] transition-all duration-300"
+                    className={`w-full rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 ${inline ? "py-3" : "py-4"} text-[15px] text-foreground/90 placeholder:text-foreground-tertiary focus:border-white/[0.12] focus:bg-white/[0.04] focus:outline-none focus:ring-4 focus:ring-white/[0.05] transition-all duration-300`}
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500/80">
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground-muted/80">
                     Target Job Description
                   </label>
                   <textarea
                     placeholder="Paste the full job description here..."
                     value={targetJd}
                     onChange={(e) => setTargetJd(e.target.value)}
-                    rows={6}
-                    className="w-full resize-none rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 text-[15px] text-white/90 placeholder:text-zinc-600 focus:border-white/20 focus:bg-white/[0.04] focus:outline-none focus:ring-4 focus:ring-white/[0.02] transition-all duration-300"
+                    rows={inline ? 2 : 6}
+                    className={`w-full resize-none rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 ${inline ? "py-3" : "py-4"} text-[15px] text-foreground/90 placeholder:text-foreground-tertiary focus:border-white/[0.12] focus:bg-white/[0.04] focus:outline-none focus:ring-4 focus:ring-white/[0.05] transition-all duration-300`}
                   />
                 </div>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="mt-12 flex items-center justify-end gap-5">
+              <motion.div variants={itemVariants} className={`flex items-center justify-end gap-5 ${inline ? "mt-4" : "mt-12"}`}>
                 <button
                   onClick={onClose}
                   disabled={isLoading}
-                  className="text-sm font-medium text-zinc-500 hover:text-white transition-colors disabled:opacity-50"
+                  className="text-sm font-medium text-foreground-muted hover:text-foreground transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <Button
+                  variant="primary"
                   onClick={handleGenerate}
-                  disabled={isLoading || !targetRole || !targetJd}
-                  className="flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-[15px] font-semibold tracking-tight text-black shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                  disabled={isLoading}
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       Generating...
                     </>
                   ) : (
                     "Generate Roadmap"
                   )}
-                </motion.button>
+                </Button>
               </motion.div>
             </div>
 
             {/* RIGHT COLUMN */}
-            <div className="w-full md:w-2/5 relative p-8 md:p-12 border-t md:border-t-0 md:border-l border-white/[0.06] bg-[#040405] flex flex-col overflow-hidden">
-              <div className="hidden md:flex justify-end mb-8 relative z-10">
-                <button 
-                  onClick={onClose}
-                  className="text-zinc-500 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
-                >
-                  <X className="h-5 w-5" strokeWidth={1.5} />
-                </button>
-              </div>
+            <div className={`w-full md:w-2/5 relative border-t md:border-t-0 md:border-l border-white/[0.06] bg-surface flex flex-col overflow-hidden ${inline ? "p-6 md:p-8 pb-24 md:pb-24" : "p-8 md:p-12 overflow-y-auto"}`}>
+              {!inline && (
+                <div className="hidden md:flex justify-end mb-8 relative z-10">
+                  <button 
+                    onClick={onClose}
+                    className="text-foreground-muted hover:text-foreground transition-colors p-1 rounded-full hover:bg-surface-overlay"
+                  >
+                    <X className="h-5 w-5" strokeWidth={1.5} />
+                  </button>
+                </div>
+              )}
 
-              <div className="relative z-10 flex-grow flex flex-col justify-between space-y-10">
+              <div className={`relative z-10 flex-grow flex flex-col justify-between ${inline ? "space-y-4" : "space-y-10"}`}>
                 <motion.div variants={itemVariants}>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500/80 mb-6">
+                  <h3 className={`text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground-muted/80 ${inline ? "mb-4" : "mb-6"}`}>
                     Market Intelligence
                   </h3>
                   
@@ -266,53 +277,66 @@ export function DynamicRoadmapModal({ isOpen, onClose, userId, resumeText = "", 
                       className="space-y-8"
                     >
                       <div className="flex flex-col">
-                        <span className="text-5xl font-light text-white/95 tracking-tighter tabular-nums">{displayJobs.toLocaleString()}</span>
-                        <span className="text-[13px] text-zinc-500 font-medium mt-2 tracking-wide">Open positions (US)</span>
+                        <span className="text-5xl font-light text-white tracking-tighter tabular-nums drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">{displayJobs.toLocaleString()}</span>
+                        <span className="text-[13px] text-foreground-muted font-medium mt-2 tracking-wide">Open positions (US)</span>
                       </div>
                       
                       <div className="flex flex-col gap-6 border-t border-white/[0.06] pt-6">
                         <div className="flex items-center justify-between">
-                          <span className="text-[13px] text-zinc-500 font-medium tracking-wide">Hiring Trend</span>
-                          <span className="text-[14px] font-medium text-white/90">{liveData.marketTrend}</span>
+                          <span className="text-[13px] text-foreground-muted font-medium tracking-wide">Hiring Trend</span>
+                          <span className="text-[14px] font-medium text-foreground/90">{liveData.marketTrend}</span>
                         </div>
                         
                         <div className="flex items-start justify-between">
-                          <span className="text-[13px] text-zinc-500 font-medium tracking-wide">Top Hiring</span>
+                          <span className="text-[13px] text-foreground-muted font-medium tracking-wide">Top Hiring</span>
                           <div className="flex flex-col items-end gap-2">
                             {liveData.topHiringCompanies?.slice(0, 3).map((c: string) => (
-                              <span key={c} className="text-[14px] font-medium text-white/90">{c}</span>
+                              <span key={c} className="text-[14px] font-medium text-foreground/90">{c}</span>
                             ))}
                           </div>
                         </div>
                       </div>
                     </motion.div>
                   ) : (
-                    <div className="text-[13px] text-zinc-600 font-medium tracking-wide">
-                      Select a role to view live market intelligence.
+                    <div className="flex flex-col gap-4 animate-in fade-in duration-500">
+                      <div className="text-[13px] text-foreground-muted font-medium tracking-wide">
+                        Trending Roles
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {["AI/ML Engineer", "Product Manager", "Data Scientist", "Full Stack Developer", "UX/UI Designer"].map((role) => (
+                          <button
+                            key={role}
+                            onClick={() => setTargetRole(role)}
+                            className="text-[12px] font-medium text-foreground/70 bg-surface-raised hover:bg-surface-overlay hover:text-foreground border border-border rounded-full px-4 py-2 transition-all active:scale-95"
+                          >
+                            {role}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </motion.div>
 
                 <motion.div variants={itemVariants}>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500/80 mb-4">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground-muted/80 mb-4">
                     Profile Context
                   </h3>
                   <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-semibold text-white/40 tracking-widest uppercase">Auto-synced</span>
-                    <p className="text-[13px] text-zinc-500/80 leading-[1.618] font-medium">
+                    <span className="text-[10px] font-bold text-brand tracking-widest uppercase drop-shadow-sm">Auto-synced</span>
+                    <p className="text-[13px] text-foreground-muted/80 leading-[1.618] font-medium">
                       {resumeText ? resumeText : "Your current resume and academic skills will be automatically injected by JARVIS for extreme personalization."}
                     </p>
                   </div>
                 </motion.div>
               </div>
             </div>
-          </motion.div>
+          </MotionCard>
         </div>
       )}
     </AnimatePresence>
   );
 
-  if (typeof document !== "undefined") {
+  if (!inline && typeof document !== "undefined") {
     return createPortal(modalContent, document.body);
   }
 

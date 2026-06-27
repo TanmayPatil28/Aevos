@@ -26,16 +26,16 @@ export default function CGPACeilingChart({ data }: { data: CGPACeilingData[] }) 
 
   return (
     <>
-      <div className="p-6 rounded-[2rem] bg-[#1c1c1e] border border-white/[0.05] flex flex-col h-full relative group">
+      <div className="p-6 rounded-[24px] bg-surface-raised border border-white/[0.04] shadow-none flex flex-col h-full relative group">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h3 className="text-[17px] font-bold text-white flex items-center gap-2 tracking-wide">
-              <TrendingUp className="text-[#f43f5e] drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]" size={20} /> Dynamic CGPA Ceiling
+              <TrendingUp className="text-brand" size={20} /> Dynamic CGPA Ceiling
             </h3>
             <p className="text-[15px] text-[#8E8E93] mt-1 tracking-tight">Mathematical absolute maximum vs Current</p>
           </div>
           <div className="text-right">
-            <span className="text-[28px] leading-none font-black text-[#f43f5e] tracking-tight">{currentMax.toFixed(2)}</span>
+            <span className="text-[28px] leading-none font-black text-brand tracking-tight">{currentMax.toFixed(2)}</span>
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#8E8E93] mt-1">Absolute Max</p>
           </div>
         </div>
@@ -45,8 +45,8 @@ export default function CGPACeilingChart({ data }: { data: CGPACeilingData[] }) 
             <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorCeiling" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--brand-primary)" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="var(--brand-primary)" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -70,21 +70,21 @@ export default function CGPACeilingChart({ data }: { data: CGPACeilingData[] }) 
                 labelStyle={{ color: '#8E8E93', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}
                 cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 2 }}
               />
-              <Area type="monotone" dataKey="mathematicalCeiling" stroke="#f43f5e" strokeDasharray="5 5" strokeWidth={2} fillOpacity={1} fill="url(#colorCeiling)" name="Max Ceiling" />
-              <Line type="monotone" dataKey="currentTrajectory" stroke="#fb923c" strokeWidth={3} dot={{ r: 4, fill: '#fb923c', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#fb923c', stroke: 'white', strokeWidth: 2 }} name="Trajectory" />
+              <Area type="monotone" dataKey="mathematicalCeiling" stroke="var(--brand-primary)" strokeDasharray="5 5" strokeWidth={2} fillOpacity={1} fill="url(#colorCeiling)" name="Max Ceiling" />
+              <Line type="monotone" dataKey="currentTrajectory" stroke="var(--status-warning)" strokeWidth={3} dot={{ r: 4, fill: 'var(--status-warning)', strokeWidth: 0 }} activeDot={{ r: 6, fill: 'var(--status-warning)', stroke: 'white', strokeWidth: 2 }} name="Trajectory" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
         
         <div 
           onClick={() => setShowDataModal(true)}
-          className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex justify-between items-center cursor-pointer hover:bg-white/[0.04] transition-colors active:scale-[0.98]"
+          className="p-4 rounded-2xl bg-surface border border-white/[0.04] flex justify-between items-center cursor-pointer hover:bg-[#2A2A2D] transition-colors active:scale-[0.98]"
         >
           <div>
             <p className="text-[11px] font-bold uppercase tracking-widest text-[#8E8E93]">Potential Gap Recovery</p>
-            <p className="font-mono text-[#f43f5e] font-bold text-[17px] mt-0.5">+{gap} CGPA Points</p>
+            <p className="font-mono text-brand font-bold text-[17px] mt-0.5">+{gap} CGPA Points</p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#f43f5e]">
+          <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-brand">
             <TableProperties size={18} />
           </div>
         </div>
@@ -96,8 +96,8 @@ export default function CGPACeilingChart({ data }: { data: CGPACeilingData[] }) 
         title="Ceiling Data Points"
       >
         <div className="pb-8">
-          <div className="bg-[#1c1c1e] border border-white/[0.05] rounded-2xl overflow-hidden">
-            <div className="grid grid-cols-3 p-4 border-b border-white/5 bg-white/[0.02]">
+          <div className="bg-surface border border-white/[0.04] rounded-2xl overflow-hidden">
+            <div className="grid grid-cols-3 p-4 border-b border-white/[0.04] bg-[#2A2A2D]">
               <span className="text-[11px] font-bold text-[#8E8E93] uppercase tracking-wider">Sem</span>
               <span className="text-[11px] font-bold text-[#8E8E93] uppercase tracking-wider text-center">Trajectory</span>
               <span className="text-[11px] font-bold text-[#f43f5e] uppercase tracking-wider text-right">Max Ceiling</span>

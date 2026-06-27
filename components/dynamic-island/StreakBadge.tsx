@@ -24,7 +24,7 @@ export default function StreakBadge({ isVisible }: { isVisible: boolean }) {
           initial={{ opacity: 0, y: 20, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.8 }}
-          transition={{ type: "spring", stiffness: 500, damping: 30, mass: 0.8 }}
+          transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none"
         >
           <div className={`

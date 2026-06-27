@@ -1,9 +1,9 @@
-# GradeFlow Student OS — Batch 4 Completion Package
+# Aevos Student OS — Batch 4 Completion Package
 
 **Author**: Project Orchestrator (Batch 4)  
 **Date**: 2026-06-16T15:50:00+05:30  
 **Status**: Finalized & Verified  
-**Workspace**: `C:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow`  
+**Workspace**: `C:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow`  
 **Parent**: Sentinel (conversation ID: `c235f186-5e70-4b5c-a6c4-8aee70c69cb7`)
 
 ---

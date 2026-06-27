@@ -28,7 +28,8 @@ interface CareerHubProps {
 export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }: CareerHubProps) {
   const projectedCgpa = targetCgpa;
   const activeBacklogs = 0;
-  const userSkills = useUSMStore(s => s.career.skills.map(skill => skill.toLowerCase()));
+  const careerSkills = useUSMStore(s => s.career.skills);
+  const userSkills = React.useMemo(() => careerSkills.map(skill => skill.toLowerCase()), [careerSkills]);
   
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeTrack, setActiveTrack] = useState<string>("Frontend Developer");
@@ -38,26 +39,15 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
   };
 
   return (
-    <Card className="relative overflow-hidden border border-white/10" padding="xl">
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 opacity-50" />
-      
-      <div className="relative z-10 space-y-12">
-        <div className="flex items-center gap-4 border-b border-white/20 pb-8">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/20">
-            <Briefcase className="text-indigo-400" size={28} />
-          </div>
-          <div>
-            <h3 className="font-headline text-3xl font-black text-white">Career Intelligence</h3>
-            <p className="text-on-surface-variant mt-1 text-sm">Placement eligibility & structured skill roadmaps.</p>
-          </div>
-        </div>
-
-        {/* Company Eligibility Section */}
-        <div className="space-y-4">
-          <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
-            <CheckCircle size={16} /> Placement Eligibility Engine
-          </span>
-          <div className="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full h-fit">
+      {/* Eligibility (Left) */}
+      <div className="col-span-1 lg:col-span-5 flex flex-col h-fit gap-6">
+        <div className="relative z-10 flex flex-col h-fit overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 flex items-center gap-2 shrink-0">
+              <CheckCircle size={16} /> Placement Engine
+            </h3>
+            <div className="space-y-4 pb-4">
             {DEFAULT_RECRUITERS.map(company => {
               const isEligible = checkEligibility(company);
               const isExpanded = expandedId === company.name;
@@ -138,12 +128,15 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
               );
             })}
           </div>
+          </div>
         </div>
+      </div>
 
-        {/* Skill Roadmap Engine */}
-        <div className="pt-8 border-t border-white/20 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+      {/* Roadmap (Right) */}
+      <div className="col-span-1 lg:col-span-7 flex flex-col h-fit gap-6">
+        <div className="flex flex-col h-fit overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
+            <span className="text-[12px] leading-[16px] font-bold uppercase tracking-[0.12em] text-foreground-muted flex items-center gap-2">
               <Map size={16} /> Skill Roadmap Engine
             </span>
             <div className="flex flex-wrap gap-2">
@@ -154,7 +147,7 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
                   className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
                     activeTrack === track 
                     ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)]" 
-                    : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white"
+                    : "bg-[#1D1D1F] text-white/50 border border-white/10 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   {track}
@@ -163,8 +156,8 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
             </div>
           </div>
 
-          <div className="p-6 rounded-3xl bg-[#0A0A0B] border border-white/10 shadow-inner">
-            <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <div className="p-6 rounded-card-large bg-surface-raised border-none shadow-none">
+            <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2 shrink-0">
               <Terminal className="text-indigo-400" />
               {activeTrack} Journey
             </h4>
@@ -192,11 +185,10 @@ export default function CareerHubModule({ currentCgpa = 7.0, targetCgpa = 8.5 }:
                   </div>
                 );
               })}
-            </div>
           </div>
         </div>
-
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }

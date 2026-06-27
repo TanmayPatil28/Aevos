@@ -23,18 +23,18 @@ export default function EligibilityScoreCard({ result }: { result: IntelligenceR
       >
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-4">
-            <h4 className="text-xl md:text-2xl font-bold text-white tracking-tight">{result.name}</h4>
-            <div className={cn("px-3 py-1 rounded-full border border-white/[0.05] bg-black/50 text-[10px] font-bold uppercase tracking-wider", statusColor, statusGlow)}>
+            <h4 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">{result.name}</h4>
+            <div className={cn("px-3 py-1 rounded-full border border-white/[0.05] bg-background/50 text-[10px] font-bold uppercase tracking-wider", statusColor, statusGlow)}>
               {result.status}
             </div>
           </div>
           
           <div className="flex items-end gap-4">
-             <div className="text-5xl md:text-6xl font-bold tracking-tighter text-white leading-none">
-               {result.eligibilityScore}<span className="text-2xl text-white/30 font-medium">%</span>
+             <div className="text-5xl md:text-6xl font-bold tracking-tighter text-foreground leading-none">
+               {result.eligibilityScore}<span className="text-2xl text-foreground/30 font-medium">%</span>
              </div>
              <div className="flex-1 max-w-[200px] mb-2">
-               <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden">
+               <div className="w-full bg-surface-raised rounded-full h-1 overflow-hidden">
                  <div 
                    className={cn("h-full", result.eligibilityScore >= 80 ? 'bg-emerald-500' : result.eligibilityScore >= 50 ? 'bg-amber-500' : 'bg-rose-500')} 
                    style={{ width: `${result.eligibilityScore}%` }}
@@ -44,7 +44,7 @@ export default function EligibilityScoreCard({ result }: { result: IntelligenceR
           </div>
         </div>
         
-        <div className="text-white/30 ml-4 p-2 group-hover:text-white transition-colors bg-white/5 rounded-full">
+        <div className="text-foreground/30 ml-4 p-2 group-hover:text-foreground transition-colors bg-surface-raised rounded-full">
           {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </div>
       </div>
@@ -55,20 +55,20 @@ export default function EligibilityScoreCard({ result }: { result: IntelligenceR
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden bg-black/40 border-t border-white/20"
+            className="overflow-hidden bg-background/40 border-t border-border-strong"
           >
             <div className="p-6 md:p-8">
-              <h5 className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em] mb-6">Eligibility Breakdown</h5>
+              <h5 className="text-[11px] font-bold text-foreground/40 uppercase tracking-[0.2em] mb-6">Eligibility Breakdown</h5>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {result.breakdown.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
-                    <div className="mt-1 bg-black/50 p-1.5 rounded-full border border-white/[0.05]">
+                    <div className="mt-1 bg-background/50 p-1.5 rounded-full border border-white/[0.05]">
                       {item.status === "Strong" && <CheckCircle className="w-4 h-4 text-emerald-400" />}
                       {item.status === "Moderate" && <AlertTriangle className="w-4 h-4 text-amber-400" />}
                       {(item.status === "Weak" || item.status === "Risk") && <XCircle className="w-4 h-4 text-rose-400" />}
                     </div>
                     <div>
-                      <span className="font-semibold text-white block text-sm mb-1">{item.factor}</span>
+                      <span className="font-semibold text-foreground block text-sm mb-1">{item.factor}</span>
                       <span className={cn("text-xs leading-relaxed block", 
                         item.status === "Strong" ? "text-emerald-400/80" :
                         item.status === "Moderate" ? "text-amber-400/80" :

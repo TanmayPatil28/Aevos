@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Database, Calendar, ShieldCheck, Cpu, Code2, LineChart } from "lucide-react";
+import { AevosLogo } from "@/components/ui/AevosLogo";
+import { AevosWordmark } from "@/components/ui/AevosWordmark";
 import { 
   HighlightsCarousel, 
   OSMorphingSequence, 
@@ -12,8 +14,8 @@ function HeroSection() {
   return (
     <section className="relative min-h-[140vh] bg-black pt-32 pb-20 overflow-hidden flex flex-col items-center">
       <div className="text-center z-20 px-6 relative mb-16">
-        <h1 className="text-[6rem] md:text-[10rem] lg:text-[12rem] font-semibold text-[#F5F5F7] tracking-tighter leading-[0.9] mb-6">
-          GradeFlow OS
+        <h1 className="text-[6rem] md:text-[10rem] lg:text-[12rem] text-[#F5F5F7] tracking-tighter leading-[0.9] mb-6 flex justify-center w-full">
+          <AevosWordmark />
         </h1>
         <p className="text-3xl md:text-5xl text-[#86868B] font-medium tracking-tight">
           Mind-blowing intelligence. Head-turning results.
@@ -108,18 +110,13 @@ function Footer() {
   return (
     <footer className="bg-[#050505] py-20 px-6 text-sm text-[#86868B] font-medium">
       <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg">
-            <span className="text-xs font-black text-white">GF</span>
-          </div>
-          <span className="font-semibold text-white text-lg tracking-tight">GradeFlow OS</span>
-        </div>
+        <AevosWordmark className="text-[20px] text-white" />
         <div className="flex gap-8">
           <span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
           <span className="hover:text-white cursor-pointer transition-colors">Terms of Service</span>
           <span className="hover:text-white cursor-pointer transition-colors">Documentation</span>
         </div>
-        <div className="text-lg">Copyright © 2026 GradeFlow OS. All rights reserved.</div>
+        <div className="text-lg">Copyright © 2026 Aevos. All rights reserved.</div>
       </div>
     </footer>
   );
@@ -129,8 +126,6 @@ function Footer() {
 export default function Home() {
   return (
     <div className="bg-black min-h-screen font-sans selection:bg-purple-500/30">
-      <LocalNav />
-      
       <HeroSection />
       
       <HighlightsCarousel />
@@ -177,9 +172,7 @@ function LocalNav() {
   return (
     <div className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-xl border-b border-white/20">
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-white/90 font-semibold tracking-tight">GradeFlow OS</span>
-        </div>
+        <AevosWordmark className="text-[17px] text-white" />
         <div className="flex items-center gap-5">
           <Link href="/dashboard" className="bg-white text-black px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#F5F5F7] transition-colors shadow-xl">
             Initialize Engine

@@ -1,4 +1,4 @@
-import { Target, ChevronRight } from "lucide-react";
+import { Target, ChevronRight, BarChart2 } from "lucide-react";
 import { CourseState, SemesterHistoryEntry } from "@/stores/usmStore";
 import { BacklogEngine } from "@/lib/backlog-intelligence/engine";
 
@@ -14,11 +14,11 @@ export default function ROIRankerWidget({
   const roiRanking = BacklogEngine.calculateCGPARoi(courses, history);
 
   return (
-    <div className="p-6 rounded-[32px] bg-[#1C1C1E] flex flex-col h-full">
+    <div className="p-6 rounded-[24px] bg-surface-raised border border-white/[0.04] shadow-none flex flex-col h-full">
       <div className="flex justify-between items-start mb-6">
         <div>
           <h3 className="text-[17px] font-semibold text-white flex items-center gap-2 tracking-tight">
-            <Target className="text-[#30D158]" size={20} /> ROI Ranker
+            <BarChart2 className="text-white" size={20} /> ROI Ranker
           </h3>
           <p className="text-[15px] text-[#8E8E93] mt-1 tracking-tight">Dead Credit Yield Analysis</p>
         </div>
@@ -32,11 +32,11 @@ export default function ROIRankerWidget({
             <div 
               key={item.courseId} 
               onClick={() => onSelectCourse && onSelectCourse(item.courseId)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-[#2C2C2E] cursor-pointer hover:bg-[#3A3A3C] transition-colors active:scale-[0.98]"
+              className="flex items-center justify-between p-3 rounded-2xl bg-surface border border-white/[0.04] cursor-pointer hover:bg-[#2A2A2D] transition-colors active:scale-[0.98]"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[15px] font-bold ${
-                  index === 0 ? "bg-[#30D158]/20 text-[#30D158]" : "bg-[#3A3A3C] text-[#8E8E93]"
+                  index === 0 ? "bg-white text-black" : "bg-[#2A2A2D] text-[#8E8E93]"
                 }`}>
                   {index + 1}
                 </div>
@@ -47,7 +47,7 @@ export default function ROIRankerWidget({
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-right">
-                  <div className="text-[15px] font-bold text-[#30D158]">+{item.cgpaBoost.toFixed(3)}</div>
+                  <span className="text-[13px] font-bold text-white bg-white/10 px-2 py-0.5 rounded-md flex items-center gap-1">+{item.cgpaBoost.toFixed(3)}</span>
                   <div className="text-[11px] text-[#8E8E93] uppercase tracking-wide font-semibold mt-0.5">Yield</div>
                 </div>
                 <ChevronRight size={18} className="text-[#8E8E93]" />

@@ -2,7 +2,7 @@ import ForecastingCanvas from "@/components/os/forecasting/ForecastingCanvas";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Forecasting | GradeFlow OS",
+  title: "Forecasting | Aevos",
   description: "Plan your academic trajectory.",
 };
 

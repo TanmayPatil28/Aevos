@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { DecisionNode as DecisionNodeType } from "@/lib/forecasting/decisionTypes";
 import { cn } from "@/lib/cn";
 import { BookOpen, Briefcase, Heart, ChevronRight, Lock } from "lucide-react";
+import Card from "@/components/ui/Card";
 
 interface DecisionNodeProps {
   node: DecisionNodeType;
@@ -38,15 +39,22 @@ export default function DecisionNode({ node, isActive, isAvailable, onClick, sty
       }}
       whileHover={isAvailable ? { scale: isActive ? 1.05 : 1.02, y: -2 } : {}}
       className={cn(
-        "relative w-64 p-4 text-left rounded-2xl border transition-all duration-300 backdrop-blur-md overflow-hidden",
-        isActive 
-          ? `border-white/40 shadow-[0_0_30px_-5px_rgba(255,255,255,0.1)] ${config.bg}` 
-          : isPremium 
-            ? "border-amber-500/40 bg-amber-500/5 shadow-[0_0_15px_-5px_rgba(245,158,11,0.2)]"
-            : "border-white/10 bg-white/[0.03]",
-        !isAvailable && !isActive ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:border-white/20"
+        "relative w-64 text-left transition-all duration-300 block",
+        !isAvailable && !isActive ? "cursor-not-allowed opacity-50" : "cursor-pointer"
       )}
     >
+      <Card
+        variant="default"
+        padding="md"
+        className={cn(
+          "h-full w-full transition-all duration-300 overflow-hidden",
+          isActive 
+            ? `ring-1 ring-white/40 shadow-[0_0_30px_-5px_rgba(255,255,255,0.1)] ${config.bg}` 
+            : isPremium 
+              ? "ring-1 ring-amber-500/40 bg-gradient-to-br from-amber-500/10 to-transparent shadow-[0_0_15px_-5px_rgba(245,158,11,0.2)]"
+              : "ring-1 ring-transparent hover:ring-white/20"
+        )}
+      >
       {/* Background Glow */}
       {isActive && (
         <div className={cn("absolute inset-0 blur-2xl opacity-20", config.bg)} />
@@ -77,10 +85,10 @@ export default function DecisionNode({ node, isActive, isAvailable, onClick, sty
           </div>
         </div>
 
-        <h4 className={cn("text-sm font-bold mb-1 leading-tight", isPremium ? "text-amber-100" : "text-white")}>
+        <h4 className={cn("text-sm font-semibold mb-1 leading-tight text-foreground tracking-tight")}>
           {node.title}
         </h4>
-        <p className="text-[11px] text-white/50 leading-snug line-clamp-2">
+        <p className="text-[11px] text-foreground-muted leading-snug line-clamp-2">
           {node.description}
         </p>
 
@@ -91,6 +99,7 @@ export default function DecisionNode({ node, isActive, isAvailable, onClick, sty
           </div>
         )}
       </div>
+      </Card>
     </motion.button>
   );
 }

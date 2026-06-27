@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
-import NavbarServer from "@/components/NavbarServer";
-import Footer from "@/components/Footer";
+import { DynamicIsland } from "@/components/ui/dynamic-island";
+import { Sidebar } from "@/components/ui/sidebar";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 const SmartTimetableController = dynamic(() => import("@/components/dynamic-island/SmartTimetableController"), { ssr: false });
 const BunkCalculatorController = dynamic(() => import("@/components/dynamic-island/BunkCalculatorController"), { ssr: false });
@@ -21,29 +21,29 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 
 export const metadata: Metadata = {
   title: {
-    default: "GradeFlow | B.Tech Student Intelligence Operating System",
-    template: "%s | GradeFlow"
+    default: "Aevos",
+    template: "%s | Aevos"
   },
-  description: "Deterministic academic simulation, regulation-aware planning, and placement eligibility tracking for B.Tech students.",
-  keywords: ["CGPA Calculator", "Academic Simulation", "B.Tech Planner", "Recruiter Eligibility", "Placement Predictor", "SPPU", "VTU", "JNTUH"],
+  description: "Human Intelligence Infrastructure.",
+  keywords: ["Aevos", "Human Intelligence", "Infrastructure", "Operating System"],
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://gradeflow.app",
-    title: "GradeFlow | B.Tech Student Intelligence Operating System",
-    description: "Deterministic academic simulation, regulation-aware planning, and placement eligibility tracking for B.Tech students.",
-    siteName: "GradeFlow",
+    url: "https://aevos.app",
+    title: "Aevos",
+    description: "Human Intelligence Infrastructure.",
+    siteName: "Aevos",
   },
   twitter: {
     card: "summary_large_image",
-    title: "GradeFlow | B.Tech Student OS",
-    description: "Deterministic academic simulation & placement tracking.",
+    title: "Aevos",
+    description: "Human Intelligence Infrastructure.",
   },
 };
 
@@ -63,8 +63,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={`${inter.variable} font-body bg-background text-foreground custom-scrollbar selection:bg-primary-container selection:text-on-primary-container`}>
+    <html lang="en" className="dark scrollbar-hide" suppressHydrationWarning>
+      <body className={`${inter.variable} font-body bg-background text-foreground scrollbar-hide selection:bg-primary-container selection:text-on-primary-container`}>
           <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
           <BackgroundEffects />
           <UniversityProvider>
@@ -79,7 +79,7 @@ export default function RootLayout({
               speed={150}
               shadow="0 0 15px #3b82f6,0 0 5px #3b82f6"
             />
-            <CustomCursor />
+            {/* <CustomCursor /> */}
             <SkipToContent />
             <NuqsAdapter>
               <SupabaseAuthProvider initialUser={null}>
@@ -88,11 +88,14 @@ export default function RootLayout({
                     <AcademicHydrationBoundary>
                       <LenisProvider>
                         <BackgroundSyncWorker />
-                        <NavbarServer />
-                        <main id="main-content" tabIndex={-1} className="outline-none">
-                          {children}
-                        </main>
-                        <Footer />
+                        <DynamicIsland />
+                        <div className="flex w-full min-h-screen">
+                          <Sidebar>
+                            <main id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col w-full min-h-screen">
+                              {children}
+                            </main>
+                          </Sidebar>
+                        </div>
                       </LenisProvider>
                     </AcademicHydrationBoundary>
                   </AcademicStateProvider>

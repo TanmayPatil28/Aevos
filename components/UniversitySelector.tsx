@@ -6,6 +6,9 @@ import { School, ChevronDown, Check, Search, X, Zap, GraduationCap, MapPin } fro
 import { useUniversity, UNI_PRESETS } from "@/components/providers/UniversityProvider";
 import { getPresetsByState, searchPresets, type UniversityPreset } from "@/lib/presets";
 import { cn } from "@/lib/cn";
+import Card from "@/components/ui/Card";
+import { Input } from "@/components/ui/input";
+import { Avatar } from "@/components/ui/avatar";
 
 // ─── Evaluation Model Badge ────────────────────────────────────────────────────
 export function EvalBadge({ model }: { model: string }) {
@@ -58,14 +61,16 @@ export function UniversityTrigger({ isOpen, onClick }: { isOpen: boolean; onClic
 export function UniversityContent({ onClose }: { onClose: () => void }) {
   const { activePreset, setSelectedUniId } = useUniversity();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Auto-focus search when rendered
   useEffect(() => {
-    setTimeout(() => searchInputRef.current?.focus(), 100);
-  }, []);
+    if (isDropdownOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  }, [isDropdownOpen]);
 
   const filteredPresets = useMemo(() => {
     if (!searchQuery.trim()) return UNI_PRESETS;
@@ -86,6 +91,7 @@ export function UniversityContent({ onClose }: { onClose: () => void }) {
   }, [groups]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!isDropdownOpen) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setFocusedIndex(prev => Math.min(prev + 1, flatPresets.length - 1));
@@ -96,10 +102,13 @@ export function UniversityContent({ onClose }: { onClose: () => void }) {
       e.preventDefault();
       if (focusedIndex >= 0 && focusedIndex < flatPresets.length) {
         setSelectedUniId(flatPresets[focusedIndex].id);
+        setIsDropdownOpen(false);
         onClose();
       }
+    } else if (e.key === "Escape") {
+      setIsDropdownOpen(false);
     }
-  }, [focusedIndex, flatPresets, setSelectedUniId, onClose]);
+  }, [focusedIndex, flatPresets, setSelectedUniId, onClose, isDropdownOpen]);
 
   useEffect(() => {
     if (focusedIndex >= 0 && listRef.current) {
@@ -110,157 +119,149 @@ export function UniversityContent({ onClose }: { onClose: () => void }) {
 
   const handleSelect = (id: string) => {
     setSelectedUniId(id);
-    onClose();
+    setIsDropdownOpen(false);
   };
 
   return (
-    <div className="w-full px-6 pb-6 pt-2" onKeyDown={handleKeyDown}>
-      {/* 2-COLUMN LAYOUT */}
-      <div className="grid grid-cols-[1fr_1.2fr] gap-6">
-        
-        {/* LEFT COLUMN: Search + Active Preset */}
-        <div className="flex flex-col gap-4">
-          {/* Section Header */}
-          <div className="flex items-center gap-2">
-            <School size={14} className="text-white/30" />
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white/30">
-              Institution
-            </span>
-          </div>
+    <div className="w-full flex flex-col gap-6 relative" onKeyDown={handleKeyDown}>
+      <div className="flex items-center justify-between px-2">
+        <h2 className="text-[16px] font-medium text-[#F5F5F7] tracking-tight">Academic Profile</h2>
+        <span className="text-[13px] text-[#86868B] font-medium tracking-wide">Institution Config</span>
+      </div>
 
-          {/* Search Bar */}
-          <div className="relative group/search">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within/search:text-white transition-colors" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setFocusedIndex(0);
-              }}
-              placeholder="Search university..."
-              className="w-full bg-white/[0.03] border border-white/[0.05] rounded-2xl pl-10 pr-8 py-3 text-[13px] font-medium text-white placeholder:text-white/30 outline-none focus:bg-white/[0.06] focus:border-white/10 transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => { setSearchQuery(""); setFocusedIndex(-1); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/80 transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1"
+      {/* Popover Trigger and Dropdown Container */}
+      <div className="px-2 relative">
+        <button
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className="w-full text-left outline-none group"
+        >
+          <Card padding="md" className={cn(
+            "flex items-center justify-between relative z-10 transition-all duration-300 cursor-pointer border-[0.8px]",
+            isDropdownOpen ? "border-white/30 bg-white/5" : "border-[rgba(255,255,255,0.08)] group-hover:border-white/20 group-hover:bg-white/[0.02]"
+          )}>
+            <div className="flex items-center gap-4">
+              <Avatar size="md" name={activePreset.name} />
+              <div className="flex flex-col gap-0.5">
+                <div className="text-[16px] font-semibold text-[#F5F5F7] tracking-tight">{activePreset.shortName}</div>
+                <div className="text-[14px] text-[#86868B] font-medium">{activePreset.name}</div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <EvalBadge model={activePreset.evaluationModel} />
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] text-[#86868B] font-medium">{activePreset.gradingSystem}</span>
+                <ChevronDown size={16} className={cn("text-[#86868B] transition-transform duration-300", isDropdownOpen && "rotate-180")} />
+              </div>
+            </div>
+          </Card>
+        </button>
+
+        {/* Floating Popover Container */}
+        <AnimatePresence>
+          {isDropdownOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100]" 
+                onClick={() => setIsDropdownOpen(false)} 
+              />
+              
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="absolute left-2 right-2 top-[calc(100%+8px)] z-[110]"
               >
-                <X size={12} />
-              </button>
-            )}
-          </div>
-
-          {/* Active Preset Card */}
-          <div className="p-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl relative overflow-hidden group/banner">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.05] to-transparent opacity-0 group-hover/banner:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center font-black text-[15px] shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                  {activePreset.shortName[0]}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[14px] font-bold text-white tracking-tight truncate">{activePreset.shortName}</div>
-                  <div className="text-[11px] text-white/40 font-medium">{activePreset.name}</div>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <EvalBadge model={activePreset.evaluationModel} />
-                <span className="text-[10px] text-white/30 font-medium">{activePreset.gradingSystem}</span>
-                {activePreset.sgpaToPercentage && (
-                  <>
-                    <span className="text-white/10">·</span>
-                    <span className="text-[10px] text-white/30 font-mono">{activePreset.sgpaToPercentage}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Footer */}
-          <div className="flex items-center justify-between px-1 mt-auto">
-            <span className="text-[10px] text-white/20 font-medium tracking-wide">{UNI_PRESETS.length} institutions</span>
-            <div className="flex items-center gap-1.5 text-[10px] text-white/20">
-              <Zap size={10} className="text-white/30" />
-              <span className="font-medium tracking-wide">Adaptive Engine</span>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Scrollable University List */}
-        <div className="flex flex-col">
-          <div className="max-h-[300px] overflow-y-auto custom-scrollbar pr-1" ref={listRef}>
-            {groups.map((group) => (
-              <div key={group.label} className="mb-3 last:mb-0">
-                <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-white/30 mb-1 flex items-center gap-2 sticky top-0 bg-[#1D1D1F]/95 backdrop-blur-sm z-10">
-                  <MapPin size={10} className="text-white/20" />
-                  {group.label}
-                </div>
-                <div className="space-y-0.5">
-                  {group.presets.map((uni) => {
-                    const globalIdx = flatPresets.findIndex(p => p.id === uni.id);
-                    const isFocused = globalIdx === focusedIndex;
-                    const isActive = activePreset.id === uni.id;
-
-                    return (
-                      <button
-                        key={uni.id}
-                        data-index={globalIdx}
-                        onClick={() => handleSelect(uni.id)}
-                        className={cn(
-                          "w-full flex items-center justify-between p-2.5 rounded-xl transition-all duration-300 group/item text-left outline-none relative",
-                          isActive ? "bg-white/[0.06]" : (isFocused ? "bg-white/[0.04]" : "hover:bg-white/[0.03]")
-                        )}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-bold shrink-0 transition-all duration-300",
-                            isActive
-                              ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-                              : "bg-white/[0.04] text-white/40 border border-white/[0.06] group-hover/item:bg-white/[0.08] group-hover/item:text-white/70"
-                          )}>
-                            {uni.shortName[0]}
-                          </div>
-                          <div className="min-w-0 flex flex-col">
-                            <span className={cn(
-                              "text-[13px] font-semibold tracking-tight truncate transition-colors duration-300",
-                              isActive ? "text-white" : "text-white/60 group-hover/item:text-white/90"
-                            )}>
-                              {uni.name}
-                            </span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[10px] text-white/30 font-medium">{uni.state}</span>
-                              <span className="text-white/10">·</span>
-                              <span className={cn(
-                                "text-[10px] font-bold uppercase tracking-wider",
-                                uni.evaluationModel === "relative" ? "text-amber-400/70" :
-                                uni.evaluationModel === "hybrid" ? "text-blue-400/70" :
-                                "text-emerald-400/70"
-                              )}>
-                                {uni.evaluationModel}
-                              </span>
-                            </div>
-                          </div>
+                <Card className="overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.6)] border-[0.8px] border-[rgba(255,255,255,0.15)] bg-[#1c1c1e] max-h-[400px] flex flex-col">
+                  
+                  {/* Search Header */}
+                  <div className="p-3 border-b-[0.8px] border-[rgba(255,255,255,0.08)] bg-[#1c1c1e]/90 backdrop-blur-xl sticky top-0 z-20">
+                    <Input
+                      ref={searchInputRef as any}
+                      variant="search"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setFocusedIndex(0);
+                      }}
+                      placeholder="Search institutions..."
+                      className="w-full border-transparent focus:border-white/20 bg-[#2c2c2e]"
+                    />
+                  </div>
+                  
+                  {/* Ledger List */}
+                  <div className="overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] p-2 flex-1" ref={listRef}>
+                    {groups.map((group) => (
+                      <div key={group.label} className="mb-4 last:mb-0">
+                        <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-[#86868B] mb-1 flex items-center gap-2">
+                          <MapPin size={10} className="text-white/20" />
+                          {group.label}
                         </div>
-                        {isActive && (
-                          <Check size={15} className="text-white shrink-0 mr-1" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+                        <div className="flex flex-col bg-[#1c1c1e]">
+                          {group.presets.map((uni, i) => {
+                            const globalIdx = flatPresets.findIndex(p => p.id === uni.id);
+                            const isFocused = globalIdx === focusedIndex;
+                            const isActive = activePreset.id === uni.id;
+                            const isLast = i === group.presets.length - 1;
 
-            {filteredPresets.length === 0 && (
-              <div className="py-12 text-center" role="presentation">
-                <Search size={24} className="text-white/10 mx-auto mb-3" />
-                <p className="text-[12px] text-white/30 font-medium tracking-wide">No universities found</p>
-              </div>
-            )}
-          </div>
-        </div>
+                            return (
+                              <button
+                                key={uni.id}
+                                data-index={globalIdx}
+                                onClick={() => handleSelect(uni.id)}
+                                className={cn(
+                                  "w-full flex items-center justify-between px-4 py-3 transition-all duration-200 group/item text-left outline-none border-b-[0.8px] border-[rgba(255,255,255,0.04)]",
+                                  isLast && "border-b-0",
+                                  isActive ? "bg-white/[0.06]" : (isFocused ? "bg-white/[0.04]" : "hover:bg-white/[0.04] bg-transparent")
+                                )}
+                              >
+                                <div className="flex items-center gap-4 min-w-0">
+                                  <Avatar size="sm" name={uni.name} />
+                                  <div className="min-w-0 flex flex-col gap-0.5">
+                                    <span className={cn(
+                                      "text-[14px] font-semibold tracking-tight truncate transition-colors duration-200",
+                                      isActive ? "text-[#F5F5F7]" : "text-[#86868B] group-hover/item:text-[#F5F5F7]"
+                                    )}>
+                                      {uni.name}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[12px] text-[#86868B] font-medium">{uni.state}</span>
+                                      <span className="text-white/10">·</span>
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#86868B]">
+                                        {uni.gradingSystem}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <EvalBadge model={uni.evaluationModel} />
+                                  {isActive && (
+                                    <Check size={16} className="text-[#F5F5F7] shrink-0" />
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+
+                    {filteredPresets.length === 0 && (
+                      <div className="py-10 text-center" role="presentation">
+                        <Search size={24} className="text-white/20 mx-auto mb-3" />
+                        <p className="text-[14px] text-[#86868B] font-medium tracking-wide">No institutions found</p>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

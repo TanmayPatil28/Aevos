@@ -18,7 +18,7 @@ export default function DynamicIsland({
     <div className="fixed top-28 right-8 z-[200] flex flex-col items-end gap-0">
       <motion.div
         layout
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
         className={cn(
           "relative flex items-center bg-[#1a1a1a] rounded-full",
           "border border-white/[0.08]",
@@ -39,7 +39,7 @@ export default function DynamicIsland({
                 <motion.div
                   layoutId="activeAttendanceTab"
                   className="absolute inset-0 bg-white rounded-full shadow-md"
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
                 />
               )}
               <Activity size={15} className="relative z-10" />
@@ -57,7 +57,7 @@ export default function DynamicIsland({
                 <motion.div
                   layoutId="activeAttendanceTab"
                   className="absolute inset-0 bg-white rounded-full shadow-md"
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
                 />
               )}
               <BookOpen size={15} className="relative z-10" />

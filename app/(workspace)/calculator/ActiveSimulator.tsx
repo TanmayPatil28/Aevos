@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useDeferredValue } from "react";
 import Link from "next/link";
-import { Plus, Save, ArrowRight, RotateCcw, Activity, Calculator, ChevronDown, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Plus, Save, ArrowRight, RotateCcw, Activity, Calculator, ChevronDown, ChevronUp, CheckCircle2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useUSMStore, CourseState } from "@/stores/usmStore";
 import { resolveActiveAcademicContext } from "@/stores/selectors/academic";
@@ -13,75 +13,61 @@ import CalculationBreakdown from "@/components/CalculationBreakdown";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import WorkspaceContent from "@/components/layout/WorkspaceContent";
 import WorkspaceSection from "@/components/layout/WorkspaceSection";
+import Card from "@/components/ui/card";
 import { getPresetById, getGradeScale, calculateSGPA, convertLetterGradeToGradePoint } from "@/lib/presets";
 import { motion, AnimatePresence } from "framer-motion";
+import * as Select from '@radix-ui/react-select';
+import clsx from 'clsx';
 
 interface SimulatedCourse extends CourseState {
   isTemporary?: boolean;
 }
 
 function GradeDropdown({ value, onChange, options }: { value: string, onChange: (val: string) => void, options: string[] }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        type="button"
-        role="combobox"
-        aria-expanded={isOpen}
-        aria-haspopup="listbox"
-        aria-label="Select grade"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-24 h-10 bg-[#2c2c2e] hover:bg-[#3a3a3c] text-[#F5F5F7] font-bold px-4 rounded-xl outline-none transition-colors cursor-pointer flex items-center justify-between gap-2`}
-      >
-        <span className="flex-1 text-center text-sm">{value || "-"}</span>
-        <ChevronDown size={14} className={`text-white/40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
+    <Select.Root value={value || "none"} onValueChange={(v) => onChange(v === "none" ? "" : v)}>
+      <Select.Trigger className="w-24 h-10 bg-[#2c2c2e] hover:bg-[#3a3a3c] text-[#F5F5F7] font-bold px-4 rounded-xl outline-none transition-colors cursor-pointer flex items-center justify-between gap-2 data-[state=open]:ring-2 data-[state=open]:ring-brand/50">
+        <Select.Value placeholder="-" />
+        <Select.Icon>
+          <ChevronDown size={14} className="text-white/40" />
+        </Select.Icon>
+      </Select.Trigger>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -5, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -5, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            role="listbox"
-            className="absolute top-full mt-2 w-24 left-0 bg-[#2c2c2e] border border-white/[0.05] rounded-xl shadow-2xl z-[100] overflow-y-auto overflow-x-hidden py-1.5 max-h-48 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          >
-            <button
-              role="option"
-              aria-selected={value === ""}
-              onClick={() => { onChange(""); setIsOpen(false); }}
-              className={`w-full text-center px-4 py-2 text-sm font-bold transition-colors duration-200 ${value === "" ? 'text-[#4F8EF7] bg-white/[0.05]' : 'text-[#86868b] hover:bg-white/[0.05] hover:text-[#F5F5F7]'}`}
+      <Select.Portal>
+        <Select.Content 
+          position="popper" 
+          sideOffset={8}
+          className="w-24 bg-[#2c2c2e] border border-white/[0.05] rounded-xl shadow-2xl z-[100] overflow-hidden"
+        >
+          <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-[#2c2c2e] text-white/50 cursor-default">
+            <ChevronUp size={14} />
+          </Select.ScrollUpButton>
+          
+          <Select.Viewport className="py-1.5 max-h-[220px]">
+            <Select.Item 
+              value="none" 
+              className="w-full text-center px-4 py-2 text-sm font-bold text-[#86868b] hover:bg-white/[0.05] hover:text-[#F5F5F7] focus:bg-white/[0.05] focus:text-[#F5F5F7] outline-none cursor-pointer data-[state=checked]:text-brand data-[state=checked]:bg-white/[0.05]"
             >
-              -
-            </button>
+              <Select.ItemText>-</Select.ItemText>
+            </Select.Item>
+            
             {options.map(opt => (
-              <button
-                key={opt}
-                role="option"
-                aria-selected={value === opt}
-                onClick={() => { onChange(opt); setIsOpen(false); }}
-                className={`w-full text-center px-4 py-2 text-sm font-bold transition-colors duration-200 ${value === opt ? 'text-[#4F8EF7] bg-white/[0.05]' : 'text-[#86868b] hover:bg-white/[0.05] hover:text-[#F5F5F7]'}`}
+              <Select.Item 
+                key={opt} 
+                value={opt}
+                className="w-full text-center px-4 py-2 text-sm font-bold text-[#86868b] hover:bg-white/[0.05] hover:text-[#F5F5F7] focus:bg-white/[0.05] focus:text-[#F5F5F7] outline-none cursor-pointer data-[state=checked]:text-brand data-[state=checked]:bg-white/[0.05]"
               >
-                {opt}
-              </button>
+                <Select.ItemText>{opt}</Select.ItemText>
+              </Select.Item>
             ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+          </Select.Viewport>
+          
+          <Select.ScrollDownButton className="flex items-center justify-center h-6 bg-[#2c2c2e] text-white/50 cursor-default">
+            <ChevronDown size={14} />
+          </Select.ScrollDownButton>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
   );
 }
 
@@ -202,7 +188,10 @@ export default function CalculatorPage() {
 
   return (
     <>
-      <WorkspaceContent className="relative z-10">
+      <WorkspaceContent className={clsx(
+        "relative z-10 transition-all duration-300",
+        store.workspaceUi.activePanel !== "NONE" ? "lg:pr-[420px]" : ""
+      )}>
 
         {/* =======================================
             TWO-COLUMN DYNAMIC FLOW LAYOUT
@@ -212,20 +201,20 @@ export default function CalculatorPage() {
           {/* =======================================
       ROW 1: BENTO GRID & NUMBERS SUMMARY
       ======================================= */}
-          <div className="flex flex-wrap gap-8 lg:gap-12 items-start">
+          <div className="flex flex-col xl:flex-row gap-8 lg:gap-12 items-start w-full">
 
             {/* LEFT PANE: Bento Grid */}
-            <div className="flex-[2] min-w-[320px] flex flex-col gap-6 relative z-10 w-full">
+            <div className="flex-[2] min-w-0 flex flex-col gap-6 relative z-10 w-full">
 
               {/* =======================================
             LEFT PANE: The Bento Grid Subject Ledger
             ======================================= */}
               <div className="w-full flex flex-col gap-6">
 
-                <div className="relative overflow-hidden bg-[#1D1D1F] border border-white/5 px-6 py-5 rounded-[32px] shrink-0 mt-2 flex justify-between items-center group shadow-none">
+                <Card padding="md" className="shrink-0 mt-2 flex justify-between items-center group">
 
                   <div className="flex items-center gap-3 relative z-10">
-                    <Calculator className="text-[#4F8EF7] w-5 h-5" />
+                    <Calculator className="text-brand w-5 h-5" />
                     <span className="font-bold text-[#F5F5F7] tracking-tight text-lg">Course Ledger Overview</span>
                   </div>
 
@@ -240,14 +229,14 @@ export default function CalculatorPage() {
                     )}
                     <button
                       onClick={handleAddTemporary}
-                      className="text-[10px] font-black uppercase tracking-widest text-[#4F8EF7] bg-[#4F8EF7]/10 px-4 py-2 rounded-xl hover:bg-[#4F8EF7]/20 transition-colors flex items-center gap-1.5"
+                      className="text-[10px] font-black uppercase tracking-widest text-brand bg-brand/10 px-4 py-2 rounded-xl hover:bg-brand/20 transition-colors flex items-center gap-1.5"
                     >
                       <Plus size={12} /> Add Course
                     </button>
                   </div>
-                </div>
+                </Card>
 
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 relative z-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-20">
                   <AnimatePresence mode="popLayout">
                     {simulatedCourses.length === 0 ? (
                       <motion.div
@@ -256,8 +245,8 @@ export default function CalculatorPage() {
                         exit={{ opacity: 0, y: -20 }}
                         className="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center p-12 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl"
                       >
-                        <div className="w-16 h-16 rounded-full bg-[#4F8EF7]/10 flex items-center justify-center mb-4 border border-[#4F8EF7]/20">
-                          <Calculator className="w-8 h-8 text-[#4F8EF7]/50" />
+                        <div className="w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mb-4 border border-brand/20">
+                          <Calculator className="w-8 h-8 text-brand/50" />
                         </div>
                         <h3 className="text-white font-bold text-lg mb-2">Sandbox is Empty</h3>
                         <p className="text-white/40 text-sm max-w-sm text-center mb-6">
@@ -287,7 +276,7 @@ export default function CalculatorPage() {
                               openPanel("PREDICTOR", course.id);
                             }
                           }}
-                          className={`relative bg-[#1c1c1e] rounded-[1.5rem] p-5 flex flex-col h-full min-h-[140px] transition-all duration-300 group hover:bg-[#2c2c2e] hover:scale-[1.02] cursor-pointer ${course.isTemporary ? 'ring-2 ring-[#4F8EF7]' : ''}`}
+                          className={`relative bg-surface-raised rounded-card-large p-5 flex flex-col h-full min-h-[140px] transition-all duration-300 group hover:bg-surface-raised/80 hover:scale-[1.02] cursor-pointer ${course.isTemporary ? 'ring-2 ring-brand' : ''}`}
                         >
                           {/* Top Row: Code & Credits Combined */}
                           <div className="flex justify-between items-center mb-3">
@@ -296,7 +285,7 @@ export default function CalculatorPage() {
                                 <input
                                   value={course.code}
                                   onChange={(e) => handleUpdateTemp(course.id, 'code', e.target.value)}
-                                  className="bg-[#2c2c2e] text-[#F5F5F7] font-bold text-xs h-7 px-2 w-20 rounded-md outline-none focus:ring-1 focus:ring-[#4F8EF7] transition-all placeholder:text-[#86868b] uppercase"
+                                  className="bg-[#2c2c2e] text-[#F5F5F7] font-bold text-xs h-7 px-2 w-20 rounded-md outline-none focus:ring-1 focus:ring-brand transition-all placeholder:text-[#86868b] uppercase"
                                   placeholder="CODE"
                                 />
                                 <span className="text-[#86868b] text-xs font-bold">•</span>
@@ -304,7 +293,7 @@ export default function CalculatorPage() {
                                   type="number"
                                   value={course.credits}
                                   onChange={(e) => handleUpdateTemp(course.id, 'credits', parseInt(e.target.value) || 0)}
-                                  className="bg-[#2c2c2e] text-[#F5F5F7] font-bold text-xs h-7 w-12 text-center rounded-md outline-none focus:ring-1 focus:ring-[#4F8EF7] transition-all [&::-webkit-inner-spin-button]:appearance-none placeholder:text-[#86868b]"
+                                  className="bg-[#2c2c2e] text-[#F5F5F7] font-bold text-xs h-7 w-12 text-center rounded-md outline-none focus:ring-1 focus:ring-brand transition-all [&::-webkit-inner-spin-button]:appearance-none placeholder:text-[#86868b]"
                                   placeholder="CR"
                                 />
                               </div>
@@ -321,7 +310,7 @@ export default function CalculatorPage() {
                               <textarea
                                 value={course.name}
                                 onChange={(e) => handleUpdateTemp(course.id, 'name', e.target.value)}
-                                className="bg-[#2c2c2e] text-[#F5F5F7] font-semibold text-lg leading-tight w-full rounded-md p-2 outline-none focus:ring-1 focus:ring-[#4F8EF7] resize-none h-16 placeholder:text-[#86868b] transition-all"
+                                className="bg-[#2c2c2e] text-[#F5F5F7] font-semibold text-lg leading-tight w-full rounded-md p-2 outline-none focus:ring-1 focus:ring-brand resize-none h-16 placeholder:text-[#86868b] transition-all"
                                 placeholder="New Course Name..."
                               />
                             ) : (
@@ -354,7 +343,7 @@ export default function CalculatorPage() {
             </div>
 
             {/* RIGHT PANE: Numbers Summary */}
-            <div className="flex-1 min-w-[320px] flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10 w-full">
+            <div className="flex-1 min-w-0 flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10 w-full">
               {/* No backgrounds, borders, or padding on the main container */}
               
               <div className="flex flex-col">
@@ -413,12 +402,12 @@ export default function CalculatorPage() {
           {/* =======================================
       ROW 2: TYPOGRAPHY & STATUTORY MATRIX
       ======================================= */}
-          <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-24">
+          <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-12">
 
             {/* LEFT PANE: Typography */}
-            <div className="flex-1 min-w-[320px] max-w-2xl flex flex-col gap-12 relative z-10 lg:sticky lg:top-28 h-fit w-full">
+            <div className="flex-1 min-w-[320px] max-w-2xl flex flex-col gap-8 relative z-10 lg:sticky lg:top-28 h-fit w-full">
               {/* LEFT: Apple-Style Guide Typography */}
-              <div className="w-full flex flex-col gap-12 relative z-10 px-2 lg:px-6">
+              <div className="w-full flex flex-col gap-8 relative z-10 px-2 lg:px-6">
 
                 <motion.div 
                   initial={{ opacity: 0, y: 30 }}
@@ -427,16 +416,16 @@ export default function CalculatorPage() {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   className="flex flex-col gap-5"
                 >
-                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] text-white leading-[1.1]">
+                  <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-white leading-snug">
                     <motion.span 
                       className="text-transparent bg-clip-text inline-block"
-                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
                       animate={{ backgroundPosition: ["0% center", "200% center"] }}
                       transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     >Plan with Confidence.</motion.span><br />
                     Shape your trajectory.
                   </h3>
-                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                  <p className="text-[#86868b] text-base md:text-lg font-medium leading-relaxed tracking-tight">
                     <strong className="text-[#f5f5f7]">Test different scenarios safely.</strong> Change a grade and see the impact immediately. The system instantly calculates how any target grade affects your overall SGPA and CGPA.
                   </p>
                 </motion.div>
@@ -448,15 +437,15 @@ export default function CalculatorPage() {
                   transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
                   className="flex flex-col gap-5"
                 >
-                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
+                  <h3 className="text-2xl md:text-3xl font-semibold tracking-tight leading-snug">
                     <motion.span 
                       className="text-transparent bg-clip-text inline-block"
-                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
                       animate={{ backgroundPosition: ["0% center", "200% center"] }}
                       transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     >Always Accurate.</motion.span>
                   </h3>
-                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                  <p className="text-[#86868b] text-base md:text-lg font-medium leading-relaxed tracking-tight">
                     Projections are not estimations. They are calculated using your institution’s exact credit formulas, ensuring what you see here matches your official academic record.
                   </p>
                 </motion.div>
@@ -468,15 +457,15 @@ export default function CalculatorPage() {
                   transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
                   className="flex flex-col gap-5"
                 >
-                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
+                  <h3 className="text-2xl md:text-3xl font-semibold tracking-tight leading-snug">
                     <motion.span 
                       className="text-transparent bg-clip-text inline-block"
-                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
                       animate={{ backgroundPosition: ["0% center", "200% center"] }}
                       transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     >Instant Scenarios.</motion.span>
                   </h3>
-                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                  <p className="text-[#86868b] text-base md:text-lg font-medium leading-relaxed tracking-tight">
                     Every adjustment updates your projections immediately. The calculator runs directly on your device, allowing you to test complex "what-if" scenarios without waiting.
                   </p>
                 </motion.div>
@@ -490,14 +479,14 @@ export default function CalculatorPage() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                   >
-                    <div className="text-white font-semibold text-8xl md:text-[7rem] tracking-tighter leading-none mb-4">0<span className="text-5xl md:text-7xl text-white/40 tracking-tight">ms</span></div>
+                    <div className="text-white font-semibold text-6xl md:text-7xl tracking-tighter leading-none mb-4">0<span className="text-3xl md:text-5xl text-white/40 tracking-tight">ms</span></div>
                     <motion.div 
-                      className="text-transparent bg-clip-text font-semibold text-2xl tracking-tight mb-2" 
-                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      className="text-transparent bg-clip-text font-semibold text-xl tracking-tight mb-2" 
+                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
                       animate={{ backgroundPosition: ["0% center", "200% center"] }}
                       transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     >Real-time Updates.</motion.div>
-                    <div className="text-[#86868b] text-lg font-medium leading-snug max-w-sm">All calculations happen instantly on your device, giving you immediate feedback as you adjust your goals.</div>
+                    <div className="text-[#86868b] text-base font-medium leading-snug max-w-sm">All calculations happen instantly on your device, giving you immediate feedback as you adjust your goals.</div>
                   </motion.div>
 
                   <motion.div 
@@ -506,14 +495,14 @@ export default function CalculatorPage() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
                   >
-                    <div className="text-white font-semibold text-8xl md:text-[7rem] tracking-tighter leading-none mb-4">100<span className="text-5xl md:text-7xl text-white/40 tracking-tight">%</span></div>
+                    <div className="text-white font-semibold text-6xl md:text-7xl tracking-tighter leading-none mb-4">100<span className="text-3xl md:text-5xl text-white/40 tracking-tight">%</span></div>
                     <motion.div 
-                      className="text-transparent bg-clip-text font-semibold text-2xl tracking-tight mb-2" 
-                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      className="text-transparent bg-clip-text font-semibold text-xl tracking-tight mb-2" 
+                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
                       animate={{ backgroundPosition: ["0% center", "200% center"] }}
                       transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     >Predictive Accuracy.</motion.div>
-                    <div className="text-[#86868b] text-lg font-medium leading-snug max-w-sm">Mathematically tied to the latest institutional grading frameworks so you can trust every calculation.</div>
+                    <div className="text-[#86868b] text-base font-medium leading-snug max-w-sm">Mathematically tied to the latest institutional grading frameworks so you can trust every calculation.</div>
                   </motion.div>
                 </div>
 
@@ -535,18 +524,7 @@ export default function CalculatorPage() {
                   type="sgpa"
                 />
 
-                {/* Apple-style statutory footnotes */}
-                <div className="mt-10 pt-8 border-t border-white/20 flex flex-col gap-3">
-                  <p className="text-[11px] md:text-xs text-gray-500 leading-relaxed font-medium">
-                    <span className="text-gray-400">1. Projections vs Official Records:</span> These projections are highly accurate planning tools based on official formulas. However, they are for your personal guidance and do not serve as official or legally binding academic records.
-                  </p>
-                  <p className="text-[11px] md:text-xs text-gray-500 leading-relaxed font-medium">
-                    <span className="text-gray-400">2. Localized Calculations:</span> The instant (0ms) calculations happen directly on your device. Saving your sandbox scenario will briefly use your network to store the plan securely.
-                  </p>
-                  <p className="text-[11px] md:text-xs text-gray-500 leading-relaxed font-medium">
-                    <span className="text-gray-400">3. Curriculum Sync:</span> The accuracy of these calculations depends on ensuring your courses and credits match your institution's official syllabus for your academic year.
-                  </p>
-                </div>
+
               </motion.div>
             </div>
             </div>

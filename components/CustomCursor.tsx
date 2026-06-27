@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform, useVelocity, AnimatePr
 
 export default function CustomCursor() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
   const [clicks, setClicks] = useState<{ id: number; x: number; y: number }[]>([]);
 
   // Mouse Position & State (Renderless)
@@ -27,13 +28,14 @@ export default function CustomCursor() {
 
   // Dynamic Styles (Renderless)
   const ringScale = useTransform(hoverValue, [0, 1], [1, 1.625]); // 40px base -> 65px hover via scale
-  const ringBorderColor = useTransform(hoverValue, [0, 1], ["rgba(172, 199, 255, 0.4)", "rgba(214, 186, 255, 0.8)"]);
-  const ringBgColor = useTransform(hoverValue, [0, 1], ["rgba(172, 199, 255, 0.05)", "rgba(214, 186, 255, 0.15)"]);
+  const ringBorderColor = useTransform(hoverValue, [0, 1], ["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.25)"]);
+  const ringBgColor = useTransform(hoverValue, [0, 1], ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.05)"]);
   const dotScale = useTransform(hoverValue, [0, 1], [1, 1.5]);
 
-  // Spring smoothing for the ring (high stiffness for snappy, responsive feel)
-  const springX = useSpring(mouseX, { stiffness: 800, damping: 40 });
-  const springY = useSpring(mouseY, { stiffness: 800, damping: 40 });
+  // Ultra-fast, zero-inertia spring for buttery smooth, immediate tracking
+  const springConfig = { stiffness: 1500, damping: 50, mass: 0.1 };
+  const springX = useSpring(mouseX, springConfig);
+  const springY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
     const isMobile = window.matchMedia("(max-width: 768px)").matches || "ontouchstart" in window;
@@ -77,16 +79,28 @@ export default function CustomCursor() {
       setClicks(prev => [...prev.slice(-2), { id: Date.now(), x: e.clientX, y: e.clientY }]);
     };
 
+    let scrollTimeout: NodeJS.Timeout;
+    const handleScroll = () => {
+      setIsScrolling(true);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        setIsScrolling(false);
+      }, 150);
+    };
+
     window.addEventListener("mousemove", moveCursor, { passive: true });
     window.addEventListener("mouseover", handleMouseOver, { passive: true });
     window.addEventListener("mousedown", handleMouseDown, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       cancelAnimationFrame(moveRafId);
       cancelAnimationFrame(hoverRafId);
+      clearTimeout(scrollTimeout);
       window.removeEventListener("mousemove", moveCursor);
       window.removeEventListener("mouseover", handleMouseOver);
       window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [mouseX, mouseY, hoverValue]);
 
@@ -101,33 +115,58 @@ export default function CustomCursor() {
             initial={{ opacity: 0.5, scale: 0 }}
             animate={{ opacity: 0, scale: 3.5 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             className="absolute rounded-full border-2 border-primary/50"
             style={{ left: click.x - 10, top: click.y - 10, width: 20, height: 20, willChange: "transform, opacity" }}
           />
         ))}
       </AnimatePresence>
 
+      {/* 3-Layer iOS 27 Liquid Glass System */}
       <motion.div
-        className="absolute top-0 left-0 rounded-full border-[1.5px] border-solid pointer-events-none z-[9999] mix-blend-screen"
+        className="absolute top-0 left-0 rounded-full pointer-events-none z-[9999]"
+        animate={{ opacity: isScrolling ? 0 : 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
         style={{
           x: springX,
           y: springY,
           translateX: "-50%",
           translateY: "-50%",
           scale: ringScale,
-          scaleX: stretchScale,
-          rotate: angle,
-          width: 40,
-          height: 40,
-          borderColor: ringBorderColor,
-          backgroundColor: ringBgColor,
+          width: 48,
+          height: 48,
           willChange: "transform",
+          boxShadow: "0px 8px 12px rgba(0, 0, 0, 0.15)", // Using box-shadow instead of filter: drop-shadow stops the GPU flicker
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
         }}
-      />
+      >
+        {/* Layer 1: Lens (Refraction) */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{
+            backdropFilter: "blur(1.5px) saturate(150%) brightness(115%) contrast(110%)",
+            WebkitBackdropFilter: "blur(1.5px) saturate(150%) brightness(115%) contrast(110%)",
+            background: "radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.05) 100%)",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+          }}
+        />
+        
+        {/* Layer 2: Shine (Volume & Specular Highlights) */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{
+            boxShadow: "inset 0px 2px 4px 0px rgba(255, 255, 255, 0.9), inset 0px -2px 6px 0px rgba(0, 0, 0, 0.3), inset 4px 4px 10px 0px rgba(255, 255, 255, 0.4)",
+          }}
+        />
+      </motion.div>
 
+      {/* Layer 3: Legibility Dot */}
       <motion.div
-        className="absolute top-0 left-0 rounded-full bg-white pointer-events-none z-[10000]"
+        className="absolute top-0 left-0 rounded-full bg-white pointer-events-none z-[10000] mix-blend-exclusion"
+        animate={{ opacity: isScrolling ? 0 : 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
         style={{
           x: mouseX,
           y: mouseY,

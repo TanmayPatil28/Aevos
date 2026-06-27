@@ -48,7 +48,7 @@ export default function CompanyEligibilityList({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-foreground tracking-tight flex items-center gap-2">
             <Award className="w-5 h-5 text-indigo-400" />
             Recruiter Eligibility Matrix
           </h2>
@@ -103,7 +103,7 @@ export default function CompanyEligibilityList({
                   <div className="flex items-start justify-between mb-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-white tracking-wide text-base">
+                        <h3 className="font-bold text-foreground tracking-wide text-base">
                           {company.name}
                         </h3>
                         {isCustom && (
@@ -127,28 +127,28 @@ export default function CompanyEligibilityList({
 
                   <div className="space-y-3 flex-grow">
                     <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div className="bg-[#1D1D1F] p-2.5 rounded-lg border border-white/5">
+                      <div className="bg-[#1D1D1F] p-2.5 rounded-lg border border-border">
                         <span className="text-[10px] text-slate-400 block mb-0.5">Min CGPA</span>
-                        <span className="font-semibold text-white font-mono text-sm">
+                        <span className="font-semibold text-foreground font-mono text-sm">
                           {company.cgpaCutoff.toFixed(2)}
                         </span>
                       </div>
-                      <div className="bg-[#1D1D1F] p-2.5 rounded-lg border border-white/5">
+                      <div className="bg-[#1D1D1F] p-2.5 rounded-lg border border-border">
                         <span className="text-[10px] text-slate-400 block mb-0.5">Max Backlogs</span>
-                        <span className="font-semibold text-white font-mono text-sm">
+                        <span className="font-semibold text-foreground font-mono text-sm">
                           {company.maxBacklogs}
                         </span>
                       </div>
                     </div>
 
-                    <div className="text-xs text-slate-300 bg-[#1D1D1F] p-3 rounded-lg border border-white/5 flex items-start gap-2 leading-relaxed min-h-[56px]">
+                    <div className="text-xs text-slate-300 bg-[#1D1D1F] p-3 rounded-lg border border-border flex items-start gap-2 leading-relaxed min-h-[56px]">
                       <ShieldAlert className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                       <span>{company.explanation}</span>
                     </div>
                   </div>
 
                   {isCustom && (
-                    <div className="mt-4 pt-3 border-t border-white/20 flex justify-end">
+                    <div className="mt-4 pt-3 border-t border-border-strong flex justify-end">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FileText, Loader2, Download, Trash2, ShieldCheck, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { uploadToStorage } from "@/lib/supabase/storage";
 import DocumentReader from "./ui/DocumentReader";
 import InsightPreviewModal from "./ui/InsightPreviewModal";
 import { Sparkles, Maximize } from "lucide-react";
+import Card from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
 
 interface Document {
   id: string;
@@ -22,6 +24,7 @@ export default function DocumentVault() {
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [extractingId, setExtractingId] = useState<string | null>(null);
   const [insights, setInsights] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isInsightModalOpen, setIsInsightModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -126,26 +129,26 @@ export default function DocumentVault() {
     toast.success("Successfully synced to Timeline!");
   };
   return (
-    <div className="glass-card rounded-3xl p-6 border border-white/5 relative overflow-hidden group">
-      {/* Decorative gradient orb */}
-      <div className="absolute -right-20 -top-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-500"></div>
-
+    <Card variant="default" className="!p-6 border-white/5 relative overflow-hidden group">
       <div className="flex items-center justify-between mb-6 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-            <ShieldCheck size={20} className="text-primary" />
-          </div>
-          <div>
-            <h2 className="text-xl font-headline font-bold text-white">Document Vault</h2>
-            <p className="text-xs text-on-surface-variant">Securely stored & end-to-end encrypted</p>
+          <ShieldCheck size={16} className="text-primary" />
+          <div className="flex flex-col">
+            <h3 className="text-[14px] font-semibold text-foreground tracking-tight leading-tight">Academic Vault</h3>
+            <p className="text-[11px] text-foreground-muted uppercase tracking-wider font-semibold">Securely stored & end-to-end encrypted</p>
           </div>
         </div>
         <div>
-          <label className="bg-primary/20 hover:bg-primary/30 text-primary px-4 py-2 rounded-lg cursor-pointer text-sm font-medium transition-colors border border-primary/30 flex items-center gap-2">
-            {loading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            Upload Document
-            <input type="file" className="hidden" accept=".pdf,.txt,.docx,.doc" onChange={handleUpload} disabled={loading} />
-          </label>
+          <Button 
+            variant="primary" 
+            size="sm" 
+            onClick={() => fileInputRef.current?.click()} 
+            loading={loading}
+          >
+            <Upload size={14} />
+            <span>Upload Document</span>
+          </Button>
+          <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.txt,.docx,.doc" onChange={handleUpload} disabled={loading} />
         </div>
       </div>
 
@@ -166,38 +169,40 @@ export default function DocumentVault() {
               <div 
                 key={doc.id} 
                 onClick={() => setSelectedDoc(doc)}
-                className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-colors flex flex-col justify-between cursor-pointer group/card h-[120px]"
+                className="p-4 rounded-xl bg-surface border border-white/5 hover:border-white/10 transition-colors flex flex-col justify-between cursor-pointer group/card h-[110px]"
               >
                 <div className="flex items-start gap-3 overflow-hidden">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <FileText size={18} className="text-primary" />
+                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 border border-white/5">
+                    <FileText size={14} className="text-foreground-muted" />
                   </div>
                   <div className="truncate flex-1">
-                    <p className="text-sm font-medium text-white truncate pr-2">{doc.fileName}</p>
-                    <p className="text-xs text-white/50">{new Date(doc.createdAt).toLocaleDateString()}</p>
+                    <p className="text-[13px] font-bold text-foreground truncate">{doc.fileName}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted mt-0.5">{new Date(doc.createdAt).toLocaleDateString()}</p>
                   </div>
                   <a 
                     href={doc.fileUrl} 
                     target="_blank" 
                     rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white shrink-0"
+                    className="p-1.5 -mr-1.5 hover:bg-white/10 rounded-full transition-colors text-foreground-muted hover:text-foreground shrink-0"
                   >
-                    <Download size={16} />
+                    <Download size={14} />
                   </a>
                 </div>
 
-                <div className="flex items-center justify-between mt-auto">
-                  <button 
-                    onClick={(e) => handleExtractInsights(e, doc.id)}
-                    disabled={extractingId === doc.id}
-                    className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
+                  <Button 
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:text-primary/80 uppercase tracking-wider text-[11px]"
+                    onClick={(e) => handleExtractInsights(e as any, doc.id)}
+                    loading={extractingId === doc.id}
                   >
-                    {extractingId === doc.id ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    <Sparkles size={12} />
                     Extract Insights
-                  </button>
+                  </Button>
                   <div className="opacity-0 group-hover/card:opacity-100 transition-opacity">
-                    <Maximize size={14} className="text-white/40" />
+                    <Maximize size={12} className="text-foreground-muted" />
                   </div>
                 </div>
               </div>
@@ -207,12 +212,12 @@ export default function DocumentVault() {
       </div>
       
       {/* Interactive Reader Modal */}
+
       <DocumentReader 
         document={selectedDoc} 
         onClose={() => setSelectedDoc(null)} 
       />
 
-      {/* Extract Insights Preview Modal */}
       <InsightPreviewModal
         insights={insights}
         isOpen={isInsightModalOpen}
@@ -220,6 +225,6 @@ export default function DocumentVault() {
         onSync={handleSyncInsights}
         isSyncing={isSyncing}
       />
-    </div>
+    </Card>
   );
 }

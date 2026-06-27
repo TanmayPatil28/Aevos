@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     }
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized. Please log in to GradeFlow." }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized. Please log in to Aevos." }, { status: 401 });
     }
 
     // Fetch the user's latest Career Profile

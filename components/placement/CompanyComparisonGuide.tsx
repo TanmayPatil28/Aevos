@@ -9,6 +9,7 @@ import PlacementHealthMeter from "./PlacementHealthMeter";
 import TopperBenchmark from "./TopperBenchmark";
 import ExportPlanModal from "./ExportPlanModal";
 import { cn } from "@/lib/cn";
+import Card from "@/components/ui/Card";
 
 interface GuideProps {
   pinnedCompanies: string[];
@@ -44,13 +45,13 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
   const needsGlobalOptimization = userCgpa < maxCgpaNeeded || userBacklogs > minBacklogsAllowed;
 
   return (
-    <div className="w-full mt-8 rounded-[24px] overflow-hidden relative z-10 flex flex-col border border-white/[0.04] bg-[#1c1c1e] pb-6">
+    <div className="w-full mt-8 rounded-[24px] overflow-hidden relative z-10 flex flex-col bg-transparent pb-6">
       
       {/* Header */}
-      <div className="p-6 md:p-8 border-b border-white/[0.04] flex flex-col 2xl:flex-row gap-5 items-start 2xl:items-center justify-between">
+      <div className="p-6 md:p-8 flex flex-col 2xl:flex-row gap-5 items-start 2xl:items-center justify-between">
         <div>
-          <h3 className="text-[20px] font-bold text-white tracking-tight mb-1">Side-by-Side Matrix</h3>
-          <p className="text-[#86868b] text-[14px]">Comparing {companies.length} target companies simultaneously.</p>
+          <h3 className="text-[20px] font-bold text-foreground tracking-tight mb-1">Side-by-Side Matrix</h3>
+          <p className="text-foreground-muted text-[14px]">Comparing {companies.length} target companies simultaneously.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -68,7 +69,7 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
           {isSandboxActive && onResetSandbox && (
             <button 
               onClick={onResetSandbox}
-              className="flex items-center gap-2 bg-[#ff3b30]/10 hover:bg-[#ff3b30]/20 text-[#ff3b30] px-5 py-2.5 rounded-full transition-colors text-[13px]"
+              className="flex items-center gap-2 bg-status-critical hover:bg-status-critical text-[#ff3b30] px-5 py-2.5 rounded-full transition-colors text-[13px]"
             >
               <RefreshCcw size={16} />
               <span className="font-bold tracking-tight">Reset to Reality</span>
@@ -78,26 +79,29 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
           {/* Export Plan Button */}
           <button 
             onClick={() => setExportModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 text-[13px] font-bold text-white transition-colors bg-white/10 rounded-full hover:bg-white/20"
+            className="flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-brand transition-colors hover:text-brand/80 rounded-lg hover:bg-white/[0.05]"
           >
-            <Download size={16} /> Export Plan
+            <Download size={14} /> Export Plan
           </button>
         </div>
       </div>
 
-      <div className="p-4 md:p-6 flex flex-col gap-6">
+      <div className="flex flex-col">
+        <Card variant="default" className="flex flex-col !p-0">
         
         {/* Profile Stats & Metrics Accordion */}
-        <div className="flex flex-col border border-white/[0.04] rounded-[16px] bg-white/[0.02] overflow-hidden">
+        <div className="flex flex-col border-b border-white/[0.05] overflow-hidden transition-colors hover:bg-white/[0.02]">
           <button 
             onClick={() => setStatsExpanded(!statsExpanded)}
             className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors"
           >
-            <div className="flex items-center gap-3 text-white">
-              <BarChart3 size={18} className="text-white" />
+            <div className="flex items-center gap-3 text-foreground">
+              <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center shadow-sm shadow-brand/20">
+                <BarChart3 size={16} className="text-black" />
+              </div>
               <span className="font-bold text-[14px]">Profile Stats & Health Metrics</span>
             </div>
-            <ChevronDown size={18} className={cn("text-[#86868b] transition-transform duration-300", statsExpanded && "rotate-180")} />
+            <ChevronDown size={18} className={cn("text-foreground-muted transition-transform duration-300", statsExpanded && "rotate-180")} />
           </button>
           
           <AnimatePresence>
@@ -108,7 +112,7 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="p-4 border-t border-white/10 flex flex-col gap-6">
+                <div className="border-t border-white/[0.05] grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-white/[0.05]">
                   <PlacementHealthMeter readinessScore={readinessScore} averageEligibility={averageEligibility} />
                   <TopperBenchmark userCgpa={userCgpa} userCredits={userCredits} userSkillsCount={userSkills.length} branch={branch} />
                 </div>
@@ -118,7 +122,7 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
         </div>
 
         {/* Stacked Accordions */}
-        <div className="flex flex-col gap-4 mt-2">
+        <div className="flex flex-col">
           {companies.map((company, index) => {
             const isOpen = openCompany === company.name;
             const passesCgpa = userCgpa >= company.cgpaCutoff;
@@ -243,7 +247,7 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + index * 0.1 }}
-                className="flex flex-col border border-white/[0.04] rounded-[16px] bg-[#1c1c1e] overflow-hidden"
+                className={cn("flex flex-col overflow-hidden transition-colors hover:bg-white/[0.02]", index !== companies.length - 1 && "border-b border-white/[0.05]")}
               >
                 {/* Accordion Header */}
                 <button 
@@ -252,19 +256,19 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
                 >
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center gap-3">
-                      <h4 className="text-[16px] font-bold text-white tracking-tight">{company.name}</h4>
-                      <span className="bg-white/10 text-white text-[10px] uppercase tracking-widest font-bold px-2.5 py-0.5 rounded-full">
+                      <h4 className="text-[16px] font-bold text-foreground tracking-tight">{company.name}</h4>
+                      <span className="text-foreground-muted text-[10px] uppercase tracking-widest font-bold">
                         {company.tier} Tier
                       </span>
                     </div>
                     {passesCgpa && passesBacklogs ? (
-                      <span className="text-[12px] font-bold text-[#34c759] flex items-center gap-1.5"><CheckCircle2 size={12} /> Profile Aligned</span>
+                      <span className="text-[12px] font-bold text-brand flex items-center gap-2"><CheckCircle2 size={14} className="mr-0.5" /> Profile Aligned</span>
                     ) : (
-                      <span className="text-[12px] font-bold text-[#ff3b30] flex items-center gap-1.5"><AlertCircle size={12} /> Gap Detected</span>
+                      <span className="text-[12px] font-bold text-[#ff3b30] flex items-center gap-2"><AlertCircle size={14} className="mr-0.5" /> Gap Detected</span>
                     )}
                   </div>
                   
-                  <ChevronDown size={20} className={cn("text-[#86868b] transition-transform duration-300", isOpen && "rotate-180")} />
+                  <ChevronDown size={20} className={cn("text-foreground-muted transition-transform duration-300", isOpen && "rotate-180")} />
                 </button>
 
                 {/* Accordion Body (Expanded View) */}
@@ -278,206 +282,148 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
                     >
                       <div className="p-6 flex flex-col gap-8">
                         
-                        {/* 1. Academic Strictness (Vertical) */}
+                        {/* 1. Academic Eligibility & Skills (Grouped List) */}
                         <div className="flex flex-col gap-3">
-                          <h5 className="text-[11px] font-bold text-[#86868b] tracking-widest uppercase mb-1">Academic Eligibility</h5>
-                          
-                          {/* CGPA */}
-                          <div className="flex flex-col gap-2 p-4 rounded-[16px] bg-white/[0.02] border border-white/[0.04]">
-                            <div className="flex justify-between text-[13px]">
-                              <span className="text-[#86868b] font-medium">CGPA Required: <span className="text-white font-bold">{company.cgpaCutoff}</span></span>
-                              <span className={passesCgpa ? "text-[#34c759] font-bold" : "text-[#ff3b30] font-bold"}>{userCgpa.toFixed(2)} Current</span>
+                          <h5 className="text-[11px] font-bold text-foreground-muted tracking-widest uppercase mb-1 px-2">Academic Eligibility</h5>
+                          <Card variant="default" className="flex flex-col !p-0">
+                            
+                            {/* CGPA Row */}
+                            <div className="flex items-center justify-between p-4 border-b border-white/[0.05]">
+                              <div className="flex items-center gap-4">
+                                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shadow-sm shrink-0", passesCgpa ? "bg-brand shadow-brand/20" : "bg-[#ff3b30] shadow-[#ff3b30]/20")}>
+                                  {passesCgpa ? <CheckCircle2 size={16} className="text-black" /> : <XCircle size={16} className="text-black" />}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-[15px] font-medium text-foreground">CGPA Requirement</span>
+                                  <span className="text-[13px] text-foreground-muted">Min cutoff: {company.cgpaCutoff.toFixed(1)}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className={cn("text-[17px] font-bold", passesCgpa ? "text-brand" : "text-[#ff3b30]")}>{userCgpa.toFixed(2)}</span>
+                              </div>
                             </div>
-                            <div className="w-full h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                              <div 
-                                className={cn("h-full rounded-full transition-all duration-1000", passesCgpa ? "bg-[#34c759]" : "bg-[#ff3b30]")}
-                                style={{ width: `${cgpaPercent}%` }}
-                              />
+
+                            {/* Backlogs Row */}
+                            <div className="flex items-center justify-between p-4 border-b border-white/[0.05]">
+                              <div className="flex items-center gap-4">
+                                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shadow-sm shrink-0", passesBacklogs ? "bg-brand shadow-brand/20" : "bg-[#ff3b30] shadow-[#ff3b30]/20")}>
+                                  {passesBacklogs ? <CheckCircle2 size={16} className="text-black" /> : <XCircle size={16} className="text-black" />}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-[15px] font-medium text-foreground">Active Backlogs</span>
+                                  <span className="text-[13px] text-foreground-muted">Max allowed: {company.maxBacklogs}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className={cn("text-[17px] font-bold", passesBacklogs ? "text-brand" : "text-[#ff3b30]")}>{userBacklogs}</span>
+                              </div>
                             </div>
-                          </div>
-                          
-                          {/* Backlogs */}
-                          <div className="flex items-center justify-between text-[13px] p-4 rounded-[16px] bg-white/[0.02] border border-white/[0.04]">
-                            <span className="text-[#86868b] font-medium">Active Backlogs (≤{company.maxBacklogs})</span>
-                            {passesBacklogs ? (
-                              <span className="text-[#34c759] font-bold flex items-center gap-1.5"><CheckCircle2 size={14} /> Passing ({userBacklogs})</span>
-                            ) : (
-                              <span className="text-[#ff3b30] font-bold flex items-center gap-1.5"><XCircle size={14} /> Failing ({userBacklogs})</span>
+
+                            {/* Skills Match Row */}
+                            {reqSkills.length > 0 && (
+                              <div className="flex flex-col p-4 pt-5">
+                                <div className="text-[14px] font-bold text-foreground mb-3">Required Technical Stack</div>
+                                <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                                  {reqSkills.map(skill => {
+                                    const hasSkill = normalizedUserSkills.some(s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s));
+                                    
+                                    if (hasSkill) {
+                                      return (
+                                        <span key={skill} className="text-[13px] text-foreground-muted font-medium">
+                                          {skill}
+                                        </span>
+                                      );
+                                    }
+                                    
+                                    return (
+                                      <button 
+                                        key={skill}
+                                        onClick={onNavigateToSkills}
+                                        className="text-[13px] text-[#ff3b30] font-medium hover:text-[#ff3b30]/80 transition-all cursor-pointer text-left outline-none"
+                                      >
+                                        {skill}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
                             )}
-                          </div>
+                          </Card>
                         </div>
 
-                        {/* 2. Skills Checklist (Vertical) */}
-                        {reqSkills.length > 0 && (
-                          <div className="flex flex-col gap-3">
-                            <h5 className="text-[11px] font-bold text-[#86868b] tracking-widest uppercase mb-1">Technical Skills Required</h5>
-                            <div className="flex flex-col gap-2">
-                              {reqSkills.map(skill => {
-                                const hasSkill = normalizedUserSkills.some(s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s));
-                                
-                                if (hasSkill) {
-                                  return (
-                                    <div key={skill} className="flex items-center gap-3 p-3.5 rounded-[16px] bg-white/[0.02] border border-white/[0.04]">
-                                      <CheckCircle2 size={18} className="text-[#34c759]" />
-                                      <span className="text-[14px] font-medium tracking-tight text-white">{skill}</span>
-                                    </div>
-                                  );
-                                }
-                                
-                                return (
-                                  <button 
-                                    key={skill} 
-                                    onClick={onNavigateToSkills}
-                                    className="group flex items-center gap-3 p-3.5 rounded-[16px] bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left outline-none"
-                                  >
-                                    <XCircle size={18} className="text-[#ff3b30] shrink-0" />
-                                    <span className="text-[14px] font-medium tracking-tight text-[#86868b] group-hover:text-white transition-colors">{skill}</span>
-                                    <div className="ml-auto flex items-center gap-2">
-                                      <span className="text-[10px] font-bold px-2.5 py-0.5 bg-[#ff3b30]/10 text-[#ff3b30] rounded-full uppercase tracking-wider">Missing</span>
-                                      <ArrowRight size={14} className="text-[#86868b] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                                    </div>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* 3. Interactive Prep Journey */}
+                        {/* 2. Interactive Prep Journey */}
                         <div className="flex flex-col gap-3">
-                          <h5 className="text-[11px] font-bold text-[#86868b] tracking-widest uppercase mb-2">Interactive Prep Journey</h5>
-                          <div className="flex flex-col relative">
-                            {/* Connecting line */}
-                            <div className="absolute left-[19px] top-6 bottom-6 w-px bg-white/[0.04]" />
-                            
+                          <div className="flex items-center gap-2 px-2">
+                            <h4 className="text-[11px] font-bold text-foreground-muted uppercase tracking-widest">Interview Process</h4>
+                          </div>
+                          
+                          <Card variant="default" className="flex flex-col !p-0">
                             {rounds.map((round, i) => {
                               const roundId = `${company.name}-round-${i}`;
                               const isExpanded = expandedRoundId === roundId;
                               
                               return (
-                                <div key={i} className="flex gap-4 relative mb-3">
-                                  <div className="w-10 h-10 rounded-full bg-[#1c1c1e] border-[3px] border-[#1c1c1e] z-10 flex items-center justify-center shrink-0 mt-2">
-                                    <div className={cn(
-                                      "w-full h-full rounded-full flex items-center justify-center transition-all duration-300",
-                                      isExpanded 
-                                        ? "bg-white text-black"
-                                        : "bg-white/5 text-[#86868b]"
-                                    )}>
-                                      <round.icon size={14} />
-                                    </div>
-                                  </div>
-                                  
-                                  <div 
-                                    className={cn(
-                                      "flex-1 bg-white/[0.02] rounded-[16px] border overflow-hidden cursor-pointer transition-all duration-300",
-                                      isExpanded 
-                                        ? "border-white/20"
-                                        : "border-white/[0.04] hover:bg-white/[0.04]"
-                                    )}
+                                <div key={i} className={cn(
+                                  "flex flex-col transition-all",
+                                  i !== rounds.length - 1 && "border-b border-white/[0.05]"
+                                )}>
+                                  <button 
+                                    className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors outline-none"
                                     onClick={() => setExpandedRoundId(isExpanded ? null : roundId)}
                                   >
-                                    <div className="p-4 flex items-center justify-between">
-                                      <div className="flex flex-col">
-                                        <div className="text-[10px] font-black tracking-widest uppercase mb-1 text-[#86868b]">Round {i + 1}</div>
-                                        <div className="text-[14px] font-bold text-white tracking-tight">{round.name}</div>
+                                    <div className="flex items-center gap-4 text-foreground">
+                                      <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center shrink-0 shadow-sm shadow-brand/20">
+                                        <round.icon size={16} className="text-black" />
                                       </div>
-                                      <ChevronDown size={16} className={cn("text-[#86868b] transition-transform duration-300", isExpanded && "rotate-180")} />
+                                      <div className="flex flex-col items-start">
+                                        <span className="text-[15px] font-medium">{round.name}</span>
+                                        <span className="text-[13px] text-foreground-muted">{round.duration}</span>
+                                      </div>
                                     </div>
-                                    
-                                    <AnimatePresence>
-                                      {isExpanded && (
-                                        <motion.div
-                                          initial={{ height: 0, opacity: 0 }}
-                                          animate={{ height: "auto", opacity: 1 }}
-                                          exit={{ height: 0, opacity: 0 }}
-                                          transition={{ duration: 0.3, ease: "easeInOut" }}
-                                        >
-                                          <div className="px-4 pb-4 pt-1 flex flex-col gap-4">
-                                            <div className="h-px w-full bg-white/[0.04]" />
-                                            
-                                            <div className="flex gap-4 items-start">
-                                              <Clock size={14} className="text-[#86868b] mt-0.5 shrink-0" />
-                                              <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase tracking-wider text-[#86868b] font-bold mb-0.5">Duration</span>
-                                                <span className="text-[13px] text-white/90 font-medium">{round.duration}</span>
-                                              </div>
-                                            </div>
-                                            
-                                            <div className="flex gap-4 items-start">
-                                              <Target size={14} className="text-[#86868b] mt-0.5 shrink-0" />
-                                              <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase tracking-wider text-[#86868b] font-bold mb-0.5">Focus Area</span>
-                                                <span className="text-[13px] text-white/90 font-medium leading-relaxed">{round.focus}</span>
-                                              </div>
-                                            </div>
-                                            
-                                            <div className="flex gap-4 items-start">
-                                              <BookOpen size={14} className="text-white mt-0.5 shrink-0" />
-                                              <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase tracking-wider font-bold mb-0.5 text-white">Prep Strategy</span>
-                                                <span className="text-[13px] font-medium leading-relaxed text-white/90">{round.prep}</span>
-                                              </div>
-                                            </div>
+                                    <ChevronDown size={16} className={cn("text-foreground-muted transition-transform duration-300", isExpanded && "rotate-180")} />
+                                  </button>
+                                  
+                                  <AnimatePresence>
+                                    {isExpanded && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                                      >
+                                        <div className="px-4 pb-4 pt-0 flex flex-col gap-3 ml-[48px]">
+                                          <div className="flex flex-col">
+                                            <span className="text-[13px] font-medium text-foreground mb-1">Focus Area</span>
+                                            <span className="text-[14px] text-foreground-muted leading-relaxed">{round.focus}</span>
                                           </div>
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
+                                          
+                                          <div className="flex flex-col bg-surface-raised border-l-2 border-brand/50 rounded-r-xl p-4 mt-2">
+                                            <div className="flex items-center gap-2 mb-3">
+                                               <Lightbulb size={14} className="text-brand" />
+                                               <span className="text-[13px] font-bold text-foreground uppercase tracking-wider">AI Prep Strategy</span>
+                                            </div>
+                                            <ul className="flex flex-col gap-2.5">
+                                              {round.prep.split('. ').filter(Boolean).map((sentence: string, idx: number) => {
+                                                const cleanSentence = sentence.trim() + (sentence.trim().endsWith('.') ? '' : '.');
+                                                return (
+                                                  <li key={idx} className="flex items-start gap-2.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-brand/60 mt-2 shrink-0" />
+                                                    <span className="text-[14px] text-foreground-muted leading-relaxed">{cleanSentence}</span>
+                                                  </li>
+                                                );
+                                              })}
+                                            </ul>
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
                                 </div>
                               )
                             })}
-                          </div>
+                          </Card>
                         </div>
 
-                        {/* 4. Strategic Action Plan (To-Do List) */}
-                        <div className="flex flex-col gap-3 mt-2">
-                          <h5 className="text-[11px] font-bold text-[#86868b] tracking-widest uppercase mb-1">Strategic Action Plan</h5>
-                          
-                          {actionItems.length > 0 ? (
-                            <div className="flex flex-col gap-3">
-                              {actionItems.map((item, i) => (
-                                <Link key={i} href={item.actionLink} className="p-4 rounded-[16px] border border-white/[0.04] bg-white/[0.02] flex items-center gap-4 group hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300">
-                                   <div className={cn(
-                                     "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                                     item.priority === "CRITICAL" ? "bg-[#ff3b30]/10 text-[#ff3b30]" : 
-                                     item.priority === "HIGH" ? "bg-[#ff9f0a]/10 text-[#ff9f0a]" : 
-                                     "bg-[#0a84ff]/10 text-[#0a84ff]"
-                                   )}>
-                                     {item.priority === "CRITICAL" ? <AlertCircle size={18} /> : 
-                                      item.priority === "HIGH" ? <Target size={18} /> : 
-                                      <CheckCircle2 size={18} />}
-                                   </div>
-                                   <div className="flex flex-col flex-1">
-                                     <div className="flex items-center mb-0.5">
-                                       <span className={cn(
-                                         "text-[10px] font-bold uppercase tracking-wider",
-                                         item.priority === "CRITICAL" ? "text-[#ff3b30]" :
-                                         item.priority === "HIGH" ? "text-[#ff9f0a]" :
-                                         "text-[#0a84ff]"
-                                       )}>
-                                         {item.priority} Priority
-                                       </span>
-                                     </div>
-                                     <h6 className="text-[14px] font-bold text-white tracking-tight mb-1">{item.title}</h6>
-                                     <p className="text-[13px] text-[#86868b] font-medium leading-relaxed">{item.desc}</p>
-                                   </div>
-                                   <ArrowRight size={16} className={cn(
-                                     "opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 shrink-0",
-                                     item.priority === "CRITICAL" ? "text-[#ff3b30]" : item.priority === "HIGH" ? "text-[#ff9f0a]" : "text-[#0a84ff]"
-                                   )} />
-                                </Link>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="p-6 rounded-[16px] border border-[#34c759]/20 bg-[#34c759]/5 flex flex-col gap-3 items-center justify-center text-center">
-                               <div className="w-12 h-12 rounded-full bg-[#34c759]/10 flex items-center justify-center mb-1">
-                                 <CheckCircle2 size={24} className="text-[#34c759]" />
-                               </div>
-                               <h6 className="text-[15px] font-bold text-white tracking-tight">Target Achieved</h6>
-                               <p className="text-[13px] text-[#86868b]">You meet all eligibility and skill requirements! Focus 100% on Interview prep.</p>
-                            </div>
-                          )}
-                        </div>
 
                       </div>
                     </motion.div>
@@ -487,6 +433,7 @@ export default function CompanyComparisonGuide({ pinnedCompanies, userCgpa, user
             )
           })}
         </div>
+        </Card>
       </div>
 
       <ExportPlanModal 

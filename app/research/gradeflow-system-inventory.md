@@ -1,4 +1,4 @@
-# GradeFlow — System Capability & Feature Inventory
+# Aevos — System Capability & Feature Inventory
 
 > **Single Source of Truth — Current Codebase Snapshot**
 > Generated: 2026-05-20
@@ -9,7 +9,7 @@
 
 ## 1. System Overview
 
-GradeFlow is a premium academic CGPA calculator and semester planning web application targeted at B.Tech engineering students in India. It provides:
+Aevos is a premium academic CGPA calculator and semester planning web application targeted at B.Tech engineering students in India. It provides:
 
 - SGPA/CGPA calculation from subject-level inputs
 - Multi-semester CGPA aggregation with what-if scenario analysis

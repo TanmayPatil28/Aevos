@@ -61,7 +61,8 @@ export class AttendanceForecastingEngine {
     holidays: string[],
     startDate: Date,
     endDate: Date,
-    minAttendance: number
+    minAttendance: number,
+    strategy: "SAFE" | "BALANCED" | "SURVIVAL" | "PLACEMENT_PREP" = "BALANCED"
   ): AttendanceProjection {
     
     let currentTotal = course.attendanceTotal || 0;
@@ -100,7 +101,7 @@ export class AttendanceForecastingEngine {
     if (safeBunksRemaining > 0) {
       // Find all future occurrences of this class
       const occurrences: { date: Date; dateStr: string; totalClassesThatDay: number }[] = [];
-      const current = new Date(startDate);
+      const current = new Date();
       current.setHours(0, 0, 0, 0);
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
@@ -123,21 +124,41 @@ export class AttendanceForecastingEngine {
         current.setDate(current.getDate() + 1);
       }
 
-      // Sort occurrences by heuristic: prefer days with fewer classes (easiest to skip the whole day)
-      // and prefer Fridays/Mondays (index 5 or 1)
+      // Sort occurrences based on Strategy Mode Heuristics
       occurrences.sort((a, b) => {
-        // Primary: fewer total classes on that day is better to bunk
-        if (a.totalClassesThatDay !== b.totalClassesThatDay) {
+        if (strategy === "SURVIVAL") {
+          // SURVIVAL: Instant rest. Prioritize dates that are closest to today.
+          return a.date.getTime() - b.date.getTime();
+        } 
+        else if (strategy === "PLACEMENT_PREP") {
+          // PLACEMENT_PREP: Maximize consecutive free time. Prioritize days with fewest classes.
+          // If a day only has 1 class, bunking it clears the entire day for coding/prep.
+          if (a.totalClassesThatDay !== b.totalClassesThatDay) {
+            return a.totalClassesThatDay - b.totalClassesThatDay;
+          }
+          // Secondary: group them towards the end of the week
+          return b.date.getDay() - a.date.getDay();
+        }
+        else if (strategy === "SAFE") {
+          // SAFE: Highly conservative. Spread bunks out far into the future, and only on busy days
+          // so you don't form bad habits of taking whole days off.
+          if (a.totalClassesThatDay !== b.totalClassesThatDay) {
+            return b.totalClassesThatDay - a.totalClassesThatDay; // Prefer busy days
+          }
+          return b.date.getTime() - a.date.getTime(); // Prefer later dates
+        }
+        else {
+          // BALANCED (Default): Prefer Fridays (5) and Mondays (1) for long weekends
+          const dayA = a.date.getDay();
+          const dayB = b.date.getDay();
+          const scoreA = (dayA === 1 || dayA === 5) ? 1 : 0;
+          const scoreB = (dayB === 1 || dayB === 5) ? 1 : 0;
+          
+          if (scoreA !== scoreB) {
+            return scoreB - scoreA;
+          }
           return a.totalClassesThatDay - b.totalClassesThatDay;
         }
-        
-        // Secondary: prefer Mondays (1) and Fridays (5) for long weekends
-        const dayA = a.date.getDay();
-        const dayB = b.date.getDay();
-        const scoreA = (dayA === 1 || dayA === 5) ? 1 : 0;
-        const scoreB = (dayB === 1 || dayB === 5) ? 1 : 0;
-        
-        return scoreB - scoreA;
       });
 
       // Take the top N safe bunks

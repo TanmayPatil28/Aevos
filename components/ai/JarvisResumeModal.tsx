@@ -340,10 +340,10 @@ export default function JarvisResumeModal() {
             <div>
               <h4 className="text-[13px] font-bold text-indigo-900 mb-1 flex items-center gap-2">
                 <Sparkles size={16} className="text-indigo-600"/> 
-                Stop Copy-Pasting. Let GradeFlow Auto-Apply.
+                Stop Copy-Pasting. Let Aevos Auto-Apply.
               </h4>
               <p className="text-[12px] text-indigo-800 m-0 leading-tight">
-                Install the GradeFlow Chrome Extension to magically inject this optimized Phase 7 Resume directly into Workday, Lever, and Greenhouse forms in one click.
+                Install the Aevos Chrome Extension to magically inject this optimized Phase 7 Resume directly into Workday, Lever, and Greenhouse forms in one click.
               </p>
             </div>
             <a 

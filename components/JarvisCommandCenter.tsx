@@ -337,7 +337,7 @@ export default function JarvisCommandCenter({ isOpen, onClose }: JarvisCommandCe
             autoFocus
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Search GradeFlow or Ask Jarvis"
+            placeholder="Search Aevos or Ask Jarvis"
             className="w-full bg-transparent text-white pl-16 pr-16 py-4 md:py-5 outline-none text-[19px] font-medium placeholder-white/30 transition-all font-body tracking-tight text-left"
           />
           <div className="absolute right-4 flex items-center h-full justify-center">

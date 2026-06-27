@@ -54,9 +54,9 @@ export default function AIStudyTimelineWidget({ course }: AIStudyTimelineWidgetP
   };
 
   return (
-    <div className="w-full h-full bg-[#1c1c1e] rounded-[32px] p-6 border border-white/5 relative overflow-hidden flex flex-col group hover:border-indigo-500/30 transition-colors">
+    <div className="w-full h-full bg-surface-raised rounded-[24px] p-6 border border-white/[0.04] relative overflow-hidden flex flex-col group hover:border-white/[0.08] transition-colors shadow-none">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400">
+        <div className="p-3 bg-surface border border-white/[0.04] rounded-2xl text-white">
           <Calendar size={24} />
         </div>
         <div>
@@ -75,11 +75,11 @@ export default function AIStudyTimelineWidget({ course }: AIStudyTimelineWidgetP
               exit={{ opacity: 0 }}
               className="flex-1 flex flex-col items-center justify-center text-center px-4"
             >
-              <Sparkles size={40} className="text-indigo-400/50 mb-4" />
+              <Sparkles size={40} className="text-white/50 mb-4" />
               <p className="text-white/60 text-sm mb-6">Ask Jarvis to generate a personalized 4-week recovery timeline for {course.name}.</p>
               <button 
                 onClick={generatePlan}
-                className="px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+                className="px-6 py-3 bg-white text-black font-bold rounded-full hover:brightness-110 transition-all flex items-center gap-2 shadow-none border-none"
               >
                 <Sparkles size={18} />
                 Generate Timeline
@@ -96,7 +96,7 @@ export default function AIStudyTimelineWidget({ course }: AIStudyTimelineWidgetP
               exit={{ opacity: 0 }}
               className="flex-1 flex flex-col items-center justify-center text-center px-4"
             >
-              <Loader2 size={40} className="text-indigo-400 animate-spin mb-4" />
+              <Loader2 size={40} className="text-white animate-spin mb-4" />
               <p className="text-white font-bold">Jarvis is formulating...</p>
               <p className="text-white/40 text-sm mt-1">Analyzing difficulty and credit load</p>
             </motion.div>
@@ -111,7 +111,7 @@ export default function AIStudyTimelineWidget({ course }: AIStudyTimelineWidgetP
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Difficulty: <span className={plan.difficulty === 'HARD' ? 'text-red-400' : plan.difficulty === 'MEDIUM' ? 'text-amber-400' : 'text-emerald-400'}>{plan.difficulty}</span></span>
-                <button onClick={() => setPlan(null)} className="text-xs text-indigo-400 hover:text-indigo-300">Reset</button>
+                <button onClick={() => setPlan(null)} className="text-xs text-white/50 hover:text-white">Reset</button>
               </div>
 
               {plan.weeks.map((week, idx) => (
@@ -120,18 +120,18 @@ export default function AIStudyTimelineWidget({ course }: AIStudyTimelineWidgetP
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.1 }}
                   key={week.weekNumber} 
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 flex gap-4"
+                  className="bg-surface border border-white/[0.04] rounded-xl p-4 flex gap-4"
                 >
                   <div className="flex flex-col items-center gap-1 min-w-[50px]">
                     <span className="text-xs text-white/40 font-bold uppercase">Week</span>
-                    <span className="text-2xl font-black text-indigo-400">{week.weekNumber}</span>
+                    <span className="text-2xl font-black text-white">{week.weekNumber}</span>
                   </div>
                   <div className="flex-1">
                     <h4 className="text-white font-bold mb-2">{week.focus}</h4>
                     <ul className="flex flex-col gap-2">
                       {week.tasks.map((task, i) => (
                         <li key={i} className="text-sm text-white/70 flex items-start gap-2">
-                          <CheckCircle size={14} className="text-indigo-400/50 mt-0.5 shrink-0" />
+                          <CheckCircle size={14} className="text-white/30 mt-0.5 shrink-0" />
                           <span>{task}</span>
                         </li>
                       ))}

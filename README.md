@@ -1,17 +1,17 @@
 <div align="center">
-  <h1>🌟 GradeFlow</h1>
+  <h1>🌟 Aevos</h1>
   <p>The Ultimate Academic Companion</p>
 
   <p>
-    <a href="https://github.com/TanmayPatil28/GradeFlow/issues"><img alt="Issues" src="https://img.shields.io/github/issues/TanmayPatil28/GradeFlow?color=0088ff&style=for-the-badge&logo=github"/></a>
-    <a href="https://github.com/TanmayPatil28/GradeFlow/pulls"><img alt="Pull Requests" src="https://img.shields.io/github/issues-pr/TanmayPatil28/GradeFlow?color=0088ff&style=for-the-badge&logo=github"/></a>
-    <a href="https://github.com/TanmayPatil28/GradeFlow/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/TanmayPatil28/GradeFlow?color=0088ff&style=for-the-badge&logo=github"/></a>
+    <a href="https://github.com/TanmayPatil28/Aevos/issues"><img alt="Issues" src="https://img.shields.io/github/issues/TanmayPatil28/Aevos?color=0088ff&style=for-the-badge&logo=github"/></a>
+    <a href="https://github.com/TanmayPatil28/Aevos/pulls"><img alt="Pull Requests" src="https://img.shields.io/github/issues-pr/TanmayPatil28/Aevos?color=0088ff&style=for-the-badge&logo=github"/></a>
+    <a href="https://github.com/TanmayPatil28/Aevos/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/TanmayPatil28/Aevos?color=0088ff&style=for-the-badge&logo=github"/></a>
   </p>
 </div>
 
 <br />
 
-GradeFlow is a powerful, beautifully designed SaaS application built to help university students take control of their academics. Featuring a premium **"Levitating Liquid Glass"** UI, it allows you to calculate current SGPA/CGPA, forecast future semesters to achieve a target CGPA, and track your historical academic progression.
+Aevos is a powerful, beautifully designed SaaS application built to help university students take control of their academics. Featuring a premium **"Levitating Liquid Glass"** UI, it allows you to calculate current SGPA/CGPA, forecast future semesters to achieve a target CGPA, and track your historical academic progression.
 
 ## ✨ Key Features
 
@@ -35,8 +35,8 @@ Follow these steps to run the project locally.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/TanmayPatil28/GradeFlow.git
-   cd GradeFlow/gradeflow
+   git clone https://github.com/TanmayPatil28/Aevos.git
+   cd Aevos/gradeflow
    ```
 
 2. **Install dependencies**

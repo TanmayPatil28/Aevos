@@ -11,7 +11,7 @@ export function SidebarMockup() {
     <div className="w-64 border-r border-white/20 bg-[#0A0A0A] p-6 flex flex-col gap-8 flex-shrink-0">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-blue-500" />
-        <span className="text-white font-semibold text-lg tracking-tight">GradeFlow</span>
+        <span className="text-white font-semibold text-lg tracking-tight">Aevos</span>
       </div>
       <div className="flex flex-col gap-2">
         <div className="text-xs font-bold text-[#86868B] uppercase tracking-wider mb-2">Academic</div>
@@ -97,7 +97,7 @@ export function CareerDashboardMockup() {
       <div className="w-64 border-r border-white/20 bg-[#050505] p-6 flex flex-col gap-8 flex-shrink-0">
          <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-blue-500" />
-          <span className="text-white font-semibold text-lg tracking-tight">GradeFlow</span>
+          <span className="text-white font-semibold text-lg tracking-tight">Aevos</span>
         </div>
         <div className="flex flex-col gap-2">
           <div className="text-xs font-bold text-[#86868B] uppercase tracking-wider mb-2">Career Tools</div>
@@ -239,7 +239,7 @@ export function OSMorphingSequence() {
         
         <motion.div style={{ y: textY }} className="absolute top-20 text-center z-20 px-6">
            <h2 className="text-5xl md:text-7xl font-semibold text-white tracking-tight">The ultimate shapeshifter.</h2>
-           <p className="text-2xl text-[#86868B] mt-4 font-medium max-w-2xl mx-auto">GradeFlow natively morphs between Academic and Career modes, ensuring you only see the tools you need.</p>
+           <p className="text-2xl text-[#86868B] mt-4 font-medium max-w-2xl mx-auto">Aevos natively morphs between Academic and Career modes, ensuring you only see the tools you need.</p>
         </motion.div>
 
         <motion.div style={{ scale }} className="relative w-full max-w-[1400px] aspect-[16/9] mt-32 px-6">

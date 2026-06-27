@@ -3,7 +3,7 @@ import { UnifiedAuthForm } from "@/components/auth/UnifiedAuthForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Authentication | GradeFlow",
+  title: "Authentication | Aevos",
   description: "Sign in or create an account to start orchestrating your academic success.",
 };
 

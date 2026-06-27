@@ -109,7 +109,7 @@ export default function SandboxPanel({
               >
                 {/* Beaker icon with activity dot */}
                 <div className="relative">
-                  <Beaker size={18} className={isActive ? "text-[#0a84ff]" : "text-white/60"} />
+                  <Beaker size={18} className={isActive ? "text-[#0a84ff]" : "text-foreground/60"} />
                   {isActive && (
                     <motion.div
                       className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#0a84ff] rounded-full"
@@ -119,13 +119,13 @@ export default function SandboxPanel({
                   )}
                 </div>
 
-                <span className="text-sm font-semibold text-white/90 tracking-wide">Sandbox</span>
+                <span className="text-sm font-semibold text-foreground/90 tracking-wide">Sandbox</span>
 
                 {/* Live CGPA Value */}
                 <div className="h-5 w-px bg-white/10" />
                 <span className={cn(
                   "text-sm font-bold tabular-nums",
-                  isActive ? "text-[#0a84ff]" : "text-white/40"
+                  isActive ? "text-[#0a84ff]" : "text-foreground/40"
                 )}>
                   {cgpa.toFixed(2)}
                 </span>
@@ -148,11 +148,11 @@ export default function SandboxPanel({
                       "p-2 rounded-xl transition-all duration-300",
                       isActive ? "bg-[#0a84ff] shadow-[0_0_20px_rgba(10,132,255,0.4)]" : "bg-white/10"
                     )}>
-                      <Beaker size={18} className="text-white" />
+                      <Beaker size={18} className="text-foreground" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white tracking-wide">Sandbox Engine</h3>
-                      <p className="text-[11px] text-white/30 mt-0.5">Simulate different metrics</p>
+                      <h3 className="text-sm font-bold text-foreground tracking-wide">Sandbox Engine</h3>
+                      <p className="text-[11px] text-foreground/30 mt-0.5">Simulate different metrics</p>
                     </div>
                   </div>
 
@@ -176,7 +176,7 @@ export default function SandboxPanel({
                     {/* Collapse Button */}
                     <button
                       onClick={() => setIsExpanded(false)}
-                      className="p-1.5 rounded-full bg-white/5 hover:bg-white/15 text-white/50 hover:text-white/80 transition-colors"
+                      className="p-1.5 rounded-full bg-surface-raised hover:bg-white/15 text-foreground/50 hover:text-foreground/80 transition-colors"
                     >
                       <ChevronDown size={16} />
                     </button>
@@ -191,7 +191,7 @@ export default function SandboxPanel({
                   {/* CGPA Slider */}
                   <div className="space-y-2.5">
                     <div className="flex justify-between items-baseline">
-                      <label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">CGPA</label>
+                      <label className="text-[11px] font-bold text-foreground/50 uppercase tracking-[0.15em]">CGPA</label>
                       <input
                         type="number"
                         min="5" max="10" step="0.1"
@@ -221,7 +221,7 @@ export default function SandboxPanel({
                   {/* Backlogs Slider */}
                   <div className="space-y-2.5">
                     <div className="flex justify-between items-baseline">
-                      <label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">Backlogs</label>
+                      <label className="text-[11px] font-bold text-foreground/50 uppercase tracking-[0.15em]">Backlogs</label>
                       <input
                         type="number"
                         min="0" max="10" step="1"
@@ -250,10 +250,10 @@ export default function SandboxPanel({
 
                   {/* AI Resume Uploader */}
                   <div className="pt-2">
-                    <label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em] mb-2 block">Resume Parsing</label>
+                    <label className="text-[11px] font-bold text-foreground/50 uppercase tracking-[0.15em] mb-2 block">Resume Parsing</label>
                     <label className={cn(
                       "flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed transition-all cursor-pointer",
-                      isParsing ? "border-[#0a84ff]/50 bg-[#0a84ff]/5" : "border-white/10 hover:border-white/30 bg-white/5"
+                      isParsing ? "border-brand bg-brand" : "border-border hover:border-border-strong bg-surface-raised"
                     )}>
                       {isParsing ? (
                         <div className="flex items-center gap-2 text-[#0a84ff]">
@@ -261,7 +261,7 @@ export default function SandboxPanel({
                           <span className="text-xs font-semibold">Extracting Skills...</span>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-1 text-white/50 hover:text-white/80 transition-colors">
+                        <div className="flex flex-col items-center gap-1 text-foreground/50 hover:text-foreground/80 transition-colors">
                           <UploadCloud size={20} />
                           <span className="text-xs font-medium">Upload PDF Resume</span>
                         </div>

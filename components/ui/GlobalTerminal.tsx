@@ -218,8 +218,8 @@ export default function GlobalTerminal() {
     if (isOpen && !hasShownNeofetch.current) {
       hasShownNeofetch.current = true;
       const bootLines: TerminalLine[] = [
-        { id: "boot-1", type: "system", text: "GradeFlow Neural OS [Version 0.1.0]" },
-        { id: "boot-2", type: "system", text: "Copyright (c) 2026 GradeFlow Corporation. All rights reserved." },
+        { id: "boot-1", type: "system", text: "Aevos Neural OS [Version 0.1.0]" },
+        { id: "boot-2", type: "system", text: "Copyright (c) 2026 Aevos Corporation. All rights reserved." },
         { id: "boot-3", type: "system", text: "" },
       ];
       const neofetchLines = generateNeofetch(ctx).map((text, i) => ({

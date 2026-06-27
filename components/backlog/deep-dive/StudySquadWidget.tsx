@@ -14,8 +14,8 @@ export default function StudySquadWidget({ course }: { course: CourseState }) {
   // Live Chat State
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", sender: "U1", text: "Does anyone know if the third module is heavily weighted?", isSelf: false, color: "#FF9F0A" },
-    { id: "2", sender: "U2", text: "Yes, check the historical analytics widget. It's usually 30% of the paper.", isSelf: false, color: "#30D158" },
+    { id: "1", sender: "U1", text: "Does anyone know if the third module is heavily weighted?", isSelf: false, color: "var(--status-warning)" },
+    { id: "2", sender: "U2", text: "Yes, check the historical analytics widget. It's usually 30% of the paper.", isSelf: false, color: "var(--status-success)" },
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -47,7 +47,7 @@ export default function StudySquadWidget({ course }: { course: CourseState }) {
       sender: "You",
       text: chatInput.trim(),
       isSelf: true,
-      color: "#0A84FF"
+      color: "var(--brand-primary)"
     };
     
     setMessages(prev => [...prev, newMsg]);
@@ -63,7 +63,7 @@ export default function StudySquadWidget({ course }: { course: CourseState }) {
           sender: "U3",
           text: "Yeah I agree with that. The PYQs are a lifesaver.",
           isSelf: false,
-          color: "#BF5AF2"
+          color: "var(--status-warning)"
         }]);
       }, 2500);
     }, 1000);
@@ -78,24 +78,24 @@ export default function StudySquadWidget({ course }: { course: CourseState }) {
 
   return (
     <>
-      <div className="p-6 rounded-[32px] bg-[#1C1C1E] flex flex-col h-full">
+      <div className="p-6 rounded-[24px] bg-surface-raised border border-white/[0.04] shadow-none flex flex-col h-full">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h3 className="text-[17px] font-semibold text-white flex items-center gap-2 tracking-tight">
-              <Users className="text-[#0A84FF]" size={20} /> Study Squad
+              <Users className="text-brand" size={20} /> Study Squad
             </h3>
             <p className="text-[15px] text-[#8E8E93] mt-1 tracking-tight">P2P Network</p>
           </div>
           <div className="flex -space-x-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className={`w-8 h-8 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center text-[11px] font-bold ${
-                i === 1 ? "bg-[#0A84FF]/20 text-[#0A84FF]" : 
-                i === 2 ? "bg-[#FF9F0A]/20 text-[#FF9F0A]" : "bg-[#30D158]/20 text-[#30D158]"
+              <div key={i} className={`w-8 h-8 rounded-full border-2 border-surface-raised flex items-center justify-center text-[11px] font-bold ${
+                i === 1 ? "bg-brand text-white" : 
+                i === 2 ? "bg-status-warning text-black" : "bg-status-success text-black"
               }`}>
                 U{i}
               </div>
             ))}
-            <div className="w-8 h-8 rounded-full border-2 border-[#1C1C1E] bg-[#2C2C2E] flex items-center justify-center text-[11px] font-bold text-[#8E8E93]">
+            <div className="w-8 h-8 rounded-full border-2 border-surface-raised bg-surface flex items-center justify-center text-[11px] font-bold text-[#8E8E93]">
               +{activePeers}
             </div>
           </div>

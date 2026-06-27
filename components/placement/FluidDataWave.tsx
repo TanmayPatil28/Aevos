@@ -6,7 +6,7 @@ export default function FluidDataWave() {
   return (
     <div className="w-full mt-8 rounded-[32px] overflow-hidden relative z-10 flex flex-col h-[500px] border border-white/[0.04] bg-[#000000]">
       {/* Background Deep Glow */}
-      <div className="absolute inset-0 bg-black opacity-90" />
+      <div className="absolute inset-0 bg-background opacity-90" />
       
       {/* Fluid Orbs */}
       <motion.div
@@ -117,7 +117,7 @@ export default function FluidDataWave() {
       <div className="absolute top-6 left-6">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
-          <span className="text-[9px] font-black tracking-widest uppercase text-white/50">Processing Core</span>
+          <span className="text-[9px] font-black tracking-widest uppercase text-foreground/50">Processing Core</span>
         </div>
       </div>
 
@@ -130,7 +130,7 @@ export default function FluidDataWave() {
           <motion.div animate={{ height: [4, 14, 4] }} transition={{ duration: 1.3, repeat: Infinity, delay: 0.1 }} className="w-[3px] bg-white/40 rounded-full" />
           <motion.div animate={{ height: [4, 8, 4] }} transition={{ duration: 0.9, repeat: Infinity, delay: 0.3 }} className="w-[3px] bg-white/40 rounded-full" />
         </div>
-        <div className="text-[10px] font-black tracking-[0.3em] uppercase text-white/30">Active</div>
+        <div className="text-[10px] font-black tracking-[0.3em] uppercase text-foreground/30">Active</div>
       </div>
     </div>
   );

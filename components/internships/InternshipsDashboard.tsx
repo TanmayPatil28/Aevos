@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { PageHero } from "@/components/ui/PageHero";
-import { Filter, Sparkles, Briefcase, Zap } from "lucide-react";
+import { Filter, Sparkles, Briefcase, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useUSMStore } from "@/stores/usmStore";
 import AgentTerminal from "@/components/internships/AgentTerminal";
 import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
+import Card from "@/components/ui/Card";
+import { Input } from "@/components/ui/input";
 
 import InternshipLedgerRow, { InternshipMatch } from "./InternshipLedgerRow";
 import InternshipIntelligenceGuide from "./InternshipIntelligenceGuide";
@@ -15,9 +17,10 @@ import CareerOSHeader from "@/components/placement/CareerOSHeader";
 
 interface InternshipsDashboardProps {
   matches: InternshipMatch[];
+  isLoading?: boolean;
 }
 
-export default function InternshipsDashboard({ matches }: InternshipsDashboardProps) {
+export default function InternshipsDashboard({ matches, isLoading }: InternshipsDashboardProps) {
   const [selectedMatch, setSelectedMatch] = useState<InternshipMatch | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"All" | "High Match" | "Moderate">("All");
@@ -25,10 +28,6 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
   const [isAgentRunning, setIsAgentRunning] = useState(false);
   const [hiddenGems, setHiddenGems] = useState<InternshipMatch[]>([]);
   const [showTerminal, setShowTerminal] = useState(false);
-
-  const { scrollY } = useScroll();
-  const glowY = useTransform(scrollY, [0, 500], [0, 150]);
-  const glowOpacity = useTransform(scrollY, [0, 300], [0.8, 0]);
 
   const userSkills = useUSMStore((state) => state.career.skills) || [];
 
@@ -47,63 +46,31 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
   const moderateMatches = processedMatches.filter(m => m.score >= 50 && m.score < 80);
   const reachMatches = processedMatches.filter(m => m.score < 50);
 
-  return (
-    <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-[#0a84ff]/30 selection:text-white pb-40 font-sans">
-      
-      {/* Background Ambient Glows */}
-      <motion.div 
-        style={{ y: glowY, opacity: glowOpacity }}
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] pointer-events-none z-0"
-      >
-        <div className={cn("absolute inset-0 blur-[160px] rounded-full mix-blend-screen transition-colors duration-1000", "bg-gradient-to-b from-white/[0.02] via-transparent to-transparent")} />
-      </motion.div>
-
-      {/* Career OS Header */}
-      <div className="relative z-50 pt-24 px-6 md:px-12 max-w-[1400px] mx-auto">
-        <CareerOSHeader />
+  if (isLoading) {
+    return (
+      <div className="w-full h-64 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-8 h-8 text-[#0a84ff] animate-spin" />
+        <span className="text-foreground/60 text-sm font-medium tracking-tight">Curating AI Internships...</span>
       </div>
+    );
+  }
 
-      {/* Hero Section */}
-      <section className="relative z-10 w-full flex flex-col items-start justify-center pt-12 pb-8 px-6 md:px-12 max-w-[1400px] mx-auto">
-        <div className="w-full max-w-2xl flex flex-col items-start text-left">
-          <PageHero 
-            headline={<motion.span 
-              className="text-transparent bg-clip-text"
-              style={{ backgroundImage: 'linear-gradient(to right, #a1a1aa, #ffffff, #a1a1aa)', backgroundSize: '200% auto', display: 'inline-block' }}
-              animate={{ backgroundPosition: ['0% center', '200% center'] }}
-              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-            >Internship Intelligence.<br/>Curated by AI.</motion.span>}
-            description="Our matchmaking engine analyzes your current academic profile and live tech stacks to surface the most optimal internship opportunities for you."
-          />
-        </div>
-      </section>
-
-      {/* Desktop Content Area */}
-      <div className="relative z-10 w-full px-6 md:px-12 max-w-[1400px] mx-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full"
-          >
-            <div className="flex flex-col gap-10">
-              
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
+  return (
+    <div className="flex flex-col gap-10 w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Left Column */}
                 <div className="lg:col-span-5 flex flex-col">
                   
                   {/* Agent Deep Dive Trigger */}
                   <div className="mb-6">
-                    <div className="flex flex-col md:flex-row items-center justify-between p-3 pl-5 rounded-full bg-[#1c1c1e] border border-[#ffd60a]/20 shadow-[0_0_20px_rgba(255,214,10,0.05)] transition-all">
+                    <Card variant="default" className="flex flex-col md:flex-row items-center justify-between !p-3 !pl-5 transition-all !border-[#ffd60a]/20 shadow-[0_0_20px_rgba(255,214,10,0.05)]">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-[#ffd60a]/10 flex items-center justify-center shrink-0">
                           <Zap size={16} className="text-[#ffd60a] fill-[#ffd60a]" />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[14px] font-bold text-white tracking-tight leading-tight">Deep Dive Agent</span>
-                          <span className="text-[11px] text-[#86868b] uppercase tracking-wider font-semibold">Scrapes hidden startup boards</span>
+                          <span className="text-[14px] font-bold text-foreground tracking-tight leading-tight">Deep Dive Agent</span>
+                          <span className="text-[11px] text-foreground-muted uppercase tracking-wider font-semibold">Scrapes hidden startup boards</span>
                         </div>
                       </div>
                       <MagneticWrapper strength={0.4}>
@@ -126,7 +93,7 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                           {isAgentRunning ? "Agent Searching..." : hiddenGems.length > 0 ? "Search Complete" : "Launch Agent"}
                         </button>
                       </MagneticWrapper>
-                    </div>
+                    </Card>
                   </div>
 
                   {/* Terminal Display */}
@@ -146,26 +113,23 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                   {/* Smart Filters and Utility Bar */}
                   <div className="flex flex-col gap-4 mb-6">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                      <h2 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
                         <Briefcase size={24} className="text-[#0a84ff]" /> AI Matched Roles
                       </h2>
                     </div>
 
                     <div className="mb-4 flex flex-col gap-4 relative z-20">
-                      <div className="relative w-full group">
-                        <Filter size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
-                        <input 
-                          type="text" 
-                          placeholder="Search roles or companies..." 
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full bg-[#111111] border border-white/[0.1] hover:border-white/20 rounded-full py-2.5 pl-11 pr-5 text-[13px] text-white/90 placeholder:text-zinc-500/80 focus:outline-none focus:border-white/60 focus:bg-[#1A1A1A] focus:ring-[2px] focus:ring-white/10 transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                        />
-                      </div>
+                      <Input
+                        variant="search"
+                        placeholder="Search roles or companies..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
 
                       <div 
-                        className="flex items-center gap-2 overflow-x-auto pb-2 -mb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full"
+                        className="flex items-center gap-2 overflow-x-auto pb-4 -mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full"
                         style={{ WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)', maskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}
+                        role="tablist"
                       >
                         {["All", "High Match", "Moderate"].map((f) => (
                           <motion.button
@@ -173,10 +137,10 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                             onClick={() => setActiveFilter(f as any)}
                             whileTap={{ scale: 0.95 }}
                             className={cn(
-                              "relative px-4 py-2 rounded-full text-[12px] font-medium transition-colors duration-300 whitespace-nowrap border outline-none",
+                              "relative flex items-center justify-center h-10 px-4 text-sm leading-[20px] font-medium rounded-full whitespace-nowrap border outline-none transition-colors duration-300 before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:min-w-[44px] before:min-h-[44px] before:content-['']",
                               activeFilter === f 
                                 ? "text-black border-transparent" 
-                                : "bg-[#111111] text-zinc-400 hover:text-white/90 hover:bg-[#1A1A1A] border-white/[0.04]"
+                                : "backdrop-blur-md bg-white/[0.08] border-white/[0.08] text-foreground hover:bg-white/[0.12] active:bg-white/[0.16]"
                             )}
                           >
                             {activeFilter === f && (
@@ -201,7 +165,7 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                         <h3 className="text-[13px] font-semibold text-[#ffd60a] uppercase tracking-wider pl-4 flex items-center gap-2">
                           <Sparkles size={14} className="fill-[#ffd60a]" /> VIP Hidden Gems
                         </h3>
-                        <div className="flex flex-col rounded-[20px] bg-[#1c1c1e] overflow-hidden border border-[#ffd60a]/20 shadow-[0_0_30px_rgba(255,214,10,0.05)]">
+                        <Card variant="accent" className="flex flex-col !p-0 border-[#ffd60a]/20 bg-gradient-to-br from-[#ffd60a]/10 to-surface shadow-[0_0_30px_rgba(255,214,10,0.05)]">
                           {hiddenGems.map((match, i) => (
                             <InternshipLedgerRow 
                               key={`gem-${i}`} 
@@ -211,21 +175,21 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                               isLast={i === hiddenGems.length - 1} 
                             />
                           ))}
-                        </div>
+                        </Card>
                       </div>
                     )}
 
                     {matches.length === 0 ? (
-                      <div className="text-center py-12 rounded-[20px] bg-[#1c1c1e] border border-white/[0.05]">
-                        <p className="text-[#86868b] text-[14px]">No internships matched your profile at this time.</p>
-                      </div>
+                      <Card variant="default" className="text-center">
+                        <p className="text-foreground-muted text-[14px]">No internships matched your profile at this time.</p>
+                      </Card>
                     ) : (
                       <>
                         {/* High Matches */}
                         {highMatches.length > 0 && (
                           <div className="space-y-2">
-                            <h3 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider pl-4">Strong Match ({highMatches.length})</h3>
-                            <div className="flex flex-col rounded-[20px] bg-[#1c1c1e] overflow-hidden">
+                            <h3 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider pl-4">Strong Match ({highMatches.length})</h3>
+                            <Card variant="default" className="flex flex-col !p-0">
                               {highMatches.map((match, i) => (
                                 <InternshipLedgerRow 
                                   key={i} 
@@ -235,15 +199,15 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                                   isLast={i === highMatches.length - 1} 
                                 />
                               ))}
-                            </div>
+                            </Card>
                           </div>
                         )}
 
                         {/* Moderate Matches */}
                         {moderateMatches.length > 0 && (
                           <div className="space-y-2">
-                            <h3 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider pl-4 mt-2">Moderate Match ({moderateMatches.length})</h3>
-                            <div className="flex flex-col rounded-[20px] bg-[#1c1c1e] overflow-hidden">
+                            <h3 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider pl-4 mt-2">Moderate Match ({moderateMatches.length})</h3>
+                            <Card variant="default" className="flex flex-col !p-0">
                               {moderateMatches.map((match, i) => (
                                 <InternshipLedgerRow 
                                   key={i} 
@@ -253,15 +217,15 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                                   isLast={i === moderateMatches.length - 1} 
                                 />
                               ))}
-                            </div>
+                            </Card>
                           </div>
                         )}
 
                         {/* Reach Matches */}
                         {reachMatches.length > 0 && (
                           <div className="space-y-2">
-                            <h3 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider pl-4 mt-2">Reach ({reachMatches.length})</h3>
-                            <div className="flex flex-col rounded-[20px] bg-[#1c1c1e] overflow-hidden">
+                            <h3 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider pl-4 mt-2">Reach ({reachMatches.length})</h3>
+                            <Card variant="default" className="flex flex-col !p-0">
                               {reachMatches.map((match, i) => (
                                 <InternshipLedgerRow 
                                   key={i} 
@@ -271,7 +235,7 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                                   isLast={i === reachMatches.length - 1} 
                                 />
                               ))}
-                            </div>
+                            </Card>
                           </div>
                         )}
                       </>
@@ -287,10 +251,6 @@ export default function InternshipsDashboard({ matches }: InternshipsDashboardPr
                   />
                 </div>
                 
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
       </div>
     </div>
   );

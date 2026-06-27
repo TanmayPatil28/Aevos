@@ -7,9 +7,14 @@ import { SKILL_TRACKS, SkillTrack } from "@/lib/career/skillsLedger";
 import { DynamicRoadmapModal } from "@/app/(workspace)/placement/components/DynamicRoadmapModal";
 import { cn } from "@/lib/cn";
 import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
 import { useEffect } from "react";
 import { useUSMStore } from "@/stores/usmStore";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import Card from "@/components/ui/Card";
+
+const MotionCard = motion(Card);
 
 const DynamicIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
   const IconComponent = (LucideIcons as any)[iconName] || LucideIcons.Circle;
@@ -130,22 +135,6 @@ export default function PlacementSkillsMatrix() {
 
   return (
     <div className="w-full flex flex-col pb-32 pt-8">
-      {/* Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: 30, scale: 0.95, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-12 text-center md:text-left relative z-20"
-      >
-        <motion.h2 
-          className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white"
-        >
-          The 2026 Skills Matrix
-        </motion.h2>
-        <p className="text-[#86868b] max-w-2xl text-[15px] leading-[1.618]">
-          Explore the top 60 most critical technologies and roles demanded by tier-1 product companies. Track your mastery, build your roadmap, and dominate your career.
-        </p>
-      </motion.div>
 
       {/* Filters and Search */}
       <motion.div 
@@ -176,10 +165,10 @@ export default function PlacementSkillsMatrix() {
               onClick={() => setActiveCategory(category)}
               whileTap={{ scale: 0.95 }}
               className={cn(
-                "relative px-5 py-2.5 rounded-full text-[13px] font-medium transition-colors duration-300 whitespace-nowrap border outline-none",
+                "relative flex items-center justify-center h-10 px-4 text-sm leading-[20px] font-medium rounded-full whitespace-nowrap border outline-none transition-colors duration-300 before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:min-w-[44px] before:min-h-[44px] before:content-['']",
                 activeCategory === category 
                   ? "text-black border-transparent" 
-                  : "bg-[#1c1c1e] text-[#86868b] hover:text-white hover:bg-white/5 border-white/[0.04]"
+                  : "backdrop-blur-md bg-white/[0.08] border-white/[0.08] text-foreground hover:bg-white/[0.12] active:bg-white/[0.16]"
               )}
             >
               {activeCategory === category && (
@@ -194,14 +183,12 @@ export default function PlacementSkillsMatrix() {
           ))}
         </div>
 
-        <div className="relative w-full lg:w-80 shrink-0 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
-          <input 
-            type="text"
-            placeholder="Search skills, roles..."
+        <div className="relative w-full lg:w-80 shrink-0">
+          <Input 
+            variant="search"
+            placeholder="Search skills, roles, or frameworks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#1c1c1e] border border-white/[0.04] hover:border-white/10 rounded-full py-3 pl-11 pr-5 text-[14px] text-white placeholder:text-[#86868b] focus:outline-none focus:border-[#0a84ff]/50 focus:ring-[2px] focus:ring-[#0a84ff]/20 transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
           />
         </div>
       </motion.div>
@@ -214,35 +201,34 @@ export default function PlacementSkillsMatrix() {
         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 relative z-10"
       >
         {filteredTracks.map((track, index) => (
-          <motion.div 
+          <MotionCard 
             variants={itemVariants}
             key={track.id} 
+            variant="default"
             onClick={() => handleOpenRoadmap(track)}
-            className="group cursor-pointer h-full rounded-[24px] border border-white/[0.04] bg-[#1c1c1e] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:bg-[#2c2c2e] relative overflow-hidden flex flex-col will-change-transform [content-visibility:auto] [contain-intrinsic-size:100%_320px]"
+            className="group cursor-pointer h-full transition-all duration-300 hover:bg-surface-overlay flex flex-col will-change-transform [content-visibility:auto] [contain-intrinsic-size:100%_320px]"
           >
             <div className="relative z-10 flex flex-col h-full">
               {/* Header: Icon, Category & Title Inline */}
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 shrink-0 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-center justify-center transition-colors group-hover:bg-white/[0.04] group-hover:border-white/[0.08] shadow-sm">
-                    <DynamicIcon iconName={track.iconName} className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" />
+                    <DynamicIcon iconName={track.iconName} className="w-4 h-4 text-foreground/80 group-hover:text-foreground transition-colors" />
                   </div>
                   <div className="flex flex-col pt-0.5">
-                    <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-zinc-500/80 mb-1">{track.category}</p>
-                    <h3 className="text-lg font-medium tracking-tight text-white/95 group-hover:text-white transition-colors leading-none">{track.title}</h3>
+                    <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-foreground-muted/80 mb-1">{track.category}</p>
+                    <h3 className="text-lg font-medium tracking-tight text-foreground/95 group-hover:text-foreground transition-colors leading-none">{track.title}</h3>
                   </div>
                 </div>
 
-                <button
-                  onClick={(e) => handleToggleSkill(e, track.title)}
-                  className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-md border transition-all hover:scale-105 active:scale-95 z-20 shrink-0 ${
-                    career.skills?.includes(track.title)
-                      ? "bg-indigo-500/25 text-indigo-300 border-indigo-500/40"
-                      : "bg-[#1c1c1e] text-zinc-400 border-white/10 hover:border-zinc-500 hover:text-zinc-200"
-                  }`}
+                <Badge
+                  variant="brand"
+                  size="md"
+                  onClick={(e: React.MouseEvent<HTMLSpanElement>) => handleToggleSkill(e as any, track.title)}
+                  className="z-20 cursor-pointer hover:scale-105 active:scale-95 shrink-0"
                 >
                   {career.skills?.includes(track.title) ? "✓ Acquired" : "+ Add to OS"}
-                </button>
+                </Badge>
               </div>
 
               {/* Data Row (Stat-Block) */}
@@ -255,7 +241,7 @@ export default function PlacementSkillsMatrix() {
                       animate={{ scale: [1, 1.15, 1], filter: ["brightness(1)", "brightness(1.3)", "brightness(1)"] }}
                       transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: (index % 10) * 0.15 }}
                     >
-                      <circle className="text-white/10" strokeWidth="2.5" stroke="currentColor" fill="transparent" r="6" cx="8" cy="8" />
+                      <circle className="text-foreground/10" strokeWidth="2.5" stroke="currentColor" fill="transparent" r="6" cx="8" cy="8" />
                       <circle className="text-emerald-400/80" strokeWidth="2.5" strokeDasharray={`${track.placementProbability * 0.377} 37.7`} strokeLinecap="round" stroke="currentColor" fill="transparent" r="6" cx="8" cy="8" />
                     </motion.svg>
                     <span className="text-[11px] font-semibold text-zinc-300 tracking-wide">
@@ -264,22 +250,16 @@ export default function PlacementSkillsMatrix() {
                   </div>
                 )}
                 <span className={cn("text-[11px] font-medium tracking-wide",
-                  track.salaryRange ? "pr-3 border-r border-white/[0.06]" : "",
                   track.difficulty === "Advanced" ? "text-rose-400/80" :
                   track.difficulty === "Intermediate" ? "text-amber-400/80" :
-                  "text-zinc-400/80"
+                  "text-foreground-muted/80"
                 )}>
                   {track.difficulty}
                 </span>
-                {track.salaryRange && (
-                  <span className="text-[11px] font-medium text-zinc-400/80 tracking-wide">
-                    {track.salaryRange}
-                  </span>
-                )}
               </div>
 
               {/* Description */}
-              <p className="text-zinc-400/80 text-[13px] leading-[1.6] mb-6 flex-grow font-medium line-clamp-2">
+              <p className="text-foreground-muted/80 text-[13px] leading-[1.6] mb-6 flex-grow font-medium line-clamp-2">
                 {track.description}
               </p>
 
@@ -287,24 +267,24 @@ export default function PlacementSkillsMatrix() {
               <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/[0.03] group-hover:border-white/[0.08] transition-colors">
                 <div className="flex flex-wrap gap-1.5 overflow-hidden">
                   {track.atsKeywords && track.atsKeywords.slice(0, 2).map((kw, idx) => (
-                    <span key={`${track.id}-kw-${idx}`} className="text-[9px] font-semibold tracking-wide text-zinc-500 bg-white/[0.02] px-2 py-0.5 rounded border border-white/[0.03] whitespace-nowrap">
+                    <Badge key={`${track.id}-kw-${idx}`} variant="brand" size="sm" staggerIndex={idx}>
                       {kw}
-                    </span>
+                    </Badge>
                   ))}
                   {track.atsKeywords && track.atsKeywords.length > 2 && (
-                    <span className="text-[9px] font-semibold tracking-wide text-zinc-600 bg-white/[0.01] px-1.5 py-0.5 rounded border border-white/[0.02] whitespace-nowrap">
+                    <Badge variant="brand" size="sm">
                       +{track.atsKeywords.length - 2}
-                    </span>
+                    </Badge>
                   )}
                 </div>
                 
-                <div className="flex items-center text-zinc-500 font-medium text-[11px] group-hover:text-white transition-colors shrink-0 pl-3">
+                <div className="flex items-center text-foreground-muted font-medium text-[11px] group-hover:text-foreground transition-colors shrink-0 pl-3">
                   <span>View Roadmap</span>
                   <LucideIcons.ArrowRight className="w-3 h-3 ml-1.5 transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>
-          </motion.div>
+          </MotionCard>
         ))}
       </motion.div>
 
@@ -313,13 +293,13 @@ export default function PlacementSkillsMatrix() {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
-          className="w-full flex flex-col items-center justify-center py-24 px-4 text-center border border-white/[0.04] rounded-[24px] bg-[#1c1c1e] relative z-10 mt-6"
+          className="w-full flex flex-col items-center justify-center py-24 px-4 text-center border border-white/[0.04] rounded-[24px] bg-surface relative z-10 mt-6"
         >
           <div className="w-16 h-16 rounded-full bg-white/[0.02] border border-white/[0.04] flex items-center justify-center mb-6 shadow-inner">
-            <Search className="w-6 h-6 text-zinc-500" />
+            <Search className="w-6 h-6 text-foreground-muted" />
           </div>
-          <h3 className="text-lg font-medium text-white/95 mb-2 tracking-tight">No results found</h3>
-          <p className="text-zinc-500 max-w-sm text-[14px] leading-[1.6] mb-8 font-medium">
+          <h3 className="text-lg font-medium text-foreground/95 mb-2 tracking-tight">No results found</h3>
+          <p className="text-foreground-muted max-w-sm text-[14px] leading-[1.6] mb-8 font-medium">
             We couldn't find any roles matching "{searchQuery}" in {activeCategory}. 
           </p>
           <button 

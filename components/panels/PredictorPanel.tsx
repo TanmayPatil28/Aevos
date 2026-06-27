@@ -2,12 +2,12 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Calculator, CheckCircle2, ChevronDown, ChevronUp, ShieldAlert, Zap, Pin, BarChart2 } from 'lucide-react';
+import { Target, CheckCircle2, ChevronDown, ChevronUp, ShieldAlert, Pin, AlertTriangle } from 'lucide-react';
 import { useUSMStore } from '@/stores/usmStore';
 import { resolveActiveAcademicContext } from '@/stores/selectors/academic';
 import { getPresetById, convertLetterGradeToGradePoint, calculateSGPA } from '@/lib/presets';
-import { cn } from '@/lib/cn'; // Assuming you have a cn utility, if not I will use clsx
 import clsx from 'clsx';
+import * as Select from '@radix-ui/react-select';
 
 type CourseFormat = 'theory' | 'practical';
 type EndSemMarks = 0 | 50 | 100;
@@ -23,19 +23,6 @@ interface SubjectMemory {
   relativeMode: boolean;
   expectedAvg: number;
 }
-
-const fadeInUp: any = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
 
 export default function PredictorPanel() {
   const store = useUSMStore();
@@ -82,9 +69,9 @@ export default function PredictorPanel() {
     if (isJSPM) {
       return {
         components: [
-          { id: 't1', label: 'Test 1', max: 30 },
-          { id: 't2', label: 'Test 2', max: 30 },
-          { id: 'assig', label: 'Assignment', max: 40 }
+          { id: 't1', label: 'T1', max: 30 },
+          { id: 't2', label: 'T2', max: 30 },
+          { id: 'assig', label: 'Assign', max: 40 }
         ],
         hasBestOf: true,
         maxBase: useBestOf ? 70 : 100,
@@ -93,7 +80,7 @@ export default function PredictorPanel() {
     } else if (isSPPU) {
       const is2024 = activePreset?.regulationYear === 2024;
       return {
-        components: [{ id: 'insem', label: is2024 ? 'CIE' : 'In-Sem', max: is2024 ? 40 : 30 }],
+        components: [{ id: 'insem', label: is2024 ? 'CIE' : 'InSem', max: is2024 ? 40 : 30 }],
         hasBestOf: false,
         maxBase: is2024 ? 40 : 30,
         examMax: endSemMarks
@@ -102,7 +89,7 @@ export default function PredictorPanel() {
 
     // Default Generic
     return { 
-      components: activePreset?.assessmentScheme?.components?.map((c, i) => ({ id: `comp_${i}`, label: c, max: internalMax })) || [{ id: 'comp_0', label: 'Internal Assessment', max: internalMax }], 
+      components: activePreset?.assessmentScheme?.components?.map((c, i) => ({ id: `comp_${i}`, label: c, max: internalMax })) || [{ id: 'comp_0', label: 'Internal', max: internalMax }], 
       hasBestOf: false,
       maxBase: internalMax, 
       examMax: endSemMarks 
@@ -281,7 +268,7 @@ export default function PredictorPanel() {
 
   if (courses.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center space-y-4 text-[#86868B] bg-transparent">
+      <div className="flex flex-col items-center justify-center h-full text-center space-y-4 text-foreground-muted">
         <Target className="w-10 h-10 opacity-20" />
         <p className="text-sm font-semibold tracking-tight">No active courses available.<br/>Sync your data to use the Predictor.</p>
       </div>
@@ -294,472 +281,339 @@ export default function PredictorPanel() {
 
   const courseOptions = courses.map(c => ({ value: c.id, label: `${c.name} (${c.credits}Cr)` }));
   const totalPossibleOverall = internals.maxBase + schemeInfo.examMax;
+  const internalPct = totalPossibleOverall > 0 ? (internals.scoredBase / totalPossibleOverall) * 100 : 0;
+  const neededPct = targetPath && targetPath.status !== 'impossible' && targetPath.status !== 'secured'
+    ? (targetPath.needed / totalPossibleOverall) * 100 : 0;
+
+  const statusIcon = (s: string) => {
+    if (s === 'secured') return <CheckCircle2 size={13} className="text-success" />;
+    if (s === 'impossible') return <ShieldAlert size={13} className="text-destructive" />;
+    if (s === 'critical') return <AlertTriangle size={13} className="text-warning" />;
+    return null;
+  };
+
+  const statusBadgeClass = (s: string, pinned: boolean) => {
+    if (pinned) return "text-brand bg-brand/10";
+    if (s === 'secured') return "text-success bg-success/10";
+    if (s === 'impossible') return "text-destructive bg-destructive/10";
+    if (s === 'critical') return "text-warning bg-warning/10";
+    if (s === 'hard') return "text-orange-400 bg-orange-400/10";
+    return "text-foreground-muted bg-white/5";
+  };
 
   return (
-    <div className="flex flex-col h-full bg-black text-[#F5F5F7] font-sans tracking-tight overflow-y-auto overflow-x-hidden custom-scrollbar relative">
-      
-      {/* Ambient Glowing Background */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] pointer-events-none z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a84ff]/15 via-transparent to-transparent blur-[120px] mix-blend-screen" />
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#0a84ff]/10 blur-[100px] rounded-full mix-blend-screen" />
-      </div>
+    <div className="flex flex-col h-full bg-transparent text-foreground font-sans overflow-y-auto overflow-x-hidden scrollbar-hide">
+      <div className="flex flex-col gap-5">
+        
+        {/* ─── Section 1: Course Info ─── */}
+        <div className="mb-2 mt-2">
+          <h2 className="text-[16px] font-semibold text-white line-clamp-1 pr-2">
+            {selectedCourse?.name || "No Course Selected"}
+            {selectedCourse?.credits ? ` (${selectedCourse.credits}Cr)` : ""}
+          </h2>
+        </div>
 
-      <div className="relative z-10 flex flex-col space-y-8 pb-16 px-2">
-        {/* Target Subject Selector */}
-        <motion.div 
-          variants={fadeInUp} 
-          initial="hidden" 
-          whileInView="visible" 
-          viewport={{ once: true }}
-          className="space-y-3 pt-6 relative z-[60]"
-        >
-          <div className="flex justify-between items-center px-1">
-            <label className="text-sm font-semibold tracking-tight text-[#86868B]">
-              Intelligence Target
-            </label>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#0a84ff] bg-[#0a84ff]/10 px-2.5 py-1 rounded-md border border-[#0a84ff]/20">
-              {activePreset?.shortName || "Generic"} Mode
-            </span>
-          </div>
-          
-          <CustomDropdown 
-            options={courseOptions} 
-            value={selectedCourseId || ""} 
-            onChange={(val) => {
-              setSelectedCourseId(val);
-              setLockedGrade(null); // reset lock on course change
-            }} 
+        {/* ─── Section 2: Config Row ─── */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <PillSelect
+            options={[{value: 'theory', label: 'Theory'}, {value: 'practical', label: 'Practical'}]}
+            value={format}
+            onChange={(val) => setFormat(val as CourseFormat)}
+            compact
           />
-        </motion.div>
+          <PillSelect
+            options={[{value: '0', label: 'No Exam'}, {value: '50', label: 'ESE 50'}, {value: '100', label: 'ESE 100'}]}
+            value={endSemMarks.toString()}
+            onChange={(val) => setEndSemMarks(parseInt(val) as EndSemMarks)}
+            compact
+          />
+          {format === 'practical' && (
+            <PillSelect
+              options={[
+                {value: '25', label: 'Int 25'}, {value: '50', label: 'Int 50'}, 
+                {value: '75', label: 'Int 75'}, {value: '100', label: 'Int 100'}, {value: '150', label: 'Int 150'}
+              ]}
+              value={internalMax.toString()}
+              onChange={(val) => setInternalMax(parseInt(val) as InternalMaxMarks)}
+              compact
+            />
+          )}
 
-        {/* Internal Assessment Configuration - Bento Glass Card */}
-        <motion.div 
-          variants={fadeInUp} 
-          initial="hidden" 
-          whileInView="visible" 
-          viewport={{ once: true, margin: "-20px" }}
-          className="relative bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 space-y-6 z-50 transition-all duration-500 shadow-2xl w-full"
-        >
-          <div className="flex flex-col gap-4 w-full">
-            {/* Top Row: Dropdowns Grid */}
-            <div className={clsx("grid gap-3 w-full", format === 'practical' ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2")}>
-              {/* Format Dropdown */}
-              <div className="relative w-full">
-                <select 
-                  value={format} 
-                  onChange={(e) => setFormat(e.target.value as CourseFormat)}
-                  className="appearance-none bg-[#1c1c1e] hover:bg-[#2c2c2e] text-[#F5F5F7] text-[13px] font-bold px-4 py-3 rounded-xl outline-none transition-colors cursor-pointer w-full shadow-inner border border-white/5"
-                >
-                  <option value="theory">Theory</option>
-                  <option value="practical">Practical</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+          {/* Dot toggles */}
+          <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.04] p-0.5 rounded-lg ml-auto sm:ml-0">
+            <DotToggle label="Curve" active={relativeMode} onToggle={() => setRelativeMode(!relativeMode)} variant="warning" />
+          </div>
+        </div>
+
+        {/* ─── Curve Slider (conditional) ─── */}
+        <AnimatePresence>
+          {relativeMode && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="flex items-center gap-3 px-1 pb-1">
+                <span className="text-[10px] font-semibold text-warning shrink-0">Avg {expectedAvg}%</span>
+                <input 
+                  type="range" min={30} max={90} step={5} 
+                  value={expectedAvg} onChange={(e) => setExpectedAvg(parseInt(e.target.value))} 
+                  className="flex-1 accent-warning cursor-ew-resize h-1 rounded-full outline-none appearance-none bg-white/5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-warning [&::-webkit-slider-thumb]:rounded-full"
+                />
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              {/* End Sem Marks Dropdown */}
-              <div className="relative w-full">
-                <select 
-                  value={endSemMarks.toString()} 
-                  onChange={(e) => setEndSemMarks(parseInt(e.target.value) as EndSemMarks)}
-                  className="appearance-none bg-[#1c1c1e] hover:bg-[#2c2c2e] text-[#F5F5F7] text-[13px] font-bold px-4 py-3 rounded-xl outline-none transition-colors cursor-pointer w-full shadow-inner border border-white/5"
-                >
-                  <option value="0">EndSem: None</option>
-                  <option value="50">EndSem: 50</option>
-                  <option value="100">EndSem: 100</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-              </div>
+        {/* ─── Section 3: Score Inputs ─── */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {schemeInfo.components.map(comp => (
+            <InlineInput
+              key={comp.id}
+              label={comp.label}
+              value={scores[comp.id] || ''}
+              setValue={(v) => handleScoreChange(comp.id, v)}
+              max={comp.max}
+            />
+          ))}
+          <div className="ml-auto text-[11px] font-bold text-foreground-muted tabular-nums">
+            {internals.scoredBase.toFixed(0)}<span className="text-white/20">/{internals.maxBase}</span>
+          </div>
+        </div>
 
-              {/* Internal Max Dropdown (Mainly for Practicals) */}
-              {format === 'practical' && (
-                <div className="relative w-full">
-                  <select 
-                    value={internalMax.toString()} 
-                    onChange={(e) => setInternalMax(parseInt(e.target.value) as InternalMaxMarks)}
-                    className="appearance-none bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 border border-[#0a84ff]/30 text-[#0a84ff] text-[13px] font-bold px-4 py-3 rounded-xl outline-none transition-colors cursor-pointer w-full"
-                  >
-                    <option value="25">Max Internal: 25</option>
-                    <option value="50">Max Internal: 50</option>
-                    <option value="75">Max Internal: 75</option>
-                    <option value="100">Max Internal: 100</option>
-                    <option value="150">Max Internal: 150</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0a84ff]/60 pointer-events-none" />
-                </div>
-              )}
-            </div>
+        {/* ─── Progress Separator ─── */}
+        <div className="relative h-[2px] w-full bg-white/[0.04] rounded-full overflow-hidden">
+          <motion.div
+            className="absolute left-0 top-0 h-full bg-success/60 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${internalPct}%` }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          />
+          {neededPct > 0 && (
+            <motion.div
+              className="absolute top-0 h-full bg-brand/50 rounded-full"
+              style={{ left: `${internalPct}%` }}
+              initial={{ width: 0 }}
+              animate={{ width: `${neededPct}%` }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+            />
+          )}
+        </div>
 
-            {/* Bottom Row: Toggles */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full">
-              {schemeInfo.hasBestOf && format !== 'practical' && (
-                <label className="flex-1 flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-xl cursor-pointer hover:bg-black/60 transition-colors">
-                  <span className="text-xs font-semibold tracking-tight text-[#F5F5F7]">
-                    Best of T1/T2 Mode
-                  </span>
-                  <div className={clsx(
-                    "w-10 h-6 rounded-full p-1 transition-colors duration-300 relative shadow-inner",
-                    useBestOf ? "bg-[#0a84ff]" : "bg-[#1c1c1e] border border-white/5"
-                  )}>
-                    <motion.div
-                      className={clsx("w-4 h-4 rounded-full shadow-md", useBestOf ? "bg-white" : "bg-[#86868B]")}
-                      animate={{ x: useBestOf ? 16 : 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  </div>
-                  <input type="checkbox" className="hidden" checked={useBestOf} onChange={() => setUseBestOf(!useBestOf)} />
-                </label>
-              )}
-              
-              {/* Relative Grading Toggle */}
-              <label className="flex-1 flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-xl cursor-pointer hover:bg-black/60 transition-colors">
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold tracking-tight text-[#ff9f0a]">
-                    Relative Curve Mode
-                  </span>
-                  <span className="text-[9px] text-[#86868B]">Shift grade boundaries</span>
-                </div>
-                <div className={clsx(
-                  "w-10 h-6 rounded-full p-1 transition-colors duration-300 relative shadow-inner",
-                  relativeMode ? "bg-[#ff9f0a]" : "bg-[#1c1c1e] border border-white/5"
-                )}>
-                  <motion.div
-                    className={clsx("w-4 h-4 rounded-full shadow-md", relativeMode ? "bg-white" : "bg-[#86868B]")}
-                    animate={{ x: relativeMode ? 16 : 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                </div>
-                <input type="checkbox" className="hidden" checked={relativeMode} onChange={() => setRelativeMode(!relativeMode)} />
-              </label>
-            </div>
+        {/* ─── Section 4: Grade Target Table ─── */}
+        <div className="flex flex-col">
+          {/* Table Header */}
+          <div className="grid grid-cols-[45px_1fr_65px_65px_24px] gap-1 px-2 pb-2 text-[10px] font-bold uppercase tracking-widest text-foreground-muted/60">
+            <span>Grade</span>
+            <span>SGPA</span>
+            <span className="text-right">Need</span>
+            <span className="text-right">Status</span>
+            <span />
           </div>
 
-          {/* Expected Class Average Slider */}
-          <AnimatePresence>
-            {relativeMode && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden w-full"
-              >
-                <div className="bg-[#ff9f0a]/5 border border-[#ff9f0a]/20 rounded-xl p-4 flex flex-col gap-4 mt-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-[#ff9f0a]">Expected Class Average</span>
-                    <span className="text-lg font-bold text-[#ff9f0a]">{expectedAvg}%</span>
-                  </div>
-                  <input 
-                    type="range" min={30} max={90} step={5} 
-                    value={expectedAvg} onChange={(e) => setExpectedAvg(parseInt(e.target.value))} 
-                    className="w-full accent-[#ff9f0a] cursor-ew-resize bg-black h-2 rounded-full outline-none appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#ff9f0a] [&::-webkit-slider-thumb]:rounded-full"
-                  />
-                  <p className="text-[10px] text-[#ff9f0a]/70 leading-tight bg-black/30 p-2 rounded-md">
-                    {expectedAvg < 60 ? "Hard paper detected. Grade boundaries will shift downwards, making it mathematically easier to score high grades." : 
-                     expectedAvg > 60 ? "Easy paper detected. Grade boundaries will shift upwards, meaning you need more marks to secure high grades." : 
-                     "Standard distribution. Grade boundaries remain at their absolute baseline values."}
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Dynamic Inputs */}
-          <div className={clsx("grid gap-3 relative z-10 w-full", format === 'practical' ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-2")}>
-            {schemeInfo.components.map((comp, idx) => (
-               <div key={comp.id} className={clsx("transition-all w-full", format !== 'practical' && schemeInfo.components.length % 2 !== 0 && idx === schemeInfo.components.length - 1 ? "col-span-2" : "col-span-1")}>
-                 <InputField 
-                   label={comp.label} 
-                   value={scores[comp.id] || ''} 
-                   setValue={(v) => handleScoreChange(comp.id, v)} 
-                   max={comp.max} 
-                 />
-               </div>
-            ))}
-          </div>
-
-          {/* Micro-Analytics Progress Bar */}
-          <div className="pt-6 relative z-10 space-y-3 border-t border-white/5 w-full">
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-[#86868B] flex items-center gap-1.5"><BarChart2 className="w-3.5 h-3.5" /> Performance Breakdown</span>
-              <span className="text-[#F5F5F7]">{internals.scoredBase.toFixed(1)} / {totalPossibleOverall} Total Possible</span>
-            </div>
-            
-            <div className="h-3 w-full bg-black/50 rounded-full overflow-hidden flex relative shadow-inner">
-              {/* Internal Secured */}
-              <motion.div 
-                className="h-full bg-[#34c759] relative" 
-                initial={{ width: 0 }}
-                animate={{ width: `${(internals.scoredBase / totalPossibleOverall) * 100}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                 <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20" />
-              </motion.div>
-              
-              {/* Needed for Locked Target */}
-              {targetPath && targetPath.status !== 'impossible' && targetPath.status !== 'secured' && (
-                <motion.div 
-                  className="h-full bg-[#0a84ff] relative opacity-80" 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(targetPath.needed / totalPossibleOverall) * 100}%` }}
-                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-                >
-                  <div className="absolute inset-0 flex items-center overflow-hidden">
-                    <div className="w-full h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(255,255,255,0.1)_4px,rgba(255,255,255,0.1)_8px)]" />
-                  </div>
-                </motion.div>
-              )}
-            </div>
-            
-            <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-[#86868B]">
-              <span className="text-[#34c759]">Secured Internal</span>
-              {targetPath && targetPath.status !== 'impossible' && targetPath.status !== 'secured' && (
-                <span className="text-[#0a84ff]">Needed Final</span>
-              )}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* THE POSSIBILITY MATRIX - Unified List (Placement Page Style) */}
-        <motion.div 
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-20px" }}
-          className="flex-1 flex flex-col space-y-4 pb-4"
-        >
-          <div className="flex items-center justify-between px-2">
-            <h3 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
-              Possibility Target Ledger
-            </h3>
-            <span className="text-xs font-semibold text-[#86868B]">Click to Pin Goal</span>
-          </div>
-
-          <div className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl flex flex-col">
-            {matrix.map((row, i) => {
+          {/* Table Rows */}
+          <div className="flex flex-col">
+            {matrix.map(row => {
               const isPinned = lockedGrade === row.grade;
-              const isLast = i === matrix.length - 1;
-              const statusColor = 
-                row.status === 'impossible' ? "text-[#ff453a]" :
-                row.status === 'critical' ? "text-[#ff9f0a]" :
-                row.status === 'secured' ? "text-[#34c759]" :
-                "text-white";
-
               return (
-                <div 
-                  key={row.grade} 
+                <div
+                  key={row.grade}
+                  onClick={() => {
+                    if (row.status !== 'impossible') {
+                      setLockedGrade(row.grade === lockedGrade ? null : row.grade);
+                      if (selectedCourse) store.updateCourse(selectedCourse.id, { grade: row.grade });
+                    }
+                  }}
                   className={clsx(
-                    "group flex flex-col transition-all duration-300",
-                    isPinned ? "bg-white/5" : "bg-transparent hover:bg-white/5",
-                    !isLast && "border-b border-white/5",
-                    row.status === 'impossible' && "opacity-50 cursor-not-allowed grayscale"
+                    "group grid grid-cols-[45px_1fr_65px_65px_24px] gap-1 items-center px-2 h-10 rounded-lg cursor-pointer transition-colors duration-150",
+                    isPinned ? "bg-brand/8 border border-brand/20" : "border border-transparent hover:bg-white/[0.03]",
+                    row.status === 'impossible' && "opacity-35 cursor-not-allowed"
                   )}
                 >
-                  {/* Row Header */}
-                  <div 
-                    onClick={() => {
-                      if (row.status !== 'impossible') {
-                        setLockedGrade(row.grade === lockedGrade ? null : row.grade);
-                        if (selectedCourse) store.updateCourse(selectedCourse.id, { grade: row.grade });
-                      }
-                    }}
-                    className="flex items-center justify-between gap-4 py-5 px-6 cursor-pointer relative z-10 focus:outline-none"
-                  >
-                    {isPinned && (
-                      <motion.div layoutId="matrix-lock" className="absolute inset-0 bg-gradient-to-r from-[#0a84ff]/0 via-[#0a84ff]/5 to-[#0a84ff]/0 pointer-events-none" />
-                    )}
-                    
-                    {/* Left: Grade & Name */}
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className={clsx(
-                        "flex flex-col items-center justify-center w-12 h-12 rounded-xl shrink-0 border transition-colors",
-                        isPinned ? "bg-[#0a84ff]/10 border-[#0a84ff]/30 text-[#0a84ff]" :
-                        row.status === 'secured' ? "bg-[#34c759]/10 border-[#34c759]/30 text-[#34c759]" :
-                        "bg-[#1c1c1e] border-white/5 text-white"
-                      )}>
-                        <span className="text-xl font-bold leading-none">{row.grade}</span>
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-semibold text-white tracking-tight flex items-center gap-2">
-                          Projected SGPA: {row.projectedSgpa.toFixed(2)}
-                          {isPinned && <Pin size={14} className="text-[#0a84ff] fill-[#0a84ff]" />}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {row.delta !== 0 && row.status !== 'impossible' && (
-                            <span className={clsx("text-xs font-semibold", row.delta > 0 ? "text-[#34c759]" : "text-[#86868B]")}>
-                              {row.delta > 0 ? "+" : ""}{row.delta.toFixed(2)} vs current
-                            </span>
-                          )}
-                          {relativeMode && row.relativeBoundaryOffset !== 0 && (
-                            <span className="text-[10px] text-[#ff9f0a] font-semibold bg-[#ff9f0a]/10 px-1.5 py-0.5 rounded">
-                              Curve: {row.relativeBoundaryOffset > 0 ? '+' : ''}{row.relativeBoundaryOffset.toFixed(1)}%
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                  {/* Grade */}
+                  <span className={clsx(
+                    "text-sm font-bold tabular-nums",
+                    isPinned ? "text-brand" :
+                    row.status === 'secured' ? "text-success" :
+                    row.status === 'impossible' ? "text-foreground-muted" :
+                    "text-foreground"
+                  )}>
+                    {row.grade}
+                  </span>
 
-                    {/* Right: Needed & Status */}
-                    <div className="flex items-center gap-6 shrink-0">
-                      <div className="flex flex-col items-end gap-1">
-                        {row.status === 'secured' ? (
-                          <>
-                            <CheckCircle2 className="w-5 h-5 text-[#34c759] mb-0.5" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#34c759]/80">Guaranteed</span>
-                          </>
-                        ) : row.status === 'impossible' ? (
-                          <>
-                            <ShieldAlert className="w-5 h-5 text-[#ff453a] mb-0.5" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#ff453a]">Out of Reach</span>
-                          </>
-                        ) : (
-                          <>
-                            <div className="flex items-baseline gap-1">
-                              <span className={clsx(
-                                "text-xl font-bold tracking-tight",
-                                isPinned ? "text-[#0a84ff]" : statusColor
-                              )}>
-                                {row.needed}
-                              </span>
-                              {row.maxExamMarks > 0 && (
-                                <span className="text-xs font-semibold text-[#86868B]">/{row.maxExamMarks}</span>
-                              )}
-                            </div>
-                            {row.maxExamMarks > 0 && (
-                              <span className={clsx(
-                                "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded transition-colors",
-                                isPinned ? "bg-[#0a84ff]/20 text-[#0a84ff]" :
-                                row.status === 'critical' ? "bg-white/5 text-[#86868B]" :
-                                "bg-white/10 text-white/70"
-                              )}>
-                                {row.status}
-                              </span>
-                            )}
-                          </>
+                  {/* SGPA + Delta */}
+                  <div className="flex flex-col justify-center min-w-0">
+                    <span className="text-xs font-semibold text-foreground tabular-nums leading-none">{row.projectedSgpa.toFixed(2)}</span>
+                    {(row.delta !== 0 && row.status !== 'impossible') || (relativeMode && row.relativeBoundaryOffset !== 0) ? (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {row.delta !== 0 && row.status !== 'impossible' && (
+                          <span className={clsx("text-[9px] font-semibold tabular-nums leading-none", row.delta > 0 ? "text-success/70" : "text-foreground-muted/50")}>
+                            {row.delta > 0 ? "+" : ""}{row.delta.toFixed(2)}
+                          </span>
+                        )}
+                        {relativeMode && row.relativeBoundaryOffset !== 0 && (
+                          <span className="text-[8px] text-warning/60 font-semibold leading-none">
+                            {row.relativeBoundaryOffset > 0 ? '↑' : '↓'}{Math.abs(row.relativeBoundaryOffset).toFixed(0)}
+                          </span>
                         )}
                       </div>
-                      
-                      {/* Accordion Arrow / Pin Action */}
-                      <button 
-                        aria-label={isPinned ? "Unpin grade" : "Pin grade"}
-                        className={clsx(
-                          "p-2 rounded-full transition-all duration-300 border flex items-center justify-center shrink-0 w-8 h-8",
-                          isPinned 
-                            ? "bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/40 shadow-[0_0_15px_rgba(10,132,255,0.3)]" 
-                            : "bg-white/5 text-white/40 border-white/10 hover:text-white hover:bg-white/10 opacity-0 group-hover:opacity-100"
-                        )}
-                      >
-                        {isPinned ? <ChevronUp size={16} /> : <Pin size={14} />}
-                      </button>
-                    </div>
+                    ) : null}
                   </div>
 
-                  {/* Accordion Expanded Copilot State */}
-                  <AnimatePresence>
-                    {isPinned && row.status !== 'impossible' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden bg-black/20 border-t border-white/5"
-                      >
-                        <div className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-8">
-                          <div className="flex flex-col items-center gap-2 shrink-0">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0a84ff] flex items-center gap-1 mb-2">
-                              <Zap size={12} fill="currentColor" /> Copilot Strategy
-                            </h4>
-                            {row.status === 'secured' ? (
-                              <div className="w-16 h-16 flex items-center justify-center shrink-0 bg-[#34c759]/10 text-[#34c759] rounded-full ring-1 ring-[#34c759]/30 shadow-[0_0_30px_rgba(52,199,89,0.15)]">
-                                <CheckCircle2 className="w-8 h-8" />
-                              </div>
-                            ) : (
-                              <SafetyGauge ratio={internals.scoredBase / internals.maxBase} color="#0a84ff" />
-                            )}
-                          </div>
-                          
-                          <div className="flex-1">
-                            {row.status === 'secured' ? (
-                              <p className="text-sm font-medium text-[#34c759] leading-relaxed">
-                                Grade <strong className="text-white text-lg">&apos;{row.grade}&apos;</strong> is mathematically guaranteed from your internal marks alone. You do not need to score any marks in the end-semester exam.
-                              </p>
-                            ) : (
-                              <div className="space-y-3">
-                                <p className="text-sm font-medium text-white/80 leading-relaxed">
-                                  To secure an <strong className="text-white text-lg">&apos;{row.grade}&apos;</strong>, you must score <strong className="text-white bg-white/10 px-2 py-0.5 rounded">{row.needed}/{row.maxExamMarks}</strong> in the final exam. That's about <strong className="text-[#0a84ff]">{(row.needed / row.maxExamMarks * 100).toFixed(0)}%</strong> of the paper.
-                                </p>
-                                {row.marginOfError !== null && row.marginOfError > 0 && (
-                                  <div className="p-3 rounded-xl bg-[#ff453a]/10 border border-[#ff453a]/20 inline-block w-full">
-                                    <p className="text-xs font-semibold text-[#ff453a]">
-                                      Margin of Error: You can afford to lose exactly <strong>{row.marginOfError} marks</strong> and still secure this grade.
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
+                  {/* Needed */}
+                  <span className="text-right text-xs font-bold tabular-nums text-foreground-muted">
+                    {row.status === 'secured' ? '—' : row.status === 'impossible' ? '×' : (
+                      <>{row.needed}<span className="text-white/20">/{row.maxExamMarks}</span></>
                     )}
-                  </AnimatePresence>
+                  </span>
+
+                  {/* Status */}
+                  <div className="flex justify-end">
+                    <span className={clsx(
+                      "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md leading-none",
+                      statusBadgeClass(row.status, isPinned)
+                    )}>
+                      {row.status === 'secured' ? 'safe' : row.status === 'impossible' ? 'n/a' : row.status}
+                    </span>
+                  </div>
+
+                  {/* Pin */}
+                  <div className="flex justify-center">
+                    {isPinned ? (
+                      <Pin size={11} className="text-brand fill-brand" />
+                    ) : (
+                      <Pin size={11} className="text-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
-        </motion.div>
+        </div>
+
+        {/* ─── Pinned Summary (only when a grade is pinned) ─── */}
+        <AnimatePresence>
+          {targetPath && lockedGrade && targetPath.status !== 'impossible' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className={clsx(
+                "rounded-xl border px-4 py-3 text-xs leading-relaxed",
+                targetPath.status === 'secured'
+                  ? "border-success/20 bg-success/5 text-success"
+                  : "border-brand/20 bg-brand/5 text-foreground-muted"
+              )}>
+                {targetPath.status === 'secured' ? (
+                  <p>
+                    Grade <strong className="text-foreground">&apos;{targetPath.grade}&apos;</strong> is guaranteed from internals alone.
+                  </p>
+                ) : (
+                  <p>
+                    For <strong className="text-foreground">&apos;{targetPath.grade}&apos;</strong>: score{' '}
+                    <strong className="text-foreground">{targetPath.needed}/{targetPath.maxExamMarks}</strong>{' '}
+                    ({(targetPath.needed / targetPath.maxExamMarks * 100).toFixed(0)}%) in finals.
+                    {targetPath.marginOfError !== null && targetPath.marginOfError > 0 && (
+                      <span className="text-warning"> Margin: {targetPath.marginOfError} marks.</span>
+                    )}
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     </div>
   );
 }
 
-function CustomDropdown({ options, value, onChange }: { options: { value: string, label: string }[], value: string, onChange: (v: string) => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const selectedOption = options.find(o => o.value === value);
+/* ════════════════════════════════════════════════════════════
+   HELPER COMPONENTS — Compact, professional, minimal
+   ════════════════════════════════════════════════════════════ */
+
+function PillSelect({ options, value, onChange, placeholder = "—", compact = false }: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  compact?: boolean;
+}) {
+  return (
+    <Select.Root value={value || "none"} onValueChange={(v) => onChange(v === "none" ? "" : v)}>
+      <Select.Trigger className={clsx(
+        "inline-flex items-center gap-1.5 font-bold outline-none transition-colors cursor-pointer border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] data-[state=open]:bg-white/[0.1] data-[state=open]:border-white/10",
+        compact ? "h-7 px-3 rounded-full text-[10px] text-foreground-muted uppercase tracking-wider" : "h-9 px-4 rounded-xl text-[13px] text-foreground w-full justify-between"
+      )}>
+        <Select.Value placeholder={placeholder} />
+        <Select.Icon><ChevronDown size={compact ? 10 : 12} className="text-white/30" /></Select.Icon>
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Content
+          position="popper"
+          sideOffset={4}
+          className="bg-[#1c1c1e] border border-white/[0.08] rounded-lg shadow-2xl z-[9999] overflow-hidden min-w-[120px] font-sans"
+        >
+          <Select.ScrollUpButton className="flex items-center justify-center h-5 text-white/40">
+            <ChevronUp size={12} />
+          </Select.ScrollUpButton>
+          <Select.Viewport className="py-1 max-h-[200px]">
+            {options.map(opt => (
+              <Select.Item
+                key={opt.value}
+                value={opt.value}
+                className="px-3 py-1.5 text-[12px] font-semibold text-foreground-muted hover:bg-white/[0.05] hover:text-foreground focus:bg-white/[0.05] focus:text-foreground outline-none cursor-pointer data-[state=checked]:text-brand"
+              >
+                <Select.ItemText>{opt.label}</Select.ItemText>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+          <Select.ScrollDownButton className="flex items-center justify-center h-5 text-white/40">
+            <ChevronDown size={12} />
+          </Select.ScrollDownButton>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
+  );
+}
+
+function DotToggle({ label, active, onToggle, variant = "brand" }: {
+  label: string;
+  active: boolean;
+  onToggle: () => void;
+  variant?: "brand" | "warning";
+}) {
+  const dotColor = variant === "warning"
+    ? (active ? "bg-warning" : "bg-white/10")
+    : (active ? "bg-brand" : "bg-white/10");
+  const textColor = variant === "warning"
+    ? (active ? "text-warning" : "text-foreground-muted/50")
+    : (active ? "text-brand" : "text-foreground-muted/50");
 
   return (
-    <div className="relative group z-50">
-      <div 
-        onClick={() => setIsOpen(!isOpen)}
-        className={clsx(
-          "w-full bg-[#1c1c1e]/60 backdrop-blur-md border border-white/10 text-white text-[15px] font-semibold px-5 py-4 rounded-[1.5rem] flex justify-between items-center transition-all duration-300 cursor-pointer hover:bg-white/5",
-          isOpen && "bg-[#1c1c1e] border-white/20"
-        )}
-      >
-        <span className="truncate">{selectedOption ? selectedOption.label : 'Select...'}</span>
-        <ChevronDown className={clsx("text-white/40 transition-transform duration-300", isOpen && "rotate-180 text-white")} size={20} />
-      </div>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -5, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -5, scale: 0.98 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute top-full left-0 w-full mt-2 bg-[#1c1c1e] border border-white/10 rounded-2xl p-2 shadow-2xl max-h-60 overflow-y-auto custom-scrollbar z-50 origin-top backdrop-blur-xl"
-          >
-            {options.map(o => (
-              <div 
-                key={o.value} 
-                onClick={() => { onChange(o.value); setIsOpen(false); }}
-                className={clsx(
-                  "px-4 py-3 rounded-xl cursor-pointer text-sm font-semibold transition-all duration-200 truncate",
-                  o.value === value ? "bg-[#0a84ff]/10 text-[#0a84ff]" : "text-white/60 hover:bg-white/5 hover:text-white"
-                )}
-              >
-                {o.label}
-              </div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <button
+      onClick={onToggle}
+      className={clsx(
+        "inline-flex items-center gap-1.5 h-7 px-3 rounded-full border transition-all text-[10px] font-bold uppercase tracking-wider",
+        active ? "bg-white/[0.08] border-white/[0.12]" : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]"
+      )}
+    >
+      <div className={clsx("w-2 h-2 rounded-full transition-colors", dotColor)} />
+      <span className={clsx("transition-colors", textColor)}>{label}</span>
+    </button>
   );
 }
 
-function InputField({ label, value, setValue, max }: { label: string, value: string, setValue: (v: string) => void, max: number }) {
-  const numValue = parseFloat(value) || 0;
-  const percentage = Math.min((numValue / max) * 100, 100);
-
+function InlineInput({ label, value, setValue, max }: {
+  label: string;
+  value: string;
+  setValue: (v: string) => void;
+  max: number;
+}) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (val === '' || val === '.') return setValue(val);
@@ -771,52 +625,14 @@ function InputField({ label, value, setValue, max }: { label: string, value: str
   };
 
   return (
-    <div className="flex flex-col bg-black/40 border border-white/[0.03] focus-within:bg-black focus-within:border-white/10 rounded-2xl transition-all relative group pb-1 w-full">
-      <div className="flex flex-col px-4 pt-3 pb-4 z-10 gap-1">
-        <span className="text-xs font-semibold text-[#86868B] truncate">{label}</span>
-        <input
-          type="number" inputMode="decimal" step="0.5"
-          value={value} onChange={handleChange} placeholder="0"
-          className="bg-transparent border-none outline-none w-full text-left text-xl font-bold text-white tracking-tight placeholder:text-white/10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none m-0"
-        />
-      </div>
-      
-      {/* Interactive Drag Slider */}
-      <div className="absolute bottom-0 left-0 w-full h-1.5 opacity-40 group-hover:opacity-100 transition-opacity rounded-b-2xl overflow-hidden">
-        <div className="absolute top-0 left-0 h-full bg-[#0a84ff] pointer-events-none transition-all duration-75 ease-linear" style={{ width: `${percentage}%` }} />
-        <input 
-          type="range" min={0} max={max} step={0.5} 
-          value={numValue} onChange={handleChange} 
-          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize"
-        />
-      </div>
-    </div>
-  );
-}
-
-function SafetyGauge({ ratio, color = '#0a84ff' }: { ratio: number, color?: string }) {
-  const safeRatio = isNaN(ratio) ? 0 : Math.min(Math.max(ratio, 0), 1);
-  const radius = 24;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - safeRatio * circumference;
-
-  return (
-    <div className="relative w-16 h-16 flex items-center justify-center shrink-0 bg-black/40 rounded-full shadow-inner border border-white/[0.03]">
-      <svg className="transform -rotate-90 w-16 h-16 absolute inset-0">
-        <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-white/[0.05]" />
-        <motion.circle 
-          cx="32" cy="32" r={radius} 
-          stroke={color} strokeWidth="4" fill="transparent" 
-          strokeDasharray={circumference} 
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.1 }}
-          strokeLinecap="round"
-        />
-      </svg>
-      <div className="z-10 text-xs font-black text-white tracking-tight">
-        {Math.round(safeRatio * 100)}%
-      </div>
+    <div className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white/[0.03] border border-white/[0.08] focus-within:border-white/20 focus-within:bg-white/[0.08] transition-all">
+      <span className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider shrink-0">{label}</span>
+      <input
+        type="number" inputMode="decimal" step="0.5"
+        value={value} onChange={handleChange} placeholder="0"
+        className="bg-transparent border-none outline-none w-7 text-center text-[11px] font-bold text-foreground tabular-nums placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <span className="text-[9px] text-white/20 font-bold -ml-1">/{max}</span>
     </div>
   );
 }

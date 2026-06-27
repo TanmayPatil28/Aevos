@@ -164,7 +164,7 @@ export default function TraceDrawer({
               <div className="flex items-start space-x-2 text-[11px] text-slate-500">
                 <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
                 <p>
-                  GradeFlow calculations are strictly deterministic and run fully on the client-side
+                  Aevos calculations are strictly deterministic and run fully on the client-side
                   according to verified university statutes. No LLM-hallucination occurs.
                 </p>
               </div>

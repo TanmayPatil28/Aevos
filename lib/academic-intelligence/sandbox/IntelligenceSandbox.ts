@@ -73,7 +73,7 @@ export class IntelligenceSandbox {
 
     // Evaluate Course backlogs based on hypothetical grades
     this.projectedProfile.courses.forEach(c => {
-      if (c.grade && ["F", "FF", "FAIL", "ABSENT", "AB"].includes(c.grade.toUpperCase())) {
+      if (c.grade && ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes(c.grade.toUpperCase())) {
         activeBacklogsCount++;
       }
     });

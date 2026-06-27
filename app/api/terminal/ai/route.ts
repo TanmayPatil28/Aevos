@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       model: "gemini-2.5-flash"
     });
 
-    const systemPrompt = `You are the GradeFlow Terminal AI, a highly advanced academic and career advisor embedded natively in a hacker-style terminal.
+    const systemPrompt = `You are the Aevos Terminal AI, a highly advanced academic and career advisor embedded natively in a hacker-style terminal.
 You act as a personalized and guided mentor for students, ensuring you guide them properly, accurately, and step-by-step based on their specific profile.
 
 BEHAVIOR RULES (always active):

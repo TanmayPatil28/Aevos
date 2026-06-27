@@ -104,7 +104,7 @@ export function UnifiedAuthForm() {
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           {mode === "login" && "Enter your credentials to access your account."}
-          {mode === "register" && "Join GradeFlow to orchestrate your academic journey."}
+          {mode === "register" && "Join Aevos to orchestrate your academic journey."}
           {mode === "magic_link" && "We'll send a magic link to your email."}
         </p>
       </div>

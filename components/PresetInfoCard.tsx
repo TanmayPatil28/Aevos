@@ -110,7 +110,7 @@ export default function PresetInfoCard({ compact = false }: { compact?: boolean 
                   Preset Safety Isolation Active
                 </span>
                 <p className="text-[11px] text-red-200/70 leading-relaxed font-medium">
-                  The academic preset for <strong className="text-white">{isolatedPresetName}</strong> was temporarily isolated because its rule formulas failed GradeFlow Trust validation checks. To protect calculations, we are safely running on a standardized 10-point scale.
+                  The academic preset for <strong className="text-white">{isolatedPresetName}</strong> was temporarily isolated because its rule formulas failed Aevos Trust validation checks. To protect calculations, we are safely running on a standardized 10-point scale.
                 </p>
                 <button
                   onClick={() => setSelectedUniId("jspm")}

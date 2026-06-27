@@ -143,6 +143,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[API Sync] Fatal Error:", error);
-    return NextResponse.json({ error: "Failed to process actions" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to process actions", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

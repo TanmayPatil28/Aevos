@@ -61,7 +61,7 @@ const TimePickerPopover = ({ value, onChange, className = "" }: { value: string;
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-[65px] flex items-center justify-center gap-1 bg-transparent text-[13px] font-mono font-medium text-white/90 hover:text-white outline-none cursor-pointer rounded px-1 border border-transparent hover:border-white/10 hover:bg-white/[0.02] focus:border-[#10b981]/50 focus:bg-[#10b981]/5 transition-all"
+        className="w-[65px] flex items-center justify-center gap-1 bg-transparent text-[13px] font-mono font-medium text-white/90 hover:text-white outline-none cursor-pointer rounded px-1 border border-transparent hover:border-white/10 hover:bg-white/[0.02] focus:border-brand/50 focus:bg-brand/5 transition-all"
       >
         {value}
       </button>
@@ -120,7 +120,7 @@ const TimePickerPopover = ({ value, onChange, className = "" }: { value: string;
 function generateAIPrompt(courses: { id: string; code: string; name: string }[]): string {
   const courseList = courses.map(c => `  - "${c.code}" (name: "${c.name}")`).join("\n");
   
-  return `I need you to convert my university timetable into a JSON format for GradeFlow. Here is the exact JSON schema I need:
+  return `I need you to convert my university timetable into a JSON format for Aevos. Here is the exact JSON schema I need:
 
 {
   "monday": [
@@ -338,11 +338,11 @@ export default function TimetableManager() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "LECTURE": return "bg-[#A855F7] shadow-[0_0_8px_rgba(168,85,247,0.6)]";
-      case "PRACTICAL": return "bg-[#4F8EF7] shadow-[0_0_8px_rgba(79,142,247,0.6)]";
-      case "LAB": return "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]";
-      case "TUTORIAL": return "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]";
-      default: return "bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]";
+      case "LECTURE": return "text-[#C084FC]"; // purple-400
+      case "PRACTICAL": return "text-[#60A5FA]"; // blue-400
+      case "LAB": return "text-[#4ADE80]"; // green-400
+      case "TUTORIAL": return "text-[#FACC15]"; // yellow-400
+      default: return "text-white";
     }
   };
 
@@ -352,7 +352,7 @@ export default function TimetableManager() {
   const filteredTotal = DAYS_OF_WEEK.reduce((acc, day) => acc + getFilteredEntries(day).length, 0);
 
   return (
-    <div className="w-full bg-[#1c1c1e] border border-white/[0.04] rounded-[32px] p-6 md:p-8 shadow-[0_0_20px_rgba(0,0,0,0.2)] relative overflow-hidden">
+    <div className="w-full bg-surface border border-white/[0.04] rounded-[32px] p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.05)] relative overflow-hidden">
       
       {/* Header */}
       <div className="relative z-10 flex flex-col gap-5 mb-6">
@@ -374,7 +374,7 @@ export default function TimetableManager() {
                 {selectedBatch !== "ALL" && (
                   <>
                     <span className="w-1 h-1 rounded-full bg-white/20" />
-                    <span className="text-[10px] font-mono text-[#10b981]/80 tracking-widest uppercase font-bold">
+                    <span className="text-[10px] font-mono text-brand/80 tracking-widest uppercase font-bold">
                       {filteredTotal} for {selectedBatch}
                     </span>
                   </>
@@ -385,16 +385,16 @@ export default function TimetableManager() {
 
           {/* Batch Selector */}
           <div className="flex items-center gap-3">
-            <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Batch</span>
-            <div className="flex gap-1.5 bg-white/[0.02] p-1 rounded-full border border-white/[0.05]">
+            <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">BATCH</span>
+            <div className="flex bg-white/[0.04] p-1 rounded-full border border-white/[0.04] shadow-inner backdrop-blur-md">
               {BATCHES.map(batch => (
                 <button
                   key={batch}
                   onClick={() => setSelectedBatch(batch)}
-                  className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wider transition-all ${
+                  className={`px-3 py-1 rounded-full text-[9px] font-bold tracking-wider transition-all ${
                     selectedBatch === batch 
-                      ? "bg-white text-black shadow-[0_2px_10px_rgba(255,255,255,0.15)]" 
-                      : "text-white/50 hover:text-white/90"
+                      ? "bg-white text-black shadow-sm" 
+                      : "bg-transparent text-white/50 hover:text-white"
                   }`}
                 >
                   {batch}
@@ -406,28 +406,30 @@ export default function TimetableManager() {
 
         {/* Bottom Row: Navigation */}
         <div className="flex flex-wrap gap-2">
-          {([
-            { key: "VISUAL" as const, label: "VISUAL EDITOR" },
-            { key: "AI_SCANNER" as const, label: "AI SCANNER" },
-            { key: "AI_PROMPT" as const, label: "AI PROMPT" },
-            { key: "JSON" as const, label: "JSON IMPORT" },
-            { key: "SETTINGS" as const, label: "SETTINGS & LOGS" }
-          ]).map(tab => (
-            <button 
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-2.5 rounded-full text-[11px] font-bold tracking-wider transition-all flex items-center gap-1.5 ${
-                activeTab === tab.key 
-                  ? "bg-white text-black shadow-[0_2px_10px_rgba(255,255,255,0.15)]" 
-                  : "bg-white/[0.04] text-white/60 hover:bg-white/[0.08] hover:text-white/90"
-              }`}
-            >
-              {(tab.key === "AI_PROMPT" || tab.key === "AI_SCANNER") && (
-                <Sparkles className={`w-3.5 h-3.5 ${activeTab === tab.key ? "text-black" : "opacity-40"}`} />
-              )}
-              {tab.label}
-            </button>
-          ))}
+          <div className="flex bg-white/[0.04] p-1 rounded-full border border-white/[0.04] shadow-inner backdrop-blur-md">
+            {([
+              { key: "VISUAL" as const, label: "VISUAL EDITOR" },
+              { key: "AI_SCANNER" as const, label: "AI SCANNER" },
+              { key: "AI_PROMPT" as const, label: "AI PROMPT" },
+              { key: "JSON" as const, label: "JSON IMPORT" },
+              { key: "SETTINGS" as const, label: "SETTINGS & LOGS" }
+            ]).map(tab => (
+              <button 
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-4 py-2 rounded-full text-[10px] font-bold tracking-wider transition-all flex items-center gap-1.5 ${
+                  activeTab === tab.key 
+                    ? "bg-white text-black shadow-sm" 
+                    : "bg-transparent text-white/50 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                {(tab.key === "AI_PROMPT" || tab.key === "AI_SCANNER") && (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -453,7 +455,7 @@ export default function TimetableManager() {
                   
                   {/* LEFT PANE: Days List */}
                   <div 
-                    className="w-full md:w-[220px] shrink-0 space-y-1 outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
+                    className="w-full md:w-[220px] shrink-0 space-y-1 outline-none focus-visible:ring-2 focus-visible:ring-white/20 bg-background p-2 rounded-3xl shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)] border-t border-black/60 border-b border-white/5"
                     onKeyDown={(e) => {
                       const currentIndex = DAYS_OF_WEEK.indexOf(selectedDay);
                       if (e.key === "ArrowDown") {
@@ -486,7 +488,7 @@ export default function TimetableManager() {
                           {isActive && (
                             <motion.div
                               layoutId="activeDayPill"
-                              className="absolute inset-0 bg-white rounded-full shadow-[0_2px_10px_rgba(255,255,255,0.15)]"
+                              className="absolute inset-0 bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,1)]"
                               transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                             />
                           )}
@@ -507,9 +509,9 @@ export default function TimetableManager() {
                   </div>
 
                   {/* RIGHT PANE: Day Editor */}
-                  <div className="flex-1 overflow-hidden flex flex-col border border-white/[0.08] bg-white/[0.02] rounded-3xl p-6 shadow-sm">
+                  <div className="flex-1 overflow-hidden flex flex-col border border-white/[0.04] bg-surface-raised rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.05)]">
                     {/* Right Pane Header */}
-                    <div className="flex justify-between items-center mb-4 border-b border-white/[0.06] pb-4">
+                    <div className="flex justify-between items-center mb-4 border-b border-white/[0.04] pb-4">
                       <div className="flex items-center gap-3">
                         <h4 className="text-lg font-bold text-white uppercase tracking-widest">{selectedDay}</h4>
                         <span className="text-[10px] text-white/60 font-mono tracking-widest uppercase">
@@ -551,7 +553,7 @@ export default function TimetableManager() {
                               .map(entry => (
                                 <tr 
                                   key={entry.id} 
-                                  className="group bg-white/[0.01] hover:bg-white/[0.03] border-b border-white/[0.02] transition-all"
+                                  className="group hover:bg-white/[0.02] border-b border-white/[0.02] transition-all"
                                 >
                                   {/* 1. Course Details */}
                                   <td className="px-4 py-1.5 align-middle">
@@ -573,18 +575,16 @@ export default function TimetableManager() {
                                             { label: "TUTORIAL", value: "TUTORIAL" },
                                           ]}
                                           onChange={(val) => updateEntry(selectedDay, entry.id, { type: val as any })}
-                                          buttonClassName="w-full flex items-center justify-between gap-2 bg-transparent outline-none truncate text-left rounded-full border border-white/5 hover:bg-white/[0.04] px-3 py-1.5 transition-all"
+                                          buttonClassName="w-full flex items-center justify-between gap-2 bg-transparent outline-none truncate text-left hover:bg-white/[0.04] px-1 py-1.5 rounded transition-all"
                                           dropdownClassName="left-0 w-max min-w-[140px]"
                                           renderSelected={(opt) => (
-                                            <div className="flex items-center gap-2.5">
-                                              <div className={`w-1.5 h-1.5 rounded-full ${getTypeColor(opt?.value || "LECTURE")}`} />
-                                              <span className="text-[9px] font-bold text-white/80 hover:text-white uppercase tracking-widest">{opt?.label}</span>
+                                            <div className="flex items-center">
+                                              <span className={`text-[9px] font-bold uppercase tracking-widest ${getTypeColor(opt?.value || "LECTURE")}`}>{opt?.label}</span>
                                             </div>
                                           )}
                                           renderOption={(opt) => (
-                                            <div className="flex items-center gap-2.5 py-0.5">
-                                              <div className={`w-1.5 h-1.5 rounded-full ${getTypeColor(opt.value)}`} />
-                                              <span className="text-[9px] font-bold uppercase tracking-widest">{opt.label}</span>
+                                            <div className="flex items-center py-0.5">
+                                              <span className={`text-[9px] font-bold uppercase tracking-widest ${getTypeColor(opt.value)}`}>{opt.label}</span>
                                             </div>
                                           )}
                                         />
@@ -615,7 +615,7 @@ export default function TimetableManager() {
                                         value={entry.room || ""} 
                                         onChange={(e) => updateEntry(selectedDay, entry.id, { room: e.target.value })}
                                         placeholder="Add room..."
-                                        className="w-full bg-transparent text-[13px] font-medium text-white/90 hover:text-white outline-none placeholder:text-white/20 truncate transition-all cursor-text rounded px-2 py-1 -ml-2 border border-transparent hover:border-white/10 hover:bg-white/[0.02] focus:border-[#10b981]/50 focus:bg-[#10b981]/5"
+                                        className="w-full bg-transparent text-[13px] font-medium text-white/90 hover:text-white outline-none placeholder:text-white/20 truncate transition-all cursor-text rounded px-2 py-1 -ml-2 border border-transparent hover:border-white/10 hover:bg-white/[0.02] focus:border-brand/50 focus:bg-brand/5"
                                       />
                                     </div>
                                   </td>
@@ -672,7 +672,7 @@ export default function TimetableManager() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-4"
             >
-              <div className="bg-[#18181b] border border-white/[0.04] rounded-full relative overflow-hidden flex flex-col md:flex-row items-center justify-between py-4 px-5">
+              <div className="bg-surface-raised shadow-[0_8px_30px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.05)] border border-white/[0.04] rounded-full relative overflow-hidden flex flex-col md:flex-row items-center justify-between py-4 px-5">
                 
                 <div className="flex items-center gap-4 text-left">
                   {/* Solid Flat Icon */}
@@ -698,7 +698,7 @@ export default function TimetableManager() {
                   />
                   <button 
                     disabled={isScanning || courses.length === 0}
-                    className="w-full md:w-auto px-6 py-2.5 bg-[#EAB308] text-black rounded-full font-bold text-[13px] disabled:opacity-50 hover:bg-[#EAB308]/90 transition-colors flex items-center justify-center gap-2"
+                    className="w-full md:w-auto px-6 py-2 bg-gradient-to-b from-[#FDE047] to-[#EAB308] text-black/90 rounded-full font-medium text-[13px] disabled:opacity-50 hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_2px_10px_rgba(234,179,8,0.2)] border border-[#CA8A04]"
                   >
                     {isScanning ? (
                       <>
@@ -743,7 +743,7 @@ export default function TimetableManager() {
               {/* Code Editor Container */}
               <div className="bg-[#09090b] border border-white/[0.08] focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 rounded-2xl overflow-hidden transition-all duration-300 shadow-inner group">
                 {/* Editor Header */}
-                <div className="bg-[#121214] border-b border-white/[0.04] px-4 py-2.5 flex items-center justify-between transition-colors group-focus-within:bg-[#18181b]">
+                <div className="bg-background border-b border-white/[0.04] px-4 py-2.5 flex items-center justify-between transition-colors group-focus-within:bg-surface-raised">
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
@@ -759,7 +759,7 @@ export default function TimetableManager() {
                 
                 {/* Editor Body */}
                 <div className="relative">
-                  <div className="absolute left-0 top-0 bottom-0 w-10 bg-[#121214]/50 border-r border-white/[0.02] flex flex-col items-center py-4 text-[10px] font-mono text-white/20 select-none pointer-events-none z-10 overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-10 bg-background/50 border-r border-white/[0.02] flex flex-col items-center py-4 text-[10px] font-mono text-white/20 select-none pointer-events-none z-10 overflow-hidden">
                     {Array.from({ length: 50 }).map((_, i) => <span key={i} className="leading-[1.4rem]">{i + 1}</span>)}
                   </div>
                   <Editor 
@@ -782,7 +782,7 @@ export default function TimetableManager() {
               </div>
 
               {/* Minimal Monochrome Pro Tip */}
-              <div className="bg-[#18181b] border border-white/[0.04] rounded-xl p-4 flex items-start gap-4">
+              <div className="bg-surface-raised shadow-[0_8px_30px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.05)] border border-white/[0.04] rounded-3xl p-4 flex items-start gap-4">
                 <div className="w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center shrink-0 border border-white/[0.02]">
                   <Bot className="w-4 h-4 text-white/40" />
                 </div>
@@ -804,7 +804,7 @@ export default function TimetableManager() {
 
               {/* Footer Actions */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
-                <div className="flex items-center gap-2 text-[10px] text-white/30 font-mono bg-[#18181b] px-3 py-1.5 rounded-md border border-white/[0.04]">
+                <div className="flex items-center gap-2 text-[10px] text-white/30 font-mono bg-surface-raised shadow-inner px-3 py-1.5 rounded-md border border-white/[0.04]">
                   <Database className="w-3.5 h-3.5 opacity-40" />
                   <span>Supports: room, batch, faculty, type</span>
                 </div>
@@ -835,7 +835,7 @@ export default function TimetableManager() {
               {/* Left Column: Prompt Preview Editor */}
               <div className="bg-[#09090b] border border-white/[0.08] focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 rounded-2xl overflow-hidden transition-all duration-300 shadow-inner group flex flex-col h-[340px]">
                 {/* Editor Header */}
-                <div className="bg-[#121214] border-b border-white/[0.04] px-4 py-2.5 flex items-center justify-between transition-colors group-focus-within:bg-[#18181b]">
+                <div className="bg-background border-b border-white/[0.04] px-4 py-2.5 flex items-center justify-between transition-colors group-focus-within:bg-surface-raised">
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
@@ -851,7 +851,7 @@ export default function TimetableManager() {
                 
                 {/* Editor Body */}
                 <div className="relative flex-1 bg-transparent">
-                  <div className="absolute left-0 top-0 bottom-0 w-10 bg-[#121214]/50 border-r border-white/[0.02] flex flex-col items-center py-4 text-[10px] font-mono text-white/20 select-none pointer-events-none z-10 overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-10 bg-background/50 border-r border-white/[0.02] flex flex-col items-center py-4 text-[10px] font-mono text-white/20 select-none pointer-events-none z-10 overflow-hidden">
                     {Array.from({ length: 50 }).map((_, i) => <span key={i} className="leading-[1.4rem]">{i + 1}</span>)}
                   </div>
                   <div className="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -877,7 +877,7 @@ export default function TimetableManager() {
               {/* Right Column: Instructions, Links, and Copy Button */}
               <div className="flex flex-col gap-5">
                 {/* Minimal Instructions */}
-                <div className="bg-[#18181b] border border-white/[0.04] rounded-2xl p-5 flex-1">
+                <div className="bg-surface-raised shadow-[0_8px_30px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.05)] border border-white/[0.04] rounded-3xl p-5 flex-1">
                   <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
                     <Bot className="w-4 h-4 text-white/50" />
                     Import Steps
@@ -910,7 +910,7 @@ export default function TimetableManager() {
                       href={tool.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 py-3.5 bg-[#121214] hover:bg-[#18181b] border border-white/[0.05] hover:border-white/[0.15] rounded-full text-[10px] font-bold tracking-widest text-white/50 hover:text-white transition-all duration-300 group hover:shadow-[0_0_15px_rgba(255,255,255,0.03)]"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3.5 bg-background hover:bg-surface-raised border border-white/[0.05] hover:border-white/[0.15] rounded-full text-[10px] font-bold tracking-widest text-white/50 hover:text-white transition-all duration-300 group hover:shadow-[0_0_15px_rgba(255,255,255,0.03)]"
                     >
                       <span style={{ color: tool.color }} className="text-[12px] leading-none opacity-80 group-hover:opacity-100 group-hover:scale-125 transition-all drop-shadow-md">
                         {tool.icon}

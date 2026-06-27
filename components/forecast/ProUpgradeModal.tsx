@@ -72,7 +72,7 @@ export default function ProUpgradeModal({ isOpen, onClose }: ProUpgradeModalProp
               <div className="w-16 h-16 mx-auto bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 border border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
                 <Lock className="text-amber-400" size={32} />
               </div>
-              <h2 className="text-3xl font-black text-white mb-2 tracking-tight">Unlock GradeFlow <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500">PRO</span></h2>
+              <h2 className="text-3xl font-black text-white mb-2 tracking-tight">Unlock Aevos <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500">PRO</span></h2>
               <p className="text-white/60">Take control of your academic destiny with the ultimate Neural Engine upgrades.</p>
             </div>
 

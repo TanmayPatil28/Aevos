@@ -11,29 +11,29 @@ interface SkillGapDetectorProps {
 
 export default function SkillGapDetector({ role, skills, result }: SkillGapDetectorProps) {
   return (
-    <div className="w-full bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 md:p-12 relative overflow-hidden shadow-2xl">
+    <div className="w-full bg-surface/60 backdrop-blur-xl border border-border rounded-[32px] p-8 md:p-12 relative overflow-hidden shadow-2xl">
       <div className="relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
+              <div className="p-2 bg-brand rounded-xl">
                 <Crosshair size={20} className="text-[#0a84ff]" />
               </div>
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-white/50">Competency Radar</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-foreground/50">Competency Radar</h2>
             </div>
-            <h3 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2">
+            <h3 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-2">
               {role}
             </h3>
-            <p className="text-white/40 text-lg">Detailed competency overlap</p>
+            <p className="text-foreground/40 text-lg">Detailed competency overlap</p>
           </div>
           
           <div className="flex flex-col items-start md:items-end">
-            <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2">Readiness Index</span>
+            <span className="text-[11px] font-bold text-foreground/40 uppercase tracking-widest mb-2">Readiness Index</span>
             <div className="flex items-baseline gap-1">
               <span className="text-6xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text leading-none bg-gradient-to-b from-white to-white/60">
                 {result.readinessPercentage}
               </span>
-              <span className="text-3xl text-white/30 font-bold">%</span>
+              <span className="text-3xl text-foreground/30 font-bold">%</span>
             </div>
           </div>
         </div>
@@ -49,20 +49,20 @@ export default function SkillGapDetector({ role, skills, result }: SkillGapDetec
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white/5 border border-white/5 rounded-3xl p-8">
+          <div className="bg-surface-raised border border-border rounded-3xl p-8">
             <h4 className="text-[#34c759] text-sm font-bold mb-6 flex items-center gap-2 uppercase tracking-widest">
               <CheckCircle2 className="w-5 h-5" /> Acquired Skills
             </h4>
             <div className="flex flex-wrap gap-2">
               {result.presentSkills.length > 0 ? result.presentSkills.map(s => (
-                <span key={s} className="px-4 py-2 bg-[#34c759]/10 text-[#34c759] rounded-xl text-xs font-bold border border-[#34c759]/20 shadow-sm">
+                <span key={s} className="px-4 py-2 bg-status-success text-[#34c759] rounded-xl text-xs font-bold border border-status-success shadow-sm">
                   {s}
                 </span>
-              )) : <span className="text-sm text-white/30 italic font-medium">No exact matches found in profile.</span>}
+              )) : <span className="text-sm text-foreground/30 italic font-medium">No exact matches found in profile.</span>}
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/5 rounded-3xl p-8">
+          <div className="bg-surface-raised border border-border rounded-3xl p-8">
             <h4 className="text-[#ff453a] text-sm font-bold mb-6 flex items-center gap-2 uppercase tracking-widest">
               <AlertCircle className="w-5 h-5" /> Missing Requirements
             </h4>
@@ -71,7 +71,7 @@ export default function SkillGapDetector({ role, skills, result }: SkillGapDetec
                 <span key={s} className="px-4 py-2 bg-[#ff453a]/10 text-[#ff453a] rounded-xl text-xs font-bold border border-[#ff453a]/20 shadow-sm">
                   {s}
                 </span>
-              )) : <span className="text-sm text-white/30 italic font-medium">All core requirements met.</span>}
+              )) : <span className="text-sm text-foreground/30 italic font-medium">All core requirements met.</span>}
             </div>
           </div>
         </div>

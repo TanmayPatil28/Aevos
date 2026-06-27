@@ -10,6 +10,9 @@ import { useUSMStore } from "@/stores/usmStore";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import WorkspaceContent from "@/components/layout/WorkspaceContent";
 import WorkspaceSection from "@/components/layout/WorkspaceSection";
+import Card from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import CalculationBreakdown from "@/components/CalculationBreakdown";
 import { useNetworkState } from "@/lib/hooks/useNetworkState";
 import { diagnostics } from "@/lib/diagnostics";
@@ -177,45 +180,23 @@ export default function ManualCalculator() {
               <div className="w-full flex flex-col gap-6">
 
                 {/* Header Toolbar */}
-                <div className="relative overflow-hidden bg-[#1D1D1F] border border-white/5 px-6 py-5 rounded-[32px] shrink-0 flex justify-between items-center group shadow-none">
+                <Card padding="md" className="shrink-0 flex justify-between items-center group">
                   
                   <div className="flex items-center gap-3 relative z-10">
-                    <Calculator className="text-[#4F8EF7] w-5 h-5" />
+                    <Calculator className="text-brand w-5 h-5" />
                     <span className="font-bold text-[#F5F5F7] tracking-tight text-lg">Manual Sandbox</span>
                   </div>
 
                   <div className="flex items-center gap-3 relative z-10">
                     {/* Mode Toggle */}
-                    <div className="flex bg-[#2c2c2e] p-1 rounded-full relative">
-                      <motion.button
-                        onClick={() => setUsePercentage(true)}
-                        whileTap={{ scale: 0.95 }}
-                        className={`relative px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 outline-none ${usePercentage ? 'text-black' : 'text-[#86868b] hover:text-[#F5F5F7]'}`}
-                      >
-                        {usePercentage && (
-                          <motion.div
-                            layoutId="percentGradesBg"
-                            className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                            transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
-                          />
-                        )}
-                        <span className="relative z-10">Percent</span>
-                      </motion.button>
-                      <motion.button
-                        onClick={() => setUsePercentage(false)}
-                        whileTap={{ scale: 0.95 }}
-                        className={`relative px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 w-24 outline-none ${!usePercentage ? 'text-black' : 'text-[#86868b] hover:text-[#F5F5F7]'}`}
-                      >
-                        {!usePercentage && (
-                          <motion.div
-                            layoutId="percentGradesBg"
-                            className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                            transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
-                          />
-                        )}
-                        <span className="relative z-10">Grades</span>
-                      </motion.button>
-                    </div>
+                    <SegmentedControl
+                      options={[
+                        { value: "percent", label: "Percent" },
+                        { value: "grades", label: "Grades" }
+                      ]}
+                      value={usePercentage ? "percent" : "grades"}
+                      onChange={(val) => setUsePercentage(val === "percent")}
+                    />
 
                     <button
                       onClick={handleReset}
@@ -225,7 +206,7 @@ export default function ManualCalculator() {
                       <RotateCcw size={14} />
                     </button>
                   </div>
-                </div>
+                </Card>
 
                 {/* Smart Glass Ledger */}
                 <div className="flex flex-col gap-3 relative z-20">
@@ -246,7 +227,7 @@ export default function ManualCalculator() {
                       // Dynamic Glow logic
                       const ringClass = hasValidScore 
                         ? (isPassing ? "focus-within:border-green-500/50 border-green-500/20" : "focus-within:border-red-500/50 border-red-500/20") 
-                        : "focus-within:border-[#4F8EF7]/50 hover:border-white/10";
+                        : "focus-within:border-brand/50 hover:border-white/10";
 
                       return (
                         <motion.div
@@ -255,7 +236,7 @@ export default function ManualCalculator() {
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
                           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                          className={`relative flex items-center bg-[#1D1D1F] border border-white/5 rounded-[32px] p-2 md:p-3 shadow-none transition-all duration-300 group ${ringClass}`}
+                          className={`relative flex items-center bg-surface-raised p-2 md:p-3 rounded-card-large shadow-none transition-all duration-300 group ${ringClass} ring-1 ring-white/5`}
                         >
                           {/* Course Name */}
                           <div className="flex-1 relative">
@@ -281,7 +262,7 @@ export default function ManualCalculator() {
                               value={course.credits}
                               onChange={(e) => handleChange(course.id, 'credits', e.target.value)}
                               onKeyDown={(e) => handleInputKeyDown(e, 'credits', idx, course.id)}
-                              className="w-12 md:w-16 text-center font-mono font-bold bg-white/[0.03] text-white border border-transparent text-sm md:text-base py-2 rounded-xl outline-none focus:bg-[#4F8EF7]/10 focus:text-[#4F8EF7] focus:border-[#4F8EF7]/30 transition-all [&::-webkit-inner-spin-button]:appearance-none"
+                              className="w-12 md:w-16 text-center font-mono font-bold bg-white/[0.03] text-white border border-transparent text-sm md:text-base py-2 rounded-xl outline-none focus:bg-brand/10 focus:text-brand focus:border-brand/30 transition-all [&::-webkit-inner-spin-button]:appearance-none"
                               placeholder="CR"
                               min="1" max="10"
                             />
@@ -320,7 +301,7 @@ export default function ManualCalculator() {
                   {/* Add Course Floating Row */}
                   <motion.button
                     onClick={addSubject}
-                    className="flex items-center justify-center gap-2 w-full py-4 mt-2 rounded-[1.25rem] border-2 border-dashed border-white/[0.05] text-white/30 hover:text-[#4F8EF7] hover:border-[#4F8EF7]/30 hover:bg-[#4F8EF7]/5 transition-all duration-300 font-bold tracking-widest text-[10px] uppercase group"
+                    className="flex items-center justify-center gap-2 w-full py-4 mt-2 rounded-[1.25rem] border-2 border-dashed border-white/[0.05] text-white/30 hover:text-brand hover:border-brand/30 hover:bg-brand/5 transition-all duration-300 font-bold tracking-widest text-[10px] uppercase group"
                   >
                     <Plus size={16} className="group-hover:scale-125 transition-transform" />
                     <span>Add Another Course</span>
@@ -389,7 +370,7 @@ export default function ManualCalculator() {
                   <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] text-white leading-[1.1]">
                     <motion.span 
                       className="text-transparent bg-clip-text inline-block"
-                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
                       animate={{ backgroundPosition: ["0% center", "200% center"] }}
                       transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     >Calculate your trajectory.</motion.span><br />
@@ -410,13 +391,13 @@ export default function ManualCalculator() {
                   <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
                     <motion.span 
                       className="text-transparent bg-clip-text inline-block"
-                      style={{ backgroundImage: "linear-gradient(to right, #3b82f6, #93c5fd, #e0f2fe, #93c5fd, #3b82f6)", backgroundSize: "200% auto" }}
+                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
                       animate={{ backgroundPosition: ["0% center", "200% center"] }}
                       transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     >Statutory Accuracy.</motion.span>
                   </h3>
                   <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
-                    GradeFlow silently translates percentage marks into valid statutory grade points automatically if you select the Percent mode, ensuring every calculation mirrors the exact university formula.
+                    Aevos silently translates percentage marks into valid statutory grade points automatically if you select the Percent mode, ensuring every calculation mirrors the exact university formula.
                   </p>
                 </motion.div>
                 
@@ -435,9 +416,9 @@ export default function ManualCalculator() {
                     />
                   </motion.div>
                 ) : (
-                  <div className="h-64 flex items-center justify-center border border-white/5 bg-[#1D1D1F] rounded-[32px] text-white/30 font-medium">
+                  <Card padding="md" className="h-64 flex items-center justify-center text-white/30 font-medium">
                     Add valid subjects to view the statutory breakdown.
-                  </div>
+                  </Card>
                 )}
               </div>
             </div>
@@ -447,36 +428,31 @@ export default function ManualCalculator() {
           {/* =======================================
               ROW 3: PREDICTOR SHORTCUT BANNER
               ======================================= */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mt-12 relative overflow-hidden bg-[#1D1D1F] border border-white/5 hover:border-white/10 rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 group transition-colors duration-500"
-          >
-            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            
-            <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-5 relative z-10">
-              <div className="w-14 h-14 shrink-0 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.3)]">
-                <Target className="text-purple-400 w-6 h-6" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <h4 className="text-white font-bold text-xl md:text-2xl tracking-tight">Need precise internal marks?</h4>
-                <p className="text-white/60 text-sm md:text-base font-medium max-w-lg">
-                  Use the intelligent <strong className="text-white/80">Contextual Predictor</strong> to calculate exactly what scores you need in Test 1, Test 2, and Assignments to secure your target grade.
+          <div className="mt-12 relative z-10 w-full">
+            <Card variant="accent" padding="xl" className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-br from-surface to-surface-raised w-full group">
+              <div className="flex flex-col text-center md:text-left">
+                <span className="text-[12px] leading-[16px] text-brand font-semibold uppercase tracking-wider">Intelligent Projection</span>
+                <h4 className="text-base md:text-xl leading-[24px] font-semibold text-foreground mt-2">Need precise internal marks?</h4>
+                <p className="text-sm md:text-base leading-[24px] text-foreground-muted mt-2 max-w-lg">
+                  Use the intelligent Contextual Predictor to calculate exactly what scores you need in Test 1, Test 2, and Assignments to secure your target grade.
                 </p>
               </div>
-            </div>
 
-            <button 
-              onClick={() => {
-                const activeCourses = useUSMStore.getState().courses || [];
-                useUSMStore.getState().openPanel("PREDICTOR", activeCourses[0]?.id || "");
-              }}
-              className="relative z-10 px-8 py-4 rounded-full bg-white text-black font-bold text-sm md:text-base hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] whitespace-nowrap flex items-center gap-2 group-hover:bg-[#4F8EF7] group-hover:text-white"
-            >
-              Open Predictor <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-          </motion.div>
+              <div className="shrink-0 mt-4 md:mt-0">
+                <Button 
+                  variant="primary" 
+                  size="lg"
+                  onClick={() => {
+                    const activeCourses = useUSMStore.getState().courses || [];
+                    useUSMStore.getState().openPanel("PREDICTOR", activeCourses[0]?.id || "");
+                  }}
+                  className="whitespace-nowrap flex items-center gap-2"
+                >
+                  Open Predictor <ArrowRight size={18} />
+                </Button>
+              </div>
+            </Card>
+          </div>
 
         </WorkspaceSection>
       </WorkspaceContent>

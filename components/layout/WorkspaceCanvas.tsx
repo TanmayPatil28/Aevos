@@ -17,7 +17,7 @@ export default function WorkspaceCanvas({ children, className = "" }: WorkspaceC
 
   return (
     <div 
-      className={`relative z-10 w-full transition-[padding] duration-500 ${!isOnboarding ? 'pt-28 pb-24' : ''} ${isPanelOpen ? 'lg:pr-[420px]' : ''} ${className}`}
+      className={`relative w-full transition-[padding] duration-500 ${!isOnboarding ? 'pt-28 pb-24' : ''} ${isPanelOpen ? 'lg:pr-[420px]' : ''} ${className}`}
     >
       {children}
     </div>

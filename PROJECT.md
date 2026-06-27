@@ -1,4 +1,4 @@
-# Project: GradeFlow Production Readiness Audit
+# Project: Aevos Production Readiness Audit
 
 ## Architecture
 - React / Next.js based application (likely based on routing and components).

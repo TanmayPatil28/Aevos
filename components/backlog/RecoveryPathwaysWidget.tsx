@@ -1,8 +1,8 @@
 import React from "react";
-import { Shield, Scale, Flame, ArrowRight } from "lucide-react";
+import { Shield, Scale, Flame, Route } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { RecoveryPlanResult } from "@/lib/backlog-intelligence/engine";
-import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
+
 
 interface PathwayProps {
   type: "SAFE" | "BALANCED" | "AGGRESSIVE";
@@ -30,9 +30,7 @@ export default function RecoveryPathwaysWidget({ pathways, selectedType, onSelec
   return (
     <div className="w-full flex flex-col gap-4">
       <h3 className="text-xl font-bold text-white flex items-center gap-2">
-        <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
-          <ArrowRight size={18} />
-        </span>
+        <Route className="text-brand" size={20} />
         Automated Recovery Pathways
       </h3>
       <p className="text-sm text-white/50 mb-2">Select an AI-generated trajectory to load into the Unified Simulator below.</p>
@@ -41,49 +39,36 @@ export default function RecoveryPathwaysWidget({ pathways, selectedType, onSelec
         {cards.map((card) => {
           let Icon = Shield;
           let config = {
-             border: "border-emerald-500",
-             bgHover: "hover:bg-emerald-500/5",
-             text: "text-emerald-400",
-             bgLight: "bg-emerald-500/10",
-             shadow: "shadow-[0_0_30px_rgba(16,185,129,0.15)]",
-             blob: "bg-emerald-500"
+             text: "text-status-success",
+             bgLight: "bg-surface border border-white/[0.04]",
           };
           
           if (card.type === "BALANCED") { 
              Icon = Scale; 
              config = {
-               border: "border-blue-500",
-               bgHover: "hover:bg-blue-500/5",
-               text: "text-blue-400",
-               bgLight: "bg-blue-500/10",
-               shadow: "shadow-[0_0_30px_rgba(59,130,246,0.15)]",
-               blob: "bg-blue-500"
+               text: "text-brand",
+               bgLight: "bg-surface border border-white/[0.04]",
              };
           }
           if (card.type === "AGGRESSIVE") { 
              Icon = Flame; 
              config = {
-               border: "border-orange-500",
-               bgHover: "hover:bg-orange-500/5",
-               text: "text-orange-400",
-               bgLight: "bg-orange-500/10",
-               shadow: "shadow-[0_0_30px_rgba(249,115,22,0.15)]",
-               blob: "bg-orange-500"
+               text: "text-status-critical",
+               bgLight: "bg-surface border border-white/[0.04]",
              };
           }
 
           return (
-            <MagneticWrapper key={card.type} strength={0.2}>
+
               <button
+                key={card.type}
                 onClick={card.onSelect}
                 className={cn(
-                  "relative text-left p-5 rounded-[2rem] border transition-all duration-300 outline-none focus-visible:ring-2 overflow-hidden flex flex-col h-full w-full",
-                  card.isActive ? `bg-[#1c1c1e] ${config.border} ${config.shadow}` : `bg-white/[0.02] border-white/[0.05] hover:border-white/20 hover:bg-white/[0.04] ${config.bgHover}`
+                  "relative text-left p-5 rounded-[24px] border transition-all duration-300 outline-none focus-visible:ring-2 overflow-hidden flex flex-col h-full w-full",
+                  card.isActive ? `bg-surface-raised border-white/10 shadow-none` : `bg-surface border-white/[0.04] hover:bg-[#2A2A2D]`
                 )}
               >
-                {card.isActive && (
-                  <div className={cn(`absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full blur-[50px] opacity-20 ${config.blob}`)} />
-                )}
+                {/* Removed ambient blob */}
                 
                 <div className="flex items-center justify-between mb-4 relative z-10">
                   <div className={cn("flex items-center gap-2", config.text)}>
@@ -106,7 +91,7 @@ export default function RecoveryPathwaysWidget({ pathways, selectedType, onSelec
                   </span>
                 </div>
               </button>
-            </MagneticWrapper>
+
           );
         })}
       </div>

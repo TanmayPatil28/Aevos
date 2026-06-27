@@ -10,17 +10,17 @@ import { HistoricalAnalyticsEngine } from "@/lib/backlog-intelligence/historical
 import { CourseState } from "@/stores/usmStore";
 
 // Authentic iOS system colors for charts (Blue, Orange, Green, Purple)
-const COLORS = ["#0A84FF", "#FF9F0A", "#30D158", "#5E5CE6"]; 
+const COLORS = ["var(--brand-primary)", "var(--status-warning)", "var(--status-success)", "var(--brand-secondary)"]; 
 
 export default function HistoricalAnalyticsWidget({ course }: { course: CourseState }) {
   const topics = HistoricalAnalyticsEngine.generateTopics(course.name);
 
   return (
-    <div className="p-6 rounded-[32px] bg-[#1C1C1E] flex flex-col h-full">
+    <div className="p-6 rounded-[24px] bg-surface-raised border border-white/[0.04] shadow-none flex flex-col h-full">
       <div className="flex justify-between items-start mb-6">
         <div>
           <h3 className="text-[17px] font-semibold text-white flex items-center gap-2 tracking-tight">
-            <BookOpen className="text-[#5E5CE6]" size={20} /> Syllabus Weightage
+            <BookOpen className="text-brand" size={20} /> Syllabus Weightage
           </h3>
           <p className="text-[15px] text-[#8E8E93] mt-1 tracking-tight">Historical Exam Pattern</p>
         </div>
@@ -64,8 +64,8 @@ export default function HistoricalAnalyticsWidget({ course }: { course: CourseSt
                   <p className="text-[13px] text-[#8E8E93] font-medium">{topic.weightage}%</p>
                   <span className="text-[10px] text-[#8E8E93]">•</span>
                   <p className={`text-[13px] font-semibold ${
-                    topic.difficulty === "HARD" ? "text-[#FF453A]" :
-                    topic.difficulty === "MEDIUM" ? "text-[#FF9F0A]" : "text-[#30D158]"
+                    topic.difficulty === "HARD" ? "text-status-critical" :
+                    topic.difficulty === "MEDIUM" ? "text-status-warning" : "text-status-success"
                   }`}>{topic.difficulty}</p>
                 </div>
               </div>

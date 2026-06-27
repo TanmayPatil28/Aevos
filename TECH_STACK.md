@@ -1,6 +1,6 @@
-# GradeFlow Technology Stack
+# Aevos Technology Stack
 
-This document outlines the finalized stack for GradeFlow, representing the optimal intersection of bleeding-edge AI capability, maximum developer velocity, and absolute minimum operating cost.
+This document outlines the finalized stack for Aevos, representing the optimal intersection of bleeding-edge AI capability, maximum developer velocity, and absolute minimum operating cost.
 
 | Capability | Recommended Technology | Primary Architectural Justification |
 | :--- | :--- | :--- |

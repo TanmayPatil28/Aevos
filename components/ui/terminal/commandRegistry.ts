@@ -132,7 +132,7 @@ export function generateNeofetch(ctx: TerminalContext): string[] {
     "  ╚██████╔╝██║     " + pad("Attendance", `${attendancePct}%`),
     "   ╚═════╝ ╚═╝     " + pad("Mode", s.workspaceUi?.mode ?? "UNKNOWN"),
     "                    " + pad("Target Role", s.career?.targetRole || "—"),
-    "  GradeFlow v0.1.0 " + pad("Skills", Array.isArray(s.career?.skills) ? s.career?.skills.length : 0),
+    "  Aevos v0.1.0 " + pad("Skills", Array.isArray(s.career?.skills) ? s.career?.skills.length : 0),
     "",
   ];
 }
@@ -175,7 +175,7 @@ export const COMMANDS: TerminalCommand[] = [
   {
     name: "goto",
     category: "NAVIGATION",
-    description: "Navigate to a GradeFlow page",
+    description: "Navigate to a Aevos page",
     usage: "goto <page>",
     handler: (args, ctx) => {
       const page = args[1]?.toLowerCase();

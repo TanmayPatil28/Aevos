@@ -97,7 +97,7 @@ export class BacklogEngine {
     let totalPoints = history.reduce((acc, sem) => acc + (sem.sgpa * sem.credits), 0);
 
     const gradePoints: { [key: string]: number } = {
-      "O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "P": 4, "F": 0, "FF": 0, "ABSENT": 0, "AB": 0
+      "O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "P": 4, "F": 0, "FF": 0, "ABSENT": 0, "AB": 0, "NP": 0
     };
 
     if (timeTravel) {
@@ -116,7 +116,7 @@ export class BacklogEngine {
     let rollingCeilingPoints = totalPoints;
 
     // Add maximum possible points from clearing active backlogs
-    const activeBacklogs = courses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase()));
+    const activeBacklogs = courses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((c.grade || "").toUpperCase()));
     const backlogCredits = activeBacklogs.reduce((sum, c) => sum + c.credits, 0);
     // When cleared with an O (10 points), they add 10 * credits. F had 0 points, so we just add 10 * credits.
     rollingCeilingPoints += backlogCredits * 10;
@@ -190,7 +190,7 @@ export class BacklogEngine {
     timeTravel?: { courseId: string; targetGrade: string }
   ): BacklogAnalysis {
     const activeBacklogs = courses.filter(
-      (c) => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase())
+      (c) => ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((c.grade || "").toUpperCase())
     );
 
     const totalBacklogCredits = activeBacklogs.reduce((sum, c) => sum + c.credits, 0);
@@ -255,7 +255,7 @@ export class BacklogEngine {
     history: SemesterHistoryEntry[]
   ): { courseId: string; cgpaBoost: number }[] {
     const activeBacklogs = courses.filter(
-      (c) => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase())
+      (c) => ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((c.grade || "").toUpperCase())
     );
 
     const gradePoints: { [key: string]: number } = {
@@ -285,7 +285,7 @@ export class BacklogEngine {
     course: CourseState
   ): { isEligible: boolean; requiredMarks: number } {
     const activeBacklogs = courses.filter(
-      (c) => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase())
+      (c) => ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((c.grade || "").toUpperCase())
     );
 
     // Common Grace Marks logic: if this is the ONLY backlog, and you are within 3 marks of passing (e.g. 37/40)
@@ -323,7 +323,7 @@ export class BacklogEngine {
     strategy: "SAFE" | "BALANCED" | "AGGRESSIVE"
   ): RecoveryPlanResult & { insight: string; maxCredits: number } {
     const activeBacklogs = courses.filter(
-      (c) => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase())
+      (c) => ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((c.grade || "").toUpperCase())
     );
     
     const plannedCourses: { [courseId: string]: number } = {};

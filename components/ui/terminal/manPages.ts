@@ -3,13 +3,13 @@
 export const MAN_PAGES: Record<string, string[]> = {
   goto: [
     "NAME",
-    "    goto - navigate to a GradeFlow page",
+    "    goto - navigate to a Aevos page",
     "",
     "SYNOPSIS",
     "    goto <page>",
     "",
     "DESCRIPTION",
-    "    Instantly navigate to any page in the GradeFlow workspace.",
+    "    Instantly navigate to any page in the Aevos workspace.",
     "    This is the fastest way to move through the OS.",
     "",
     "PAGES",
@@ -51,7 +51,7 @@ export const MAN_PAGES: Record<string, string[]> = {
     "    home",
     "",
     "DESCRIPTION",
-    "    Returns to the GradeFlow landing page.",
+    "    Returns to the Aevos landing page.",
   ],
   open: [
     "NAME",
@@ -344,7 +344,7 @@ export const MAN_PAGES: Record<string, string[]> = {
     "",
     "EXAMPLES",
     "    cowsay hello world",
-    "    cowsay I love GradeFlow",
+    "    cowsay I love Aevos",
   ],
   fortune: [
     "NAME",

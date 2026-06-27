@@ -48,7 +48,7 @@ export default function OutcomePanel({ state, targetCgpa }: OutcomePanelProps) {
             <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/10 border border-amber-500/30 backdrop-blur-xl shadow-xl pointer-events-auto">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="text-amber-400" size={16} />
-                <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">GradeFlow Pro</h3>
+                <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Aevos Pro</h3>
               </div>
               <p className="text-[10px] text-amber-200/80 leading-relaxed">
                 Unlock infinite time-travel and specific company targeting. 

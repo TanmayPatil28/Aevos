@@ -85,7 +85,7 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+        <h2 className="text-xl font-bold text-foreground tracking-tight flex items-center gap-2">
           <GraduationCap className="w-5 h-5 text-indigo-400" />
           Skill Gap & Elective Advisor
         </h2>
@@ -106,8 +106,8 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
               onClick={() => setSelectedRole(roleKey)}
               className={`p-4 rounded-xl border text-left transition-all duration-300 relative overflow-hidden ${
                 isSelected
-                  ? "bg-indigo-600/10 border-indigo-500/40 text-white shadow-[0_0_20px_rgba(99,102,241,0.1)]"
-                  : "bg-surface/20 border-white/5 text-slate-400 hover:bg-surface/30 hover:border-white/10"
+                  ? "bg-indigo-600/10 border-indigo-500/40 text-foreground shadow-[0_0_20px_rgba(99,102,241,0.1)]"
+                  : "bg-surface/20 border-border text-slate-400 hover:bg-surface/30 hover:border-border"
               }`}
             >
               {isSelected && (
@@ -127,9 +127,9 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Side: Role details, Target CGPA & Electives */}
         <div className="space-y-6 lg:col-span-1">
-          <GlassCard className="border border-white/5 space-y-4">
+          <GlassCard className="border border-border space-y-4">
             <div>
-              <h3 className="text-lg font-bold text-white tracking-wide">
+              <h3 className="text-lg font-bold text-foreground tracking-wide">
                 {activePath.title}
               </h3>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
@@ -138,7 +138,7 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
             </div>
 
             {/* CGPA Recommendation Gate */}
-            <div className="bg-slate-950/40 p-4 rounded-xl border border-white/5 space-y-3">
+            <div className="bg-slate-950/40 p-4 rounded-xl border border-border space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-400 font-medium">Recommended Target CGPA</span>
                 <span className="font-mono font-bold text-indigo-400 text-lg">
@@ -146,14 +146,14 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
                 </span>
               </div>
 
-              <div className="h-[2px] bg-white/5 w-full" />
+              <div className="h-[2px] bg-surface-raised w-full" />
 
               <div className="flex items-start gap-3">
                 <div className={`mt-0.5 p-1 rounded ${cgpaMeetsTarget ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
                   <TrendingUp className="w-4 h-4" />
                 </div>
                 <div className="space-y-0.5">
-                  <span className="text-xs text-white font-medium block">
+                  <span className="text-xs text-foreground font-medium block">
                     {cgpaMeetsTarget ? "CGPA Criteria Met" : "Target Deficiency"}
                   </span>
                   <span className="text-[11px] text-slate-400 leading-relaxed block">
@@ -175,7 +175,7 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
                 {activePath.suggestedElectives.map((elective) => (
                   <div
                     key={elective}
-                    className="flex items-center gap-2 p-2 rounded-lg bg-surface/30 border border-white/5 text-xs text-slate-300"
+                    className="flex items-center gap-2 p-2 rounded-lg bg-surface/30 border border-border text-xs text-slate-300"
                   >
                     <ChevronRight className="w-3 h-3 text-indigo-400 shrink-0" />
                     <span className="line-clamp-1">{elective}</span>
@@ -188,10 +188,10 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
 
         {/* Right Side: Interactive Industry Skill Checklist */}
         <div className="lg:col-span-2 space-y-4">
-          <GlassCard className="border border-white/5 space-y-6">
+          <GlassCard className="border border-border space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-white tracking-wide">
+                <h3 className="text-base font-bold text-foreground tracking-wide">
                   Core Skill Registry
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -207,7 +207,7 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
             </div>
 
             {/* Skill Progress Bar */}
-            <div className="w-full bg-slate-950/50 rounded-full h-2 overflow-hidden border border-white/5">
+            <div className="w-full bg-slate-950/50 rounded-full h-2 overflow-hidden border border-border">
               <motion.div
                 className="h-full bg-indigo-500 rounded-full"
                 initial={{ width: 0 }}
@@ -220,7 +220,7 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
               {activePath.coreSkills.map((skill) => {
                 const status = skillStatuses[skill.name] || "NOT_STARTED";
                 
-                let badgeStyle = "bg-slate-800/40 border-white/5 text-slate-400";
+                let badgeStyle = "bg-slate-800/40 border-border text-slate-400";
                 let statusIcon = <Circle className="w-4 h-4 shrink-0 text-slate-500" />;
                 if (status === "IN_PROGRESS") {
                   badgeStyle = "bg-indigo-500/10 border-indigo-500/20 text-indigo-300";
@@ -245,7 +245,7 @@ export default function SkillGapAdvisor({ currentCgpa }: SkillGapAdvisorProps) {
                     <div className="mt-0.5">{statusIcon}</div>
                     <div className="space-y-1.5 flex-grow">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-white text-xs tracking-wide">
+                        <span className="font-semibold text-foreground text-xs tracking-wide">
                           {skill.name}
                         </span>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase font-bold shrink-0 ${importanceBadge}`}>

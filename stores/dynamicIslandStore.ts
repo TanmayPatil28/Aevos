@@ -22,7 +22,8 @@ export interface LiveActivity {
   timeRemaining?: number; // seconds
   isActive: boolean;
   isContextual?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  createdAt?: number;
 }
 
 export interface IslandAlertAction {
@@ -38,6 +39,7 @@ export interface IslandAlert {
   message: string;
   duration?: number; // ms before auto-dismiss
   actions?: IslandAlertAction[];
+  instanceId?: string;
 }
 
 export interface ExamCountdown {
@@ -50,13 +52,7 @@ export interface ExamCountdown {
   urgency: 'low' | 'medium' | 'high' | 'critical'; // green, yellow, orange, red
 }
 
-export interface AcademicStreak {
-  count: number;
-  type: 'study' | 'attendance' | 'assignment';
-  label: string;
-}
-
-export type IslandState = 'idle' | 'minimal' | 'expanded' | 'split';
+export type IslandState = 'idle' | 'minimal' | 'expanded' | 'split' | 'top-half' | 'fluid-drop';
 
 // --- STORE INTERFACE ---
 
@@ -70,11 +66,18 @@ interface DynamicIslandState {
   examCountdown: ExamCountdown | null;
   isExamPillExpanded: boolean;
 
-  // Academic Streak (hover-reveal)
-  streak: AcademicStreak | null;
-
   // Ambient override lock
   isManualOverride: boolean;
+
+  // JARVIS/AI Processing state
+  isProcessing: boolean;
+  setIsProcessing: (processing: boolean) => void;
+  
+  // iOS 27 Siri AI State
+  isAIActive: boolean;
+  aiState: 'idle' | 'listening' | 'processing' | 'speaking';
+  setIsAIActive: (active: boolean) => void;
+  setAIState: (state: 'idle' | 'listening' | 'processing' | 'speaking') => void;
 
   // --- ACTIONS ---
 
@@ -96,9 +99,6 @@ interface DynamicIslandState {
   clearExamCountdown: () => void;
   setExamPillExpanded: (expanded: boolean) => void;
 
-  // Streak
-  setStreak: (streak: AcademicStreak | null) => void;
-
   // Override
   setManualOverride: (override: boolean) => void;
 }
@@ -118,12 +118,16 @@ const ACTIVITY_PRIORITY: Record<ActivityType, number> = {
   time_context: 30,
 };
 
+let activityCounter = 0;
+
 // Sort function: Highest priority first. User-triggered (non-contextual) always beats contextual.
 const sortActivities = (activities: LiveActivity[]) => {
   return [...activities].sort((a, b) => {
     // 1. Manual user activities override automatic contextual ones
-    if (a.isContextual !== b.isContextual) {
-      return a.isContextual ? 1 : -1;
+    const isContA = !!a.isContextual;
+    const isContB = !!b.isContextual;
+    if (isContA !== isContB) {
+      return isContA ? 1 : -1;
     }
     // 2. Sort by type priority
     const priorityA = ACTIVITY_PRIORITY[a.type] || 0;
@@ -132,6 +136,11 @@ const sortActivities = (activities: LiveActivity[]) => {
       return priorityB - priorityA;
     }
     // 3. Fallback: newer is higher priority
+    const timeA = a.createdAt !== undefined ? a.createdAt : 0;
+    const timeB = b.createdAt !== undefined ? b.createdAt : 0;
+    if (timeA !== timeB) {
+      return timeB - timeA;
+    }
     return 0;
   });
 };
@@ -142,13 +151,23 @@ export const useDynamicIslandStore = create<DynamicIslandState>((set) => ({
   expandedId: null,
   examCountdown: null,
   isExamPillExpanded: false,
-  streak: null,
   isManualOverride: false,
+  isProcessing: false,
+  setIsProcessing: (processing) => set({ isProcessing: processing }),
+  
+  isAIActive: false,
+  aiState: 'idle',
+  setIsAIActive: (active) => set({ isAIActive: active }),
+  setAIState: (state) => set({ aiState: state }),
 
   addActivity: (activity) =>
     set((state) => {
       const filtered = state.activities.filter((a) => a.id !== activity.id);
-      return { activities: sortActivities([...filtered, activity]) };
+      const newActivity = {
+        ...activity,
+        createdAt: activity.createdAt !== undefined ? activity.createdAt : activityCounter++,
+      };
+      return { activities: sortActivities([...filtered, newActivity]) };
     }),
 
   removeActivity: (id) =>
@@ -167,20 +186,19 @@ export const useDynamicIslandStore = create<DynamicIslandState>((set) => ({
 
   promoteActivity: (id) =>
     set((state) => {
-      const target = state.activities.find((a) => a.id === id);
-      if (!target) return state;
-      const others = state.activities.filter((a) => a.id !== id);
-      return {
-        activities: [{ ...target, isContextual: false }, ...others],
-      };
+      const updated = state.activities.map((a) =>
+        a.id === id ? { ...a, isContextual: false } : a
+      );
+      return { activities: sortActivities(updated) };
     }),
 
   showAlert: (alert) => {
-    set({ activeAlert: alert });
+    const alertInstanceId = Math.random().toString(36).substring(7);
+    set({ activeAlert: { ...alert, instanceId: alertInstanceId } });
     if (alert.duration !== 0) {
       setTimeout(() => {
         set((state) =>
-          state.activeAlert?.id === alert.id ? { activeAlert: null } : state
+          state.activeAlert?.instanceId === alertInstanceId ? { activeAlert: null } : state
         );
       }, alert.duration || 3000);
     }
@@ -198,8 +216,6 @@ export const useDynamicIslandStore = create<DynamicIslandState>((set) => ({
   clearExamCountdown: () =>
     set({ examCountdown: null, isExamPillExpanded: false }),
   setExamPillExpanded: (expanded) => set({ isExamPillExpanded: expanded }),
-
-  setStreak: (streak) => set({ streak }),
 
   setManualOverride: (override) => set({ isManualOverride: override }),
 }));

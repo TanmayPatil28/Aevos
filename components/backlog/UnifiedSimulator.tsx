@@ -3,7 +3,7 @@ import { SlidersHorizontal, BookOpen, AlertCircle, Save, CheckCircle2 } from "lu
 import { CourseState } from "@/stores/usmStore";
 import { RecoveryPlanResult } from "@/lib/backlog-intelligence/engine";
 import IOSSheetModal from "@/components/ui/IOSSheetModal";
-import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
+
 
 export default function UnifiedSimulator({ 
   initialPlan, 
@@ -22,7 +22,7 @@ export default function UnifiedSimulator({
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   
-  const activeBacklogs = courses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB"].includes((c.grade || "").toUpperCase()));
+  const activeBacklogs = courses.filter(c => ["F", "FF", "FAIL", "ABSENT", "AB", "NP"].includes((c.grade || "").toUpperCase()));
   const maxSem = Math.max(8, currentSemester + 4);
   const availableSemesters = Array.from({ length: maxSem - currentSemester + 1 }, (_, i) => currentSemester + i);
 
@@ -51,39 +51,39 @@ export default function UnifiedSimulator({
 
   return (
     <>
-      <div className="p-6 rounded-[2rem] bg-[#1c1c1e] border border-white/[0.05] h-full flex flex-col">
+      <div className="p-6 rounded-[24px] bg-surface-raised border border-white/[0.04] shadow-none h-full flex flex-col">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-[17px] font-bold text-white flex items-center gap-2 tracking-wide">
-              <SlidersHorizontal className="text-[#fb923c] drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]" size={20} /> Recovery Timeline
+              <SlidersHorizontal className="text-status-warning" size={20} /> Recovery Timeline
             </h3>
           </div>
-          <MagneticWrapper strength={0.4}>
+
             <button 
               onClick={() => {
                 setIsSaved(false);
                 setShowConfirmModal(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#fb923c]/20 text-[#fb923c] border border-[#fb923c]/30 text-[13px] font-bold tracking-wider hover:bg-[#fb923c]/30 transition-all active:scale-[0.98] uppercase"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-[13px] font-bold tracking-wider hover:brightness-110 transition-all active:scale-[0.98] uppercase"
             >
               <Save size={16} /> Commit Strategy
             </button>
-          </MagneticWrapper>
+
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
           {unplanned.length > 0 && (
-            <div className="p-4 rounded-2xl bg-[#FF453A]/10 border border-[#FF453A]/20">
-              <h4 className="text-[13px] font-bold text-[#FF453A] mb-3 uppercase tracking-wider flex items-center gap-1">
+            <div className="p-4 rounded-[24px] bg-surface border border-white/[0.04]">
+              <h4 className="text-[13px] font-bold text-status-critical mb-3 uppercase tracking-wider flex items-center gap-1">
                 <AlertCircle size={14} /> Unplanned Backlogs
               </h4>
               <div className="flex flex-wrap gap-2">
                 {unplanned.map(c => (
                   <div key={c.id} className="group relative">
-                    <span className="px-3 py-1.5 rounded-xl bg-[#f43f5e]/20 border border-[#f43f5e]/30 text-[#f43f5e] text-[13px] font-bold tracking-wider cursor-pointer shadow-[0_0_10px_rgba(244,63,94,0.15)]">
+                    <span className="px-3 py-1.5 rounded-full bg-status-critical border-none text-white text-[13px] font-bold tracking-wider cursor-pointer shadow-none">
                       {c.code}
                     </span>
-                    <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-[#1c1c1e] border border-white/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] z-20 overflow-hidden min-w-[140px]">
+                    <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-surface border border-white/[0.04] rounded-xl shadow-none z-20 overflow-hidden min-w-[140px]">
                       {availableSemesters.map(s => (
                         <button key={s} onClick={() => handleMove(c, s)} className="px-4 py-2 text-[13px] text-white/70 text-left hover:bg-white/[0.04] font-bold tracking-wider border-b border-white/5 last:border-0 transition-colors uppercase">
                           Move to Sem {s}
@@ -100,20 +100,20 @@ export default function UnifiedSimulator({
             {availableSemesters.map(sem => {
               const semCourses = activeBacklogs.filter(c => plan[c.id] === sem);
               return (
-                <div key={sem} className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+                <div key={sem} className="p-4 rounded-[24px] bg-surface border border-white/[0.04]">
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/5">
                     <h4 className="text-white text-[15px] font-bold flex items-center gap-2 tracking-wide uppercase">
-                      <BookOpen size={16} className="text-[#fb923c]" /> Semester {sem}
+                      <BookOpen size={16} className="text-[#FF9F0A]" /> Semester {sem}
                     </h4>
                     <span className="text-[11px] text-[#8E8E93] font-bold tracking-widest uppercase">{semCourses.length} backlogs</span>
                   </div>
                   <div className="flex flex-wrap gap-2 min-h-[30px]">
                     {semCourses.map(c => (
                       <div key={c.id} className="group relative">
-                        <span className="px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-[13px] font-bold tracking-wider cursor-pointer">
+                        <span className="px-3 py-1.5 rounded-full bg-surface-raised border border-white/[0.04] text-white text-[13px] font-bold tracking-wider cursor-pointer">
                           {c.code}
                         </span>
-                        <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-[#1c1c1e] border border-white/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] z-20 overflow-hidden min-w-[140px]">
+                        <div className="absolute top-full left-0 mt-2 hidden group-hover:flex flex-col bg-surface border border-white/[0.04] rounded-xl shadow-none z-20 overflow-hidden min-w-[140px]">
                           <button onClick={() => handleMove(c, "UNPLANNED")} className="px-4 py-2 text-[13px] text-left hover:bg-white/[0.04] font-bold tracking-wider text-[#f43f5e] border-b border-white/5 transition-colors uppercase">
                             Unplan
                           </button>
@@ -169,7 +169,7 @@ export default function UnifiedSimulator({
               </div>
             )}
 
-            <MagneticWrapper strength={0.4}>
+
               <button 
                 onClick={executeSave}
                 disabled={isSaving}
@@ -179,7 +179,7 @@ export default function UnifiedSimulator({
               >
                 {isSaving ? "Saving to Profile..." : "Confirm & Save"}
               </button>
-            </MagneticWrapper>
+
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">

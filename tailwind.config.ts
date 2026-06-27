@@ -11,80 +11,114 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        headline: ["var(--font-headline)", "serif"],
-        body: ["var(--font-body)", "sans-serif"],
-        label: ["var(--font-body)", "sans-serif"],
+        sans: ["SF Pro Display", "SF Pro Icons", "var(--font-inter)", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "var(--bg-canvas)",
+        surface: "var(--bg-surface)",
+        "surface-raised": "var(--bg-surface-raised)",
+        "surface-overlay": "var(--bg-surface-overlay)",
+        
+        foreground: "var(--text-primary)",
+        "foreground-muted": "var(--text-secondary)",
+        "foreground-tertiary": "var(--text-tertiary)",
+        
+        border: "var(--border-subtle)",
+        "border-strong": "var(--border-base)",
+        "border-focus": "var(--border-focus)",
+        "link-brand": "var(--link-brand)",
+        
+        brand: {
+          DEFAULT: "var(--brand-primary)",
+          subtle: "var(--brand-primary-subtle)",
+          secondary: "var(--brand-secondary)",
+          "secondary-subtle": "var(--brand-secondary-subtle)",
+          tertiary: "var(--brand-tertiary)",
+          "tertiary-subtle": "var(--brand-tertiary-subtle)",
+        },
+        
+        status: {
+          success: "var(--status-success)",
+          "success-subtle": "var(--status-success-subtle)",
+          warning: "var(--status-warning)",
+          "warning-subtle": "var(--status-warning-subtle)",
+          critical: "var(--status-critical)",
+          "critical-subtle": "var(--status-critical-subtle)",
+          info: "var(--status-info)",
+        },
+
+        // Legacy mappings to prevent total breakage during Phase 2 transition
         primary: {
-          DEFAULT: "var(--primary)",
-          container: "var(--primary-container)",
-          fixed: "var(--primary-fixed)",
-          "fixed-dim": "var(--primary-fixed-dim)",
+          DEFAULT: "var(--brand-primary)",
         },
         secondary: {
-          DEFAULT: "var(--secondary)",
-          container: "var(--secondary-container)",
-        },
-        tertiary: {
-          DEFAULT: "var(--tertiary)",
-          container: "var(--tertiary-container)",
-        },
-        surface: {
-          DEFAULT: "var(--surface)",
-          variant: "var(--surface-variant)",
-          bright: "var(--surface-bright)",
-          dim: "var(--surface-dim)",
-          "container-low": "var(--surface-container-low)",
-          container: "var(--surface-container)",
-          "container-high": "var(--surface-container-high)",
-          "container-highest": "var(--surface-container-highest)",
-          "container-lowest": "var(--surface-container-lowest)",
-        },
-        "on-surface": {
-          DEFAULT: "var(--on-surface)",
-          variant: "var(--on-surface-variant)",
-        },
-        outline: {
-          DEFAULT: "var(--outline)",
-          variant: "var(--outline-variant)",
+          DEFAULT: "var(--brand-secondary)",
         },
         error: {
-          DEFAULT: "var(--error)",
-          container: "var(--error-container)",
+          DEFAULT: "var(--status-critical)",
+        },
+        success: {
+          DEFAULT: "var(--status-success)",
+        },
+        warning: {
+          DEFAULT: "var(--status-warning)",
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      boxShadow: {
-        premium: "var(--shadow-premium)",
-        "premium-hover": "var(--shadow-premium-hover)",
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+        "2xl": "var(--radius-2xl)",
+        "card-standard": "var(--radius-card-standard)",
+        "card-large": "var(--radius-card-large)",
+        "card-massive": "var(--radius-card-massive)",
+        full: "var(--radius-full)",
       },
       spacing: {
-        "os-micro": "0.5rem",   // 8px
-        "os-component": "1.5rem", // 24px
-        "os-section": "3rem",     // 48px
-        "os-macro": "6rem",       // 96px
-        "navbar-bubble": "52px",
+        "0.5": "var(--space-0.5)",
+        "1": "var(--space-1)",
+        "1.5": "var(--space-1.5)",
+        "2": "var(--space-2)",
+        "2.5": "var(--space-2.5)",
+        "3": "var(--space-3)",
+        "4": "var(--space-4)",
+        "5": "var(--space-5)",
+        "6": "var(--space-6)",
+        "7": "var(--space-7)",
+        "8": "var(--space-8)",
+        "10": "var(--space-10)",
+        "12": "var(--space-12)",
+        "14": "var(--space-14)",
+        "16": "var(--space-16)",
+        "24": "var(--space-24)",
       },
-      width: {
-        "navbar-desktop": "800px",
-        "navbar-mobile": "300px",
-        "navbar-spotlight": "90vw",
-      },
-      maxWidth: {
-        "navbar-spotlight": "64rem",
-      },
-      animation: {
-        "fade-in": "fade-in 300ms ease-in forwards",
+      zIndex: {
+        below: "var(--z-below)",
+        base: "var(--z-base)",
+        raised: "var(--z-raised)",
+        sticky: "var(--z-sticky)",
+        navigation: "var(--z-navigation)",
+        dropdown: "var(--z-dropdown)",
+        "modal-backdrop": "var(--z-modal-backdrop)",
+        modal: "var(--z-modal)",
+        toast: "var(--z-toast)",
+        command: "var(--z-command)",
+        "dynamic-island": "var(--z-dynamic-island)",
+        "jarvis-overlay": "var(--z-jarvis-overlay)",
       },
       transitionTimingFunction: {
-        "os-smooth": "cubic-bezier(0.16, 1, 0.3, 1)",
+        spring: "var(--ease-spring)",
+      },
+      animation: {
+        "mesh-fluid": "mesh 8s ease infinite",
+      },
+      keyframes: {
+        mesh: {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
       },
     },
   },

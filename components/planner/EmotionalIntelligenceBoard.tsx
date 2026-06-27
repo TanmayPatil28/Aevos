@@ -72,7 +72,7 @@ export default function EmotionalIntelligenceBoard({ currentCgpa, targetCgpa, re
   }, [currentCgpa, targetCgpa, remainingSemesters, isSimulating]);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-12">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
       {/* Confidence Meter */}
       <Card className="flex flex-col p-5 bg-[#1D1D1F] border border-white/5 relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 opacity-50" />

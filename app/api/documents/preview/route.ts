@@ -35,30 +35,30 @@ export async function GET(req: Request) {
             background-color: transparent;
             margin: 0;
             padding: 0;
-            color: #e5e7eb;
+            color: #1a1a1a;
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           }
           .docx-container {
             max-width: 800px;
             margin: 0 auto;
             padding: 40px;
-            background-color: rgba(255, 255, 255, 0.02);
+            background-color: transparent;
             border-radius: 8px;
             margin-top: 20px;
             margin-bottom: 20px;
           }
-          h1 { font-size: 2em; font-weight: 700; margin-bottom: 1em; color: #ffffff; }
-          h2 { font-size: 1.5em; font-weight: 600; margin-bottom: 0.8em; color: #ffffff; }
-          h3 { font-size: 1.25em; font-weight: 600; margin-bottom: 0.6em; color: #ffffff; }
+          h1 { font-size: 2em; font-weight: 700; margin-bottom: 1em; color: #000000; }
+          h2 { font-size: 1.5em; font-weight: 600; margin-bottom: 0.8em; color: #111111; }
+          h3 { font-size: 1.25em; font-weight: 600; margin-bottom: 0.6em; color: #111111; }
           p { margin-bottom: 1em; line-height: 1.7; }
           table { border-collapse: collapse; width: 100%; margin-bottom: 1em; }
-          th, td { border: 1px solid rgba(255,255,255,0.1); padding: 12px; text-align: left; }
-          th { background-color: rgba(255,255,255,0.05); }
-          a { color: #818cf8; text-decoration: none; }
+          th, td { border: 1px solid rgba(0,0,0,0.1); padding: 12px; text-align: left; }
+          th { background-color: rgba(0,0,0,0.05); color: #000000; }
+          a { color: #2563eb; text-decoration: none; }
           a:hover { text-decoration: underline; }
           ul, ol { margin-left: 1.5em; margin-bottom: 1em; line-height: 1.7; }
           li { margin-bottom: 0.5em; }
-          strong { color: #ffffff; font-weight: 600; }
+          strong { color: #000000; font-weight: 600; }
         </style>
       </head>
       <body>

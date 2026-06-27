@@ -4,6 +4,7 @@ import { useUSMStore, WorkspaceState } from "@/stores/usmStore";
 import { motion } from "framer-motion";
 import { GraduationCap, Briefcase, LayoutDashboard, ChevronDown, Check, Sparkles, Activity } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 
 // We map our visual modes to the internal USM WorkspaceModes
 export const OS_MODES = [
@@ -85,77 +86,42 @@ export function OSModeContent({ onClose }: { onClose: () => void }) {
   const setWorkspaceMode = useUSMStore(s => s.setWorkspaceMode);
 
   return (
-    <div className="w-full px-6 pb-6 pt-2">
-      {/* Section Header */}
-      <div className="flex items-center gap-2 mb-5">
-        <Sparkles size={14} className="text-white/30" />
-        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white/30">
-          Operating System Mode
-        </span>
+    <div className="w-full flex flex-col gap-5">
+      <div className="flex items-center justify-between px-2">
+        <h2 className="text-[16px] font-medium text-[#F5F5F7] tracking-tight">System Architecture</h2>
+        <span className="text-[13px] text-[#86868B] font-medium tracking-wide">Core OS Frame</span>
       </div>
 
-      {/* 4-Column Card Grid */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-6 px-2 pb-2">
+        <SegmentedControl
+          value={mode}
+          onChange={(val) => setWorkspaceMode(val as WorkspaceState["mode"])}
+          options={OS_MODES.map((m) => ({
+            value: m.id,
+            label: (
+              <div className="flex items-center gap-2">
+                <m.icon size={14} />
+                <span>{m.label}</span>
+              </div>
+            )
+          }))}
+        />
+
         {OS_MODES.map((m) => {
-          const isActive = mode === m.id;
+          if (m.id !== mode) return null;
           const Icon = m.icon;
           return (
-            <button
-              key={m.id}
-              onClick={() => {
-                setWorkspaceMode(m.id as WorkspaceState["mode"]);
-                onClose();
-              }}
-              className={cn(
-                "relative flex flex-col items-center text-center p-5 rounded-2xl border transition-all duration-500 group overflow-hidden",
-                isActive 
-                  ? cn("border-white/15", m.glow, "bg-gradient-to-b", m.gradient)
-                  : "border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.08]"
-              )}
-            >
-              {/* Active indicator ring */}
-              {isActive && (
-                <motion.div 
-                  layoutId="os-active-ring"
-                  className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-              
-              {/* Icon */}
-              <div className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-500 relative",
-                isActive 
-                  ? cn(m.bg, "border", m.border)
-                  : "bg-white/[0.03] border border-white/[0.05] group-hover:bg-white/[0.06]"
-              )}>
-                <Icon size={22} className={cn(
-                  "transition-colors duration-500",
-                  isActive ? m.color : "text-white/40 group-hover:text-white/70"
-                )} />
-                {isActive && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-lg">
-                    <Check size={11} strokeWidth={3} className="text-black" />
-                  </div>
-                )}
+            <div key={m.id} className="p-6 bg-[#3a3a3c] rounded-[24px] border-[0.8px] border-[rgba(255,255,255,0.08)] flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <div className={cn("w-10 h-10 rounded-[12px] flex items-center justify-center bg-[#1c1c1e] border-[0.8px] border-[rgba(255,255,255,0.08)]", m.color)}>
+                  <Icon size={18} />
+                </div>
+                <h3 className="text-[16px] font-medium text-[#F5F5F7] tracking-tight">{m.label} Mode Active</h3>
               </div>
-
-              {/* Label */}
-              <span className={cn(
-                "text-[14px] font-bold tracking-tight mb-1 transition-colors duration-300",
-                isActive ? "text-white" : "text-white/60 group-hover:text-white/90"
-              )}>
-                {m.label}
-              </span>
-
-              {/* Description */}
-              <span className={cn(
-                "text-[11px] leading-relaxed transition-colors duration-300",
-                isActive ? "text-white/50" : "text-white/25 group-hover:text-white/40"
-              )}>
+              <p className="text-[14px] text-[#86868B] leading-relaxed font-medium">
                 {m.desc}
-              </span>
-            </button>
+              </p>
+            </div>
           );
         })}
       </div>

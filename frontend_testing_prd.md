@@ -1,7 +1,7 @@
-# GradeFlow: Combined Frontend Testing PRD
+# Aevos: Combined Frontend Testing PRD
 
 ## 1. Project Overview
-**GradeFlow** is a premium, data-driven academic analytics platform designed for B.Tech engineering students. The application emphasizes high-fidelity UI/UX ("Levitating Liquid Glass" and "Energy Aura"), precise CGPA/SGPA calculations, and sophisticated semester planning.
+**Aevos** is a premium, data-driven academic analytics platform designed for B.Tech engineering students. The application emphasizes high-fidelity UI/UX ("Levitating Liquid Glass" and "Energy Aura"), precise CGPA/SGPA calculations, and sophisticated semester planning.
 
 ### 1.1 Goal
 Ensure 100% calculation accuracy, zero visual regressions in core design tokens, and a seamless "WOW" experience across all devices.

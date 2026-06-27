@@ -1,7 +1,7 @@
-# 📘 GradeFlow — Product Vision & Expansion Ideas (Master Document)
+# 📘 Aevos — Product Vision & Expansion Ideas (Master Document)
 
 ## 1. Vision
-GradeFlow is evolving from a CGPA calculator system into a:
+Aevos is evolving from a CGPA calculator system into a:
 
 **Student Intelligence Operating System (Student OS)**
 A unified platform that helps students:
@@ -15,7 +15,7 @@ A unified platform that helps students:
 
 ### 2.1 University Preset System (FOUNDATION LAYER)
 **Concept**
-A universal system that adapts GradeFlow to any university automatically.
+A universal system that adapts Aevos to any university automatically.
 
 **Features**
 - University selection (JSPM, SPPU, VTU, MU, etc.)
@@ -32,7 +32,7 @@ A universal system that adapts GradeFlow to any university automatically.
 - internal/external weightage rules
 
 **Outcome**
-Transforms GradeFlow into a global academic system instead of a single-university tool.
+Transforms Aevos into a global academic system instead of a single-university tool.
 
 ### 2.2 Academic Data Integration Layer (SAFE VERSION)
 **Concept**
@@ -202,7 +202,7 @@ Inputs
 → Visualization Layer
 
 ## 4. Product Positioning
-**GradeFlow evolves into:**
+**Aevos evolves into:**
 A full Academic + Career Intelligence System for students
 
 **Not:**
@@ -236,7 +236,7 @@ A full Academic + Career Intelligence System for students
 - Constraint-based simulation engine
 
 ## 6. Key Principle
-GradeFlow is NOT a calculator system anymore.
+Aevos is NOT a calculator system anymore.
 It is becoming:
 
 **A simulation + prediction + optimization engine for student success**

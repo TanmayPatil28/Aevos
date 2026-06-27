@@ -16,40 +16,37 @@ export default function TopperBenchmark({ userCgpa, userCredits, userSkillsCount
 
   return (
     <>
-      <div className="flex flex-col flex-1 px-6 py-4 hover:bg-white/[0.02] transition-colors group cursor-default">
-         <span className="text-[10px] font-bold uppercase tracking-widest text-[#86868b] flex items-center gap-1.5 mb-2">
-           <Users className="w-3.5 h-3.5 text-[#0a84ff]" />
+      <div className="flex flex-col flex-1 px-6 py-5 hover:bg-white/[0.02] transition-colors group cursor-default">
+         <span className="text-[12px] font-semibold text-foreground-muted mb-2 block">
            Overall Rank
          </span>
-         <div className="flex flex-wrap xl:flex-nowrap items-baseline gap-2.5">
-           <span className="text-3xl font-black tracking-tighter leading-none text-white">
+         <div className="flex flex-wrap xl:flex-nowrap items-center gap-3">
+           <span className="text-2xl font-bold tracking-tight text-foreground">
              Top {overallPercentile}%
            </span>
-           <span className="text-[9px] font-bold uppercase tracking-widest text-[#0a84ff] px-2 py-0.5 rounded-sm border border-[#0a84ff]/20 bg-[#0a84ff]/10 whitespace-nowrap">
+           <span className="text-[13px] font-bold uppercase tracking-wider text-foreground-muted whitespace-nowrap">
              {branch === "Computer Science" ? "CS" : branch}
            </span>
          </div>
       </div>
 
-      <div className="flex flex-col flex-1 px-6 py-4 hover:bg-white/[0.02] transition-colors group cursor-default">
-         <span className="text-[10px] font-bold uppercase tracking-widest text-[#86868b] flex items-center gap-1.5 mb-2">
-           <GraduationCap className="w-3.5 h-3.5 text-[#86868b]" />
+      <div className="flex flex-col flex-1 px-6 py-5 hover:bg-white/[0.02] transition-colors group cursor-default">
+         <span className="text-[12px] font-semibold text-foreground-muted mb-2 block">
            CGPA
          </span>
-         <div className="flex items-baseline gap-2">
-           <span className="text-2xl font-bold tracking-tight text-white leading-none">
+         <div className="flex items-center gap-3">
+           <span className="text-2xl font-bold tracking-tight text-foreground">
              Top {cgpaPercentile}%
            </span>
          </div>
       </div>
 
-      <div className="flex flex-col flex-1 px-6 py-4 hover:bg-white/[0.02] transition-colors group cursor-default">
-         <span className="text-[10px] font-bold uppercase tracking-widest text-[#86868b] flex items-center gap-1.5 mb-2">
-           <Code2 className="w-3.5 h-3.5 text-[#86868b]" />
+      <div className="flex flex-col flex-1 px-6 py-5 hover:bg-white/[0.02] transition-colors group cursor-default">
+         <span className="text-[12px] font-semibold text-foreground-muted mb-2 block">
            Skills
          </span>
-         <div className="flex items-baseline gap-2">
-           <span className="text-2xl font-bold tracking-tight text-white leading-none">
+         <div className="flex items-center gap-3">
+           <span className="text-2xl font-bold tracking-tight text-foreground">
              Top {skillsPercentile}%
            </span>
          </div>

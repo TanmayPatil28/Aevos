@@ -7,7 +7,10 @@ import {
   Timer, TrendingUp, AlertCircle, Play, Pause,
   SkipBack, SkipForward, BookOpen, Clock,
   ClipboardList, Flame, Zap, CheckCircle2,
-  Search, Command, Sparkles, ArrowRight, Mail, Coffee
+  Search, Command, Sparkles, ArrowRight, Mail, Coffee,
+  Navigation, Check, Phone, X, Bell, AlertTriangle, Info,
+  MoreHorizontal, Settings, RotateCcw, Heart, Sliders, Hash, Map, RefreshCw,
+  ScanLine, Share2, Users, MapPin
 } from "lucide-react";
 import { LiveActivity, IslandAlert, useDynamicIslandStore } from "@/stores/dynamicIslandStore";
 import { useUSMStore } from "@/stores/usmStore";
@@ -52,7 +55,7 @@ export function useLiveTimer(activity: LiveActivity) {
 //  ANIMATED ICONS
 // ═══════════════════════════════════════════════
 
-function AudioWaveform({ isPlaying }: { isPlaying: boolean }) {
+function AudioWaveform({ isPlaying, color = "#FF2D55" }: { isPlaying: boolean; color?: string }) {
   return (
     <div className="flex items-center gap-[2px] h-3 px-1">
       {[1, 2, 3].map((i) => (
@@ -60,7 +63,8 @@ function AudioWaveform({ isPlaying }: { isPlaying: boolean }) {
           key={i}
           animate={{ height: isPlaying ? ["3px", "12px", "3px"] : "3px" }}
           transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
-          className="w-[2px] bg-pink-500 rounded-full"
+          className="w-[2px] rounded-full"
+          style={{ backgroundColor: color }}
         />
       ))}
     </div>
@@ -92,97 +96,75 @@ export function MinimalActivity({ activity }: { activity: LiveActivity }) {
 
   if (activity.type === 'timer') {
     return (
-      <div className="flex items-center gap-2 px-1 text-[#4F8EF7]">
-        <Timer size={14} className="animate-pulse" />
-        <span className="text-[12px] font-mono font-bold">{formatTime(time)}</span>
-      </div>
-    );
-  }
-
-  if (activity.type === 'academic_status') {
-    return (
-      <div className="flex items-center gap-2 px-1 text-emerald-400">
-        <TrendingUp size={14} />
-        <span className="text-[12px] font-bold">{activity.title}</span>
+      <div className="flex items-center justify-between w-full px-2 text-[#FF9F0A]">
+        <div className="flex items-center gap-1.5">
+          <Timer size={16} fill="currentColor" className="opacity-80" />
+        </div>
+        <span className="text-[14px] font-medium tracking-tight tabular-nums" style={{ color: '#FF9F0A' }}>{formatTime(time)}</span>
       </div>
     );
   }
 
   if (activity.type === 'music') {
     return (
-      <div className="flex items-center gap-2 pr-1">
-        <AudioWaveform isPlaying={activity.isActive} />
+      <div className="flex items-center justify-between w-full px-2">
+        <div className="w-5 h-5 rounded-md overflow-hidden bg-white/10 shrink-0 border border-white/5">
+          <img src={activity.metadata?.albumArt || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=50&q=80"} alt="Art" className="w-full h-full object-cover" />
+        </div>
+        <AudioWaveform isPlaying={activity.isActive} color="#FF2D55" />
       </div>
     );
   }
 
   if (activity.type === 'schedule') {
     return (
-      <div className="flex items-center gap-2 px-1 text-purple-400">
-        <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-        <span className="text-[12px] font-mono font-bold tracking-tight">{formatTime(time)}</span>
-      </div>
-    );
-  }
-
-  if (activity.type === 'exam_countdown') {
-    const urgencyColors: Record<string, string> = {
-      low: 'text-emerald-400',
-      medium: 'text-yellow-400',
-      high: 'text-orange-400',
-      critical: 'text-red-400',
-    };
-    const dotColors: Record<string, string> = {
-      low: 'bg-emerald-500',
-      medium: 'bg-yellow-500',
-      high: 'bg-orange-500',
-      critical: 'bg-red-500 animate-pulse',
-    };
-    const urgency = activity.metadata?.urgency || 'medium';
-    return (
-      <div className={cn("flex items-center gap-2 px-1", urgencyColors[urgency])}>
-        <div className={cn("w-2 h-2 rounded-full", dotColors[urgency])} />
-        <span className="text-[12px] font-bold tracking-tight">{activity.title}</span>
-      </div>
-    );
-  }
-
-  if (activity.type === 'bunk_calculator') {
-    const riskiest = activity.metadata?.riskiest;
-    const isCritical = riskiest?.risk === 'CRITICAL';
-    const isWarning = riskiest?.risk === 'WARNING';
-    
-    return (
-      <div className={cn("flex items-center gap-2 px-1", isCritical ? 'text-red-400' : isWarning ? 'text-yellow-400' : 'text-emerald-400')}>
-        <AlertCircle size={14} className={isCritical ? 'animate-pulse' : ''} />
-        <span className="text-[12px] font-bold tracking-tight">
-          {riskiest?.bunksRemaining < 0 ? 'Danger' : `${riskiest?.bunksRemaining} bunks`}
-        </span>
+      <div className="flex items-center justify-between w-full px-2">
+        <div className="w-5 h-5 rounded-full bg-[#007AFF] flex items-center justify-center shrink-0">
+          <Navigation size={12} className="text-white fill-white transform rotate-45" />
+        </div>
+        <span className="text-[14px] font-medium tracking-tight" style={{ color: '#007AFF' }}>{formatTime(time)}</span>
       </div>
     );
   }
 
   if (activity.type === 'progress') {
-    return <ProgressBar progress={activity.progress || 0} />;
-  }
-
-  if (activity.type === 'time_context') {
-    const iconMap: Record<string, React.ReactNode> = {
-      calendar: <BookOpen size={13} />,
-      clipboard: <ClipboardList size={13} />,
-      clock: <Clock size={13} />,
-      check: <CheckCircle2 size={13} />,
-      trending: <TrendingUp size={13} />,
-    };
     return (
-      <div className="flex items-center gap-2 px-1 text-sky-400">
-        {iconMap[activity.metadata?.icon] || <Clock size={13} />}
-        <span className="text-[12px] font-bold">{activity.title}</span>
+      <div className="flex items-center justify-between w-full px-2">
+        <span className="text-[14px] font-medium text-white tracking-tight ml-1">Syncing</span>
+        <div className="relative w-5 h-5 ml-2">
+           <svg className="w-full h-full transform -rotate-90">
+              <circle cx="10" cy="10" r="9" stroke="rgba(255,255,255,0.2)" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="10" r="9" stroke="#007AFF" strokeWidth="2" fill="none" strokeDasharray="56.5" strokeDashoffset={56.5 - (56.5 * (activity.progress || 0)) / 100} />
+           </svg>
+        </div>
       </div>
     );
   }
 
-  return null;
+  if (activity.type === 'exam_countdown' || activity.type === 'bunk_calculator') {
+    const isCritical = activity.metadata?.urgency === 'critical' || activity.metadata?.riskiest?.risk === 'CRITICAL';
+    const color = isCritical ? '#FF3B30' : '#FF9F0A';
+    return (
+      <div className="flex items-center justify-between w-full px-2">
+        <span className="text-[14px] font-medium tracking-tight ml-1" style={{ color: isCritical ? '#FF3B30' : '#FFFFFF' }}>{activity.type === 'exam_countdown' ? 'Exam' : 'Risk'}</span>
+        <div className="flex items-center gap-1.5 ml-2">
+           <span className="text-[12px] font-bold" style={{ color }}>{isCritical ? 'Critical' : 'Warning'}</span>
+           <div className="w-5 h-2.5 rounded-[3px] border opacity-80 flex items-center p-[1px]" style={{ borderColor: color }}>
+             <div className="h-full rounded-[1px]" style={{ width: isCritical ? '20%' : '50%', backgroundColor: color }} />
+           </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between w-full px-2">
+      <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0">
+        <Check size={16} className="text-[#34C759]" />
+      </div>
+      <span className="text-[14px] font-medium tracking-tight ml-2" style={{ color: '#34C759' }}>{activity.title.substring(0,10)}</span>
+    </div>
+  );
 }
 
 // ═══════════════════════════════════════════════
@@ -190,17 +172,12 @@ export function MinimalActivity({ activity }: { activity: LiveActivity }) {
 // ═══════════════════════════════════════════════
 
 export function MinimalSecondaryActivity({ activity }: { activity: LiveActivity }) {
-  if (activity.type === 'timer') return <Timer size={14} className="text-[#4F8EF7]" />;
-  if (activity.type === 'music') return <AudioWaveform isPlaying={activity.isActive} />;
-  if (activity.type === 'schedule') return <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />;
-  if (activity.type === 'exam_countdown') {
-    const dotColors: Record<string, string> = { low: 'bg-emerald-500', medium: 'bg-yellow-500', high: 'bg-orange-500', critical: 'bg-red-500 animate-pulse' };
-    return <div className={cn("w-3 h-3 rounded-full", dotColors[activity.metadata?.urgency || 'medium'])} />;
-  }
-  if (activity.type === 'progress') return <Zap size={14} className="text-cyan-400" />;
-  if (activity.type === 'time_context') return <Clock size={14} className="text-sky-400" />;
-  if (activity.type === 'academic_status') return <TrendingUp size={14} className="text-emerald-400" />;
-  return <div className="w-2 h-2 rounded-full bg-white/50" />;
+  if (activity.type === 'timer') return <Timer size={18} color="#FF9F0A" fill="currentColor" />;
+  if (activity.type === 'music') return <AudioWaveform isPlaying={activity.isActive} color="#FF2D55" />;
+  if (activity.type === 'schedule') return <Navigation size={16} color="#007AFF" fill="#007AFF" className="transform rotate-45" />;
+  if (activity.type === 'exam_countdown' || activity.type === 'bunk_calculator') return <div className="w-4 h-4 rounded-full bg-[#FF3B30] flex items-center justify-center"><AlertCircle size={10} color="#FFFFFF" /></div>;
+  if (activity.type === 'progress') return <Zap size={16} color="#007AFF" fill="#007AFF" />;
+  return <Check size={18} color="#34C759" />;
 }
 
 // ═══════════════════════════════════════════════
@@ -211,306 +188,489 @@ const STAGGER_ANIMATION = {
   initial: { opacity: 0, filter: "blur(10px)", scale: 0.95, y: 10 },
   animate: { opacity: 1, filter: "blur(0px)", scale: 1, y: 0 },
   exit: { opacity: 0, filter: "blur(5px)", scale: 0.95, transition: { duration: 0.05 } },
-  transition: { type: "spring", stiffness: 400, damping: 30, delay: 0.1 }
+  transition: { type: "spring", stiffness: 350, damping: 28, mass: 1, delay: 0.1 }
 };
 
 export function ExpandedActivity({ activity }: { activity: LiveActivity }) {
   const time = useLiveTimer(activity);
   const updateActivity = useDynamicIslandStore((s) => s.updateActivity);
-  const updateCourse = useUSMStore(s => s.updateCourse);
-  const addAttendanceHistoryEvent = useUSMStore(s => s.addAttendanceHistoryEvent);
+  const [isFlipped, setIsFlipped] = useState(false);
 
-  // --- TIMER ---
   if (activity.type === 'timer') {
     const isActive = activity.isActive ?? true;
-
     const handleTogglePause = (e: React.MouseEvent) => {
       e.stopPropagation();
       const now = Date.now();
       if (isActive) {
-        // Pausing: Calculate exact remaining time, clear endTime
-        const remaining = activity.metadata?.endTime 
-          ? Math.max(0, Math.floor((activity.metadata.endTime - now) / 1000))
-          : activity.timeRemaining || 0;
-          
-        updateActivity(activity.id, { 
-          isActive: false, 
-          timeRemaining: remaining,
-          metadata: { ...activity.metadata, endTime: undefined } 
-        });
+        const remaining = activity.metadata?.endTime ? Math.max(0, Math.floor((activity.metadata.endTime - now) / 1000)) : activity.timeRemaining || 0;
+        updateActivity(activity.id, { isActive: false, timeRemaining: remaining, metadata: { ...activity.metadata, endTime: undefined } });
       } else {
-        // Resuming: Project new endTime
         const newEndTime = now + ((activity.timeRemaining || 0) * 1000);
-        updateActivity(activity.id, { 
-          isActive: true, 
-          metadata: { ...activity.metadata, endTime: newEndTime } 
-        });
+        updateActivity(activity.id, { isActive: true, metadata: { ...activity.metadata, endTime: newEndTime } });
       }
     };
-
-    return (
-      <motion.div {...STAGGER_ANIMATION} className="w-full flex items-center justify-between px-8 py-6">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded-full bg-[#4F8EF7]/10 flex items-center justify-center border border-[#4F8EF7]/20 shadow-[0_0_20px_rgba(79,142,247,0.2)]">
-            <Timer size={32} className="text-[#4F8EF7]" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[#4F8EF7] text-[13px] font-bold uppercase tracking-widest">{activity.title}</span>
-            <span className="text-white text-[40px] font-mono font-light tracking-tight leading-none mt-1">{formatTime(time)}</span>
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <button 
-            onClick={handleTogglePause}
-            className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors border border-white/5 shadow-lg active:scale-95"
-          >
-            {isActive ? <Pause size={24} className="text-white" fill="currentColor" /> : <Play size={24} className="text-white ml-1" fill="currentColor" />}
-          </button>
-        </div>
-      </motion.div>
-    );
-  }
-
-  // --- ACADEMIC STATUS ---
-  if (activity.type === 'academic_status') {
-    return (
-      <motion.div {...STAGGER_ANIMATION} className="w-full flex flex-col items-center justify-center px-8 py-8 gap-4">
-        <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-[0_0_20px_rgba(52,211,153,0.2)]">
-          <TrendingUp size={32} className="text-emerald-400" />
-        </div>
-        <div className="flex flex-col items-center text-center">
-          <span className="text-emerald-400 text-[13px] font-bold uppercase tracking-widest mb-2">Live Academic Status</span>
-          <span className="text-white text-[48px] font-black tracking-tighter leading-none">{activity.title}</span>
-        </div>
-      </motion.div>
-    );
-  }
-
-  // --- MUSIC PLAYER ---
-  if (activity.type === 'music') {
-    const isActive = activity.isActive ?? true;
-    const art = activity.metadata?.albumArt || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80";
     
-    const handleTogglePlay = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      updateActivity(activity.id, { isActive: !isActive });
-    };
+    // Calculate progress for glowing dial
+    const total = activity.metadata?.totalTime || 1500; 
+    const remaining = time;
+    const progress = Math.max(0, Math.min(100, ((total - remaining) / total) * 100));
+    const dashOffset = 283 - (283 * progress) / 100;
 
     return (
-      <motion.div {...STAGGER_ANIMATION} className="w-full relative overflow-hidden flex items-center justify-between px-8 py-6 rounded-[44px]">
-        <div
-          className="absolute inset-0 opacity-40 blur-3xl saturate-200"
-          style={{ backgroundImage: `url(${art})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-        />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl" />
-        <div className="relative z-10 flex items-center gap-6">
-          <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-2xl relative border border-white/10">
-            <img src={art} alt="Album Art" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-white text-[24px] font-bold tracking-tight leading-tight">{activity.title}</span>
-            <span className="text-white/60 text-[16px] font-medium mt-1">{activity.subtitle || "Lofi Girl"}</span>
-          </div>
-        </div>
-        <div className="relative z-10 flex items-center gap-6">
-          <button className="text-white/50 hover:text-white transition-colors active:scale-95"><SkipBack size={24} fill="currentColor" /></button>
-          <button 
-            onClick={handleTogglePlay}
-            className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.3)]"
-          >
-            {isActive ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
-          </button>
-          <button className="text-white/50 hover:text-white transition-colors active:scale-95"><SkipForward size={24} fill="currentColor" /></button>
-        </div>
-      </motion.div>
-    );
-  }
+      <div className="relative w-full min-h-[160px]" style={{ perspective: '1200px' }}>
+        <div className="w-full min-h-[160px] relative transition-transform duration-700 ease-in-out" style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)' }}>
+          
+          {/* FRONT */}
+          <div className="w-full flex flex-col px-7 py-6 min-h-[160px] justify-between absolute inset-0 rounded-[42px] bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden" style={{ backfaceVisibility: 'hidden' }}>
+            {/* Glowing top ambient light */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-[#FF9F0A] blur-[80px] opacity-20 pointer-events-none" />
+            
+            <div className="flex items-center justify-between w-full relative z-10 mb-4">
+               <span className="text-[#FF9F0A] text-[15px] font-bold tracking-tight">Study Session</span>
+               <span className="text-[#FF9F0A] text-[48px] font-medium tracking-tighter tabular-nums leading-none drop-shadow-[0_0_15px_rgba(255,159,10,0.5)]">
+                 {formatTime(time)}
+               </span>
+            </div>
 
-  // --- SCHEDULE ---
-  if (activity.type === 'schedule') {
-    const totalTime = activity.metadata?.totalTime || 3600;
-    const progress = ((1 - time / totalTime) * 100);
-    return (
-      <motion.div {...STAGGER_ANIMATION} className="w-full flex items-center justify-between px-8 py-6">
-        <div className="flex items-center gap-6">
-          <div className="relative w-16 h-16 flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-              <circle cx="32" cy="32" r="30" stroke="rgba(255,255,255,0.1)" strokeWidth="4" fill="none" />
-              <circle cx="32" cy="32" r="30" stroke="#a855f7" strokeWidth="4" fill="none" strokeDasharray="188.5" strokeDashoffset={188.5 - (188.5 * progress) / 100} className="transition-all duration-1000 ease-linear" />
-            </svg>
-            <BookOpen size={24} className="text-purple-400" />
+            <div className="flex flex-col gap-2 w-full relative z-10">
+              <div className="flex items-center justify-between gap-1 h-8 w-full">
+                {Array.from({ length: 40 }).map((_, i) => {
+                  const isPast = (i / 40) * 100 < (100 - progress);
+                  return (
+                    <div 
+                      key={i} 
+                      className="flex-1 h-full rounded-[1px] transition-all duration-300"
+                      style={{ 
+                        backgroundColor: isPast ? '#FF9F0A' : 'rgba(255, 255, 255, 0.1)',
+                        boxShadow: isPast ? '0 0 8px rgba(255, 159, 10, 0.8)' : 'none',
+                        opacity: isPast ? 1 : 0.4
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              
+              <div className="flex items-center justify-between mt-2">
+                <button onClick={(e) => { e.stopPropagation(); useDynamicIslandStore.getState().removeActivity(activity.id); }} className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all text-white/70">
+                  <X size={20} />
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }} className="w-12 h-12 rounded-full bg-[#FF9F0A]/20 text-[#FF9F0A] flex items-center justify-center hover:bg-[#FF9F0A]/30 active:scale-95 transition-all border border-[#FF9F0A]/30">
+                  <Settings size={20} />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-purple-400 text-[13px] font-bold uppercase tracking-widest">Ongoing Class</span>
-            <span className="text-white text-[28px] font-bold tracking-tight leading-none mt-1">{activity.title}</span>
-          </div>
-        </div>
-        <div className="flex flex-col items-end text-right">
-          <span className="text-white text-[32px] font-mono font-light tracking-tight leading-none">{formatTime(time)}</span>
-          {activity.metadata?.nextClass && (
-            <span className="text-white/40 text-[13px] font-medium mt-2">Up next: <span className="text-white/80">{activity.metadata.nextClass}</span></span>
-          )}
-        </div>
-      </motion.div>
-    );
-  }
+          
+          {/* BACK: DEEP UTILITIES */}
+          <div className="w-full flex flex-col px-6 py-4 min-h-[160px] justify-between absolute inset-0 rounded-[42px] bg-[#1C1C1E] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden" style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}>
+            <div className="flex items-center justify-between w-full relative z-10 mb-1">
+               <span className="text-[#FF9F0A] text-[14px] font-bold tracking-tight">Focus Utilities</span>
+               <button onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white/70">
+                 <X size={14} strokeWidth={3} />
+               </button>
+            </div>
 
-  // --- EXAM COUNTDOWN ---
-  if (activity.type === 'exam_countdown') {
-    const urgencyGradients: Record<string, string> = {
-      low: 'from-emerald-500/20 to-emerald-500/5',
-      medium: 'from-yellow-500/20 to-yellow-500/5',
-      high: 'from-orange-500/20 to-orange-500/5',
-      critical: 'from-red-500/20 to-red-500/5',
-    };
-    const urgencyText: Record<string, string> = {
-      low: 'text-emerald-400',
-      medium: 'text-yellow-400',
-      high: 'text-orange-400',
-      critical: 'text-red-400',
-    };
-    const urgency = activity.metadata?.urgency || 'medium';
+            {/* Session Tagging */}
+            <div className="flex gap-2 mb-1">
+              <button className="flex-1 py-1 rounded-full bg-[#FF9F0A]/20 border border-[#FF9F0A]/30 text-[#FF9F0A] text-[10px] font-bold tracking-tight active:scale-95 transition-all">Deep Work</button>
+              <button className="flex-1 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 text-[10px] font-bold tracking-tight active:scale-95 transition-all">Coding</button>
+              <button className="flex-1 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 text-[10px] font-bold tracking-tight active:scale-95 transition-all">Reading</button>
+            </div>
 
-    return (
-      <motion.div {...STAGGER_ANIMATION} className={cn("w-full flex items-center justify-between px-8 py-6 bg-gradient-to-r rounded-[44px]", urgencyGradients[urgency])}>
-        <div className="flex items-center gap-6">
-          <div className={cn("w-16 h-16 rounded-full flex items-center justify-center border shadow-lg", 
-            urgency === 'critical' ? 'bg-red-500/20 border-red-500/30' : 'bg-white/5 border-white/10'
-          )}>
-            <Flame size={32} className={urgencyText[urgency]} />
-          </div>
-          <div className="flex flex-col">
-            <span className={cn("text-[13px] font-bold uppercase tracking-widest", urgencyText[urgency])}>
-              {urgency === 'critical' ? '⚠ EXAM IMMINENT' : 'Upcoming Exam'}
-            </span>
-            <span className="text-white text-[28px] font-bold tracking-tight leading-none mt-1">{activity.title}</span>
-            {activity.subtitle && <span className="text-white/40 text-[13px] mt-1">{activity.subtitle}</span>}
-          </div>
-        </div>
-        <div className="flex flex-col items-end text-right">
-          <span className={cn("text-[36px] font-mono font-light tracking-tight leading-none", urgencyText[urgency])}>
-            {activity.metadata?.daysRemaining || 0}d {activity.metadata?.hoursRemaining || 0}h
-          </span>
-          <span className="text-white/30 text-[12px] font-medium mt-1 uppercase tracking-widest">remaining</span>
-        </div>
-      </motion.div>
-    );
-  }
-
-  // --- PROGRESS ---
-  if (activity.type === 'progress') {
-    const prog = activity.progress || 0;
-    return (
-      <motion.div {...STAGGER_ANIMATION} className="w-full flex items-center justify-between px-8 py-6">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded-full bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
-            <Zap size={32} className="text-cyan-400" />
-          </div>
-          <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-cyan-400 text-[13px] font-bold uppercase tracking-widest">{activity.title}</span>
-            <div className="w-64 h-2 rounded-full bg-white/10 overflow-hidden mt-3">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${prog}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              />
+            {/* Pomodoro Cycle Tracker & Dial */}
+            <div className="flex items-center justify-between w-full mt-1">
+              <div className="flex flex-col gap-1">
+                <span className="text-white/50 text-[9px] font-bold uppercase tracking-widest">Pomodoro Cycle</span>
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#FF9F0A] shadow-[0_0_8px_rgba(255,159,10,0.6)]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#FF9F0A] shadow-[0_0_8px_rgba(255,159,10,0.6)]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 text-white/70 active:scale-95 transition-all border border-white/10">
+                  <span className="font-bold text-[11px]">-5</span>
+                </button>
+                <div className="relative w-12 h-12 rounded-full border-[3px] border-white/10 flex items-center justify-center">
+                   <div className="absolute inset-0 rounded-full border-[3px] border-[#FF9F0A] border-t-transparent border-l-transparent transform rotate-45" />
+                   <span className="text-white font-bold text-[13px]">25</span>
+                </div>
+                <button className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 text-white/70 active:scale-95 transition-all border border-white/10">
+                  <span className="font-bold text-[11px]">+5</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-        <span className="text-white text-[36px] font-mono font-light tracking-tight">{Math.round(prog)}%</span>
-      </motion.div>
+      </div>
+
     );
   }
 
-  // --- BUNK CALCULATOR ---
-  if (activity.type === 'bunk_calculator') {
-    const stats = activity.metadata?.allStats || [];
-    
-    const handleLogAttendance = (e: React.MouseEvent, courseId: string, bunkedCount: number, totalCount: number, isBunk: boolean, courseName: string) => {
-      e.stopPropagation();
-      updateCourse(courseId, { attendanceBunked: bunkedCount, attendanceTotal: totalCount });
-      addAttendanceHistoryEvent({
-        courseId,
-        dateStr: new Date().toISOString().split("T")[0],
-        action: isBunk ? "BUNKED" : "ATTENDED",
-      });
-      // The BunkCalculatorController automatically syncs and updates the UI!
-    };
-    
+  if (activity.type === 'music') {
+    const isActive = activity.isActive ?? true;
+    const art = activity.metadata?.albumArt || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80";
     return (
-      <motion.div {...STAGGER_ANIMATION} className="w-full flex flex-col px-6 py-6 max-h-[300px] overflow-y-auto no-scrollbar">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
-            <AlertCircle size={24} className="text-red-400" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-red-400 text-[11px] font-bold uppercase tracking-widest">Attendance Risk</span>
-            <span className="text-white text-[24px] font-bold tracking-tight leading-none">{activity.subtitle}</span>
-          </div>
-        </div>
-
-        <div className="w-full space-y-2 mt-2">
-          {stats.slice(0, 4).map((s: any) => {
-            const isCritical = s.risk === 'CRITICAL';
-            const isWarning = s.risk === 'WARNING';
-            const color = isCritical ? 'text-red-400' : isWarning ? 'text-yellow-400' : 'text-emerald-400';
-            const bg = isCritical ? 'bg-red-500/10 border-red-500/20' : isWarning ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-white/5 border-white/5';
+      <div className="relative w-full min-h-[160px]" style={{ perspective: '1200px' }}>
+        <div className="w-full min-h-[160px] relative transition-transform duration-700 ease-in-out" style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)' }}>
+          
+          {/* FRONT */}
+          <div className="w-full flex flex-col px-7 py-6 min-h-[160px] justify-between absolute inset-0 rounded-[42px] bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden" style={{ backfaceVisibility: 'hidden' }}>
+            {/* Vivid Ambient Glassmorphism */}
+            <div className="absolute inset-0 opacity-50 blur-3xl saturate-200 pointer-events-none transition-all duration-1000" style={{ backgroundImage: `url(${art})`, backgroundSize: 'cover', transform: 'scale(1.2)' }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
             
-            return (
-              <div key={s.id} className={cn("group flex items-center justify-between p-3 rounded-2xl border transition-all hover:bg-white/10 cursor-default", bg)}>
-                <div className="flex flex-col flex-1">
-                  <span className="text-white font-medium text-[14px] truncate max-w-[150px]">{s.name}</span>
-                  <div className="flex items-center gap-2 mt-1 h-5">
-                    <span className="text-white/40 text-[11px]">{Math.round(s.percentage)}% • {s.total - s.bunked}/{s.total}</span>
-                    <div className="flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={(e) => handleLogAttendance(e, s.id, s.bunked + 1, s.total + 1, true, s.name)}
-                        className="px-2 py-0.5 bg-red-500/20 text-red-400 rounded-md text-[9px] font-black uppercase tracking-wider hover:bg-red-500/30 transition-colors"
-                      >Bunk</button>
-                      <button 
-                        onClick={(e) => handleLogAttendance(e, s.id, s.bunked, s.total + 1, false, s.name)}
-                        className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-md text-[9px] font-black uppercase tracking-wider hover:bg-emerald-500/30 transition-colors"
-                      >Attend</button>
-                    </div>
-                  </div>
+            <div className="flex justify-between items-start w-full relative z-10">
+              <div className="flex gap-5">
+                <div className="relative group cursor-pointer">
+                   <img src={art} alt="Art" className="w-20 h-20 rounded-[20px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/20 object-cover" />
                 </div>
-                <div className="flex flex-col items-end shrink-0">
-                  <span className={cn("font-black text-[18px]", color)}>
-                    {s.bunksRemaining < 0 ? s.bunksRemaining : `+${s.bunksRemaining}`}
-                  </span>
-                  <span className={cn("text-[10px] uppercase tracking-wider font-bold", color)}>
-                    {s.bunksRemaining < 0 ? 'Deficit' : 'Safe'}
-                  </span>
+                <div className="flex flex-col flex-1 min-w-0 mt-2">
+                  <span className="text-white text-[19px] font-bold tracking-tight truncate drop-shadow-md">{activity.title}</span>
+                  <span className="text-white/70 text-[16px] font-medium truncate drop-shadow-md">{activity.subtitle || "Unknown Artist"}</span>
                 </div>
               </div>
-            );
-          })}
+              <div className="flex items-center gap-3">
+                <button onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all text-white/90 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                  <Sliders size={16} strokeWidth={2.5} />
+                </button>
+                <div className="mt-3 mr-2 bg-black/20 p-2 rounded-full backdrop-blur-md border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                  <AudioWaveform isPlaying={isActive} color="#FFFFFF" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col relative z-10 mt-5 w-full">
+              <div className="flex items-center gap-4 w-full px-1">
+                <span className="text-white/60 text-[12px] tabular-nums font-bold drop-shadow-sm">1:15</span>
+                <div className="flex-1 h-2 bg-black/40 backdrop-blur-sm rounded-full overflow-hidden border border-white/10 shadow-inner group cursor-pointer">
+                  <div className="h-full bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] w-1/3 relative group-hover:bg-[#007AFF] transition-colors">
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_8px_2px_rgba(255,255,255,0.9)] opacity-0 group-hover:opacity-100 transition-opacity scale-150" />
+                  </div>
+                </div>
+                <span className="text-white/60 text-[12px] tabular-nums font-bold drop-shadow-sm">-1:18</span>
+              </div>
+              
+              <div className="flex items-center justify-center gap-12 mt-6 mb-2">
+                <button className="text-white/70 hover:text-white hover:scale-110 active:scale-95 transition-all"><SkipBack size={36} fill="currentColor" className="drop-shadow-lg" /></button>
+                <button onClick={(e) => { e.stopPropagation(); updateActivity(activity.id, { isActive: !isActive }); }} className="text-black bg-white/90 backdrop-blur-md border border-white/20 w-16 h-16 rounded-full flex items-center justify-center hover:scale-105 hover:bg-white hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] active:scale-95 transition-all">
+                  {isActive ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
+                </button>
+                <button className="text-white/70 hover:text-white hover:scale-110 active:scale-95 transition-all"><SkipForward size={36} fill="currentColor" className="drop-shadow-lg" /></button>
+              </div>
+            </div>
+          </div>
+
+          {/* BACK: DEEP UTILITIES */}
+          <div className="w-full flex flex-col px-6 py-4 min-h-[160px] justify-between absolute inset-0 rounded-[42px] bg-[#1C1C1E] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden" style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}>
+            <div className="absolute inset-0 opacity-20 blur-3xl saturate-200 pointer-events-none" style={{ backgroundImage: `url(${art})`, backgroundSize: 'cover', transform: 'scale(1.2)' }} />
+            
+            <div className="flex items-center justify-between w-full relative z-10 mb-1">
+               <span className="text-white text-[14px] font-bold tracking-tight">Audio Settings</span>
+               <button onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white/70">
+                 <X size={14} strokeWidth={3} />
+               </button>
+            </div>
+            
+            <div className="flex flex-col gap-2 w-full relative z-10">
+              
+              {/* Spatial Audio Visualizer & Trivia */}
+              <div className="flex items-center gap-3 bg-black/40 rounded-xl p-2 border border-white/5">
+                <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center overflow-hidden relative shrink-0">
+                   <div className="absolute inset-0 border-4 border-dashed border-[#0A84FF] rounded-full animate-[spin_4s_linear_infinite] opacity-50" />
+                   <div className="absolute inset-1 border-[3px] border-dotted border-[#5E5CE6] rounded-full animate-[spin_3s_linear_infinite_reverse]" />
+                   <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+                </div>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-[#0A84FF] text-[9px] font-bold uppercase tracking-widest mb-0.5">Spatial Audio</span>
+                  <span className="text-white/80 text-[10px] font-medium leading-tight truncate">Playing from "The Weeknd" • Won 4 Grammys</span>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center w-full mt-1">
+                <button className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-[12px] bg-[#5865F2]/20 text-[#5865F2] hover:bg-[#5865F2]/30 active:scale-95 transition-all mr-2">
+                  <Users size={14} />
+                  <span className="text-[11px] font-bold">Discord</span>
+                </button>
+                <button className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-[12px] bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-pink-400 hover:from-purple-500/30 hover:to-pink-500/30 active:scale-95 transition-all mr-2">
+                  <Share2 size={14} />
+                  <span className="text-[11px] font-bold">Insta</span>
+                </button>
+                <button className="w-9 h-9 rounded-[12px] bg-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 active:scale-95 transition-all shrink-0">
+                  <Settings size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </motion.div>
+      </div>
     );
   }
 
-  // --- TIME CONTEXT ---
-  if (activity.type === 'time_context') {
+  if (activity.type === 'schedule') {
     return (
-      <motion.div {...STAGGER_ANIMATION} className="w-full flex items-center justify-center px-8 py-6 gap-4">
-        <div className="w-14 h-14 rounded-full bg-sky-500/10 flex items-center justify-center border border-sky-500/20 shadow-[0_0_20px_rgba(56,189,248,0.2)]">
-          <Clock size={28} className="text-sky-400" />
+      <div className="relative w-full min-h-[160px]" style={{ perspective: '1200px' }}>
+        <div className="w-full min-h-[160px] relative transition-transform duration-700 ease-in-out" style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateX(-180deg)' : 'rotateX(0deg)' }}>
+          
+          {/* FRONT */}
+          <div className="w-full flex flex-col px-6 py-5 min-h-[160px] justify-between absolute inset-0 rounded-[42px] bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden" style={{ backfaceVisibility: 'hidden' }}>
+            <div className="flex items-center justify-between relative z-10 mb-2">
+              <div className="flex flex-col">
+                <span className="text-white/60 text-[13px] font-medium tracking-tight mb-0.5">Current Session</span>
+                <span className="text-white text-[20px] font-medium tracking-tight">{activity.title}</span>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-[#007AFF] text-[13px] font-bold tracking-tight">ETA {formatTime(time)}</span>
+                <button onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }} className="w-8 h-8 rounded-full bg-[#007AFF]/20 flex items-center justify-center hover:bg-[#007AFF]/40 active:scale-95 transition-all text-[#007AFF]">
+                  <MoreHorizontal size={16} strokeWidth={3} />
+                </button>
+              </div>
+            </div>
+
+            {/* Trajectory Arc Timeline */}
+            <div className="relative w-full h-16 flex items-center justify-center mt-1">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-10 bg-[#007AFF] blur-[40px] opacity-30 pointer-events-none" />
+              
+              <svg className="w-[90%] h-full overflow-visible" viewBox="0 0 200 65">
+                <path d="M 10 40 Q 100 -10 190 40" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" strokeLinecap="round" />
+                <path 
+                  d="M 10 40 Q 100 -10 190 40" 
+                  fill="none" 
+                  stroke="url(#blueGradient)" 
+                  strokeWidth="6" 
+                  strokeLinecap="round" 
+                  strokeDasharray="210" 
+                  strokeDashoffset={210 - (210 * 0.65)} 
+                />
+                <defs>
+                  <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#0A84FF" />
+                    <stop offset="100%" stopColor="#5E5CE6" />
+                  </linearGradient>
+                </defs>
+
+                <circle cx="10" cy="40" r="5" fill="#0A84FF" />
+                <text x="10" y="58" fill="rgba(255,255,255,0.5)" fontSize="10" textAnchor="middle" fontWeight="bold">START</text>
+                
+                <g transform="translate(130, 15)">
+                  <circle cx="0" cy="0" r="8" fill="#5E5CE6" />
+                  <circle cx="0" cy="0" r="4" fill="white" />
+                  <circle cx="0" cy="0" r="14" fill="none" stroke="#5E5CE6" strokeWidth="2" opacity="0.5" className="animate-ping" />
+                </g>
+
+                <circle cx="190" cy="40" r="5" fill="rgba(255,255,255,0.2)" />
+                <text x="190" y="58" fill="rgba(255,255,255,0.5)" fontSize="10" textAnchor="middle" fontWeight="bold">END</text>
+              </svg>
+            </div>
+          </div>
+
+          {/* BACK: DEEP UTILITIES */}
+          <div className="w-full flex flex-col px-6 py-4 min-h-[160px] justify-between absolute inset-0 rounded-[42px] bg-[#1C1C1E] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden" style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}>
+            <div className="flex items-center justify-between w-full relative z-10 mb-1">
+               <span className="text-[#007AFF] text-[14px] font-bold tracking-tight">Class Utilities</span>
+               <button onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white/70">
+                 <X size={14} strokeWidth={3} />
+               </button>
+            </div>
+            
+            {/* Quick Context & Syllabus */}
+            <div className="flex items-center justify-between bg-black/30 rounded-xl p-2 mb-2">
+              <div className="flex flex-col flex-1 mr-3">
+                <div className="flex justify-between items-end mb-1">
+                  <span className="text-white text-[11px] font-bold">Syllabus</span>
+                  <span className="text-[#007AFF] text-[9px] font-bold">65%</span>
+                </div>
+                <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#007AFF] rounded-full" style={{ width: '65%' }} />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 border-l border-white/10 pl-3">
+                <div className="w-6 h-6 rounded-full bg-[#007AFF]/20 flex items-center justify-center border border-[#007AFF]/30">
+                  <MapPin size={12} className="text-[#007AFF]" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-white text-[10px] font-bold">Rm 402</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions Row */}
+            <div className="flex justify-between items-center w-full gap-2 mt-auto">
+              <button className="flex-1 h-10 rounded-[14px] bg-[#007AFF]/10 flex items-center justify-center gap-1.5 hover:bg-[#007AFF]/20 active:scale-95 transition-all border border-[#007AFF]/20 text-[#007AFF]">
+                <ScanLine size={14} strokeWidth={2.5} />
+                <span className="text-[11px] font-bold">Attendance</span>
+              </button>
+              
+              <button className="flex-1 h-10 rounded-[14px] bg-white/5 flex items-center justify-center gap-1.5 hover:bg-white/10 active:scale-95 transition-all text-white/80">
+                <Share2 size={14} />
+                <span className="text-[11px] font-medium">Notes</span>
+              </button>
+              
+              <button className="w-10 h-10 rounded-[14px] bg-[#34C759]/10 flex items-center justify-center hover:bg-[#34C759]/20 active:scale-95 transition-all border border-[#34C759]/30 text-[#34C759]">
+                <CheckCircle2 size={16} />
+              </button>
+            </div>
+          </div>
+
         </div>
-        <div className="flex flex-col">
-          <span className="text-sky-400 text-[13px] font-bold uppercase tracking-widest mb-1">Today&apos;s Context</span>
-          <span className="text-white text-[32px] font-bold tracking-tight leading-none">{activity.title}</span>
-        </div>
-      </motion.div>
+      </div>
     );
   }
 
-  // --- FALLBACK ---
+  if (activity.type === 'progress') {
+    return (
+      <div className="w-full flex items-center justify-between px-6 py-6 min-h-[84px]">
+        <div className="flex flex-col flex-1 pr-6">
+          <span className="text-white text-[16px] font-medium tracking-tight mb-2">{activity.title || 'Syncing Data...'}</span>
+          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-[#007AFF] rounded-full transition-all duration-300" style={{ width: `${activity.progress || 0}%` }} />
+          </div>
+        </div>
+        <div className="w-12 h-12 rounded-full border-[3px] border-[#007AFF] border-t-transparent animate-spin flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#007AFF]/20" />
+        </div>
+      </div>
+    );
+  }
+
+  if (activity.type === 'bunk_calculator' || activity.type === 'exam_countdown') {
+    const isCritical = activity.metadata?.urgency === 'critical' || activity.metadata?.riskiest?.risk === 'CRITICAL';
+    const color = isCritical ? '#FF3B30' : '#FF9F0A';
+    const title = activity.subtitle || activity.title;
+    
+    return (
+      <div className="relative w-full min-h-[160px]" style={{ perspective: '1200px' }}>
+        <div className="w-full min-h-[160px] relative transition-transform duration-700 ease-in-out" style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateX(-180deg)' : 'rotateX(0deg)' }}>
+          
+          {/* FRONT */}
+          <div className="w-full flex flex-col px-7 py-6 min-h-[160px] justify-between absolute inset-0 rounded-[42px] bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden" style={{ backfaceVisibility: 'hidden' }}>
+            <div 
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-32 blur-[60px] opacity-20 pointer-events-none" 
+              style={{ backgroundColor: color, animation: isCritical ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none' }} 
+            />
+            
+            <div className="flex items-start justify-between w-full relative z-10">
+              <div className="flex flex-col">
+                <span className="text-[42px] font-bold tracking-tighter leading-none flex items-center gap-2" style={{ color }}>
+                  {isCritical ? <Flame size={32} fill="currentColor" className="animate-pulse" /> : <AlertTriangle size={32} />}
+                  {isCritical ? 'CRITICAL' : 'WARNING'}
+                </span>
+                <span className="text-white/80 text-[16px] font-medium tracking-tight mt-1 truncate max-w-[200px]">
+                  {title}
+                </span>
+              </div>
+              
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex flex-col items-end">
+                  <span className="text-white/50 text-[12px] font-bold uppercase tracking-widest mb-1">
+                    {activity.type === 'bunk_calculator' ? 'Attendance' : 'Time Left'}
+                  </span>
+                  <span className="text-white text-[24px] font-bold tabular-nums leading-none">
+                    {activity.type === 'bunk_calculator' ? `${activity.metadata?.riskiest?.percent || 70}%` : formatTime(time)}
+                  </span>
+                </div>
+                <button onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all text-white/70">
+                  <Settings size={16} strokeWidth={3} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-end justify-between h-12 w-full relative z-10 gap-[2px] mt-4">
+              {Array.from({ length: 35 }).map((_, i) => {
+                const height = 20 + Math.random() * 80;
+                const isDangerZone = i > 25;
+                return (
+                  <div 
+                    key={i} 
+                    className="flex-1 rounded-t-[2px] opacity-80"
+                    style={{ 
+                      height: `${height}%`,
+                      backgroundColor: isDangerZone ? color : 'rgba(255, 255, 255, 0.15)',
+                      boxShadow: isDangerZone ? `0 0 8px ${color}` : 'none'
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* BACK: DEEP UTILITIES */}
+          <div className="w-full flex flex-col px-6 py-4 min-h-[160px] justify-between absolute inset-0 rounded-[42px] bg-[#1C1C1E] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden" style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}>
+            <div className="flex items-center justify-between w-full relative z-10 mb-1">
+               <span className="text-[#FF3B30] text-[14px] font-bold tracking-tight">Risk Analysis</span>
+               <button onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white/70">
+                 <X size={14} strokeWidth={3} />
+               </button>
+            </div>
+            
+            {/* Draggable Bunk Slider & Grade Chart */}
+            <div className="flex flex-col gap-1 w-full mb-2">
+              <div className="flex justify-between items-end mb-1">
+                 <span className="text-white/50 text-[9px] font-bold uppercase tracking-widest">Simulate Bunks</span>
+                 <span className="text-white font-bold text-[11px] tabular-nums">-1 Class</span>
+              </div>
+              <div className="relative w-full h-3 bg-white/10 rounded-full flex items-center px-1">
+                <motion.div 
+                  drag="x" 
+                  dragConstraints={{ left: 0, right: 180 }} 
+                  dragElastic={0.2}
+                  className="w-10 h-2 bg-[#FF3B30] rounded-full shadow-[0_0_15px_rgba(255,59,48,0.6)] cursor-grab active:cursor-grabbing"
+                  whileTap={{ scaleY: 0.8, scaleX: 1.2, borderRadius: "8px" }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                />
+              </div>
+            </div>
+
+            {/* Ask AI for Excuse Button (Apple Intelligence Glow) */}
+            <div className="relative w-full group mt-auto">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-orange-500 rounded-[14px] blur opacity-75 group-hover:opacity-100 animate-[pulse_2s_ease-in-out_infinite] transition duration-1000 group-hover:duration-200" />
+              <button className="relative w-full h-10 rounded-[14px] bg-[#1C1C1E] flex items-center justify-center gap-2 active:scale-95 transition-all text-white border border-white/5">
+                <Sparkles size={14} className="text-fuchsia-400" />
+                <span className="text-[12px] font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-orange-500">Ask AI for Excuse</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  if (activity.type === 'academic_status') {
+    return (
+      <div className="w-full flex flex-col px-7 py-6 min-h-[160px] justify-center relative overflow-hidden rounded-[42px] bg-black">
+        <div className="flex items-center justify-between relative z-10 w-full">
+          <div className="flex flex-col font-sans">
+            <span className="text-white/50 text-[13px] font-semibold uppercase tracking-widest mb-1">Academic Status</span>
+            <span className="text-white text-[42px] font-medium tracking-tighter tabular-nums leading-none mb-1">
+              {activity.title.replace('SGPA: ', '')}
+            </span>
+            <span className="text-[#34C759] text-[15px] font-medium tracking-tight">On Track for Distinction</span>
+          </div>
+          
+          <div className="relative w-[84px] h-[84px] flex items-center justify-center">
+            <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(52, 199, 89, 0.15)" strokeWidth="12" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#34C759" strokeWidth="12" strokeDasharray="264" strokeDashoffset={264 - (264 * 0.98)} strokeLinecap="round" className="transition-all duration-1500 ease-out" />
+            </svg>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-white text-[22px] font-bold tracking-tighter leading-none mt-1">98</span>
+              <span className="text-white/50 text-[10px] font-bold uppercase tracking-widest mt-0.5">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback
   return (
-    <motion.div {...STAGGER_ANIMATION} className="w-full p-8 text-center">
-      <span className="text-white/50">{activity.title}</span>
-    </motion.div>
+    <div className="w-full flex items-center justify-center p-6 text-white text-[16px] font-medium tracking-tight">
+      {activity.title}
+    </div>
   );
 }
 
@@ -519,69 +679,52 @@ export function ExpandedActivity({ activity }: { activity: LiveActivity }) {
 // ═══════════════════════════════════════════════
 
 export function IslandAlertView({ alert }: { alert: IslandAlert }) {
-  const colors = {
-    success: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10 shadow-[0_0_20px_rgba(52,211,153,0.15)]",
-    warning: "text-amber-400 border-amber-500/20 bg-amber-500/10 shadow-[0_0_20px_rgba(251,191,36,0.15)]",
-    error: "text-red-400 border-red-500/20 bg-red-500/10 shadow-[0_0_20px_rgba(248,113,113,0.15)]",
-    info: "text-blue-400 border-blue-500/20 bg-blue-500/10 shadow-[0_0_20px_rgba(96,165,250,0.15)]",
-  };
-  const iconColors = {
-    success: "text-emerald-400",
-    warning: "text-amber-400",
-    error: "text-red-400",
-    info: "text-blue-400",
-  };
-
   const dismissAlert = useDynamicIslandStore((s) => s.dismissAlert);
 
+  let Icon = Info;
+  let colorClass = "bg-[#007AFF]";
+  let textColor = "text-[#007AFF]";
+  let solidColor = "#007AFF";
+  
+  if (alert.type === 'success') {
+    Icon = CheckCircle2;
+    colorClass = "bg-[#34C759]";
+    textColor = "text-[#34C759]";
+    solidColor = "#34C759";
+  } else if (alert.type === 'warning') {
+    Icon = AlertTriangle;
+    colorClass = "bg-[#FF9F0A]";
+    textColor = "text-[#FF9F0A]";
+    solidColor = "#FF9F0A";
+  } else if (alert.type === 'error') {
+    Icon = AlertCircle;
+    colorClass = "bg-[#FF3B30]";
+    textColor = "text-[#FF3B30]";
+    solidColor = "#FF3B30";
+  }
+
   return (
-    <motion.div 
-      {...STAGGER_ANIMATION} 
-      className="w-full flex flex-col px-6 py-5 gap-3"
-      drag="y"
-      dragConstraints={{ top: 0, bottom: 0 }}
-      dragElastic={0.1}
-      onDragEnd={(e, { offset, velocity }) => {
-        if (offset.y < -50 || velocity.y < -500) {
-          dismissAlert();
-        }
-      }}
-      whileDrag={{ scale: 0.95 }}
-    >
+    <div className="w-full flex flex-col px-5 py-4 min-h-[84px] justify-center">
       <div className="flex items-center gap-4">
-        <div className={cn("w-12 h-12 rounded-full flex items-center justify-center border shrink-0", colors[alert.type])}>
-          <AlertCircle size={24} className={iconColors[alert.type]} />
+        <div className={`w-12 h-12 rounded-full ${colorClass}/20 flex items-center justify-center shrink-0`}>
+           <Icon size={24} color={solidColor} />
         </div>
-        <div className="flex flex-col justify-center">
-          <span className="text-white font-bold text-[16px] tracking-tight">{alert.title}</span>
-          <span className="text-white/60 text-[14px] leading-tight mt-0.5">{alert.message}</span>
+        <div className="flex flex-col flex-1 min-w-0">
+          <span className={`text-[12px] font-bold uppercase tracking-widest ${textColor}`}>{alert.type} ALERT</span>
+          <span className="text-white text-[18px] font-medium tracking-tight truncate">{alert.title}</span>
+        </div>
+        <div className="flex gap-2">
+          {alert.actions && alert.actions.length > 0 && (
+            <button onClick={(e) => { e.stopPropagation(); alert.actions?.[0]?.onClick(); dismissAlert(); }} className="px-4 h-10 rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all" style={{ backgroundColor: solidColor }}>
+              <span className="text-white text-[14px] font-semibold">{alert.actions[0].label || 'View'}</span>
+            </button>
+          )}
+          <button onClick={(e) => { e.stopPropagation(); dismissAlert(); }} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 hover:scale-105 active:scale-95 transition-all">
+            <X size={18} className="text-white/80" />
+          </button>
         </div>
       </div>
-
-      {alert.actions && alert.actions.length > 0 && (
-        <div className="flex items-center gap-2 mt-2">
-          {alert.actions.map((action, i) => (
-            <button
-              key={i}
-              onClick={(e) => {
-                e.stopPropagation();
-                action.onClick();
-                dismissAlert();
-              }}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border transition-all text-[13px] font-bold tracking-tight hover:scale-[1.02] active:scale-[0.98]",
-                colors[alert.type]
-              )}
-            >
-              {action.icon === 'mail' && <Mail size={14} />}
-              {action.icon === 'calendar' && <BookOpen size={14} />}
-              {action.icon === 'zap' && <Zap size={14} />}
-              {action.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -596,7 +739,7 @@ function formatTime(seconds: number) {
 }
 
 // ═══════════════════════════════════════════════
-//  JARVIS — GradeFlow AI Operating System
+//  JARVIS — Aevos AI Operating System
 // ═══════════════════════════════════════════════
 
 interface JarvisHighlight {
@@ -663,7 +806,14 @@ const QUICK_COMMANDS = [
 
 export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const isProcessing = useDynamicIslandStore((s) => s.isProcessing);
+  const setIsProcessing = useDynamicIslandStore((s) => s.setIsProcessing);
+
+  useEffect(() => {
+    return () => {
+      useDynamicIslandStore.getState().setIsProcessing(false);
+    };
+  }, []);
   const [streamedMessage, setStreamedMessage] = useState("");
   const [metadata, setMetadata] = useState<JarvisMetadata | null>(null);
   const [isDoneStreaming, setIsDoneStreaming] = useState(false);
@@ -985,7 +1135,7 @@ export function IslandSpotlightView({ onClose }: { onClose: () => void }) {
               initial={{ opacity: 0, y: 12, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
               className="flex flex-col gap-3 max-h-[350px] overflow-y-auto pr-1"
             >
               {/* Response Header */}
@@ -1212,6 +1362,427 @@ export function FocusTimerActivity() {
           <AlertCircle size={16} /> Stop
         </button>
       </div>
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+//  SIRI TOP HALF ACTIVITY (iOS 27)
+// ═══════════════════════════════════════════════
+
+export function SiriTopHalfActivity() {
+  const [query, setQuery] = useState("");
+  const isProcessing = useDynamicIslandStore((s) => s.isProcessing);
+  const setIsProcessing = useDynamicIslandStore((s) => s.setIsProcessing);
+  const setIsAIActive = useDynamicIslandStore((s) => s.setIsAIActive);
+
+  useEffect(() => {
+    return () => {
+      useDynamicIslandStore.getState().setIsProcessing(false);
+    };
+  }, []);
+  const [streamedMessage, setStreamedMessage] = useState("");
+  const [metadata, setMetadata] = useState<JarvisMetadata | null>(null);
+  const [isDoneStreaming, setIsDoneStreaming] = useState(false);
+  const router = useRouter();
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const onClose = () => {
+    setIsAIActive(false);
+  };
+
+  // Execute JARVIS actions on stores
+  const executeAction = React.useCallback((action: JarvisAction) => {
+    const { useDynamicIslandStore: islandStore } = require("@/stores/dynamicIslandStore");
+    const { useUSMStore: usmStore } = require("@/stores/usmStore");
+
+    switch (action.type) {
+      case "navigate":
+        if (action.route) {
+          setTimeout(() => { router.push(action.route!); onClose(); }, 1500);
+        }
+        break;
+
+      case "mark_attendance":
+        if (action.courseId && action.attendanceAction) {
+          const store = usmStore.getState();
+          const course = store.courses.find((c: any) => c.id === action.courseId || c.code === action.courseId);
+          if (course) {
+            if (action.attendanceAction === "BUNKED") {
+              store.updateCourse(course.id, { attendanceBunked: course.attendanceBunked + 1 });
+            } else {
+              store.updateCourse(course.id, { attendanceTotal: course.attendanceTotal + 1 });
+            }
+            islandStore.getState().showAlert({
+              id: `jarvis-att-${Date.now()}`,
+              type: action.attendanceAction === "BUNKED" ? "warning" : "success",
+              title: action.attendanceAction === "BUNKED" ? "Bunk Recorded" : "Attendance Marked",
+              message: `${course.name} marked as ${action.attendanceAction.toLowerCase()}.`,
+              duration: 3000,
+            });
+          }
+        }
+        break;
+
+      case "set_target_cgpa":
+        if (action.value !== undefined) {
+          usmStore.getState().setAcademic({ targetCgpa: action.value });
+          islandStore.getState().showAlert({
+            id: `jarvis-target-${Date.now()}`,
+            type: "success",
+            title: "Target Updated",
+            message: `Target CGPA set to ${action.value}`,
+            duration: 3000,
+          });
+        }
+        break;
+
+      case "set_exam_countdown":
+        if (action.subject && action.examDate) {
+          const examDate = new Date(action.examDate);
+          const now = new Date();
+          const diffMs = examDate.getTime() - now.getTime();
+          const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+          const hours = Math.max(0, Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+
+          islandStore.getState().setExamCountdown({
+            id: `jarvis-exam-${Date.now()}`,
+            subject: action.subject,
+            examDate,
+            daysRemaining: days,
+            hoursRemaining: hours,
+            minutesRemaining: 0,
+            urgency: days <= 3 ? "critical" : days <= 7 ? "high" : days <= 14 ? "medium" : "low",
+          });
+        }
+        break;
+
+      case "show_alert":
+        if (action.alertTitle) {
+          islandStore.getState().showAlert({
+            id: `jarvis-alert-${Date.now()}`,
+            type: action.alertType || "info",
+            title: action.alertTitle,
+            message: action.alertMessage || "",
+            duration: 4000,
+          });
+        }
+        break;
+
+      case "set_streak":
+        if (action.streakCount) {
+          islandStore.getState().setStreak({
+            count: action.streakCount,
+            type: action.streakType || "study",
+            label: action.streakLabel || `${action.streakCount} Day Streak`,
+          });
+        }
+        break;
+    }
+  }, [router]);
+
+  const executeQuery = async (userQuery: string) => {
+    if (!userQuery.trim()) return;
+
+    setIsProcessing(true);
+    setMetadata(null);
+    setStreamedMessage("");
+    setIsDoneStreaming(false);
+
+    const command = userQuery.trim();
+
+    // Layer 1: Instant Local Routing (slash commands)
+    const localRoutes: Record<string, string> = {
+      "/open placement": "/placement",
+      "/open attendance": "/attendance",
+      "/open calculator": "/calculator",
+      "/open dashboard": "/dashboard",
+      "/open timeline": "/timeline",
+      "/open backlog": "/backlog",
+      "/open forecast": "/forecast",
+      "/open planner": "/planner",
+    };
+
+    for (const [cmd, route] of Object.entries(localRoutes)) {
+      if (command.toLowerCase().startsWith(cmd)) {
+        router.push(route);
+        onClose();
+        return;
+      }
+    }
+
+    // Layer 2: JARVIS AI — Full context streaming query
+    try {
+      const { buildJarvisContext } = await import("@/lib/ai/jarvisContextBuilder");
+      const currentRoute = typeof window !== "undefined" ? window.location.pathname : "/";
+      const studentContext = buildJarvisContext(currentRoute);
+
+      const res = await fetch("/api/jarvis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: command, studentContext })
+      });
+
+      if (!res.ok) {
+        setMetadata({
+          responseType: "error",
+          title: "Connection Error",
+          highlights: [],
+          action: { type: "none" },
+        });
+        setStreamedMessage("Could not reach JARVIS. Check your API key in .env.local.");
+        setIsDoneStreaming(true);
+        setIsProcessing(false);
+        return;
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No stream reader");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let metadataReceived = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === "metadata") {
+              setMetadata(parsed);
+              metadataReceived = true;
+              setIsProcessing(false);
+              // Execute action immediately
+              if (parsed.action && parsed.action.type !== "none") {
+                executeAction(parsed.action);
+              }
+            } else if (parsed.type === "chunk") {
+              setStreamedMessage(prev => prev + parsed.text);
+            } else if (parsed.type === "done") {
+              setIsDoneStreaming(true);
+            }
+          } catch {
+            // Skip malformed JSON lines
+          }
+        }
+      }
+
+      // Handle non-streaming responses (fallback)
+      if (!metadataReceived && buffer.trim()) {
+        try {
+          const data = JSON.parse(buffer);
+          setMetadata({
+            responseType: data.responseType || "advice",
+            title: data.title || "JARVIS",
+            highlights: data.highlights || [],
+            action: data.action || { type: "none" },
+            followUp: data.followUp,
+            suggestedActions: data.suggestedActions,
+          });
+          setStreamedMessage(data.message || buffer);
+          if (data.action && data.action.type !== "none") {
+            executeAction(data.action);
+          }
+        } catch {
+          setMetadata({ responseType: "advice", title: "JARVIS", highlights: [] });
+          setStreamedMessage(buffer);
+        }
+        setIsDoneStreaming(true);
+      }
+
+    } catch (err) {
+      console.error("JARVIS Error:", err);
+      setMetadata({
+        responseType: "error",
+        title: "System Failure",
+        highlights: [],
+        action: { type: "none" },
+      });
+      setStreamedMessage("JARVIS encountered an internal error. Please try again.");
+      setIsDoneStreaming(true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && query.trim()) {
+      executeQuery(query);
+    }
+    if (e.key === "Escape") {
+      if (metadata) {
+        setMetadata(null);
+        setStreamedMessage("");
+        setQuery("");
+      } else {
+        onClose();
+      }
+    }
+  };
+
+  const hasResponse = metadata !== null;
+
+  return (
+    <motion.div {...STAGGER_ANIMATION} className="w-full flex flex-col p-6 gap-6 relative min-h-[30vh]">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes siri-wave {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .siri-glow {
+          background: linear-gradient(90deg, rgba(255,105,180,0.4), rgba(77,143,255,0.4), rgba(123,97,255,0.4), rgba(255,105,180,0.4));
+          background-size: 300% 300%;
+          animation: siri-wave 4s linear infinite;
+          filter: blur(25px);
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 120px;
+          opacity: 0.8;
+          z-index: 0;
+          border-radius: 46px;
+          pointer-events: none;
+        }
+      `}} />
+      
+      {/* Siri Wave Bottom Glow */}
+      <div className="siri-glow" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between z-10 w-full mb-2">
+        <div className="w-12 h-1.5 rounded-full bg-white/30 hover:bg-white/50 transition-colors mx-auto cursor-pointer" onClick={onClose} />
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 relative z-10 flex flex-col justify-end">
+        <AnimatePresence mode="wait">
+          {/* STATE 2: JARVIS Streaming Response */}
+          {!isProcessing && hasResponse && (
+            <motion.div
+              key="response"
+              initial={{ opacity: 0, y: 12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
+              className="flex flex-col gap-4 max-h-[35vh] overflow-y-auto pr-2"
+            >
+              {/* Response Header */}
+              <div className="flex items-center gap-2">
+                <span className="text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{RESPONSE_ICONS[metadata!.responseType] || "🤖"}</span>
+                <span className="text-white font-bold text-[20px] tracking-tight">{metadata!.title}</span>
+              </div>
+
+              {/* Streamed Message */}
+              <p className="text-white/90 text-[16px] leading-relaxed font-medium">
+                {streamedMessage}
+                {!isDoneStreaming && <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} className="inline-block w-[2px] h-[16px] bg-white ml-1 align-text-bottom shadow-[0_0_8px_rgba(255,255,255,0.8)]" />}
+              </p>
+
+              {/* Stat Highlight Chips */}
+              {metadata!.highlights && metadata!.highlights.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {metadata!.highlights.map((h, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.08 }}
+                      className={cn("px-4 py-2 rounded-xl border text-[13px] font-bold flex items-center gap-2 backdrop-blur-xl shadow-lg", HIGHLIGHT_COLORS[h.color] || HIGHLIGHT_COLORS.blue)}
+                    >
+                      <span className="opacity-80">{h.label}</span>
+                      <span className="font-extrabold text-white">{h.value}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* STATE 3: Quick Commands (Default Idle State) */}
+          {!isProcessing && !hasResponse && (
+            <motion.div 
+              key="suggestions"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-2 gap-4"
+            >
+              {QUICK_COMMANDS.map((cmd, i) => (
+                <button 
+                  key={i}
+                  onClick={() => {
+                    setQuery(cmd.query);
+                    executeQuery(cmd.query);
+                  }}
+                  className="flex items-center gap-4 p-5 rounded-3xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.05] hover:border-white/[0.15] hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all text-left group backdrop-blur-2xl"
+                >
+                  <div className="w-12 h-12 rounded-full bg-white/5 shadow-inner flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 border border-white/5">
+                    <cmd.icon size={20} className={cmd.color} />
+                  </div>
+                  <span className="text-white/80 text-[15px] font-semibold group-hover:text-white transition-colors leading-snug">{cmd.name}</span>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* JARVIS Input Bar */}
+      <div className="relative z-10 flex items-center bg-black/40 backdrop-blur-3xl border border-white/10 rounded-full px-6 py-4 focus-within:bg-black/60 focus-within:border-white/30 transition-all duration-300 shadow-2xl mt-4">
+        <motion.div
+          animate={isProcessing ? { rotate: 360 } : { rotate: 0 }}
+          transition={isProcessing ? { duration: 2, repeat: Infinity, ease: "linear" } : {}}
+        >
+          {isProcessing ? (
+             <div className="flex items-center justify-center gap-2 mr-4">
+               {[
+                 { color: "bg-[#FF69B4]" },
+                 { color: "bg-[#4D8FFF]" },
+                 { color: "bg-[#7B61FF]" },
+                 { color: "bg-[#4D8FFF]" }
+               ].map((dot, i) => (
+                 <motion.div
+                   key={i}
+                   animate={{ y: ["0%", "-100%", "0%"] }}
+                   transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
+                   className={cn("w-2 h-2 rounded-full shadow-[0_0_10px_currentColor]", dot.color)}
+                 />
+               ))}
+            </div>
+          ) : (
+            <Sparkles size={24} className="mr-4 shrink-0 text-white/80" />
+          )}
+        </motion.div>
+        <input 
+          ref={inputRef}
+          autoFocus
+          type="text" 
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isProcessing}
+          placeholder="Ask Apple Intelligence..." 
+          className="bg-transparent border-none outline-none text-white text-[18px] w-full font-medium placeholder-white/30 disabled:opacity-50"
+        />
+        {hasResponse && (
+          <button
+            onClick={() => { setMetadata(null); setStreamedMessage(""); setQuery(""); inputRef.current?.focus(); }}
+            className="ml-3 text-white/50 hover:text-white transition-colors shrink-0 text-[11px] font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full border border-white/10"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
     </motion.div>
   );
 }

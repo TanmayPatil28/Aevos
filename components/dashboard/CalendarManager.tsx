@@ -8,7 +8,12 @@ import { Calendar, Upload, Copy, CheckCircle2, AlertCircle, Sparkles, Clock, Map
 import Editor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-json';
-import { format, differenceInDays, isWithinInterval, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday } from "date-fns";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Button } from "@/components/ui/button";
+import { useTimerStore } from "@/stores/timerStore";
+import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, differenceInDays, isWithinInterval, startOfWeek, endOfWeek, isToday } from 'date-fns';
+import { cn } from '@/lib/cn';
+import Card from '@/components/ui/Card';
 
 const customPrismStyles = `
   .json-editor span.token.property { color: #E5C07B !important; }
@@ -40,7 +45,7 @@ const customPrismStyles = `
   }
 `;
 
-const AI_PROMPT = `I need you to convert my university academic calendar into a JSON format for GradeFlow. Here is the exact JSON schema I need:
+const AI_PROMPT = `I need you to convert my university academic calendar into a JSON format for Aevos. Here is the exact JSON schema I need:
 
 {
   "events": [
@@ -97,37 +102,35 @@ const HyperFocusBanner = ({ event }: { event: AcademicEvent }) => {
   const pad = (num: number) => num.toString().padStart(2, '0');
 
   return (
-    <div className="w-full bg-[#0A0A0A] border-2 border-red-500/30 rounded-3xl p-6 md:p-8 relative overflow-hidden mb-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_50px_rgba(239,68,68,0.1)]">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-red-500/5 blur-[50px] pointer-events-none"></div>
-      
+    <div className="w-full bg-red-500/5 border border-red-500/10 rounded-2xl p-6 md:p-8 relative overflow-hidden mb-6 flex flex-col md:flex-row items-center justify-between gap-6">
       <div className="relative z-10 flex flex-col text-center md:text-left">
         <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,1)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></div>
           <span className="text-[10px] font-black tracking-[0.3em] text-red-500 uppercase">Hyper-Focus Mode</span>
         </div>
         <h3 className="text-white font-black text-xl md:text-2xl max-w-sm leading-tight tracking-tight">{event.name}</h3>
-        <span className="text-red-500/60 text-xs font-mono font-bold mt-2 uppercase tracking-widest">{format(parseLocalDate(event.startDate), 'MMM do, yyyy')}</span>
+        <span className="text-red-500/80 text-xs font-mono font-bold mt-2 uppercase tracking-widest">{format(parseLocalDate(event.startDate), 'MMM do, yyyy')}</span>
       </div>
 
-      <div className="relative z-10 flex items-center gap-2 md:gap-4 text-red-500 font-mono font-black tabular-nums tracking-tighter drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+      <div className="relative z-10 flex items-center gap-2 md:gap-4 text-red-500 font-mono font-black tabular-nums tracking-tighter">
         <div className="flex flex-col items-center">
           <span className="text-4xl md:text-6xl">{pad(timeLeft.d)}</span>
-          <span className="text-[8px] md:text-[10px] tracking-[0.2em] text-red-500/50 uppercase mt-1">Days</span>
+          <span className="text-[8px] md:text-[10px] tracking-[0.2em] text-red-500/80 uppercase mt-1">Days</span>
         </div>
         <span className="text-3xl md:text-5xl mb-4 md:mb-5 opacity-40 animate-pulse">:</span>
         <div className="flex flex-col items-center">
           <span className="text-4xl md:text-6xl">{pad(timeLeft.h)}</span>
-          <span className="text-[8px] md:text-[10px] tracking-[0.2em] text-red-500/50 uppercase mt-1">Hrs</span>
+          <span className="text-[8px] md:text-[10px] tracking-[0.2em] text-red-500/80 uppercase mt-1">Hrs</span>
         </div>
         <span className="text-3xl md:text-5xl mb-4 md:mb-5 opacity-40 animate-pulse">:</span>
         <div className="flex flex-col items-center">
           <span className="text-4xl md:text-6xl">{pad(timeLeft.m)}</span>
-          <span className="text-[8px] md:text-[10px] tracking-[0.2em] text-red-500/50 uppercase mt-1">Min</span>
+          <span className="text-[8px] md:text-[10px] tracking-[0.2em] text-red-500/80 uppercase mt-1">Min</span>
         </div>
         <span className="text-3xl md:text-5xl mb-4 md:mb-5 opacity-40 animate-pulse">:</span>
         <div className="flex flex-col items-center w-[4rem] md:w-[5rem]">
-          <span className="text-4xl md:text-6xl text-red-400">{pad(timeLeft.s)}</span>
-          <span className="text-[8px] md:text-[10px] tracking-[0.2em] text-red-500/50 uppercase mt-1">Sec</span>
+          <span className="text-4xl md:text-6xl text-red-500">{pad(timeLeft.s)}</span>
+          <span className="text-[8px] md:text-[10px] tracking-[0.2em] text-red-500/80 uppercase mt-1">Sec</span>
         </div>
       </div>
     </div>
@@ -183,33 +186,11 @@ export default function CalendarManager() {
     updateEventSubtasks(eventId, updated);
   };
 
-  // Pomodoro Timer State
-  const [activeTimerTaskId, setActiveTimerTaskId] = useState<string | null>(null);
-  const [activeTimerTaskName, setActiveTimerTaskName] = useState<string>("");
-  const [timerRemaining, setTimerRemaining] = useState<number>(25 * 60);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-
-  useEffect(() => {
-    let interval: any;
-    if (isTimerRunning && timerRemaining > 0) {
-      interval = setInterval(() => {
-        setTimerRemaining(prev => prev - 1);
-      }, 1000);
-    } else if (timerRemaining === 0) {
-      setIsTimerRunning(false);
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, timerRemaining]);
-
-  const handleStartTimer = (taskId: string, taskName: string) => {
-    setActiveTimerTaskId(taskId);
-    setActiveTimerTaskName(taskName);
-    setTimerRemaining(25 * 60);
-    setIsTimerRunning(true);
-  };
+  // Pomodoro
+  const timerStore = useTimerStore();
 
   const exportToICS = () => {
-    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//GradeFlow//Academic Timeline//EN\n";
+    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Aevos//Academic Timeline//EN\n";
     academicCalendar.forEach(evt => {
       const start = evt.startDate.replace(/-/g, "");
       icsContent += "BEGIN:VEVENT\n";
@@ -353,7 +334,7 @@ export default function CalendarManager() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: customPrismStyles }} />
-      <div className="w-full bg-[#1D1D1F] border border-white/5 rounded-[32px] p-6 md:p-8 relative overflow-hidden">
+      <Card variant="default" className="!p-6 md:!p-8 w-full relative overflow-hidden">
       {/* Header */}
       <div className="relative z-10 flex flex-col items-start gap-5 border-b border-white/[0.05] pb-6 mb-6">
         <div>
@@ -369,27 +350,18 @@ export default function CalendarManager() {
           </div>
         </div>
 
-        {/* Tab Switcher (Exact Timetable UI) */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full hide-scrollbar">
-          {([
-            { key: "NEXT_UP" as const, label: "NEXT UP" },
-            { key: "CALENDAR" as const, label: "CALENDAR" },
-            { key: "JSON" as const, label: "JSON IMPORT" },
-            { key: "AI_PROMPT" as const, label: "AI PROMPT" }
-          ]).map(tab => (
-            <button 
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-2 rounded-full text-[10px] font-black tracking-widest transition-all flex items-center gap-1.5 shrink-0 ${
-                activeTab === tab.key 
-                  ? "bg-white text-black shadow-lg" 
-                  : "bg-white/[0.03] hover:bg-white/[0.06] text-white/40 hover:text-white/80"
-              }`}
-            >
-              {tab.key === "AI_PROMPT" && <Sparkles className="w-3 h-3" />}
-              {tab.label}
-            </button>
-          ))}
+        {/* Tab Switcher (Showcase UI) */}
+        <div className="flex items-center w-full hide-scrollbar overflow-x-auto">
+          <SegmentedControl
+            options={[
+              { label: "NEXT UP", value: "NEXT_UP" },
+              { label: "CALENDAR", value: "CALENDAR" },
+              { label: "JSON IMPORT", value: "JSON" },
+              { label: <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> AI PROMPT</span>, value: "AI_PROMPT" }
+            ]}
+            value={activeTab}
+            onChange={(val) => setActiveTab(val as any)}
+          />
         </div>
       </div>
 
@@ -411,30 +383,29 @@ export default function CalendarManager() {
 
               {/* Quick Filters and Export Action Bar */}
               {academicCalendar.length > 0 && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/[0.02] p-4 rounded-2xl border border-white/[0.05]">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Filter className="w-4 h-4 text-white/40 mr-2" />
-                    {(["ALL", "EXAM", "HOLIDAY", "OTHER"] as const).map(f => (
-                      <button
-                        key={f}
-                        onClick={() => setEventFilter(f)}
-                        className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all ${
-                          eventFilter === f 
-                            ? "bg-white/10 text-white" 
-                            : "bg-transparent text-white/40 hover:bg-white/5 hover:text-white/80"
-                        }`}
-                      >
-                        {f}
-                      </button>
-                    ))}
+                <div className="flex w-full">
+                  <div className="inline-flex items-center gap-4 max-w-full overflow-x-auto hide-scrollbar">
+                    <SegmentedControl
+                      options={[
+                        { label: <span className="flex items-center gap-1.5"><Filter className="w-3.5 h-3.5 opacity-50" /> ALL</span>, value: "ALL" },
+                        { label: "EXAM", value: "EXAM" },
+                        { label: "HOLIDAY", value: "HOLIDAY" },
+                        { label: "OTHER", value: "OTHER" }
+                      ]}
+                      value={eventFilter}
+                      onChange={(val) => setEventFilter(val as any)}
+                    />
+                    <div className="w-px h-4 bg-white/10 shrink-0" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={exportToICS}
+                      className="text-white text-[11px] font-bold tracking-wide flex items-center gap-2 shrink-0 uppercase"
+                    >
+                      <Download className="w-4 h-4" />
+                      EXPORT .ICS
+                    </Button>
                   </div>
-                  <button
-                    onClick={exportToICS}
-                    className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-[10px] font-bold tracking-widest flex items-center gap-2 transition-all shrink-0"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    EXPORT .ICS
-                  </button>
                 </div>
               )}
               {academicCalendar.length === 0 ? (
@@ -474,13 +445,11 @@ export default function CalendarManager() {
                       const isExpanded = expandedEventId === evt.id;
                       
                       return (
-                        <div 
-                          key={evt.id} 
-                          onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
-                          className={`p-5 rounded-2xl border flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-all ${
-                            isUrgent && !isOngoing ? "bg-rose-500/10 border-rose-500/20" : "bg-white/[0.03] border-white/10"
-                          } ${isExpanded ? 'col-span-1 md:col-span-3 min-h-[300px]' : ''}`}
-                        >
+                          <div 
+                            key={evt.id} 
+                            onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
+                            className={`p-5 rounded-2xl border flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-all bg-surface border-white/5 hover:bg-surface/50`}
+                          >
                           {/* Background Icon */}
                           <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity pointer-events-none">
                             {evt.type === "EXAM" ? <FileText className="w-32 h-32" /> :
@@ -489,11 +458,12 @@ export default function CalendarManager() {
                           </div>
                           
                           <div className="relative z-10 flex justify-between items-start mb-4">
-                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wider shadow-sm ${
-                              evt.type === "EXAM" ? "bg-[#A855F7]/20 text-[#A855F7] border border-[#A855F7]/20" :
-                              evt.type === "HOLIDAY" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" :
-                              "bg-[#4F8EF7]/20 text-[#4F8EF7] border border-[#4F8EF7]/20"
-                            }`}>
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 bg-white/5 border border-white/5 rounded-md tracking-wider text-foreground-muted">
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                evt.type === "EXAM" ? "bg-[#A855F7]" :
+                                evt.type === "HOLIDAY" ? "bg-emerald-500" :
+                                "bg-[#4F8EF7]"
+                              }`}></span>
                               {evt.type}
                             </span>
                             {isUrgent && !isOngoing && <span className="flex h-2 w-2 relative">
@@ -501,26 +471,17 @@ export default function CalendarManager() {
                             </span>}
                           </div>
                           <div className="relative z-10">
-                            <h4 className={`text-base font-bold ${isUrgent && !isOngoing ? "text-white" : "text-white/90"} leading-snug line-clamp-2`}>{evt.name}</h4>
+                            <h4 className="text-base font-bold text-foreground leading-snug line-clamp-2">{evt.name}</h4>
                             <div className="flex items-center gap-2 mt-3">
-                              <span className="text-xl font-black tracking-tighter text-white">
+                              <span className="text-xl font-black tracking-tighter text-foreground">
                                 {isOngoing ? "ONGOING" : daysUntil === 0 ? "TODAY" : daysUntil}
                               </span>
-                              {!isOngoing && daysUntil !== 0 && <span className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Days</span>}
+                              {!isOngoing && daysUntil !== 0 && <span className="text-xs text-foreground-muted font-bold uppercase tracking-widest mt-1">Days</span>}
                             </div>
-                            <div className="text-[10px] text-white/40 mt-1.5 font-mono">
+                            <div className="text-[10px] text-foreground-muted mt-1.5 font-mono">
                               {format(sDate, 'MMM d, yyyy')} {evt.endDate && evt.endDate !== evt.startDate ? ` \u2192 ${format(eDate, 'MMM d, yyyy')}` : ""}
                             </div>
                           </div>
-                          {/* Progress Bar for Ongoing Events */}
-                          {isOngoing && (
-                            <div className="absolute bottom-0 left-0 w-full h-1 bg-white/5">
-                              <div 
-                                className={`h-full ${evt.type === 'EXAM' ? 'bg-[#A855F7]' : evt.type === 'HOLIDAY' ? 'bg-emerald-500' : 'bg-[#4F8EF7]'} shadow-[0_0_10px_rgba(255,255,255,0.5)]`}
-                                style={{ width: `${progressPct}%` }}
-                              />
-                            </div>
-                          )}
                           {/* Sub-Task Engine Expansion */}
                           <AnimatePresence>
                             {isExpanded && (
@@ -533,17 +494,19 @@ export default function CalendarManager() {
                               >
                                 <div className="flex justify-between items-center mb-4">
                                   <h5 className="text-white font-bold tracking-widest text-xs uppercase flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                    <CheckCircle2 className="w-4 h-4 text-primary" />
                                     Sub-Tasks
                                   </h5>
-                                  <button
+                                  <Button
+                                    variant="primary"
+                                    size="sm"
                                     onClick={() => handleAIGenerate(evt.id, evt.name)}
                                     disabled={isGeneratingId === evt.id}
-                                    className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-[10px] font-bold tracking-widest flex items-center gap-2 transition-all disabled:opacity-50"
+                                    className="text-[10px] tracking-widest uppercase font-bold"
                                   >
-                                    <Bot className="w-3 h-3" />
+                                    <Bot className="w-3 h-3 mr-1" />
                                     {isGeneratingId === evt.id ? "GENERATING..." : "AI GENERATE"}
-                                  </button>
+                                  </Button>
                                 </div>
                                 
                                 <div className="space-y-2">
@@ -552,18 +515,20 @@ export default function CalendarManager() {
                                       <div key={st.id} className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.04] transition-colors">
                                         <button 
                                           onClick={() => toggleSubtask(evt.id, st.id, st.completed)}
-                                          className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${st.completed ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-transparent border-white/20 text-transparent'}`}
+                                          className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${st.completed ? 'bg-primary/20 border-primary/50 text-primary' : 'bg-transparent border-white/20 text-transparent hover:border-primary/50 hover:text-primary/30'}`}
                                         >
                                           <CheckCircle2 className="w-3 h-3" />
                                         </button>
                                         <span className={`text-sm flex-1 transition-all ${st.completed ? 'text-white/30 line-through' : 'text-white/80'}`}>{st.title}</span>
                                         {!st.completed && (
-                                          <button 
+                                          <Button 
+                                            variant="ghost"
+                                            size="sm"
                                             onClick={() => handleStartTimer(st.id, st.title)}
-                                            className="p-2 bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-white/40 rounded-lg transition-colors group/timer"
+                                            className="p-2 h-auto text-white/40 hover:text-primary hover:bg-primary/10 transition-colors"
                                           >
                                             <Play className="w-3.5 h-3.5" />
-                                          </button>
+                                          </Button>
                                         )}
                                       </div>
                                     ))
@@ -970,64 +935,7 @@ export default function CalendarManager() {
           )}
         </AnimatePresence>
       </div>
-
-      {/* Floating Focus Timer */}
-      <AnimatePresence>
-        {activeTimerTaskId && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4"
-          >
-            <div className="bg-[#111]/90 backdrop-blur-xl border border-white/10 p-4 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-3">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
-                  <span className="text-[10px] font-bold text-white/50 tracking-widest uppercase">Focus Session Active</span>
-                </div>
-                <button 
-                  onClick={() => {
-                    setIsTimerRunning(false);
-                    setActiveTimerTaskId(null);
-                  }}
-                  className="text-white/40 hover:text-white/80 transition-colors p-1"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <div className="flex justify-between items-end">
-                <div>
-                  <h4 className="text-white text-xs font-bold truncate max-w-[200px] text-white/80">{activeTimerTaskName}</h4>
-                  <div className="text-4xl font-black tracking-tighter text-emerald-400 font-mono mt-1 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-                    {Math.floor(timerRemaining / 60).toString().padStart(2, '0')}:{(timerRemaining % 60).toString().padStart(2, '0')}
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setIsTimerRunning(!isTimerRunning)}
-                    className="w-12 h-12 rounded-xl bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors shadow-lg"
-                  >
-                    {isTimerRunning ? <Pause className="w-5 h-5 fill-black" /> : <Play className="w-5 h-5 fill-black ml-1" />}
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setTimerRemaining(25 * 60);
-                      setIsTimerRunning(false);
-                    }}
-                    className="w-12 h-12 rounded-xl bg-white/5 text-white flex items-center justify-center hover:bg-white/10 transition-colors border border-white/10"
-                  >
-                    <Square className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-    </>
+    </Card>
+  </>
   );
 }

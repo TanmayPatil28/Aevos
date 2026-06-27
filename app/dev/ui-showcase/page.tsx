@@ -11,9 +11,9 @@ import Section from "@/components/layout/Section";
 import Grid from "@/components/layout/Grid";
 
 import Card from "@/components/ui/Card";
-import Input from "@/components/ui/Input";
+import Input from "@/components/ui/input";
 import Select from "@/components/ui/Select";
-import Badge from "@/components/ui/Badge";
+import Badge from "@/components/ui/badge";
 import PremiumButton from "@/components/PremiumButton";
 
 export default function UIShowcasePage() {
@@ -58,7 +58,7 @@ export default function UIShowcasePage() {
               UI System <span className="text-gradient bg-gradient-to-r from-[#4F8EF7] to-[#7C3AED]">Showcase</span>
             </h1>
             <p className="text-white/40 max-w-2xl font-medium leading-relaxed italic text-sm sm:text-base">
-              GradeFlow design system validator. Verify style tokens, interactive states, responsive grids, and layout rules for regression-free deployments.
+              Aevos design system validator. Verify style tokens, interactive states, responsive grids, and layout rules for regression-free deployments.
             </p>
           </div>
 

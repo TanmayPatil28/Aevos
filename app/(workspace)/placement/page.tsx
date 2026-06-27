@@ -3,10 +3,17 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { Target, PinOff, Filter, Sparkles } from "lucide-react";
+import { Target, PinOff, Filter, Sparkles, Upload, FileEdit, Download, Trash2, RefreshCw } from "lucide-react";
 import { useUSMStore } from "@/stores/usmStore";
 import { intelligenceEngine, IntelligenceEngineInput, IntelligenceResult } from "@/lib/career/intelligenceEngine";
 import { DEFAULT_RECRUITERS } from "@/lib/career/careerData";
+
+import { ReactLenis } from '@studio-freight/react-lenis';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 import PlacementHealthMeter from "@/components/placement/PlacementHealthMeter";
 import PlacementSkillsMatrix from "@/components/placement/PlacementSkillsMatrix";
@@ -17,18 +24,124 @@ import CompanyComparisonGuide from "@/components/placement/CompanyComparisonGuid
 import TopperBenchmark from "@/components/placement/TopperBenchmark";
 import CompanyLedgerRow from "@/components/placement/CompanyLedgerRow";
 import ResumeUploadTarget from "@/components/placement/ResumeUploadTarget";
+import ManualProfileEditor from "@/components/placement/ManualProfileEditor";
 import DynamicIsland from "@/components/placement/DynamicIsland";
 import { cn } from "@/lib/cn";
 
 import { PageHero } from "@/components/ui/PageHero";
 import { DynamicRoadmapModal } from "./components/DynamicRoadmapModal";
+import Card from "@/components/ui/card";
 import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
 import CareerOSHeader from "@/components/placement/CareerOSHeader";
-
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { FloatingPill } from "@/components/ui/floating-pill";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import InternshipsDashboard from "@/components/internships/InternshipsDashboard";
+import { Badge } from "@/components/ui/badge";
+import { matchInternships } from "@/app/(workspace)/internships/actions";
+import { InternshipMatch } from "@/components/internships/InternshipLedgerRow";
+import { AppleCarousel } from "@/components/ui/apple-carousel";
 export default function CareerIntelligencePage() {
-  const [mode, setMode] = useState<"matrix" | "radar">("matrix");
+  const router = useRouter();
+  const [mode, setMode] = useState<"matrix" | "radar" | "ledger" | "internships">("ledger");
+  const [internships, setInternships] = useState<InternshipMatch[]>([]);
+  const [isLoadingInternships, setIsLoadingInternships] = useState(false);
+
+  // GSAP Cinematic Curtain Reveal
+  useGSAP(() => {
+    const tl = gsap.timeline();
+
+    // Reset initial state
+    gsap.set(".curtain-content", { opacity: 0, filter: "blur(10px)", scale: 0.98 });
+    gsap.set(".guide-column", { opacity: 0, x: 30 });
+    gsap.set(".ledger-card", { opacity: 0, y: 50 });
+
+    tl.to(".curtain-content", {
+      opacity: 1,
+      filter: "blur(0px)",
+      scale: 1,
+      duration: 1.2,
+      ease: "power3.out"
+    })
+    .to(".guide-column", {
+      opacity: 1,
+      x: 0,
+      duration: 0.8,
+      ease: "power3.out"
+    }, "-=0.6");
+
+    // ScrollTrigger for ledger cards cascading in as you scroll
+    ScrollTrigger.batch(".ledger-card", {
+      onEnter: elements => gsap.to(elements, {
+        opacity: 1,
+        y: 0,
+        stagger: 0.1,
+        duration: 0.8,
+        ease: "back.out(1.2)",
+        overwrite: true
+      }),
+      start: "top 95%",
+    });
+
+    // ScrollTrigger Parallax on the Guide Column
+    ScrollTrigger.matchMedia({
+      // desktop
+      "(min-width: 1024px)": function() {
+        gsap.to(".guide-column", {
+          yPercent: 10,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".main-grid",
+            start: "top top",
+            end: "bottom bottom",
+            scrub: true
+          }
+        });
+      }
+    });
+
+  }, []);
+
+  const carouselSlides = [
+    {
+      id: "slide-1",
+      headline: (
+        <>
+          Secure your dream role.<br />
+          Data-driven placement strategies.
+        </>
+      ),
+      colors: ["#1c1c1c", "#1e1e1e", "#181818", "#222222"], // Matte Dark Gray
+    },
+    {
+      id: "slide-2",
+      headline: (
+        <>
+          Master the tech stack.<br />
+          Your personalized skills matrix.
+        </>
+      ),
+      colors: ["#1c1c1c", "#1f1f1f", "#191919", "#202020"], // Matte Dark Gray
+    },
+    {
+      id: "slide-3",
+      headline: (
+        <>
+          Launch your career.<br />
+          High-impact internship matches.
+        </>
+      ),
+      colors: ["#1c1c1c", "#1a1a1a", "#1b1b1b", "#1f1f1f"], // Matte Dark Gray
+    },
+  ];
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isRoadmapModalOpen, setIsRoadmapModalOpen] = useState(false);
+  const [activeFeatureId, setActiveFeatureId] = useState<string | null>(null);
+  
+  // Floating Pill State
+  const [activePillId, setActivePillId] = useState<string | number>("none");
+  const [isPillExpanded, setIsPillExpanded] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   
   const setCareer = useUSMStore((state) => state.setCareer);
 
@@ -161,7 +274,8 @@ export default function CareerIntelligencePage() {
   const riskCompanies = unpinnedResults.filter(c => c.status === "INELIGIBLE");
 
   return (
-    <div className="w-full relative min-h-screen bg-black overflow-x-hidden selection:bg-[#0a84ff]/30 selection:text-white pb-40 font-sans">
+    <ReactLenis root options={{ lerp: 0.08, smoothWheel: true }}>
+    <div className="w-full relative min-h-screen bg-background overflow-x-hidden selection:bg-brand selection:text-foreground pb-40 font-sans curtain-content">
       
       {/* Background Ambient Glows (macOS / visionOS style) */}
       <motion.div 
@@ -171,27 +285,123 @@ export default function CareerIntelligencePage() {
         <div className={cn("absolute inset-0 blur-[160px] rounded-full mix-blend-screen transition-colors duration-1000", "bg-gradient-to-b from-white/[0.02] via-transparent to-transparent")} />
       </motion.div>
 
-      {/* Career OS Header */}
-      <div className="relative z-50 pt-24 px-6 md:px-12 max-w-[1400px] mx-auto">
-        <CareerOSHeader />
-      </div>
 
-      {/* Standardized Hero Section */}
-      {mode === "matrix" && (
-        <section className="relative z-10 w-full flex flex-col items-start justify-center pt-12 pb-8 px-6 md:px-12 max-w-[1400px] mx-auto">
-          <div className="w-full max-w-2xl flex flex-col items-start text-left">
-            <PageHero 
-              headline={<motion.span 
-                className="text-transparent bg-clip-text"
-                style={{ backgroundImage: 'linear-gradient(to right, #a1a1aa, #ffffff, #a1a1aa)', backgroundSize: '200% auto', display: 'inline-block' }}
-                animate={{ backgroundPosition: ['0% center', '200% center'] }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-              >Career Intelligence.<br/>Redefined for Desktop.</motion.span>}
-              description="The intelligence engine evaluates your profile against live company requirements, instantly calculating your eligibility for top-tier tech roles and identifying skill gaps."
+      {/* Premium Apple Carousel Section at Very Top */}
+      <div className="relative z-50 pt-6 pb-8 max-w-[1400px] mx-auto flex flex-col gap-6">
+
+        <div className="w-full">
+          <div className="w-[100vw] relative left-1/2 -translate-x-1/2">
+            <AppleCarousel 
+              slides={carouselSlides} 
+              activeFeatureId={activeFeatureId}
+              hideCenterControls={isPillExpanded}
+              features={[
+                { 
+                  id: "resume", 
+                  content: <ResumeUploadTarget /> 
+                },
+                {
+                  id: "roadmap",
+                  content: (
+                    <DynamicRoadmapModal 
+                      isOpen={true} 
+                      onClose={() => {
+                        setActiveFeatureId(null);
+                        setActivePillId("none");
+                      }} 
+                      userId="cm4d9e03" 
+                      inline={true}
+                    />
+                  )
+                },
+                {
+                  id: "edit",
+                  content: <ManualProfileEditor />
+                }
+              ]}
+              leftControls={
+                <FloatingPill 
+                  id={activePillId as string}
+                  activeId={activePillId as string}
+                  onActiveChange={(id) => {
+                    const strId = String(id);
+                    if (activeFeatureId === strId) {
+                      // Toggle off
+                      setActiveFeatureId(null);
+                      setActivePillId("none");
+                      if (strId === "edit") setIsEditMode(false);
+                    } else {
+                      // Toggle on
+                      setActivePillId(strId);
+                      if (strId === "resume" || strId === "roadmap" || strId === "edit") {
+                        setActiveFeatureId(strId);
+                      }
+                      if (strId === "edit") {
+                        setIsEditMode(true);
+                      }
+                    }
+                  }}
+                  isExpanded={isPillExpanded}
+                  onExpandChange={setIsPillExpanded}
+                  items={[
+                    { id: "resume", label: "Upload Resume" },
+                    { id: "roadmap", label: "AI Roadmaps" },
+                    { id: "edit", label: "Edit Mode" }
+                  ]}
+                  expandable={true}
+                  expandLabel="Actions"
+                  expandedItems={[
+                    { 
+                      id: "export", 
+                      label: "Export PDF", 
+                      onClick: () => import("sonner").then(m => m.toast.success("Preparing PDF export..."))
+                    },
+                    { 
+                      id: "resync", 
+                      label: "Re-sync JARVIS", 
+                      onClick: () => import("sonner").then(m => m.toast.success("JARVIS parsing re-synced!"))
+                    },
+                    { 
+                      id: "clear", 
+                      label: "Clear Profile", 
+                      onClick: () => { 
+                        setCareer({ skills: [], targetRole: "", branch: "", targetPackage: "", projects: [], targetCompanies: [], wesGpaEquivalent: 0, ectsStandingBand: "" });
+                        import("sonner").then(m => m.toast.success("Profile data cleared.")); 
+                      }
+                    }
+                  ]}
+                />
+              }
+              rightControls={
+                <SegmentedControl
+                  options={[
+                    { value: "placement", label: "Placement" },
+                    { value: "matrix", label: "Skills Matrix" },
+                    { value: "internships", label: "Internships" },
+                  ]}
+                  value={mode === "ledger" ? "placement" : mode}
+                  onChange={(val) => {
+                    if (val === "internships") {
+                      setMode("internships");
+                      if (internships.length === 0) {
+                        setIsLoadingInternships(true);
+                        matchInternships().then(res => {
+                          setInternships(res);
+                          setIsLoadingInternships(false);
+                        });
+                      }
+                    } else if (val === "placement") {
+                      setMode("ledger");
+                    } else if (val === "matrix") {
+                      setMode("matrix");
+                    }
+                  }}
+                />
+              }
             />
           </div>
-        </section>
-      )}
+        </div>
+      </div>
 
       {/* Desktop Content Area - Max Width 7xl for large screens */}
       <div className="relative z-10 w-full px-6 md:px-12 max-w-[1400px] mx-auto">
@@ -204,65 +414,29 @@ export default function CareerIntelligencePage() {
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="w-full"
           >
-            {mode === "matrix" ? (
+            {mode === "internships" ? (
+              <InternshipsDashboard matches={internships} isLoading={isLoadingInternships} />
+            ) : mode === "ledger" ? (
               <div className="flex flex-col gap-10">
                 
-                {/* Global Setup Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center mb-4 relative z-50">
-                  <ResumeUploadTarget />
+                {/* The grid layout goes straight into the main columns now */}
 
-                  {/* Dynamic AI Roadmaps Widget */}
-                  <div className="flex items-center justify-between p-2 pl-5 rounded-full bg-[#1c1c1e] border border-white/[0.04] text-white hover:bg-white/[0.02] hover:border-white/10 transition-all duration-300 h-14 w-full">
-                    <div className="flex items-center gap-3">
-                      <Sparkles className="h-5 w-5 text-white" />
-                      <span className="text-[14px] font-bold tracking-tight">
-                        Dynamic AI Roadmaps
-                      </span>
-                    </div>
-                    
-                    <MagneticWrapper strength={0.6}>
-                      <button
-                        onClick={() => setIsRoadmapModalOpen(true)}
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-white text-black px-5 py-2 text-[13px] font-bold transition-all duration-300 hover:bg-white/90 outline-none shrink-0 shadow-lg"
-                      >
-                        Generate
-                      </button>
-                    </MagneticWrapper>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="main-grid grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   
                   {/* Left Column: Company Ledger (Takes 5 cols on Desktop) */}
                   <div className="lg:col-span-5 flex flex-col">
                     {/* Smart Filters and Utility Bar */}
                     <div className="flex flex-col gap-4 mb-6">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                          {pinnedCompanies.length > 0 ? (
-                            <><Target size={24} className="text-[#bf5af2]" /> Target Wishlist ({pinnedCompanies.length}/3)</>
-                          ) : "Company Target Ledger"}
-                        </h2>
-                        
-                        {pinnedCompanies.length > 0 && (
-                          <button 
-                            onClick={() => setTargetCompanies([])}
-                            className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-xs font-semibold text-white transition-all"
-                          >
-                            <PinOff size={14} /> Clear
-                          </button>
-                        )}
-                      </div>
 
                       <div className="mb-4 flex flex-col gap-4 relative z-20">
-                        <div className="relative w-full group">
-                          <Filter size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
+                        <div className="relative flex items-center w-full rounded-xl backdrop-blur-md bg-white/[0.04] border border-white/[0.08] transition-all duration-300 h-12 focus-within:ring-2 focus-within:ring-white/20 focus-within:bg-white/[0.08] hover:bg-white/[0.06] group">
+                          <Filter size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground-muted group-focus-within:text-foreground transition-colors duration-300" />
                           <input 
                             type="text" 
                             placeholder="Search companies..." 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#111111] border border-white/[0.1] hover:border-white/20 rounded-full py-2.5 pl-11 pr-5 text-[13px] text-white/90 placeholder:text-zinc-500/80 focus:outline-none focus:border-white/60 focus:bg-[#1A1A1A] focus:ring-[2px] focus:ring-white/10 transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                            className="bg-transparent text-[15px] font-medium text-foreground placeholder:text-foreground-muted w-full px-4 outline-none pl-11"
                           />
                         </div>
 
@@ -276,10 +450,10 @@ export default function CareerIntelligencePage() {
                               onClick={() => setActiveFilter(f as any)}
                               whileTap={{ scale: 0.95 }}
                               className={cn(
-                                "relative px-4 py-2 rounded-full text-[12px] font-medium transition-colors duration-300 whitespace-nowrap border outline-none",
+                                "relative flex items-center justify-center h-10 px-4 text-sm leading-[20px] font-medium rounded-full whitespace-nowrap border outline-none transition-colors duration-300 before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:min-w-[44px] before:min-h-[44px] before:content-['']",
                                 activeFilter === f 
                                   ? "text-black border-transparent" 
-                                  : "bg-[#111111] text-zinc-400 hover:text-white/90 hover:bg-[#1A1A1A] border-white/[0.04]"
+                                  : "backdrop-blur-md bg-white/[0.08] border-white/[0.08] text-foreground hover:bg-white/[0.12] active:bg-white/[0.16]"
                               )}
                             >
                               {activeFilter === f && (
@@ -292,6 +466,14 @@ export default function CareerIntelligencePage() {
                               <span className="relative z-10">{f}</span>
                             </motion.button>
                           ))}
+                          {pinnedCompanies.length > 0 && (
+                            <button
+                              onClick={() => setTargetCompanies([])}
+                              className="relative flex items-center justify-center h-10 px-4 text-sm leading-[20px] font-medium rounded-full whitespace-nowrap border outline-none transition-colors duration-300 backdrop-blur-md bg-white/[0.08] border-white/[0.08] text-foreground hover:bg-white/[0.12] active:bg-white/[0.16] shrink-0"
+                            >
+                              <PinOff size={14} className="mr-1.5 text-brand-tertiary" /> Clear
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -301,8 +483,13 @@ export default function CareerIntelligencePage() {
                       {/* Pinned Wishlist Zone */}
                       {pinnedResults.length > 0 && (
                         <div className="space-y-2">
-                          <h3 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider pl-4">Pinned Targets ({pinnedResults.length}/3)</h3>
-                          <div className="flex flex-col rounded-[20px] bg-[#1c1c1e] overflow-hidden">
+                          <div className="flex items-center justify-between pl-4 pr-2">
+                            <h3 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider flex items-center gap-2">
+                              <Target size={14} className="text-brand-tertiary" />
+                              Target Wishlist ({pinnedResults.length}/3)
+                            </h3>
+                          </div>
+                          <Card variant="default" className="ledger-card flex flex-col !p-0">
                             {pinnedResults.map((company, i) => (
                               <CompanyLedgerRow 
                                 key={company.name} 
@@ -312,15 +499,15 @@ export default function CareerIntelligencePage() {
                                 isLast={i === pinnedResults.length - 1} 
                               />
                             ))}
-                          </div>
+                          </Card>
                         </div>
                       )}
 
                       {/* Safe Zone */}
                       {safeCompanies.length > 0 && (
                         <div className="space-y-2">
-                          <h3 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider pl-4 mt-2">Achievable Now ({safeCompanies.length})</h3>
-                          <div className="flex flex-col rounded-[20px] bg-[#1c1c1e] overflow-hidden">
+                          <h3 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider pl-4 mt-2">Achievable Now ({safeCompanies.length})</h3>
+                          <Card variant="default" className="ledger-card flex flex-col !p-0">
                             {safeCompanies.map((company, i) => (
                               <CompanyLedgerRow 
                                 key={company.name} 
@@ -330,15 +517,15 @@ export default function CareerIntelligencePage() {
                                 isLast={i === safeCompanies.length - 1} 
                               />
                             ))}
-                          </div>
+                          </Card>
                         </div>
                       )}
 
                       {/* Borderline Zone */}
                       {borderlineCompanies.length > 0 && (
                         <div className="space-y-2">
-                          <h3 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider pl-4 mt-2">Requires Work ({borderlineCompanies.length})</h3>
-                          <div className="flex flex-col rounded-[20px] bg-[#1c1c1e] overflow-hidden">
+                          <h3 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider pl-4 mt-2">Requires Work ({borderlineCompanies.length})</h3>
+                          <Card variant="default" className="ledger-card flex flex-col !p-0">
                             {borderlineCompanies.map((company, i) => (
                               <CompanyLedgerRow 
                                 key={company.name} 
@@ -348,15 +535,15 @@ export default function CareerIntelligencePage() {
                                 isLast={i === borderlineCompanies.length - 1} 
                               />
                             ))}
-                          </div>
+                          </Card>
                         </div>
                       )}
 
                       {/* Risk Zone */}
                       {riskCompanies.length > 0 && (
                         <div className="space-y-2">
-                          <h3 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider pl-4 mt-2">Out of Reach ({riskCompanies.length})</h3>
-                          <div className="flex flex-col rounded-[20px] bg-[#1c1c1e] overflow-hidden">
+                          <h3 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider pl-4 mt-2">Out of Reach ({riskCompanies.length})</h3>
+                          <Card variant="default" className="ledger-card flex flex-col !p-0">
                             {riskCompanies.map((company, i) => (
                               <CompanyLedgerRow 
                                 key={company.name} 
@@ -366,76 +553,100 @@ export default function CareerIntelligencePage() {
                                 isLast={i === riskCompanies.length - 1} 
                               />
                             ))}
-                          </div>
+                          </Card>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Right Column: Company Intelligence Guide (Takes 7 cols on Desktop) */}
-                  <div className="lg:col-span-7 flex flex-col gap-6 sticky top-32">
-                    {pinnedCompanies.length === 0 && (
-                      <CompanyIntelligenceGuide 
-                        pinnedCompany={null} 
-                        userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
-                        userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
-                        userSkills={realSkills}
-                        readinessScore={riskResult.readinessScore}
-                        averageEligibility={riskResult.averageEligibility}
-                        userCredits={realCredits}
-                        branch={branch}
-                        onNavigateToSkills={() => setMode("radar")}
-                      />
-                    )}
-                    {pinnedCompanies.length === 1 && (
-                      <CompanyIntelligenceGuide 
-                        pinnedCompany={pinnedCompanies[0]} 
-                        userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
-                        userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
-                        userSkills={realSkills}
-                        onOptimizeSandbox={handleOptimizeSandbox}
-                        isSandboxActive={isSandboxActive}
-                        onResetSandbox={() => {
-                          setSandboxMetrics(null, null);
-                          setIsSandboxActive(false);
-                        }}
-                        readinessScore={riskResult.readinessScore}
-                        averageEligibility={riskResult.averageEligibility}
-                        userCredits={realCredits}
-                        branch={branch}
-                        onNavigateToSkills={() => setMode("radar")}
-                      />
-                    )}
-                    {pinnedCompanies.length > 1 && (
-                      <CompanyComparisonGuide 
-                        pinnedCompanies={pinnedCompanies}
-                        userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
-                        userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
-                        userSkills={realSkills}
-                        onOptimizeSandbox={handleOptimizeSandbox}
-                        isSandboxActive={isSandboxActive}
-                        onResetSandbox={() => {
-                          setSandboxMetrics(null, null);
-                          setIsSandboxActive(false);
-                        }}
-                        readinessScore={riskResult.readinessScore}
-                        averageEligibility={riskResult.averageEligibility}
-                        userCredits={realCredits}
-                        branch={branch}
-                        onNavigateToSkills={() => setMode("radar")}
-                      />
-                    )}
+                  <motion.div layout className="guide-column lg:col-span-7 flex flex-col gap-6 sticky top-32">
+                    <AnimatePresence mode="wait">
+                      {pinnedCompanies.length === 0 ? (
+                        <motion.div
+                          key="empty-guide"
+                          initial={{ opacity: 0, scale: 0.98, y: 15, filter: "blur(8px)" }}
+                          animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                          exit={{ opacity: 0, scale: 0.98, y: -15, filter: "blur(8px)" }}
+                          transition={{ type: "spring", stiffness: 350, damping: 30, mass: 1 }}
+                        >
+                          <CompanyIntelligenceGuide 
+                            pinnedCompany={null} 
+                            userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
+                            userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
+                            userSkills={realSkills}
+                            readinessScore={riskResult.readinessScore}
+                            averageEligibility={riskResult.averageEligibility}
+                            userCredits={realCredits}
+                            branch={branch}
+                            onNavigateToSkills={() => setMode("radar")}
+                          />
+                        </motion.div>
+                      ) : pinnedCompanies.length === 1 ? (
+                        <motion.div
+                          key={`single-${pinnedCompanies[0]}`}
+                          initial={{ opacity: 0, scale: 0.98, y: 15, filter: "blur(8px)" }}
+                          animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                          exit={{ opacity: 0, scale: 0.98, y: -15, filter: "blur(8px)" }}
+                          transition={{ type: "spring", stiffness: 350, damping: 30, mass: 1 }}
+                        >
+                          <CompanyIntelligenceGuide 
+                            pinnedCompany={pinnedCompanies[0]} 
+                            userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
+                            userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
+                            userSkills={realSkills}
+                            onOptimizeSandbox={handleOptimizeSandbox}
+                            isSandboxActive={isSandboxActive}
+                            onResetSandbox={() => {
+                              setSandboxMetrics(null, null);
+                              setIsSandboxActive(false);
+                            }}
+                            readinessScore={riskResult.readinessScore}
+                            averageEligibility={riskResult.averageEligibility}
+                            userCredits={realCredits}
+                            branch={branch}
+                            onNavigateToSkills={() => setMode("radar")}
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key={`multi-${pinnedCompanies.join('-')}`}
+                          initial={{ opacity: 0, scale: 0.98, y: 15, filter: "blur(8px)" }}
+                          animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                          exit={{ opacity: 0, scale: 0.98, y: -15, filter: "blur(8px)" }}
+                          transition={{ type: "spring", stiffness: 350, damping: 30, mass: 1 }}
+                        >
+                          <CompanyComparisonGuide 
+                            pinnedCompanies={pinnedCompanies}
+                            userCgpa={isSandboxActive ? sandboxCgpa : realCgpa}
+                            userBacklogs={isSandboxActive ? sandboxBacklogs : realBacklogs}
+                            userSkills={realSkills}
+                            onOptimizeSandbox={handleOptimizeSandbox}
+                            isSandboxActive={isSandboxActive}
+                            onResetSandbox={() => {
+                              setSandboxMetrics(null, null);
+                              setIsSandboxActive(false);
+                            }}
+                            readinessScore={riskResult.readinessScore}
+                            averageEligibility={riskResult.averageEligibility}
+                            userCredits={realCredits}
+                            branch={branch}
+                            onNavigateToSkills={() => setMode("radar")}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     <PriorityActionItems 
                       eligibility={eligibilityResults} 
                       skillGap={skillGapResult} 
                     />
-                  </div>
+                  </motion.div>
                   
                 </div>
               </div>
             ) : (
-              <div className="max-w-6xl mx-auto pt-12">
+              <div className="max-w-6xl mx-auto">
                 <PlacementSkillsMatrix />
               </div>
             )}
@@ -443,22 +654,22 @@ export default function CareerIntelligencePage() {
         </AnimatePresence>
 
         {/* MARKETING INTEGRATIONS WIDGET */}
-        <div className="mt-10 pt-10 border-t border-white/10">
-          <div className="flex flex-col md:flex-row items-center justify-between bg-[#1c1c1e] hover:bg-white/[0.02] border border-white/[0.04] rounded-[20px] p-4 px-6 transition-colors duration-300">
+        <div className="mt-8 mb-12">
+          <div className="flex flex-col md:flex-row items-center justify-between bg-surface-raised rounded-card-large p-4 px-6">
             
             <div className="flex items-center gap-5">
-              <div className="h-12 w-12 rounded-full bg-[#0a84ff]/10 flex items-center justify-center shrink-0">
+              <div className="h-12 w-12 rounded-full bg-brand flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5 text-[#0a84ff]" />
               </div>
               
               <div className="flex flex-col">
                 <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-[15px] font-bold text-white tracking-tight">GradeFlow Auto-Apply Engine</h3>
-                  <span className="px-2 py-0.5 bg-[#0a84ff]/10 text-[#0a84ff] text-[9px] font-bold uppercase tracking-widest rounded-full">
+                  <h3 className="text-[15px] font-bold text-foreground tracking-tight">Aevos Auto-Apply Engine</h3>
+                  <span className="text-foreground-muted text-[12px] font-medium">
                     Chrome Extension
                   </span>
                 </div>
-                <p className="text-[#86868b] text-[13px] max-w-xl">
+                <p className="text-foreground-muted text-[13px] max-w-xl">
                   Bypass Workday CAPTCHAs and one-click inject your generated ATS Resume into job applications.
                 </p>
               </div>
@@ -478,23 +689,11 @@ export default function CareerIntelligencePage() {
         </div>
       </div>
       
-      {/* Unified Dynamic Island — Fixed at top right */}
-      <DynamicIsland
-        mode={mode}
-        onModeChange={setMode}
-        sandboxActive={isSandboxActive}
-        onSandboxToggle={() => setIsSandboxActive(!isSandboxActive)}
-        cgpa={sandboxCgpa}
-        setCgpa={(val) => setSandboxMetrics(val, sandboxBacklogs)}
-        backlogs={sandboxBacklogs}
-        setBacklogs={(val) => setSandboxMetrics(sandboxCgpa, val)}
-      />
 
-      <DynamicRoadmapModal 
-        isOpen={isRoadmapModalOpen} 
-        onClose={() => setIsRoadmapModalOpen(false)}
-        userId="cm4d9e03"
-      />
+
+
+
     </div>
+    </ReactLenis>
   );
 }

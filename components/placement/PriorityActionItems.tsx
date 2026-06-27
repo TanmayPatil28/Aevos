@@ -2,6 +2,8 @@ import React from "react";
 import { ArrowRight, PlayCircle, Lock, Target } from "lucide-react";
 import { IntelligenceResult, SkillGapResult } from "@/lib/career/intelligenceEngine";
 import { cn } from "@/lib/cn";
+import { Badge } from "@/components/ui/badge";
+import Card from "@/components/ui/Card";
 
 export default function PriorityActionItems({ 
   eligibility, 
@@ -50,10 +52,10 @@ export default function PriorityActionItems({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 px-2">
-        <h4 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-wider">Priority Actions</h4>
+        <h4 className="text-[13px] font-semibold text-foreground-muted uppercase tracking-wider">Priority Actions</h4>
       </div>
 
-      <div className="flex flex-col bg-[#1c1c1e] rounded-[20px] overflow-hidden">
+      <Card variant="default" className="flex flex-col !p-0">
         {actions.slice(0, 3).map((action, i) => (
           <div key={i} className={cn(
             "flex flex-col p-4",
@@ -63,35 +65,39 @@ export default function PriorityActionItems({
               <div className="mt-0.5">
                 {action.type === "critical" && <div className="w-3 h-3 rounded-full bg-[#ff3b30]" />}
                 {action.type === "warning" && <div className="w-3 h-3 rounded-full bg-[#ff9f0a]" />}
-                {action.type === "info" && <div className="w-3 h-3 rounded-full bg-[#0a84ff]" />}
+                {action.type === "info" && <div className="w-3 h-3 rounded-full bg-brand" />}
               </div>
               <div className="flex-1 flex flex-col">
-                <span className="text-[15px] font-medium text-white">{action.title}</span>
-                <span className="text-[13px] text-[#86868b] leading-relaxed mt-1">{action.desc}</span>
+                <span className="text-[15px] font-medium text-foreground">{action.title}</span>
+                <span className="text-[13px] text-foreground-muted leading-relaxed mt-1">{action.desc}</span>
                 
                 {(action.title.includes("Acquire") || action.title.includes("Next Skill")) && (
-                  <button 
+                  <Badge 
+                    variant="brand"
+                    size="md"
                     onClick={() => {
                       import("sonner").then((mod) => {
                         mod.toast.success(`Added "${action.title.replace('Acquire: ', '').replace('Next Skill: ', '')}" to your learning planner!`);
                       });
                     }}
-                    className="flex items-center gap-2 mt-3 text-[13px] font-medium text-[#0a84ff] bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 px-3 py-1.5 rounded-full self-start transition-colors"
+                    className="mt-3 self-start cursor-pointer bg-brand text-black hover:brightness-110 transition-all whitespace-nowrap shadow-sm shadow-brand/20 border-none"
                   >
-                    <PlayCircle className="w-4 h-4" />
-                    Add to Planner
-                  </button>
+                    <div className="flex items-center gap-1.5 font-semibold">
+                      <PlayCircle className="w-4 h-4" />
+                      Add to Planner
+                    </div>
+                  </Badge>
                 )}
               </div>
             </div>
           </div>
         ))}
         {actions.length === 0 && (
-           <div className="p-4 text-center text-[#86868b] text-[13px]">
+           <div className="p-4 text-center text-foreground-muted text-[13px]">
              No critical actions required at this time.
            </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

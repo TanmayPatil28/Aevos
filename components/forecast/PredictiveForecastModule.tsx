@@ -13,6 +13,8 @@ const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.Res
 const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
 import { Crosshair, Target, Zap, BookOpen, CheckCircle, Code, Shield } from "lucide-react";
 import { cn } from "@/lib/cn";
+import Card from "@/components/ui/Card";
+import { FloatingPill } from "@/components/ui/floating-pill";
 
 interface AIMission {
   id: string;
@@ -81,7 +83,7 @@ export default function PredictiveForecastModule() {
   // Local Projection State
   const [targetSgpa, setTargetSgpa] = useState<number>(8.0);
   const [targetAttendance, setTargetAttendance] = useState<number>(80);
-  const [activeMissions, setActiveMissions] = useState<Set<string>>(new Set());
+  const [activeMissionId, setActiveMissionId] = useState<string | number>("none");
 
   const activeMissionsList = useMemo(() => {
     if (!interventions || interventions.length === 0) return AI_MISSIONS;
@@ -128,8 +130,8 @@ export default function PredictiveForecastModule() {
     }
 
     // Apply AI Missions
-    activeMissions.forEach((missionId) => {
-      const m = activeMissionsList.find((x) => x.id === missionId);
+    if (activeMissionId !== "none") {
+      const m = activeMissionsList.find((x) => x.id === activeMissionId);
       if (m) {
         if (m.impact.cgpa) pCgpa += m.impact.cgpa;
         if (m.impact.backlogs) pBacklogs += m.impact.backlogs;
@@ -137,7 +139,7 @@ export default function PredictiveForecastModule() {
         if (m.impact.attendance) pAttendance += m.impact.attendance;
         if (m.impact.projects) pProjects += m.impact.projects;
       }
-    });
+    }
 
     // Bound values
     return {
@@ -147,15 +149,10 @@ export default function PredictiveForecastModule() {
       attendance: Math.min(100, Math.max(0, pAttendance)),
       projects: Math.max(0, pProjects),
     };
-  }, [baseCgpa, baseBacklogs, baseSkills, baseAttendance, baseProjects, targetSgpa, targetAttendance, activeMissions, academic.completedSemesters]);
+  }, [baseCgpa, baseBacklogs, baseSkills, baseAttendance, baseProjects, targetSgpa, targetAttendance, activeMissionId, academic.completedSemesters]);
 
-  const toggleMission = (id: string) => {
-    setActiveMissions((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const toggleMission = (id: string | number) => {
+    setActiveMissionId(id);
   };
 
   // Radar Data Transform
@@ -193,17 +190,16 @@ export default function PredictiveForecastModule() {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 p-4 lg:p-8">
+    <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-[24px] p-4 lg:p-8">
       
       {/* Left Column: Visual Radar */}
-      <div className="flex-1 flex flex-col gap-6">
-        <div className="bg-[#111113] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 pointer-events-none" />
+      <div className="col-span-1 lg:col-span-8 flex flex-col gap-[24px]">
+        <Card variant="default" padding="xl" className="flex flex-col gap-6">
           
           <div className="flex items-center justify-between mb-8 relative z-10">
             <div>
               <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                <Target className="text-indigo-400" size={24} /> 
+                <Target className="text-cyan-400" size={24} /> 
                 Academic & Career Health
               </h2>
               <p className="text-sm text-white/50 mt-1">Holistic view of your trajectory</p>
@@ -214,8 +210,8 @@ export default function PredictiveForecastModule() {
               <div className="flex items-center gap-2 text-white/50">
                 <div className="w-3 h-3 rounded-full bg-white/20" /> Current
               </div>
-              <div className="flex items-center gap-2 text-indigo-400">
-                <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" /> Projected
+              <div className="flex items-center gap-2 text-cyan-400">
+                <div className="w-3 h-3 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.5)]" /> Projected
               </div>
             </div>
           </div>
@@ -236,9 +232,9 @@ export default function PredictiveForecastModule() {
                 <Radar
                   name="Projected"
                   dataKey="projected"
-                  stroke="#6366f1"
+                  stroke="#22d3ee"
                   strokeWidth={2}
-                  fill="#6366f1"
+                  fill="#22d3ee"
                   fillOpacity={0.3}
                 />
                 <Tooltip 
@@ -248,10 +244,10 @@ export default function PredictiveForecastModule() {
               </RadarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-[24px]">
           <StatBox label="Proj. CGPA" val={projectedMetrics.cgpa.toFixed(2)} diff={projectedMetrics.cgpa - baseCgpa} />
           <StatBox label="Proj. Attendance" val={`${projectedMetrics.attendance}%`} diff={projectedMetrics.attendance - baseAttendance} />
           <StatBox label="Proj. Backlogs" val={projectedMetrics.backlogs} diff={projectedMetrics.backlogs - baseBacklogs} inverse />
@@ -260,12 +256,12 @@ export default function PredictiveForecastModule() {
       </div>
 
       {/* Right Column: Controls & Missions */}
-      <div className="w-full lg:w-[400px] flex flex-col gap-6">
+      <div className="col-span-1 lg:col-span-4 flex flex-col gap-[24px]">
         
         {/* Sliders */}
-        <div className="bg-[#111113] border border-white/10 rounded-3xl p-6 shadow-2xl">
-          <h3 className="text-white font-bold mb-6 flex items-center gap-2">
-            <Crosshair className="text-pink-400" size={18} />
+        <Card variant="default" padding="lg">
+          <h3 className="text-foreground font-semibold mb-6 flex items-center gap-2 text-lg tracking-tight">
+            <Crosshair className="text-foreground-muted" size={18} />
             Target Parameters
           </h3>
           
@@ -280,7 +276,7 @@ export default function PredictiveForecastModule() {
                 min="4" max="10" step="0.1" 
                 value={targetSgpa}
                 onChange={(e) => setTargetSgpa(parseFloat(e.target.value))}
-                className="w-full accent-pink-500 bg-white/10 rounded-lg appearance-none h-2 cursor-pointer"
+                className="w-full accent-purple-500 bg-white/10 rounded-lg appearance-none h-2 cursor-pointer"
               />
             </div>
 
@@ -298,65 +294,69 @@ export default function PredictiveForecastModule() {
               />
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* AI Missions */}
-        <div className="bg-[#111113] border border-white/10 rounded-3xl p-6 shadow-2xl flex-1">
-          <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-            <Zap className="text-amber-400" size={18} />
-            AI Recommended Missions
-          </h3>
-          <p className="text-white/40 text-xs mb-6 leading-relaxed">
-            Select actionable missions to instantly see their compounded impact on your holistic profile trajectory.
-          </p>
-
-          <div className="flex flex-col gap-3">
-            <AnimatePresence>
-              {activeMissionsList.map((mission) => {
-                const isActive = activeMissions.has(mission.id);
-                const Icon = mission.icon;
-                return (
-                  <motion.button
-                    key={mission.id}
-                    layout
-                    onClick={() => toggleMission(mission.id)}
-                    className={cn(
-                      "w-full text-left p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden group",
-                      isActive 
-                        ? "bg-indigo-500/10 border-indigo-500/50" 
-                        : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20"
-                    )}
-                  >
-                    <div className="flex gap-4 relative z-10">
-                      <div className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                        isActive ? "bg-indigo-500 text-white" : "bg-white/10 text-white/50"
-                      )}>
-                        <Icon size={18} />
-                      </div>
-                      <div>
-                        <h4 className={cn("text-sm font-bold transition-colors", isActive ? "text-indigo-300" : "text-white")}>
-                          {mission.title}
-                        </h4>
-                        <p className="text-xs text-white/40 mt-1 leading-relaxed">{mission.description}</p>
-                        
-                        {/* Impact Pills */}
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {Object.entries(mission.impact).map(([key, val]) => (
-                            <div key={key} className="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider bg-white/10 text-white/70">
-                              {(val as number) > 0 ? '+' : ''}{(val as number)} {key}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.button>
-                );
-              })}
-            </AnimatePresence>
+        {/* AI Missions using FloatingPill */}
+        <Card variant="default" padding="lg" className="flex flex-col gap-6 flex-1">
+          <div>
+            <h3 className="text-foreground font-semibold flex items-center gap-2 text-lg tracking-tight">
+              <Zap className="text-foreground-muted" size={18} />
+              AI Missions
+            </h3>
+            <p className="text-foreground-muted text-sm mt-2 leading-relaxed">
+              Select an actionable mission to instantly see its compounded impact on your profile.
+            </p>
           </div>
-        </div>
 
+          <div className="flex justify-center w-full">
+            <FloatingPill
+              items={[
+                { id: "none", label: "None" },
+                ...activeMissionsList.map(m => {
+                  const Icon = m.icon;
+                  return {
+                    id: m.id,
+                    label: m.title.split(' ')[0] + "...", // Shorten label for pill
+                    icon: <Icon size={14} />
+                  }
+                })
+              ]}
+              activeId={activeMissionId}
+              onActiveChange={toggleMission}
+            />
+          </div>
+
+          {/* Active Mission Details */}
+          {activeMissionId !== "none" && (
+            <div className="mt-4 p-4 rounded-xl bg-surface border border-white/5">
+              {(() => {
+                const activeMission = activeMissionsList.find(m => m.id === activeMissionId);
+                if (!activeMission) return null;
+                const Icon = activeMission.icon;
+                return (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-surface-raised flex items-center justify-center">
+                        <Icon size={14} className="text-foreground" />
+                      </div>
+                      <h4 className="text-sm font-semibold text-foreground">{activeMission.title}</h4>
+                    </div>
+                    <p className="text-sm text-foreground-muted leading-relaxed">
+                      {activeMission.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {Object.entries(activeMission.impact).map(([key, val]) => (
+                        <div key={key} className="px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider bg-surface-raised text-foreground-muted">
+                          {(val as number) > 0 ? '+' : ''}{(val as number)} {key}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );
@@ -368,17 +368,17 @@ function StatBox({ label, val, diff, inverse = false }: { label: string, val: st
   const isNeutral = diff === 0;
 
   return (
-    <div className="bg-[#111113] border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-      <span className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-1">{label}</span>
-      <span className="text-2xl font-black text-white font-mono">{(val as number)}</span>
+    <Card variant="default" padding="md" className="flex flex-col items-center justify-center text-center">
+      <span className="text-foreground-muted text-[10px] uppercase tracking-[0.12em] font-semibold mb-2">{label}</span>
+      <span className="text-2xl font-semibold text-foreground tracking-tight">{(val as number)}</span>
       {!isNeutral && (
         <div className={cn(
-          "text-[10px] font-bold mt-1",
-          isPositive ? "text-emerald-400" : "text-red-400"
+          "text-[10px] font-bold mt-2 tracking-wider uppercase",
+          isPositive ? "text-green-500" : "text-red-500"
         )}>
           {diff > 0 ? "+" : ""}{typeof diff === "number" ? diff.toFixed(1) : diff}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

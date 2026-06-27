@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useUSMStore, TimetableState } from "@/stores/usmStore";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarCheck, X, Check, Coffee, MapPin, Clock } from "lucide-react";
+import { CalendarCheck, X, Check, Coffee, MapPin, Clock, AlertTriangle } from "lucide-react";
 import { getStudentDayIndex, getStudentDateStr } from "@/lib/dateUtils";
 
 const DAYS_MAP: (keyof TimetableState)[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -12,7 +12,9 @@ export default function DailyStandupModal() {
   const { timetable, courses, updateCourse, addAttendanceHistoryEvent, holidays } = useUSMStore();
   const [isVisible, setIsVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [individualStatus, setIndividualStatus] = useState<Record<string, "ATTENDED" | "BUNKED" | null>>({});
+  const [individualStatus, setIndividualStatus] = useState<Record<string, "ATTENDED" | "BUNKED" | "CANCELED" | "LATE" | null>>({});
+  const [individualNotes, setIndividualNotes] = useState<Record<string, string>>({});
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
 
   // Determine current day's classes
   const todaysClasses = useMemo(() => {
@@ -50,23 +52,33 @@ export default function DailyStandupModal() {
     setDismissed(true);
   };
 
-  const handleBulkLog = (status: "ATTENDED" | "BUNKED") => {
+  const handleSaveLog = () => {
     const courseUpdates = new Map<string, { total: number, bunked: number }>();
     const todayStr = getStudentDateStr();
     
     todaysClasses.forEach(entry => {
-      const entryStatus = individualStatus[entry.id] || status;
+      const entryStatus = individualStatus[entry.id] || "ATTENDED";
+      const note = individualNotes[entry.id];
       const current = courseUpdates.get(entry.courseId) || { total: 0, bunked: 0 };
-      courseUpdates.set(entry.courseId, {
-        total: current.total + 1,
-        bunked: current.bunked + (entryStatus === "BUNKED" ? 1 : 0)
-      });
+      
+      let newTotal = current.total;
+      let newBunked = current.bunked;
+      
+      if (entryStatus === "ATTENDED" || entryStatus === "LATE") {
+        newTotal += 1;
+      } else if (entryStatus === "BUNKED") {
+        newTotal += 1;
+        newBunked += 1;
+      }
+      
+      courseUpdates.set(entry.courseId, { total: newTotal, bunked: newBunked });
       
       // Log each event
       addAttendanceHistoryEvent({
         dateStr: todayStr,
         courseId: entry.courseId,
-        action: entryStatus as "ATTENDED" | "BUNKED"
+        action: entryStatus as "ATTENDED" | "BUNKED" | "CANCELED" | "LATE",
+        note: note || undefined
       });
     });
 
@@ -83,15 +95,18 @@ export default function DailyStandupModal() {
     dismissForToday();
   };
 
-  const toggleIndividual = (entryId: string) => {
-    setIndividualStatus(prev => {
-      const current = prev[entryId];
-      if (!current) return { ...prev, [entryId]: "ATTENDED" };
-      if (current === "ATTENDED") return { ...prev, [entryId]: "BUNKED" };
-      const next = { ...prev };
-      delete next[entryId];
-      return next;
-    });
+  const handleMarkAllAttended = () => {
+    const updates: Record<string, "ATTENDED"> = {};
+    todaysClasses.forEach(c => updates[c.id] = "ATTENDED");
+    setIndividualStatus(prev => ({ ...prev, ...updates }));
+  };
+
+  const setStatus = (entryId: string, status: "ATTENDED" | "BUNKED" | "CANCELED" | "LATE") => {
+    setIndividualStatus(prev => ({ ...prev, [entryId]: status }));
+  };
+
+  const toggleExpand = (entryId: string) => {
+    setExpandedNoteId(prev => prev === entryId ? null : entryId);
   };
 
   const dayName = DAYS_MAP[getStudentDayIndex()];
@@ -104,21 +119,19 @@ export default function DailyStandupModal() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="fixed bottom-6 right-6 z-50 w-[370px] bg-[#1c1c1e] border border-white/[0.05] rounded-[2rem] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+          className="fixed bottom-6 right-6 z-50 w-[370px] bg-surface-raised rounded-[2rem] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.7)] overflow-hidden border-none"
         >
-          {/* Ambient Glow */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#10b981]/10 blur-3xl pointer-events-none rounded-full" />
           
           <button 
             onClick={dismissForToday}
-            className="absolute top-4 right-4 p-1 rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-colors z-10"
+            className="absolute top-4 right-4 p-2 rounded-full text-white/30 hover:bg-surface hover:text-white transition-colors z-10"
           >
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-3 mb-4 relative z-10">
-            <div className="w-10 h-10 rounded-full bg-[#10b981]/10 border border-[#10b981]/20 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-              <CalendarCheck className="w-5 h-5 text-[#10b981] drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          <div className="flex items-center gap-3 mb-5 relative z-10">
+            <div className="w-10 h-10 rounded-full bg-[#10b981] flex items-center justify-center">
+              <CalendarCheck className="w-5 h-5 text-black" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-white tracking-tight">Daily Standup</h3>
@@ -132,56 +145,114 @@ export default function DailyStandupModal() {
             </p>
 
             {/* Individual Class List */}
-            <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+            <div className="space-y-1.5 max-h-[350px] overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {todaysClasses.map(entry => {
                 const status = individualStatus[entry.id];
+                const isExpanded = expandedNoteId === entry.id;
+                
+                // Safe bunk calculation
+                const c = courses.find(c => c.id === entry.courseId);
+                let dropsBelowSafe = false;
+                if (c && status === "BUNKED") {
+                   const newTotal = c.attendanceTotal + 1;
+                   const newBunked = c.attendanceBunked + 1;
+                   if (newTotal > 0 && ((newTotal - newBunked) / newTotal) < 0.75) {
+                      dropsBelowSafe = true;
+                   }
+                }
+
                 return (
-                  <button
-                    key={entry.id}
-                    onClick={() => toggleIndividual(entry.id)}
-                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-[11px] transition-all border ${
-                      status === "ATTENDED" 
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
-                        : status === "BUNKED"
-                        ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
-                        : "bg-white/[0.03] border-white/[0.05] text-white/60 hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{courseMap.get(entry.courseId) || "Unknown"}</span>
-                      {entry.room && (
-                        <span className="flex items-center gap-0.5 text-[9px] text-white/30">
-                          <MapPin className="w-2.5 h-2.5" />{entry.room}
+                  <div key={entry.id} className="flex flex-col gap-1 w-full">
+                    <button
+                      onClick={() => toggleExpand(entry.id)}
+                      className={`w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl text-[11px] transition-all border-none ${
+                        status === "ATTENDED" 
+                          ? "bg-[#10b981] text-black" 
+                          : status === "BUNKED"
+                          ? dropsBelowSafe ? "bg-red-600 text-white" : "bg-rose-500 text-white"
+                          : status === "CANCELED"
+                          ? "bg-white/20 text-white"
+                          : status === "LATE"
+                          ? "bg-amber-500 text-black"
+                          : "bg-surface hover:bg-[#2A2A2D] text-white/80 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold">{courseMap.get(entry.courseId) || "Unknown"}</span>
+                        {entry.room && (
+                          <span className={`flex items-center gap-0.5 text-[9px] ${status ? "opacity-70" : "text-white/40"}`}>
+                            <MapPin className="w-2.5 h-2.5" />{entry.room}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {dropsBelowSafe && status === "BUNKED" && (
+                           <span className="text-[10px] font-bold text-red-100 flex items-center gap-1 bg-black/20 px-1.5 py-0.5 rounded">
+                              <AlertTriangle className="w-3 h-3" /> RISK
+                           </span>
+                        )}
+                        <span className={`font-mono text-[9px] flex items-center gap-0.5 ${status ? "opacity-70" : "text-white/40"}`}>
+                          <Clock className="w-2.5 h-2.5" />{entry.startTime}
                         </span>
+                        {status && (
+                          <span className="text-[9px] font-bold uppercase tracking-wider">{status}</span>
+                        )}
+                      </div>
+                    </button>
+                    
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="p-3 bg-surface rounded-xl border border-white/5 space-y-3 mt-1">
+                            <div className="flex gap-2">
+                              {["ATTENDED", "BUNKED", "LATE", "CANCELED"].map(s => (
+                                <button
+                                  key={s}
+                                  onClick={() => setStatus(entry.id, s as any)}
+                                  className={`flex-1 py-2 rounded-lg text-[9px] font-bold tracking-wider transition-colors ${
+                                    status === s 
+                                      ? s === "ATTENDED" ? "bg-[#10b981] text-black" : s === "BUNKED" ? "bg-rose-500 text-white" : s === "LATE" ? "bg-amber-500 text-black" : "bg-white/20 text-white"
+                                      : "bg-white/5 hover:bg-white/10 text-white/60 hover:text-white"
+                                  }`}
+                                >
+                                  {s}
+                                </button>
+                              ))}
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="Add a note (optional)..."
+                              value={individualNotes[entry.id] || ""}
+                              onChange={e => setIndividualNotes(prev => ({ ...prev, [entry.id]: e.target.value }))}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[11px] text-white placeholder-white/30 focus:outline-none focus:border-[#10b981]/50 focus:bg-white/10 transition-all"
+                            />
+                          </div>
+                        </motion.div>
                       )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[9px] text-white/30 flex items-center gap-0.5">
-                        <Clock className="w-2.5 h-2.5" />{entry.startTime}
-                      </span>
-                      {status && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider">{status}</span>
-                      )}
-                    </div>
-                  </button>
+                    </AnimatePresence>
+                  </div>
                 );
               })}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 mt-4">
               <button
-                onClick={() => handleBulkLog("ATTENDED")}
-                className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                onClick={handleSaveLog}
+                className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand hover:bg-[#E5D51E] text-black rounded-xl transition-all font-bold tracking-widest text-[11px]"
               >
                 <Check className="w-4 h-4" />
-                <span className="text-[10px] font-bold tracking-wider">YES, ALL</span>
+                SAVE & LOG
               </button>
               <button
-                onClick={() => handleBulkLog("BUNKED")}
-                className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.03] hover:bg-white/[0.08] text-white/40 hover:text-white border border-white/5 rounded-xl transition-all"
+                onClick={handleMarkAllAttended}
+                className="w-full py-2 bg-transparent text-white/40 hover:text-white transition-colors text-[10px] font-bold tracking-wider uppercase"
               >
-                <Coffee className="w-4 h-4" />
-                <span className="text-[10px] font-bold tracking-wider">BUNKED ALL</span>
+                Quick Mark All Attended
               </button>
             </div>
           </div>

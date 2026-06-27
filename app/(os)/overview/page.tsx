@@ -2,7 +2,7 @@ import OverviewCanvas from "@/components/os/overview/OverviewCanvas";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Overview | GradeFlow OS",
+  title: "Overview | Aevos",
   description: "Your academic orientation center.",
 };
 

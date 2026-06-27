@@ -1,12 +1,12 @@
-# GradeFlow: Frontend Architecture Blueprint & AI Hand-off Document
+# Aevos: Frontend Architecture Blueprint & AI Hand-off Document
 
-This document is a comprehensive, production-grade frontend architectural blueprint for GradeFlow. It is designed to allow external AI coding assistants, UI engineers, and design systems to instantly comprehend the current implementation, layout patterns, motion systems, and state architectures of the application.
+This document is a comprehensive, production-grade frontend architectural blueprint for Aevos. It is designed to allow external AI coding assistants, UI engineers, and design systems to instantly comprehend the current implementation, layout patterns, motion systems, and state architectures of the application.
 
 ---
 
 ## 1. System Overview & Core Functionality
 
-GradeFlow is a high-fidelity academic tracking observatory designed for university students to simulate, forecast, and log their GPA (SGPA/CGPA) calculations. It supports:
+Aevos is a high-fidelity academic tracking observatory designed for university students to simulate, forecast, and log their GPA (SGPA/CGPA) calculations. It supports:
 - **Preset Grading Schemes**: Adapts grading and SGPA calculations dynamically based on custom university configurations (e.g., JSPM's 10-point scale vs. SPPU's grading patterns).
 - **Target Projection**: Backwards-calculates the exact GPA milestones needed in upcoming semesters to hit a target CGPA.
 - **Setback Scenarios**: Simulates the specific GPA drop and recovery roadmap required if backlog/failed courses occur.
@@ -18,13 +18,13 @@ GradeFlow is a high-fidelity academic tracking observatory designed for universi
 ## 2. Technical Stack
 
 The frontend is built using a modern, reactive stack:
-- **Core Framework**: [Next.js 14 (App Router)](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/next.config.mjs) utilizing TypeScript.
-- **Styling Engine**: [Tailwind CSS](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/tailwind.config.ts) + custom premium utility classes in [globals.css](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/globals.css).
-- **Animation System**: [Framer Motion](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/lib/animation-constants.ts) for hardware-accelerated transitions, micro-interactions, magnetic cursors, and layout transitions.
-- **Data Visualization**: [Recharts](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/components/dashboard/TrendChartSection.tsx) for interactive SVG charts (radar, line, area, radial-gauge).
-- **Form Verification**: [Zod](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/lib/validations.ts) schemas for type-safe forms.
-- **Database & Sync**: [Prisma Client](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/lib/prisma.ts) for PostgreSQL ORM.
-- **Identity & Authentication**: [NextAuth.js](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/lib/auth.ts) for session management and route protection.
+- **Core Framework**: [Next.js 14 (App Router)](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/next.config.mjs) utilizing TypeScript.
+- **Styling Engine**: [Tailwind CSS](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/tailwind.config.ts) + custom premium utility classes in [globals.css](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/globals.css).
+- **Animation System**: [Framer Motion](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/lib/animation-constants.ts) for hardware-accelerated transitions, micro-interactions, magnetic cursors, and layout transitions.
+- **Data Visualization**: [Recharts](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/components/dashboard/TrendChartSection.tsx) for interactive SVG charts (radar, line, area, radial-gauge).
+- **Form Verification**: [Zod](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/lib/validations.ts) schemas for type-safe forms.
+- **Database & Sync**: [Prisma Client](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/lib/prisma.ts) for PostgreSQL ORM.
+- **Identity & Authentication**: [NextAuth.js](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/lib/auth.ts) for session management and route protection.
 
 ---
 
@@ -92,7 +92,7 @@ gradeflow/
 
 ## 4. Layout & Provider Hierarchy
 
-Every page of the application is wrapped inside [app/layout.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/layout.tsx). The architecture maps as follows:
+Every page of the application is wrapped inside [app/layout.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/layout.tsx). The architecture maps as follows:
 
 ```mermaid
 graph TD
@@ -118,18 +118,18 @@ graph TD
 
 ## 5. Page-by-Page Architectural Breakdown
 
-### A. Home (Landing Page) — [app/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/page.tsx)
-- **Role**: Premium portal showcasing GradeFlow features.
+### A. Home (Landing Page) — [app/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/page.tsx)
+- **Role**: Premium portal showcasing Aevos features.
 - **Layout**: Large animated hero heading, features grid with magnetic hover effects, interactive mock screens, testimonials slider, and global CTA.
 - **Key Interactivity**: Dynamic scroll-based reveals using Framer Motion. Parallax background grids and radial aura colors.
 
-### B. GPA Calculator — [app/calculator/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/calculator/page.tsx)
+### B. GPA Calculator — [app/calculator/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/calculator/page.tsx)
 - **Role**: Core utility where students enter credit details and scores.
 - **Form State**: Dynamic list arrays handling subject rows. Supports additions, inline deletions, marks input constraints, and select grade values.
 - **State Logic**: Dynamically switches input fields depending on whether the preset uses SGPA-only entry or individual Subject entries (JSPM vs SPPU standard grading rules).
-- **Core Math Integration**: Computes SGPA on-the-fly and projects new CGPA bounds using calculations from [lib/calculations.ts](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/lib/calculations.ts).
+- **Core Math Integration**: Computes SGPA on-the-fly and projects new CGPA bounds using calculations from [lib/calculations.ts](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/lib/calculations.ts).
 
-### C. Semester Target Planner — [app/planner/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/planner/page.tsx)
+### C. Semester Target Planner — [app/planner/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/planner/page.tsx)
 - **Role**: Multi-semester GPA projector.
 - **Logic Flow**: Inputs `current_cgpa`, `target_cgpa`, `completed_semesters`, and `remaining_semesters`. Runs target verification equations:
   $$\text{Required GPA} = \frac{(\text{Target CGPA} \times \text{Total Semesters}) - (\text{Current CGPA} \times \text{Completed Semesters})}{\text{Remaining Semesters}}$$
@@ -138,9 +138,9 @@ graph TD
   - Interactive Area Chart displaying past CGPA and projected semester target line.
 - **Actions**: Enables users to write planning projections directly to the database via API requests.
 
-### D. Analytics Dashboard — [app/dashboard/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/dashboard/page.tsx)
+### D. Analytics Dashboard — [app/dashboard/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/dashboard/page.tsx)
 - **Role**: Secure student profile view displaying cumulative metrics.
-- **Server Component**: Fetches plans and calculations from Prisma, parses them safely, and initializes [DashboardClient](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/dashboard/DashboardClient.tsx).
+- **Server Component**: Fetches plans and calculations from Prisma, parses them safely, and initializes [DashboardClient](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/dashboard/DashboardClient.tsx).
 - **Layout Widgets**:
   - **Stat Cards**: Dynamic display of current CGPA, best SGPA, total simulations, and target delta.
   - **TrendChartSection**: Custom Recharts Area & Line visualizations.
@@ -150,14 +150,14 @@ graph TD
   - **ActivityTimeline**: List of audit events sorted by time.
   - **InsightsPanel**: Strategy feedback based on math checks (e.g. alert if Math is low).
 
-### E. Backlog Impact Scanner — [app/backlog/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/backlog/page.tsx)
+### E. Backlog Impact Scanner — [app/backlog/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/backlog/page.tsx)
 - **Role**: Stress-test simulation for academic failure recovery.
 - **Calculations**: Outputs two scenarios:
   1. *Optimistic Path*: Student clears current semesters with no setbacks.
   2. *Backlog Reality*: Specified courses fail (grade defaults to 0). Calculates overall CGPA drop and the required recovery SGPA in the next term to return to base level.
 - **Visualizations**: Recharts Bar Chart mapping "If Passed" vs "If Failed", and Radial Gauge for post-setback CGPA.
 
-### F. Marks Predictor — [app/predictor/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/predictor/page.tsx)
+### F. Marks Predictor — [app/predictor/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/predictor/page.tsx)
 - **Role**: Strategizer for exam study thresholds.
 - **Configurations**: Supports:
   - `theory100`: Theory exams out of 100 with T1 (30), T2 (30), Assignments (40).
@@ -165,7 +165,7 @@ graph TD
   - `lab`: Practical exam with Assignment (40) and Lab exam (50).
 - **Core Strategy**: Given a target grade (e.g. 'O' or 'A+'), dynamically calculates minimum required marks in the End Sem exam after accounting for internal tests (with optional "Best of T1/T2" toggling).
 
-### G. Academic Timeline — [app/timeline/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/timeline/page.tsx)
+### G. Academic Timeline — [app/timeline/page.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/timeline/page.tsx)
 - **Role**: Educational path visualization.
 - **Interactivity**: An interactive path node system mapping Semester 1 to Semester 8. Selecting a node updates the focus areas, course details, Dean's list status, and outcomes dynamically.
 
@@ -174,19 +174,19 @@ graph TD
 ## 6. Shared Component Trees & UI Patterns
 
 ### Core Reusable Components:
-1. **[PremiumButton.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/components/PremiumButton.tsx)**: Dual hover effects combining magnetic transformations, linear gradient borders, and slide indicators.
-2. **[CustomCursor.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/components/CustomCursor.tsx)**: Replaces standard browser cursor. Consists of a tight inner cursor pointer and a springy outer ring selector. Inactive on mobile.
-3. **[BackgroundEffects.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/components/BackgroundEffects.tsx)**: Absolute structural wrapper injecting SVG grid overlays, glowing radial background circles (nebula style), and dynamic parallax effects.
-4. **[ThreeDProgress.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/components/ThreeDProgress.tsx)**: Semi-circular progress indicator that tilts using Framer Motion mouse-axis calculations.
-5. **[AnimatedCounter.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/components/AnimatedCounter.tsx)**: Uses Framer Motion's `useMotionValue` and `useTransform` to animate decimal increments.
+1. **[PremiumButton.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/components/PremiumButton.tsx)**: Dual hover effects combining magnetic transformations, linear gradient borders, and slide indicators.
+2. **[CustomCursor.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/components/CustomCursor.tsx)**: Replaces standard browser cursor. Consists of a tight inner cursor pointer and a springy outer ring selector. Inactive on mobile.
+3. **[BackgroundEffects.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/components/BackgroundEffects.tsx)**: Absolute structural wrapper injecting SVG grid overlays, glowing radial background circles (nebula style), and dynamic parallax effects.
+4. **[ThreeDProgress.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/components/ThreeDProgress.tsx)**: Semi-circular progress indicator that tilts using Framer Motion mouse-axis calculations.
+5. **[AnimatedCounter.tsx](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/components/AnimatedCounter.tsx)**: Uses Framer Motion's `useMotionValue` and `useTransform` to animate decimal increments.
 
 ---
 
 ## 7. Design Language & CSS Customization
 
-GradeFlow is based on a **Premium Academic Observatory** theme: Dark nebula space backing paired with glassmorphism sheets, vivid indicator lights, and modern typography overlays.
+Aevos is based on a **Premium Academic Observatory** theme: Dark nebula space backing paired with glassmorphism sheets, vivid indicator lights, and modern typography overlays.
 
-### CSS Custom Variables ([globals.css](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/app/globals.css)):
+### CSS Custom Variables ([globals.css](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/app/globals.css)):
 - Theme styling follows HSL layout configuration.
 - **Dark Theme (Default)**:
   - `--background`: `222 47% 6%` (Deep navy midnight)
@@ -218,7 +218,7 @@ GradeFlow is based on a **Premium Academic Observatory** theme: Dark nebula spac
 
 ## 8. Motion & Physics System
 
-Framer Motion is configured in [lib/animation-constants.ts](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/lib/animation-constants.ts) to eliminate perceived latency.
+Framer Motion is configured in [lib/animation-constants.ts](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/lib/animation-constants.ts) to eliminate perceived latency.
 
 ### Core Physics Constants:
 - **`SNAPPY_SPRING`**:
@@ -238,10 +238,10 @@ Framer Motion is configured in [lib/animation-constants.ts](file:///c:/Users/Tan
 
 ## 9. State Management & Data Flow
 
-GradeFlow splits state between reactive browser memory and database endpoints.
+Aevos splits state between reactive browser memory and database endpoints.
 
 ### Context Mapping:
-1. **University Presets**: Declared in [lib/calculations.ts](file:///c:/Users/Tanmay/OneDrive/Desktop/GradeFlow/gradeflow/lib/calculations.ts). Contains:
+1. **University Presets**: Declared in [lib/calculations.ts](file:///c:/Users/Tanmay/OneDrive/Desktop/Aevos/gradeflow/lib/calculations.ts). Contains:
    - `jspm`: Rajarshi Shahu College of Engineering standard. Tracks theory tests, labs, insem, endsem scoring.
    - `sppu`: Savitribai Phule Pune University presets.
 2. **Local Session Cache**: 

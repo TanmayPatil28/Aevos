@@ -10,6 +10,7 @@ import { initialDecisionNodes } from "@/lib/forecasting/scenarioData";
 import { decisionEngine } from "@/lib/forecasting/decisionEngine";
 import { cn } from "@/lib/cn";
 import { Sparkles } from "lucide-react";
+import Card from "@/components/ui/Card";
 
 interface NeuralDecisionTreeProps {
   initialState: StudentState;
@@ -128,7 +129,7 @@ export default function NeuralDecisionTree({ initialState, onStateChange }: Neur
                   animate={{ opacity: 1, height: "auto" }}
                   className="w-full max-w-lg mb-8 relative"
                 >
-                  <div className="p-5 rounded-2xl bg-[#0a0a0c]/80 backdrop-blur-xl border border-white/10 shadow-2xl relative overflow-hidden">
+                  <Card variant="default" padding="md" className="relative shadow-2xl">
                     {/* Glowing AI pulse effect when generating */}
                     {isGenerating && (
                       <motion.div 
@@ -139,13 +140,13 @@ export default function NeuralDecisionTree({ initialState, onStateChange }: Neur
                     )}
                     
                     <div className="flex gap-3">
-                      <Sparkles size={16} className={cn("mt-0.5", isGenerating ? "text-primary animate-pulse" : "text-white/40")} />
-                      <p className="text-sm text-white/80 leading-relaxed font-medium">
+                      <Sparkles size={16} className={cn("mt-0.5", isGenerating ? "text-primary animate-pulse" : "text-foreground-muted")} />
+                      <p className="text-sm text-foreground leading-relaxed font-medium">
                         {narrativeText}
                         {isGenerating && <span className="ml-1 inline-block w-1.5 h-4 bg-primary animate-pulse align-middle" />}
                       </p>
                     </div>
-                  </div>
+                  </Card>
                   
                   {/* Connecting line to the next options */}
                   {showOptions && (

@@ -2,7 +2,7 @@ import RecordsCanvas from "@/components/os/records/RecordsCanvas";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Records | GradeFlow OS",
+  title: "Records | Aevos",
   description: "Import your official university records securely.",
 };
 

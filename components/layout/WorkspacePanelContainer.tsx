@@ -31,7 +31,7 @@ export default function WorkspacePanelContainer() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 40, scale: 0.98 }}
           transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
-          className="fixed z-[9900] flex flex-col pointer-events-auto 
+          className="fixed z-[9900] flex flex-col pointer-events-auto font-sans
             inset-x-0 bottom-0 top-[15vh] rounded-t-[32px]
             lg:inset-auto lg:top-[70px] lg:bottom-[20px] lg:w-[400px] lg:rounded-[24px]"
           style={{

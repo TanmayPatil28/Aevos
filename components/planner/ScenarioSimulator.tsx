@@ -60,59 +60,39 @@ export default function ScenarioSimulator(props: ScenarioSimulatorProps) {
     setActiveScenario(id);
   };
   return (
-    <Card padding="lg" className="border border-white/10 bg-[#1D1D1F] relative overflow-hidden group">
-      <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent pointer-events-none" />
-      
-      <div className="flex items-center gap-3 mb-6 relative z-10">
-        <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-          <HelpCircle className="text-cyan-400" size={20} />
-        </div>
-        <div>
-          <h3 className="font-headline text-lg font-bold text-white">Future Preview Simulator</h3>
-          <p className="text-xs text-on-surface-variant font-medium">Test stress scenarios against your plan</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10">
+    <div className="w-full flex flex-col gap-6">
+      <h4 className="text-sm font-bold uppercase tracking-wider text-cyan-400/70 flex items-center gap-2 shrink-0">
+        <TrendingDown size={16} /> Predictive Analysis
+      </h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 h-fit relative z-10">
         {SCENARIOS.map((scenario) => {
           const isActive = activeScenario === scenario.id;
           return (
             <button
               key={scenario.id}
               onClick={() => onSelectScenario(isActive ? null : scenario.id)}
-              className={`p-4 rounded-xl text-left border transition-all duration-300 flex flex-col gap-2 ${
+              className={`p-6 rounded-card-large text-left border transition-all duration-300 flex flex-col gap-3 h-full ${
                 isActive 
-                ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_20px_rgba(6,182,212,0.15)]" 
-                : "bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/20"
+                ? "bg-cyan-500/10 border-cyan-500/40" 
+                : "bg-white/5 border-transparent hover:bg-white/10"
               }`}
             >
-              <div className="flex items-center gap-2">
-                <span className={`${isActive ? "text-cyan-400" : "text-white/40"}`}>
+              <div className="flex items-center gap-3">
+                <span className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isActive ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-white/40"}`}>
                   {scenario.icon}
                 </span>
-                <span className={`font-bold text-sm ${isActive ? "text-cyan-100" : "text-white/80"}`}>
+                <span className={`font-bold text-base ${isActive ? "text-cyan-100" : "text-white/80"}`}>
                   {scenario.title}
                 </span>
               </div>
               
-              <AnimatePresence>
-                {isActive && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <p className="text-xs text-cyan-200/70 mt-1 leading-relaxed">
-                      {scenario.description}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <p className={`text-xs mt-auto leading-relaxed ${isActive ? "text-cyan-200/70" : "text-white/40"}`}>
+                {scenario.description}
+              </p>
             </button>
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }

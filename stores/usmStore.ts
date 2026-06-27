@@ -68,7 +68,8 @@ export interface AttendanceHistoryEvent {
   dateStr: string; // e.g. "2026-05-28"
   timestamp: number;
   courseId: string;
-  action: "ATTENDED" | "BUNKED";
+  action: "ATTENDED" | "BUNKED" | "CANCELED" | "LATE";
+  note?: string;
 }
 
 import { SimulationScenario } from "../lib/academic-intelligence/types";
