@@ -177,15 +177,15 @@ export function AppleCarousel({
         
         {/* ── Apple Style Floating Controls Dock ── */}
         <div className="absolute bottom-4 left-4 right-4 md:bottom-[32px] md:left-[48px] md:right-[48px] z-[250] pointer-events-none">
-          <div className="flex items-center gap-3 md:gap-6 w-full overflow-x-auto no-scrollbar pointer-events-auto pb-2 md:pb-0 scroll-smooth snap-x">
+          <div className="flex items-center gap-3 md:gap-6 w-full overflow-x-auto md:overflow-visible no-scrollbar pointer-events-auto md:pointer-events-none pb-2 md:pb-0 scroll-smooth snap-x">
             
             {/* Left Controls */}
-            <div className="flex-shrink-0 snap-start">
+            <div className="flex-shrink-0 snap-start pointer-events-auto max-w-full">
               {leftControls}
             </div>
 
             {/* Center Dots (Immediately next to tabs) */}
-            <div className="flex items-center shrink-0 snap-start">
+            <div className="flex items-center shrink-0 snap-start pointer-events-auto">
               <AnimatePresence>
               {!hideCenterControls && !activeFeatureId && slides.length > 1 && (
                 <motion.div
@@ -287,7 +287,7 @@ export function AppleCarousel({
             </div>
 
             {/* Right Controls */}
-            <div className="md:ml-auto shrink-0 flex items-center snap-start pr-4 md:pr-0">
+            <div className="md:ml-auto shrink-0 flex items-center snap-start pr-4 md:pr-0 pointer-events-auto max-w-full">
               {rightControls}
             </div>
           </div>
