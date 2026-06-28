@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { DynamicIsland } from "@/components/ui/dynamic-island";
-import { Sidebar } from "@/components/ui/sidebar";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 const SmartTimetableController = dynamic(() => import("@/components/dynamic-island/SmartTimetableController"), { ssr: false });
 const BunkCalculatorController = dynamic(() => import("@/components/dynamic-island/BunkCalculatorController"), { ssr: false });
@@ -93,11 +92,9 @@ export default function RootLayout({
                         <BackgroundSyncWorker />
                         <DynamicIsland />
                         <div className="flex w-full min-h-screen">
-                          <Sidebar>
-                            <main id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col w-full min-h-screen">
-                              {children}
-                            </main>
-                          </Sidebar>
+                          <main id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col w-full min-h-screen">
+                            {children}
+                          </main>
                         </div>
                       </LenisProvider>
                     </AcademicHydrationBoundary>
