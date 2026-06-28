@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { GraduationCap } from "lucide-react";
+import { AevosWordmark } from "@/components/ui/AevosWordmark";
 import { useEffect, useRef } from "react";
 
 export function AuthBackground() {
@@ -88,10 +88,7 @@ export function AuthBackground() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="flex items-center space-x-3"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] backdrop-blur-md border border-white/[0.08] shadow-sm">
-            <GraduationCap className="h-5 w-5 text-white/90" />
-          </div>
-          <span className="text-xl font-semibold tracking-tight text-white/90">Aevos</span>
+          <AevosWordmark className="text-[28px] text-white/90" />
         </motion.div>
 
         <motion.div
