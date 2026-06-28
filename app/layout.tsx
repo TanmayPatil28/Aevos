@@ -48,7 +48,6 @@ export const metadata: Metadata = {
 };
 
 import { UniversityProvider } from "@/components/providers/UniversityProvider";
-import { AcademicStateProvider } from "@/contexts/AcademicContext";
 import { AcademicHydrationBoundary } from "@/components/providers/AcademicHydrationBoundary";
 const DiagnosticOverlay = dynamic(() => import("@/components/layout/DiagnosticOverlay"), { ssr: false });
 const BackgroundEffects = dynamic(() => import("@/components/BackgroundEffects"), { ssr: false });
@@ -56,6 +55,7 @@ import IslandTestControls from "@/components/dynamic-island/IslandTestControls";
 const ContextualIslandController = dynamic(() => import("@/components/dynamic-island/ContextualIslandController"), { ssr: false });
 import { BackgroundSyncWorker } from "@/components/providers/BackgroundSyncWorker";
 import { LenisProvider } from "@/components/providers/LenisProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -63,8 +63,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark scrollbar-hide" suppressHydrationWarning>
+    <html lang="en" className="scrollbar-hide" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans bg-background text-foreground scrollbar-hide selection:bg-primary-container selection:text-on-primary-container`}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
           <BackgroundEffects />
           <UniversityProvider>
@@ -84,7 +85,6 @@ export default function RootLayout({
             <NuqsAdapter>
               <SupabaseAuthProvider initialUser={null}>
                 <ErrorBoundary>
-                  <AcademicStateProvider>
                     <AcademicHydrationBoundary>
                       <LenisProvider>
                         <BackgroundSyncWorker />
@@ -98,7 +98,6 @@ export default function RootLayout({
                         </div>
                       </LenisProvider>
                     </AcademicHydrationBoundary>
-                  </AcademicStateProvider>
                 </ErrorBoundary>
               </SupabaseAuthProvider>
             </NuqsAdapter>
@@ -116,6 +115,7 @@ export default function RootLayout({
           <BunkCalculatorController />
           <InterventionAlertBridge />
           {process.env.NODE_ENV === "development" && <IslandTestControls />}
+        </ThemeProvider>
       </body>
     </html>
   );

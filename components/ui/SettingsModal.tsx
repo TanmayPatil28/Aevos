@@ -4,12 +4,12 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Settings, LogOut } from 'lucide-react';
 import { UniversityContent } from "@/components/UniversitySelector";
-import { OSModeContent } from "@/components/OSModeSwitcher";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import Card from "@/components/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Divider } from "@/components/ui/divider";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const MotionCard = motion(Card);
 
@@ -44,16 +44,19 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 </div>
                 <span className="text-[22px] font-semibold text-[#F5F5F7] tracking-tight">Dashboard</span>
               </div>
-              <button 
-                onClick={onClose}
-                className="w-10 h-10 rounded-xl bg-[#3a3a3c] border-[0.8px] border-[rgba(255,255,255,0.08)] flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition-all"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <button 
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-xl bg-[#3a3a3c] border-[0.8px] border-[rgba(255,255,255,0.08)] flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Content Area - Two Column Grid */}
-            <div className="px-10 pb-10 grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-10">
+            {/* Content Area */}
+            <div className="px-10 pb-10 flex flex-col gap-10">
               
               {/* Left Column: Academic & User */}
               <div className="flex flex-col gap-10">
@@ -81,15 +84,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 </Card>
               </div>
 
-              {/* Center Divider */}
-              <div className="hidden lg:flex items-center">
-                <Divider orientation="vertical" className="h-[90%] opacity-50" />
-              </div>
 
-              {/* Right Column: OS Modes Sector */}
-              <div className="flex flex-col">
-                <OSModeContent onClose={onClose} />
-              </div>
 
             </div>
           </MotionCard>

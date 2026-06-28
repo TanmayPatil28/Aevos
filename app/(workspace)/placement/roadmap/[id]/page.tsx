@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import SkillTreeClient from "@/components/os/career/SkillTreeClient";
+import SkillTreeClient from "@/components/placement/career/SkillTreeClient";
+import ExportRoadmapButton from "@/components/placement/ExportRoadmapButton";
 
 export default async function DynamicRoadmapPage({ params }: { params: { id: string } }) {
   const dynamicRoadmap = await prisma.dynamicRoadmap.findUnique({
@@ -31,6 +32,10 @@ export default async function DynamicRoadmapPage({ params }: { params: { id: str
         <p className="text-slate-400">
           Hyper-personalized skill path generated dynamically using Gemini 2.5.
         </p>
+        <ExportRoadmapButton 
+          title={roadmapData.title} 
+          tasks={roadmapData.nodes.map(n => n.data?.label || n.id)} 
+        />
       </div>
       <SkillTreeClient roadmap={roadmapData} />
     </div>

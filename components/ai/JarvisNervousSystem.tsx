@@ -1,14 +1,16 @@
 // @ts-nocheck
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useUSMStore } from "@/stores/usmStore";
 import { useDynamicIslandStore } from "@/stores/dynamicIslandStore";
 import { Mic, MicOff, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { createClient, LiveTranscriptionEvents } from "@deepgram/sdk";
+import Cartesia from "@cartesia/cartesia-js";
 
-const SpeechRecognition = typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+// Removed native SpeechRecognition
 
 export default function JarvisNervousSystem() {
   const previousState = useRef<{
@@ -22,11 +24,30 @@ export default function JarvisNervousSystem() {
   });
 
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
-
   const [messages, setMessages] = useState<{ id: string; role: 'user' | 'assistant'; content: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // Voice AI Refs
+  const dgConnectionRef = useRef<any>(null);
+  const cartesiaClientRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<any>(null);
+  const microphoneRef = useRef<any>(null);
+  const cartesiaSourceRef = useRef<any>(null);
+  
+  const [authTokens, setAuthTokens] = useState<{ deepgramKey: string | null, cartesiaToken: string | null }>({ deepgramKey: null, cartesiaToken: null });
+
+  useEffect(() => {
+    fetch('/api/voice/token')
+      .then(res => res.json())
+      .then(data => {
+        setAuthTokens({ deepgramKey: data.deepgramKey, cartesiaToken: data.cartesiaToken });
+        if (data.cartesiaToken) {
+          cartesiaClientRef.current = new (Cartesia as any)({ apiKey: data.cartesiaToken }); // Depending on version, can be apiKey or token. We'll use cartesiaToken as apiKey. (Cartesia accepts apiKey for tokens as well)
+        }
+      })
+      .catch(err => console.error("Failed to fetch voice tokens:", err));
+  }, []);
 
   const executeAction = (action: any) => {
     switch (action.type) {
@@ -89,19 +110,45 @@ export default function JarvisNervousSystem() {
       const currentRoute = typeof window !== "undefined" ? window.location.pathname : "/";
       const studentContext = buildJarvisContext(currentRoute);
 
-      const res = await fetch("/api/jarvis/v2", {
+      const res = await fetch("/api/jarvis/voice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: queryText,
-          studentContext,
-          sessionId: "voice-session",
-          mode: "voice"
+          studentContext
         })
       });
 
       if (!res.ok) {
-        setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: "Could not reach JARVIS. Check your API key in .env.local." } : m));
+        // Voice API failed - try to get text response from main Jarvis endpoint as fallback
+        let fallbackText = "I'm having trouble connecting right now. Please try again.";
+        try {
+          const fallbackRes = await fetch("/api/jarvis", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: queryText, studentContext })
+          });
+          if (fallbackRes.ok) {
+            const fallbackReader = fallbackRes.body?.getReader();
+            if (fallbackReader) {
+              const fallbackDecoder = new TextDecoder();
+              fallbackText = "";
+              while (true) {
+                const { done, value } = await fallbackReader.read();
+                if (done) break;
+                fallbackText += fallbackDecoder.decode(value, { stream: true });
+                setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: fallbackText } : m));
+              }
+            }
+          }
+        } catch(e) { console.warn("Fallback Jarvis also failed:", e); }
+        
+        // Speak the fallback text using Web Speech API
+        if (fallbackText.trim().length > 0) {
+          setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: fallbackText } : m));
+          const utterance = new SpeechSynthesisUtterance(fallbackText);
+          window.speechSynthesis.speak(utterance);
+        }
         setIsLoading(false);
         return;
       }
@@ -110,35 +157,72 @@ export default function JarvisNervousSystem() {
       if (!reader) throw new Error("No stream reader");
 
       const decoder = new TextDecoder();
-      let buffer = "";
       let completedText = "";
+      
+      // Initialize Cartesia Player
+      let audioQueue: HTMLAudioElement | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const parsed = JSON.parse(line);
-            if (parsed.type === "metadata") {
-              if (parsed.action && parsed.action.type !== "none") {
-                executeAction(parsed.action);
-              }
-            } else if (parsed.type === "chunk") {
-              completedText += parsed.text;
-              setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: completedText } : m));
-            }
-          } catch (e) {
+        if (done) {
+          if (cartesiaSourceRef.current) {
+             cartesiaSourceRef.current.close();
           }
+          break;
         }
-      }
 
-      if ('speechSynthesis' in window && completedText) {
+        const chunk = decoder.decode(value, { stream: true });
+        completedText += chunk;
+        setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: completedText } : m));
+      }
+      
+      // Once text generation completes, synthesize speech using Cartesia REST API
+      if (authTokens.cartesiaToken && completedText.trim().length > 0) {
+        try {
+          const ttsRes = await fetch('https://api.cartesia.ai/tts/bytes', {
+            method: 'POST',
+            headers: {
+              'Cartesia-Version': '2026-03-01',
+              'X-API-Key': authTokens.cartesiaToken,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model_id: 'sonic-3.5',
+              transcript: completedText,
+              voice: {
+                mode: 'id',
+                id: '1259b7e3-cb8a-43df-9446-30971a46b8b0'
+              },
+              output_format: {
+                container: 'wav',
+                encoding: 'pcm_s16le',
+                sample_rate: 44100
+              },
+              generation_config: {
+                speed: 1,
+                volume: 1
+              }
+            })
+          });
+          
+          if (ttsRes.ok) {
+            const blob = await ttsRes.blob();
+            const url = URL.createObjectURL(blob);
+            audioQueue = new Audio(url);
+            audioQueue.play();
+          } else {
+            console.error("Cartesia TTS API error:", await ttsRes.text());
+            // Fallback to native Web Speech API if Cartesia fails
+            const utterance = new SpeechSynthesisUtterance(completedText);
+            window.speechSynthesis.speak(utterance);
+          }
+        } catch (e) {
+          console.error("Cartesia Audio Error:", e);
+          const utterance = new SpeechSynthesisUtterance(completedText);
+          window.speechSynthesis.speak(utterance);
+        }
+      } else if (completedText.trim().length > 0) {
+        // Fallback to native Web Speech API if no Cartesia token
         const utterance = new SpeechSynthesisUtterance(completedText);
         window.speechSynthesis.speak(utterance);
       }
@@ -280,34 +364,87 @@ export default function JarvisNervousSystem() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-
-      recognition.onstart = () => setIsListening(true);
-      recognition.onend = () => setIsListening(false);
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        submitQueryRef.current(transcript);
-      };
-
-      recognitionRef.current = recognition;
-    }
-  }, []);
-
-  const toggleListen = () => {
+  const toggleListen = async () => {
+    console.log("Mic button clicked!");
+    
+    // Unlock Audio and SpeechSynthesis for the session
+    try {
+      const dummyAudio = new Audio();
+      dummyAudio.play().catch(() => {});
+      const dummyUtterance = new SpeechSynthesisUtterance('');
+      dummyUtterance.volume = 0;
+      window.speechSynthesis.speak(dummyUtterance);
+    } catch(e) {}
+    
     if (isListening) {
-      recognitionRef.current?.stop();
+      if (dgConnectionRef.current) {
+        dgConnectionRef.current.finish();
+        dgConnectionRef.current = null;
+      }
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
+      }
+      if (microphoneRef.current) {
+        microphoneRef.current.getTracks().forEach((track: any) => track.stop());
+        microphoneRef.current = null;
+      }
+      setIsListening(false);
     } else {
-      recognitionRef.current?.start();
+      if (!authTokens.deepgramKey) {
+        console.error("Deepgram API Key not ready.");
+        alert("Microphone Error: Voice API Keys are not ready. Please check if the dev server was restarted and tokens are fetching correctly.");
+        return;
+      }
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphoneRef.current = stream;
+        
+        const deepgram = createClient(authTokens.deepgramKey);
+        const connection = deepgram.listen.live({ 
+          model: "nova-2", 
+          smart_format: true, 
+          interim_results: false 
+        });
+
+        connection.on(LiveTranscriptionEvents.Open, () => {
+          const mediaRecorder = new MediaRecorder(stream);
+          mediaRecorderRef.current = mediaRecorder;
+
+          mediaRecorder.addEventListener('dataavailable', async (event) => {
+            if (event.data.size > 0 && connection.getReadyState() === 1) {
+               connection.send(event.data);
+            }
+          });
+          
+          mediaRecorder.start(250);
+          setIsListening(true);
+        });
+
+        connection.on(LiveTranscriptionEvents.Transcript, (data) => {
+          const transcript = data.channel.alternatives[0].transcript;
+          if (transcript && data.is_final) {
+             submitQueryRef.current(transcript);
+             toggleListen(); // Auto-stop listening after a sentence to wait for response
+          }
+        });
+
+        connection.on(LiveTranscriptionEvents.Error, (err) => {
+          console.error("Deepgram Error", err);
+          setIsListening(false);
+        });
+        
+        dgConnectionRef.current = connection;
+        
+      } catch (err) {
+        console.error("Microphone error:", err);
+      }
     }
   };
 
   return (
-    <div className="fixed bottom-[88px] right-6 z-50 flex flex-col items-end gap-4 pointer-events-auto">
+    <div className="fixed bottom-[88px] right-6 z-[999999] flex flex-col items-end gap-4 pointer-events-auto">
       <AnimatePresence>
         {messages.length > 0 && (
           <motion.div 

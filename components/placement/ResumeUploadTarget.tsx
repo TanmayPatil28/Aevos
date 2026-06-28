@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2, Target, FileText, Lock } from "lucide-react";
 import { useUSMStore } from "@/stores/usmStore";
-import { useUIStore } from "@/stores/os/uiStore";
+import { useUIStore } from "@/stores/uiStore";
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
 import { MagneticWrapper } from "@/components/ui/MagneticWrapper";

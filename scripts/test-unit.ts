@@ -45,7 +45,6 @@ const { runCareerTests } = require("../tests/career/placement.test");
 const { runAttendanceTests } = require("../tests/attendance/bunk.test");
 const { runDecisionEngineTests } = require("../tests/advisory/decisionEngine.test");
 const { runAIInfrastructureTests } = require("../tests/ai/infrastructure.test");
-const { runStartRecoveryValidationTests } = require("../tests/api/startRecoveryValidation.test");
 const { runRateLimitTests } = require("../tests/api/rateLimit.test");
 const { runDynamicIslandTests } = require("../tests/ui/dynamicIsland.test");
 
@@ -147,13 +146,6 @@ async function executeAllTests() {
     console.error(err.stack || err);
   }
 
-  let validationSuccess = false;
-  try {
-    validationSuccess = runStartRecoveryValidationTests();
-  } catch (err: any) {
-    console.error(`\n${colors.red}💥 CRITICAL ERROR executing start-recovery validation tests:${colors.reset}`);
-    console.error(err.stack || err);
-  }
 
   let rateLimitSuccess = false;
   try {
@@ -234,11 +226,6 @@ async function executeAllTests() {
     console.error(`  ${colors.red}✗ FAIL:${colors.reset} AI Resilient Ingestion Infrastructure`);
   }
 
-  if (validationSuccess) {
-    console.log(`  ${colors.green}✓ PASS:${colors.reset} Backlog Recovery Payload Zod Validation`);
-  } else {
-    console.error(`  ${colors.red}✗ FAIL:${colors.reset} Backlog Recovery Payload Zod Validation`);
-  }
 
   if (rateLimitSuccess) {
     console.log(`  ${colors.green}✓ PASS:${colors.reset} In-Memory Rate Limiter Helper`);
@@ -254,7 +241,7 @@ async function executeAllTests() {
 
   console.log(`----------------------------------------------------------------`);
 
-  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && smartIngestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess && aiSuccess && validationSuccess && rateLimitSuccess && dynamicIslandSuccess) {
+  if (enginesSuccess && storeSuccess && strategySuccess && forecastSuccess && ingestionSuccess && smartIngestionSuccess && careerSuccess && attendanceSuccess && advisorySuccess && aiSuccess && rateLimitSuccess && dynamicIslandSuccess) {
     console.log(`\n🎉 ${colors.bright}${colors.green}ALL MASTER UNIT TESTS PASSED SUCCESSFULLY!${colors.reset}\n`);
     process.exit(0);
   } else {

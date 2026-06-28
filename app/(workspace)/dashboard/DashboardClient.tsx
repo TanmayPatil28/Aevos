@@ -17,7 +17,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AppleCarousel } from "@/components/ui/apple-carousel";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { FloatingPill } from "@/components/ui/floating-pill";
-import Card from "@/components/ui/card";
+import Card from "@/components/ui/Card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTimerStore } from "@/stores/timerStore";

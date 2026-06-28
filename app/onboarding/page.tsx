@@ -10,6 +10,7 @@ import Card from "@/components/ui/Card";
 import Select from "@/components/ui/Select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Lottie from "lottie-react";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -17,6 +18,12 @@ export default function OnboardingPage() {
   const setActiveInstitution = useUSMStore((state) => state.setActiveInstitution);
 
   const [step, setStep] = useState(1);
+  const [successAnim, setSuccessAnim] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/success.json').then(res => res.json()).then(setSuccessAnim).catch(() => {});
+  }, []);
+
   const [formData, setFormData] = useState({
     fullName: "",
     institution: "jspm_university_wagholi",
@@ -249,11 +256,17 @@ export default function OnboardingPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center text-center py-12"
               >
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                <div className="flex flex-col items-center justify-center text-center py-12">
+                  {successAnim ? (
+                    <Lottie animationData={successAnim} loop={false} className="w-48 h-48 mb-2" />
+                  ) : (
+                    <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                    </div>
+                  )}
+                  <h2 className="text-2xl font-bold text-white/90 mb-2">Profile Configured!</h2>
+                  <p className="text-white/50 text-sm">Redirecting you to the dashboard...</p>
                 </div>
-                <h2 className="text-2xl font-bold text-white/90 mb-2">Profile Configured!</h2>
-                <p className="text-white/50 text-sm">Redirecting you to the dashboard...</p>
               </motion.div>
             )}
           </AnimatePresence>

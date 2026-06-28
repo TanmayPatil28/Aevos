@@ -1,4 +1,5 @@
 "use client";
+import { useChat } from "@ai-sdk/react";
 
 import React from "react";
 
@@ -1371,418 +1372,99 @@ export function FocusTimerActivity() {
 // ═══════════════════════════════════════════════
 
 export function SiriTopHalfActivity() {
-  const [query, setQuery] = useState("");
-  const isProcessing = useDynamicIslandStore((s) => s.isProcessing);
-  const setIsProcessing = useDynamicIslandStore((s) => s.setIsProcessing);
   const setIsAIActive = useDynamicIslandStore((s) => s.setIsAIActive);
-
-  useEffect(() => {
-    return () => {
-      useDynamicIslandStore.getState().setIsProcessing(false);
-    };
-  }, []);
-  const [streamedMessage, setStreamedMessage] = useState("");
-  const [metadata, setMetadata] = useState<JarvisMetadata | null>(null);
-  const [isDoneStreaming, setIsDoneStreaming] = useState(false);
-  const router = useRouter();
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  
+  const [input, setInput] = useState("");
+  const { messages, append, isLoading } = useChat({
+    api: '/api/jarvis/mcp',
+  });
 
   const onClose = () => {
     setIsAIActive(false);
   };
 
-  // Execute JARVIS actions on stores
-  const executeAction = React.useCallback((action: JarvisAction) => {
-    const { useDynamicIslandStore: islandStore } = require("@/stores/dynamicIslandStore");
-    const { useUSMStore: usmStore } = require("@/stores/usmStore");
-
-    switch (action.type) {
-      case "navigate":
-        if (action.route) {
-          setTimeout(() => { router.push(action.route!); onClose(); }, 1500);
-        }
-        break;
-
-      case "mark_attendance":
-        if (action.courseId && action.attendanceAction) {
-          const store = usmStore.getState();
-          const course = store.courses.find((c: any) => c.id === action.courseId || c.code === action.courseId);
-          if (course) {
-            if (action.attendanceAction === "BUNKED") {
-              store.updateCourse(course.id, { attendanceBunked: course.attendanceBunked + 1 });
-            } else {
-              store.updateCourse(course.id, { attendanceTotal: course.attendanceTotal + 1 });
-            }
-            islandStore.getState().showAlert({
-              id: `jarvis-att-${Date.now()}`,
-              type: action.attendanceAction === "BUNKED" ? "warning" : "success",
-              title: action.attendanceAction === "BUNKED" ? "Bunk Recorded" : "Attendance Marked",
-              message: `${course.name} marked as ${action.attendanceAction.toLowerCase()}.`,
-              duration: 3000,
-            });
-          }
-        }
-        break;
-
-      case "set_target_cgpa":
-        if (action.value !== undefined) {
-          usmStore.getState().setAcademic({ targetCgpa: action.value });
-          islandStore.getState().showAlert({
-            id: `jarvis-target-${Date.now()}`,
-            type: "success",
-            title: "Target Updated",
-            message: `Target CGPA set to ${action.value}`,
-            duration: 3000,
-          });
-        }
-        break;
-
-      case "set_exam_countdown":
-        if (action.subject && action.examDate) {
-          const examDate = new Date(action.examDate);
-          const now = new Date();
-          const diffMs = examDate.getTime() - now.getTime();
-          const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-          const hours = Math.max(0, Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
-
-          islandStore.getState().setExamCountdown({
-            id: `jarvis-exam-${Date.now()}`,
-            subject: action.subject,
-            examDate,
-            daysRemaining: days,
-            hoursRemaining: hours,
-            minutesRemaining: 0,
-            urgency: days <= 3 ? "critical" : days <= 7 ? "high" : days <= 14 ? "medium" : "low",
-          });
-        }
-        break;
-
-      case "show_alert":
-        if (action.alertTitle) {
-          islandStore.getState().showAlert({
-            id: `jarvis-alert-${Date.now()}`,
-            type: action.alertType || "info",
-            title: action.alertTitle,
-            message: action.alertMessage || "",
-            duration: 4000,
-          });
-        }
-        break;
-
-      case "set_streak":
-        if (action.streakCount) {
-          islandStore.getState().setStreak({
-            count: action.streakCount,
-            type: action.streakType || "study",
-            label: action.streakLabel || `${action.streakCount} Day Streak`,
-          });
-        }
-        break;
-    }
-  }, [router]);
-
-  const executeQuery = async (userQuery: string) => {
-    if (!userQuery.trim()) return;
-
-    setIsProcessing(true);
-    setMetadata(null);
-    setStreamedMessage("");
-    setIsDoneStreaming(false);
-
-    const command = userQuery.trim();
-
-    // Layer 1: Instant Local Routing (slash commands)
-    const localRoutes: Record<string, string> = {
-      "/open placement": "/placement",
-      "/open attendance": "/attendance",
-      "/open calculator": "/calculator",
-      "/open dashboard": "/dashboard",
-      "/open timeline": "/timeline",
-      "/open backlog": "/backlog",
-      "/open forecast": "/forecast",
-      "/open planner": "/planner",
-    };
-
-    for (const [cmd, route] of Object.entries(localRoutes)) {
-      if (command.toLowerCase().startsWith(cmd)) {
-        router.push(route);
-        onClose();
-        return;
-      }
-    }
-
-    // Layer 2: JARVIS AI — Full context streaming query
-    try {
-      const { buildJarvisContext } = await import("@/lib/ai/jarvisContextBuilder");
-      const currentRoute = typeof window !== "undefined" ? window.location.pathname : "/";
-      const studentContext = buildJarvisContext(currentRoute);
-
-      const res = await fetch("/api/jarvis", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: command, studentContext })
-      });
-
-      if (!res.ok) {
-        setMetadata({
-          responseType: "error",
-          title: "Connection Error",
-          highlights: [],
-          action: { type: "none" },
-        });
-        setStreamedMessage("Could not reach JARVIS. Check your API key in .env.local.");
-        setIsDoneStreaming(true);
-        setIsProcessing(false);
-        return;
-      }
-
-      const reader = res.body?.getReader();
-      if (!reader) throw new Error("No stream reader");
-
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let metadataReceived = false;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const parsed = JSON.parse(line);
-            if (parsed.type === "metadata") {
-              setMetadata(parsed);
-              metadataReceived = true;
-              setIsProcessing(false);
-              // Execute action immediately
-              if (parsed.action && parsed.action.type !== "none") {
-                executeAction(parsed.action);
-              }
-            } else if (parsed.type === "chunk") {
-              setStreamedMessage(prev => prev + parsed.text);
-            } else if (parsed.type === "done") {
-              setIsDoneStreaming(true);
-            }
-          } catch {
-            // Skip malformed JSON lines
-          }
-        }
-      }
-
-      // Handle non-streaming responses (fallback)
-      if (!metadataReceived && buffer.trim()) {
-        try {
-          const data = JSON.parse(buffer);
-          setMetadata({
-            responseType: data.responseType || "advice",
-            title: data.title || "JARVIS",
-            highlights: data.highlights || [],
-            action: data.action || { type: "none" },
-            followUp: data.followUp,
-            suggestedActions: data.suggestedActions,
-          });
-          setStreamedMessage(data.message || buffer);
-          if (data.action && data.action.type !== "none") {
-            executeAction(data.action);
-          }
-        } catch {
-          setMetadata({ responseType: "advice", title: "JARVIS", highlights: [] });
-          setStreamedMessage(buffer);
-        }
-        setIsDoneStreaming(true);
-      }
-
-    } catch (err) {
-      console.error("JARVIS Error:", err);
-      setMetadata({
-        responseType: "error",
-        title: "System Failure",
-        highlights: [],
-        action: { type: "none" },
-      });
-      setStreamedMessage("JARVIS encountered an internal error. Please try again.");
-      setIsDoneStreaming(true);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && query.trim()) {
-      executeQuery(query);
-    }
+  const handleKeyDown = (e) => {
     if (e.key === "Escape") {
-      if (metadata) {
-        setMetadata(null);
-        setStreamedMessage("");
-        setQuery("");
-      } else {
-        onClose();
-      }
+      onClose();
     }
   };
-
-  const hasResponse = metadata !== null;
 
   return (
-    <motion.div {...STAGGER_ANIMATION} className="w-full flex flex-col p-6 gap-6 relative min-h-[30vh]">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes siri-wave {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .siri-glow {
-          background: linear-gradient(90deg, rgba(255,105,180,0.4), rgba(77,143,255,0.4), rgba(123,97,255,0.4), rgba(255,105,180,0.4));
-          background-size: 300% 300%;
-          animation: siri-wave 4s linear infinite;
-          filter: blur(25px);
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 120px;
-          opacity: 0.8;
-          z-index: 0;
-          border-radius: 46px;
-          pointer-events: none;
-        }
-      `}} />
+    <motion.div className="w-full flex flex-col p-6 gap-4 relative min-h-[40vh] bg-black/95 font-mono overflow-hidden">
+      {/* Glow Effect */}
+      <div className="absolute inset-0 bg-gradient-to-b from-green-900/20 to-transparent pointer-events-none" />
       
-      {/* Siri Wave Bottom Glow */}
-      <div className="siri-glow" />
-
       {/* Header */}
-      <div className="flex items-center justify-between z-10 w-full mb-2">
-        <div className="w-12 h-1.5 rounded-full bg-white/30 hover:bg-white/50 transition-colors mx-auto cursor-pointer" onClick={onClose} />
+      <div className="flex items-center justify-between z-10 w-full border-b border-green-500/30 pb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
+          <span className="text-green-500 font-bold text-sm tracking-[0.2em] uppercase">Jarvis OS // Command Center</span>
+        </div>
+        <div className="w-12 h-1.5 rounded-full bg-green-500/30 hover:bg-green-500/80 transition-colors cursor-pointer" onClick={onClose} />
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 relative z-10 flex flex-col justify-end">
-        <AnimatePresence mode="wait">
-          {/* STATE 2: JARVIS Streaming Response */}
-          {!isProcessing && hasResponse && (
-            <motion.div
-              key="response"
-              initial={{ opacity: 0, y: 12, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 350, damping: 28, mass: 1 }}
-              className="flex flex-col gap-4 max-h-[35vh] overflow-y-auto pr-2"
-            >
-              {/* Response Header */}
-              <div className="flex items-center gap-2">
-                <span className="text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{RESPONSE_ICONS[metadata!.responseType] || "🤖"}</span>
-                <span className="text-white font-bold text-[20px] tracking-tight">{metadata!.title}</span>
+      {/* Terminal Output Area */}
+      <div className="flex-1 overflow-y-auto z-10 flex flex-col gap-3 max-h-[45vh] pr-2 custom-scrollbar">
+        {messages.map((m) => (
+          <div key={m.id} className="text-sm tracking-wide">
+            {m.role === 'user' && (
+              <div className="text-blue-400">
+                <span className="opacity-50">guest@gradeflow:~$ </span>
+                {m.parts?.map((part, idx) => part.type === 'text' ? part.text : '').join('')}
               </div>
-
-              {/* Streamed Message */}
-              <p className="text-white/90 text-[16px] leading-relaxed font-medium">
-                {streamedMessage}
-                {!isDoneStreaming && <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} className="inline-block w-[2px] h-[16px] bg-white ml-1 align-text-bottom shadow-[0_0_8px_rgba(255,255,255,0.8)]" />}
-              </p>
-
-              {/* Stat Highlight Chips */}
-              {metadata!.highlights && metadata!.highlights.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {metadata!.highlights.map((h, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.08 }}
-                      className={cn("px-4 py-2 rounded-xl border text-[13px] font-bold flex items-center gap-2 backdrop-blur-xl shadow-lg", HIGHLIGHT_COLORS[h.color] || HIGHLIGHT_COLORS.blue)}
-                    >
-                      <span className="opacity-80">{h.label}</span>
-                      <span className="font-extrabold text-white">{h.value}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {/* STATE 3: Quick Commands (Default Idle State) */}
-          {!isProcessing && !hasResponse && (
-            <motion.div 
-              key="suggestions"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-2 gap-4"
-            >
-              {QUICK_COMMANDS.map((cmd, i) => (
-                <button 
-                  key={i}
-                  onClick={() => {
-                    setQuery(cmd.query);
-                    executeQuery(cmd.query);
-                  }}
-                  className="flex items-center gap-4 p-5 rounded-3xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.05] hover:border-white/[0.15] hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all text-left group backdrop-blur-2xl"
-                >
-                  <div className="w-12 h-12 rounded-full bg-white/5 shadow-inner flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 border border-white/5">
-                    <cmd.icon size={20} className={cmd.color} />
-                  </div>
-                  <span className="text-white/80 text-[15px] font-semibold group-hover:text-white transition-colors leading-snug">{cmd.name}</span>
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* JARVIS Input Bar */}
-      <div className="relative z-10 flex items-center bg-black/40 backdrop-blur-3xl border border-white/10 rounded-full px-6 py-4 focus-within:bg-black/60 focus-within:border-white/30 transition-all duration-300 shadow-2xl mt-4">
-        <motion.div
-          animate={isProcessing ? { rotate: 360 } : { rotate: 0 }}
-          transition={isProcessing ? { duration: 2, repeat: Infinity, ease: "linear" } : {}}
-        >
-          {isProcessing ? (
-             <div className="flex items-center justify-center gap-2 mr-4">
-               {[
-                 { color: "bg-[#FF69B4]" },
-                 { color: "bg-[#4D8FFF]" },
-                 { color: "bg-[#7B61FF]" },
-                 { color: "bg-[#4D8FFF]" }
-               ].map((dot, i) => (
-                 <motion.div
-                   key={i}
-                   animate={{ y: ["0%", "-100%", "0%"] }}
-                   transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
-                   className={cn("w-2 h-2 rounded-full shadow-[0_0_10px_currentColor]", dot.color)}
-                 />
-               ))}
-            </div>
-          ) : (
-            <Sparkles size={24} className="mr-4 shrink-0 text-white/80" />
-          )}
-        </motion.div>
-        <input 
-          ref={inputRef}
-          autoFocus
-          type="text" 
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={isProcessing}
-          placeholder="Ask Apple Intelligence..." 
-          className="bg-transparent border-none outline-none text-white text-[18px] w-full font-medium placeholder-white/30 disabled:opacity-50"
-        />
-        {hasResponse && (
-          <button
-            onClick={() => { setMetadata(null); setStreamedMessage(""); setQuery(""); inputRef.current?.focus(); }}
-            className="ml-3 text-white/50 hover:text-white transition-colors shrink-0 text-[11px] font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full border border-white/10"
-          >
-            Clear
-          </button>
+            )}
+            {m.role === 'assistant' && (
+              <div className="text-green-400 mt-1">
+                {m.parts?.map((part, idx) => {
+                  if (part.type === 'text') {
+                    return <div key={idx} className="leading-relaxed whitespace-pre-wrap">{part.text}</div>;
+                  }
+                  if (part.type === 'tool-invocation') {
+                    const toolInvocation = part.toolInvocation as any;
+                    return (
+                      <div key={toolInvocation.toolCallId || idx} className="text-yellow-400/90 ml-4 mt-2 border-l-2 border-yellow-500/30 pl-3 bg-yellow-500/5 py-2 rounded-r">
+                        <div className="font-bold flex items-center gap-2">
+                          <span className="animate-spin text-xs">⚙</span> 
+                          EXECUTING [{toolInvocation.toolName}]...
+                        </div>
+                        <div className="opacity-60 text-xs mt-1 break-all bg-black/50 p-2 rounded">
+                          {JSON.stringify(toolInvocation.args)}
+                        </div>
+                        {toolInvocation.state === 'result' && (
+                          <div className="text-green-400 font-bold mt-2 flex items-center gap-2">
+                            <span>✓</span> SUCCESS
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+        {isLoading && (
+          <div className="text-green-500 font-bold animate-pulse mt-2 flex items-center gap-2">
+             <span>_</span>
+             <span className="text-xs opacity-50 tracking-widest">AWAITING SYSTEM RESPONSE</span>
+          </div>
         )}
       </div>
 
+      {/* Input Area */}
+      <form onSubmit={(e) => { e.preventDefault(); append({ role: 'user', content: input }); setInput(""); }} className="relative z-10 flex items-center bg-black border border-green-500/30 rounded-lg px-4 py-3 focus-within:border-green-500 focus-within:shadow-[0_0_20px_rgba(34,197,94,0.15)] transition-all">
+        <span className="text-green-500 mr-3 font-bold">{">"}</span>
+        <input 
+          autoFocus
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          placeholder="Enter command directive..." 
+          className="bg-transparent border-none outline-none text-green-500 text-[15px] w-full font-mono placeholder-green-500/30 disabled:opacity-50"
+        />
+      </form>
     </motion.div>
   );
 }

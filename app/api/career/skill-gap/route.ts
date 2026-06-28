@@ -66,9 +66,9 @@ export async function POST(request: Request) {
 
     const modelsToTry = [
       "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-2.0-flash-lite",
-      "gemini-pro-latest"
+      "gemini-2.5-pro",
+      "gemini-3.5-flash",
+      "gemini-flash-latest"
     ];
 
     let generatedJsonText = null;
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : String(e);
         console.warn(`[Skill Gap Fallback] ${errorMessage}`);
-        lastError = errorMessage;
+        lastError += `\nModel ${model}: ${errorMessage}`;
       }
     }
 
@@ -104,12 +104,13 @@ export async function POST(request: Request) {
       throw new Error(`All Gemini models failed. Last error: ${lastError}`);
     }
 
-    const parsedData = JSON.parse(generatedJsonText);
+    const cleanJson = generatedJsonText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsedData = JSON.parse(cleanJson);
     return NextResponse.json(parsedData);
   } catch (error) {
     console.error('Skill Gap AI Error:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

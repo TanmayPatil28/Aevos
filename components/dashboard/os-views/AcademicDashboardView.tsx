@@ -7,8 +7,8 @@ import CalendarManager from "@/components/dashboard/CalendarManager";
 import { Activity, TrendingUp, Zap, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import { MoodleExitTestWidget } from "@/components/os/intelligence/MoodleExitTestWidget";
-import { AttendanceSafeBunk } from "@/components/os/intelligence/AttendanceSafeBunk";
+import { MoodleExitTestWidget } from "@/components/dashboard/widgets/MoodleExitTestWidget";
+import { AttendanceSafeBunk } from "@/components/dashboard/widgets/AttendanceSafeBunk";
 import Card from "@/components/ui/Card";
 import FullAcademicTimeline from "@/components/dashboard/FullAcademicTimeline";
 

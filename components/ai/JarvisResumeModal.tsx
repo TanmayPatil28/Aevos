@@ -1,6 +1,6 @@
 "use client";
 
-import { useUIStore } from "@/stores/os/uiStore";
+import { useUIStore } from "@/stores/uiStore";
 import { useUSMStore } from "@/stores/usmStore";
 import { X, Printer, Download, Sparkles, Target, AlertTriangle, CheckCircle, Copy } from "lucide-react";
 import { useState } from "react";

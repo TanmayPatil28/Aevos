@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useUIStore } from '@/stores/os/uiStore';
+import { useUIStore } from '@/stores/uiStore';
 import { motion } from 'framer-motion';
 import { X, Send, Award, Briefcase, Zap, CheckCircle } from 'lucide-react';
 

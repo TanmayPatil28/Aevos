@@ -58,8 +58,7 @@ const categories = [
     icon: Cpu,
     color: "text-zinc-500",
     items: [
-      { id: "cmd", name: "Command", icon: Search, href: "/dashboard", color: "text-zinc-500" },
-      { id: "home", name: "Home", icon: Home, href: "/", color: "text-zinc-500" },
+      { id: "home", name: "Home", icon: Home, href: "/dashboard", color: "text-zinc-500" },
       { id: "settings", name: "Settings", icon: Settings, href: "#settings", color: "text-zinc-500" }
     ]
   }

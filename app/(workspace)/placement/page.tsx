@@ -39,7 +39,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import InternshipsDashboard from "@/components/internships/InternshipsDashboard";
 import { Badge } from "@/components/ui/badge";
-import { matchInternships } from "@/app/(workspace)/internships/actions";
+import { matchInternships } from "@/actions/internships";
 import { InternshipMatch } from "@/components/internships/InternshipLedgerRow";
 import { AppleCarousel } from "@/components/ui/apple-carousel";
 export default function CareerIntelligencePage() {

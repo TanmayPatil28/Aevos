@@ -190,7 +190,14 @@ export const intelligenceEngine = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userSkills, targetRole })
       });
-      if (!res.ok) throw new Error("Failed to fetch AI skill gap");
+      if (!res.ok) {
+        let errorDetails = '';
+        try {
+          const errData = await res.json();
+          errorDetails = errData.details || errData.error || '';
+        } catch(e) {}
+        throw new Error(`Failed to fetch AI skill gap: ${res.status} ${errorDetails}`);
+      }
       return res.json();
     } catch (e) {
       console.error(e);
