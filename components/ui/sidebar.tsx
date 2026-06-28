@@ -382,7 +382,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-6 left-4 right-4 z-[100] flex items-center justify-around bg-[#18181b]/95 backdrop-blur-2xl border border-white/10 p-3 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+      <div className="md:hidden fixed bottom-0 w-full z-[100] flex items-center justify-between bg-black/60 backdrop-blur-3xl border-t border-white/[0.08] px-8 pt-3 pb-6">
         {[
           { id: "home", name: "Home", icon: Home, href: "/dashboard" },
           { id: "predictors", name: "Predictor", icon: Orbit, href: "/calculator" },
@@ -403,11 +403,10 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
                   router.push(item.href);
                 }
               }}
-              className="flex flex-col items-center justify-center p-1 rounded-full transition-all active:scale-90 cursor-pointer"
+              className={`flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${isItemActive ? 'text-white' : 'text-white/40 active:text-white/60'}`}
             >
-              <div className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${isItemActive ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-110' : 'bg-transparent opacity-60'}`}>
-                <Icon className={`w-[22px] h-[22px] transition-colors duration-300 ${isItemActive ? 'text-black' : 'text-white'}`} strokeWidth={isItemActive ? 2.5 : 1.5} />
-              </div>
+              <Icon className="w-[22px] h-[22px]" strokeWidth={isItemActive ? 2.5 : 2} />
+              <span className="text-[10px] font-medium tracking-wide">{item.name}</span>
             </div>
           );
         })}
