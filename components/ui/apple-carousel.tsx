@@ -176,118 +176,120 @@ export function AppleCarousel({
         </div>
         
         {/* ── Apple Style Floating Controls Dock ── */}
-        <div className="absolute bottom-[32px] left-[48px] right-[48px] flex items-center gap-6 z-[250] pointer-events-none">
-          
-          {/* Left Controls */}
-          <div className="pointer-events-auto flex-shrink-0 overflow-x-auto no-scrollbar max-w-full">
-            {leftControls}
-          </div>
+        <div className="absolute bottom-4 left-4 right-4 md:bottom-[32px] md:left-[48px] md:right-[48px] z-[250] pointer-events-none">
+          <div className="flex items-center gap-3 md:gap-6 w-full overflow-x-auto no-scrollbar pointer-events-auto pb-2 md:pb-0 scroll-smooth snap-x">
+            
+            {/* Left Controls */}
+            <div className="flex-shrink-0 snap-start">
+              {leftControls}
+            </div>
 
-          {/* Center Dots (Immediately next to tabs) */}
-          <div className="pointer-events-auto flex items-center shrink-0">
-            <AnimatePresence>
-            {!hideCenterControls && !activeFeatureId && slides.length > 1 && (
-              <motion.div
-                initial={{ opacity: 0, width: 0, paddingLeft: 0, paddingRight: 0 }}
-                animate={{ opacity: 1, width: "auto", paddingLeft: 0, paddingRight: 0 }}
-                exit={{ opacity: 0, width: 0, paddingLeft: 0, paddingRight: 0 }}
-                transition={appleSpring}
-                className="flex items-center gap-4 shrink-0 pointer-events-auto overflow-hidden"
-              >
-                {centerControls ? (
-                  centerControls
-                ) : (
-                  <>
-                    <div className="shrink-0 flex items-center gap-[20px] h-12 px-[20px] rounded-full"
+            {/* Center Dots (Immediately next to tabs) */}
+            <div className="flex items-center shrink-0 snap-start">
+              <AnimatePresence>
+              {!hideCenterControls && !activeFeatureId && slides.length > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0, paddingLeft: 0, paddingRight: 0 }}
+                  animate={{ opacity: 1, width: "auto", paddingLeft: 0, paddingRight: 0 }}
+                  exit={{ opacity: 0, width: 0, paddingLeft: 0, paddingRight: 0 }}
+                  transition={appleSpring}
+                  className="flex items-center gap-4 shrink-0 overflow-hidden"
+                >
+                  {centerControls ? (
+                    centerControls
+                  ) : (
+                    <>
+                      <div className="shrink-0 flex items-center gap-[20px] h-12 px-[20px] rounded-full"
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                          backdropFilter: 'blur(20px)',
+                          WebkitBackdropFilter: 'blur(20px)',
+                        }}
+                      >
+                        {slides.map((_, idx) => {
+                          const isActive = idx === activeIndex;
+                          return (
+                          <button
+                            key={idx}
+                            onClick={() => scrollToSlide(idx)}
+                            className="relative flex items-center justify-center focus:outline-none group/dot h-12"
+                            aria-label={`Go to slide ${idx + 1}`}
+                            aria-current={isActive ? "true" : "false"}
+                          >
+                            <div 
+                              className="overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] relative h-2 rounded-[4px]"
+                              style={{
+                                width: isActive ? '40px' : '10px',
+                                backgroundColor: '#86868b', // Apple's exact dense grey
+                              }}
+                            >
+                              {/* Active Progress Bar Fill - Pure CSS animation */}
+                              {isActive && (
+                                <div
+                                  key={`progress-${idx}-${playKey}`}
+                                  className="absolute top-0 left-0 h-full bg-[#ffffff] rounded-[4px]"
+                                  style={{ 
+                                    width: '100%',
+                                    animation: `progress-fill ${SLIDE_DURATION}ms linear forwards`,
+                                    animationPlayState: isPaused ? 'paused' : 'running'
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Play / Pause Button */}
+                    <button
+                      onClick={() => setIsPaused((p) => !p)}
+                      className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none group/btn hover:bg-white/20 active:scale-[0.95]"
                       style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.12)',
                         backdropFilter: 'blur(20px)',
                         WebkitBackdropFilter: 'blur(20px)',
                       }}
+                      aria-label={isPaused ? "Play" : "Pause"}
                     >
-                      {slides.map((_, idx) => {
-                        const isActive = idx === activeIndex;
-                        return (
-                        <button
-                          key={idx}
-                          onClick={() => scrollToSlide(idx)}
-                          className="relative flex items-center justify-center focus:outline-none group/dot h-12"
-                          aria-label={`Go to slide ${idx + 1}`}
-                          aria-current={isActive ? "true" : "false"}
-                        >
-                          <div 
-                            className="overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] relative h-2 rounded-[4px]"
-                            style={{
-                              width: isActive ? '40px' : '10px',
-                              backgroundColor: '#86868b', // Apple's exact dense grey
+                      <div className="opacity-100 group-hover/btn:opacity-80 transition-opacity flex items-center justify-center">
+                        <svg width="12" height="14" viewBox="0 0 10 12" fill="none" className="text-white">
+                          {/* Left Pause Bar <-> Top Play Triangle */}
+                          <motion.path
+                            fill="currentColor"
+                            initial={false}
+                            animate={{
+                              d: isPaused 
+                                ? "M 1 2 L 9 6 L 9 6 L 1 6 Z" // Play Top Half (shifted to center)
+                                : "M 1 1 L 3.5 1 L 3.5 11 L 1 11 Z", // Pause Left Bar
                             }}
-                          >
-                            {/* Active Progress Bar Fill - Pure CSS animation */}
-                            {isActive && (
-                              <div
-                                key={`progress-${idx}-${playKey}`}
-                                className="absolute top-0 left-0 h-full bg-[#ffffff] rounded-[4px]"
-                                style={{ 
-                                  width: '100%',
-                                  animation: `progress-fill ${SLIDE_DURATION}ms linear forwards`,
-                                  animationPlayState: isPaused ? 'paused' : 'running'
-                                }}
-                              />
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Play / Pause Button */}
-                  <button
-                    onClick={() => setIsPaused((p) => !p)}
-                    className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none group/btn hover:bg-white/20 active:scale-[0.95]"
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                      backdropFilter: 'blur(20px)',
-                      WebkitBackdropFilter: 'blur(20px)',
-                    }}
-                    aria-label={isPaused ? "Play" : "Pause"}
-                  >
-                    <div className="opacity-100 group-hover/btn:opacity-80 transition-opacity flex items-center justify-center">
-                      <svg width="12" height="14" viewBox="0 0 10 12" fill="none" className="text-white">
-                        {/* Left Pause Bar <-> Top Play Triangle */}
-                        <motion.path
-                          fill="currentColor"
-                          initial={false}
-                          animate={{
-                            d: isPaused 
-                              ? "M 1 2 L 9 6 L 9 6 L 1 6 Z" // Play Top Half (shifted to center)
-                              : "M 1 1 L 3.5 1 L 3.5 11 L 1 11 Z", // Pause Left Bar
-                          }}
-                          transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-                        />
-                        {/* Right Pause Bar <-> Bottom Play Triangle */}
-                        <motion.path
-                          fill="currentColor"
-                          initial={false}
-                          animate={{
-                            d: isPaused 
-                              ? "M 1 10 L 9 6 L 9 6 L 1 6 Z" // Play Bottom Half
-                              : "M 6.5 1 L 9 1 L 9 11 L 6.5 11 Z", // Pause Right Bar
-                          }}
-                          transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                </>
+                            transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                          />
+                          {/* Right Pause Bar <-> Bottom Play Triangle */}
+                          <motion.path
+                            fill="currentColor"
+                            initial={false}
+                            animate={{
+                              d: isPaused 
+                                ? "M 1 10 L 9 6 L 9 6 L 1 6 Z" // Play Bottom Half
+                                : "M 6.5 1 L 9 1 L 9 11 L 6.5 11 Z", // Pause Right Bar
+                            }}
+                            transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                  </>
+                )}
+                </motion.div>
               )}
-              </motion.div>
-            )}
-            </AnimatePresence>
-          </div>
+              </AnimatePresence>
+            </div>
 
-          {/* Right Controls */}
-          <div className="pointer-events-auto ml-auto shrink-0 overflow-x-auto no-scrollbar max-w-full">
-            {rightControls}
+            {/* Right Controls */}
+            <div className="md:ml-auto shrink-0 flex items-center snap-start pr-4 md:pr-0">
+              {rightControls}
+            </div>
           </div>
         </div>
       </div>
