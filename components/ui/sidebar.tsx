@@ -319,7 +319,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
       <div className="flex w-full min-h-screen bg-background relative overflow-x-hidden">
 
         <div
-          className="fixed top-0 left-0 h-screen w-20 z-50 flex items-center cursor-pointer"
+          className="fixed top-0 left-0 h-screen w-20 z-50 hidden md:flex items-center cursor-pointer"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
             setIsHovered(false);
@@ -376,9 +376,41 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
           </motion.div>
         </div>
 
-        <div className="flex-1 w-full min-h-screen bg-background pl-6">
+        <div className="flex-1 w-full min-h-screen bg-background md:pl-6 pb-28 md:pb-0">
           {children}
         </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-6 left-4 right-4 z-[100] flex items-center justify-around bg-[#18181b]/95 backdrop-blur-2xl border border-white/10 p-3 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        {[
+          { id: "home", name: "Home", icon: Home, href: "/dashboard" },
+          { id: "predictors", name: "Predictor", icon: Orbit, href: "/calculator" },
+          { id: "survival", name: "Academics", icon: ShieldHalf, href: "/attendance" },
+          { id: "career", name: "Careers", icon: Layers, href: "/placement" },
+          { id: "settings", name: "Settings", icon: Settings, href: "#settings" }
+        ].map((item) => {
+          const Icon = item.icon;
+          const isItemActive = pathname === item.href || (item.href !== "/dashboard" && item.href !== "#settings" && pathname.startsWith(item.href));
+          
+          return (
+            <div
+              key={item.id}
+              onClick={() => {
+                if (item.href === "#settings") {
+                  setSettingsOpen(true);
+                } else {
+                  router.push(item.href);
+                }
+              }}
+              className="flex flex-col items-center justify-center p-1 rounded-full transition-all active:scale-90 cursor-pointer"
+            >
+              <div className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${isItemActive ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-110' : 'bg-transparent opacity-60'}`}>
+                <Icon className={`w-[22px] h-[22px] transition-colors duration-300 ${isItemActive ? 'text-black' : 'text-white'}`} strokeWidth={isItemActive ? 2.5 : 1.5} />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Settings Modal */}
