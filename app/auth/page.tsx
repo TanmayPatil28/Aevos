@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AuthPage() {
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex min-h-screen w-full bg-background font-sans antialiased selection:bg-status-info/30">
       {/* Left Pane - Visual/Brand element (hidden on mobile, takes 50% on desktop) */}
       <AuthBackground />
 

@@ -78,7 +78,7 @@ export default function NavbarMobileDrawer({ isOpen, setIsOpen, onOpenJarvis, ma
               </div>
             ) : (
               <div className="mb-6 flex gap-2 shrink-0">
-                <Link href="/login" onClick={() => setIsOpen(false)} className="flex-1 h-11 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl transition-all">Log In</Link>
+                <Link href="/auth" onClick={() => setIsOpen(false)} className="flex-1 h-11 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl transition-all">Log In</Link>
                 <Link href="/signup" onClick={() => setIsOpen(false)} className="flex-1 h-11 flex items-center justify-center bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]">Sign Up</Link>
               </div>
             )}

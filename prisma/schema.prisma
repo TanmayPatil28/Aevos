@@ -47,6 +47,7 @@ model User {
   image             String?
   password          String?
   university        String             @default("jspm")
+  isOnboarded       Boolean            @default(false) @map("is_onboarded")
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at")
   activeSnapshotId  String?            @map("active_snapshot_id")

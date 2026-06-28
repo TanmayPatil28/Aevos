@@ -126,6 +126,7 @@ function Footer() {
 export default function Home() {
   return (
     <div className="bg-black min-h-screen font-sans selection:bg-purple-500/30">
+      <LocalNav />
       <HeroSection />
       
       <HighlightsCarousel />
@@ -174,8 +175,8 @@ function LocalNav() {
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
         <AevosWordmark className="text-[17px] text-white" />
         <div className="flex items-center gap-5">
-          <Link href="/dashboard" className="bg-white text-black px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#F5F5F7] transition-colors shadow-xl">
-            Initialize Engine
+          <Link href="/auth" className="bg-white text-black px-6 py-2 rounded-full text-sm font-semibold hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+            Get Started
           </Link>
         </div>
       </div>

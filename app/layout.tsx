@@ -64,7 +64,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark scrollbar-hide" suppressHydrationWarning>
-      <body className={`${inter.variable} font-body bg-background text-foreground scrollbar-hide selection:bg-primary-container selection:text-on-primary-container`}>
+      <body className={`${inter.variable} font-sans bg-background text-foreground scrollbar-hide selection:bg-primary-container selection:text-on-primary-container`}>
           <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
           <BackgroundEffects />
           <UniversityProvider>

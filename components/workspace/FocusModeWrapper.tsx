@@ -12,7 +12,7 @@ interface FocusModeWrapperProps {
 
 export default function FocusModeWrapper({ children, title }: FocusModeWrapperProps) {
   return (
-    <div className="min-h-screen w-full bg-black flex flex-col font-body">
+    <div className="min-h-screen w-full bg-background flex flex-col font-sans">
       {/* Focus Mode Header */}
       <header className="h-16 flex items-center justify-between px-6 border-b border-white/20 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="flex items-center gap-4">

@@ -10,7 +10,7 @@ export default function Footer() {
   if (hiddenRoutes.includes(pathname || '') || pathname?.startsWith('/auth')) return null;
 
   return (
-    <footer className="bg-[#1d1d1f] w-full pt-12 pb-8 mt-auto text-[#86868b] text-[12px] font-body leading-[1.33337]">
+    <footer className="bg-[#1d1d1f] w-full pt-12 pb-8 mt-auto text-[#86868b] text-[12px] font-sans leading-[1.33337]">
       <div className="max-w-[1400px] mx-auto px-6 md:px-8">
         
         {/* Footnotes Section */}

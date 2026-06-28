@@ -20,6 +20,7 @@ import {
   Search,
   Home,
   Settings,
+  Cpu,
   X,
   LogOut
 } from 'lucide-react';
@@ -54,7 +55,7 @@ const categories = [
   {
     id: "system",
     name: "System",
-    icon: Settings,
+    icon: Cpu,
     color: "text-zinc-500",
     items: [
       { id: "cmd", name: "Command", icon: Search, href: "/dashboard", color: "text-zinc-500" },

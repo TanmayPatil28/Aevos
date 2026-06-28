@@ -338,7 +338,7 @@ export default function JarvisCommandCenter({ isOpen, onClose }: JarvisCommandCe
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Search Aevos or Ask Jarvis"
-            className="w-full bg-transparent text-white pl-16 pr-16 py-4 md:py-5 outline-none text-[19px] font-medium placeholder-white/30 transition-all font-body tracking-tight text-left"
+            className="w-full bg-transparent text-white pl-16 pr-16 py-4 md:py-5 outline-none text-[19px] font-medium placeholder-white/30 transition-all font-sans tracking-tight text-left"
           />
           <div className="absolute right-4 flex items-center h-full justify-center">
             <AnimatePresence>
@@ -458,7 +458,7 @@ export default function JarvisCommandCenter({ isOpen, onClose }: JarvisCommandCe
                     </div>
                   )}
                   <div className={cn(
-                    "max-w-[75%] px-4 py-2.5 text-[15px] leading-relaxed shadow-sm font-body tracking-tight",
+                    "max-w-[75%] px-4 py-2.5 text-[15px] leading-relaxed shadow-sm font-sans tracking-tight",
                     isUser 
                       ? "bg-[#007AFF] text-white rounded-[20px] rounded-br-[4px]" 
                       : "bg-[#2C2C2E] text-white rounded-[20px] rounded-bl-[4px]"

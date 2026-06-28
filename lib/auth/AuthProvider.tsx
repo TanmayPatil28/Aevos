@@ -76,7 +76,7 @@ export function SupabaseAuthProvider({
       setUser(null);
     } finally {
       setIsLoading(false);
-      router.push('/login');
+      router.push('/auth');
       router.refresh();
     }
   };

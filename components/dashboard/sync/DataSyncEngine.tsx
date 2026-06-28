@@ -14,6 +14,9 @@ import { ImportVerificationModal } from "@/components/ingestion/ImportVerificati
 import { diagnostics } from "@/lib/diagnostics";
 import { useNetworkState } from "@/lib/hooks/useNetworkState";
 import jspmPreset from "@/lib/presets/curriculum/jspm_comp_eng_2023.json";
+import { BookOpen } from "lucide-react";
+import Card from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
 
 interface DataSyncEngineProps {
   onSuccess?: () => void;
@@ -125,6 +128,10 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
         );
 
         const canonicalProfile = {
+          studentIdentity: { name: "User" },
+          institution: jspmPreset.institution || "jspm_university_wagholi",
+          presetId: "jspm_comp_eng_2023",
+          regulation: jspmPreset.pattern || "unknown",
           courses,
           academic: {
             currentCgpa: 0,
@@ -217,9 +224,21 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
   return (
     <div className={`space-y-8 ${isHero ? 'max-w-4xl mx-auto' : ''}`}>
       {isHero && (
-        <div className="text-center">
-          <h1 className="text-4xl font-black text-white tracking-tight">Bring in your records</h1>
-          <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
+        <div className="relative pt-12 pb-8 flex flex-col items-center justify-center text-center overflow-hidden z-10">
+          <span className="text-[12px] leading-[16px] uppercase tracking-[0.12em] text-foreground-muted font-bold mb-4">
+            Ingestion Engine
+          </span>
+          <h1 
+            className="text-[64px] font-semibold leading-[68px] tracking-[-0.5px]"
+            style={{
+              backgroundImage: "linear-gradient(180deg, #FFFFFF 0%, #A1A1A6 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Bring in your records
+          </h1>
+          <p className="text-base leading-[24px] text-foreground-muted max-w-[544px] mt-6">
             Securely import your academic history to instantly unlock personalized predictions.
           </p>
         </div>
@@ -227,12 +246,15 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
 
       {/* Error State */}
       {pipelineState === "failed" && pipelineError && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-200 p-4 rounded-xl text-center">
-          <strong>Import Issue:</strong> {pipelineError}
-          <div className="mt-4">
-            <button onClick={() => setPipelineState("idle")} className="text-sm underline hover:text-red-100">Try Again</button>
-          </div>
-        </div>
+        <Card variant="danger" padding="lg" className="flex flex-col items-center text-center">
+          <span className="text-[12px] leading-[16px] uppercase tracking-[0.12em] text-danger font-bold mb-2">
+            Import Issue
+          </span>
+          <p className="text-foreground text-base max-w-lg mb-6">{pipelineError}</p>
+          <Button variant="danger" size="md" onClick={() => setPipelineState("idle")} className="font-bold">
+            Try Again
+          </Button>
+        </Card>
       )}
 
       {/* Input Pipeline */}
@@ -243,24 +265,36 @@ export function DataSyncEngine({ onSuccess, isHero = false }: DataSyncEngineProp
             isLoading={pipelineState !== "idle" && pipelineState !== "failed"} 
           />
           
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-800" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0B0F19] px-2 text-slate-500">Or use official preset</span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleLoadPreset}
-            disabled={pipelineState !== "idle" && pipelineState !== "failed"}
-            className="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-500/30 rounded-xl hover:bg-blue-500/5 hover:border-blue-500/50 transition-all text-slate-300"
+          {/* Preset Bento Card */}
+          <Card 
+            variant="default" 
+            padding="lg"
+            className={`transition-all group ${pipelineState === "idle" || pipelineState === "failed" ? 'hover:border-brand/30 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
           >
-            <span className="material-symbols-outlined text-3xl text-blue-400 mb-2">auto_stories</span>
-            <span className="font-bold text-sm">Load Curriculum Preset</span>
-            <span className="text-xs text-slate-500 mt-1">JSPM Wagholi • Computer Engineering • 2023 Pattern</span>
-          </button>
+            <div 
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+              onClick={pipelineState === "idle" || pipelineState === "failed" ? handleLoadPreset : undefined}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center group-hover:bg-brand/10 group-hover:text-brand group-hover:border-brand/20 text-foreground-muted transition-all">
+                  <BookOpen size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground tracking-tight">Load Curriculum Preset</h3>
+                  <p className="text-sm font-medium text-foreground-muted mt-1">JSPM Wagholi • Computer Engineering • 2023 Pattern</p>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="md"
+                disabled={pipelineState !== "idle" && pipelineState !== "failed"}
+                className="w-full sm:w-auto font-bold"
+                onClick={handleLoadPreset}
+              >
+                Apply Preset
+              </Button>
+            </div>
+          </Card>
         </div>
       )}
 

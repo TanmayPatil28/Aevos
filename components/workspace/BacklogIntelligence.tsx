@@ -19,6 +19,7 @@ import SafetyNetWidget from "@/components/backlog/deep-dive/SafetyNetWidget";
 import AIStudyTimelineWidget from "@/components/backlog/deep-dive/AIStudyTimelineWidget";
 import StudySquadWidget from "@/components/backlog/deep-dive/StudySquadWidget";
 import HistoricalAnalyticsWidget from "@/components/backlog/deep-dive/HistoricalAnalyticsWidget";
+import { Select } from "@/components/ui/Select";
 import { Zap, Edit2, Check, X, BarChart2, Compass, Users } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 
@@ -174,18 +175,18 @@ export function BacklogIntelligence() {
                   </div>
                 <div className="flex items-center gap-3 bg-surface-raised p-2 rounded-2xl border border-white/[0.04]">
                   <span className="text-xs text-white/40 font-bold uppercase tracking-widest pl-2">Select Target:</span>
-                  <select 
-                    className="bg-surface border border-white/[0.04] text-white rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:border-brand cursor-pointer"
+                  <Select 
+                    className="min-w-[240px]"
                     value={selectedDeepDiveCourseId || ""}
-                    onChange={(e) => {
-                      setSelectedDeepDiveCourseId(e.target.value);
+                    onChange={(val) => {
+                      setSelectedDeepDiveCourseId(val);
                       setIsEditingGrade(false);
                     }}
-                  >
-                    {analysis.activeBacklogs.map(c => (
-                      <option key={c.id} value={c.id} className="bg-[#1c1c1e]">{c.code} - {c.name}</option>
-                    ))}
-                  </select>
+                    options={analysis.activeBacklogs.map(c => ({
+                      value: c.id,
+                      label: `${c.code} - ${c.name}`
+                    }))}
+                  />
                   
                   {isEditingGrade ? (
                     <div className="flex items-center gap-2 ml-2">

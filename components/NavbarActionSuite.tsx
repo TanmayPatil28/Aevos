@@ -73,7 +73,7 @@ export default function NavbarActionSuite({ activeMenu, setActiveMenu }: NavbarA
           </button>
         </div>
       ) : (
-        <Link href="/login">
+        <Link href="/auth">
           <motion.button
             whileHover={{ scale: 1.05, y: -2, boxShadow: "0 15px 30px rgba(124,58,237,0.4)" }}
             whileTap={{ scale: 0.95 }}

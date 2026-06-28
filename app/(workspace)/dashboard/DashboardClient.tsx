@@ -17,7 +17,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AppleCarousel } from "@/components/ui/apple-carousel";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { FloatingPill } from "@/components/ui/floating-pill";
-import Card from "@/components/ui/Card";
+import Card from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTimerStore } from "@/stores/timerStore";
 
@@ -321,11 +322,19 @@ export default function DashboardClient({
         <div className="px-6 md:px-12 max-w-[1400px] mx-auto min-h-[80vh] flex flex-col justify-center gap-12 relative z-10 pt-8">
           <DataSyncEngine isHero />
           
-          <div className="max-w-md mx-auto w-full pt-8 border-t border-zinc-800 text-center">
-            <p className="text-sm text-zinc-500 mb-4">Need to clear corrupted backend records? Note: this cannot be undone.</p>
-            <div className="mx-auto max-w-xs">
-              <ResetDataButton />
-            </div>
+          <div className="max-w-md mx-auto w-full pt-12 border-t border-white/5 text-center flex flex-col items-center">
+            <p className="text-[12px] leading-[16px] text-foreground-muted font-semibold uppercase tracking-wider mb-6">Need to clear corrupted backend records? Note: this cannot be undone.</p>
+            <Button 
+              variant="danger"
+              size="md"
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+              className="w-full sm:w-auto font-bold"
+            >
+              Clear Local Cache & Reload
+            </Button>
           </div>
         </div>
       </div>
@@ -564,24 +573,20 @@ export default function DashboardClient({
 
                 return (
                   <div key={inv.id} className="gsap-dashboard-card">
-                    <Card variant="glass" padding="lg" className="h-full flex flex-col group relative overflow-hidden transition-all duration-500 hover:border-brand/30">
+                    <Card variant="default" padding="lg" className="h-full flex flex-col group relative overflow-hidden transition-all duration-500 hover:border-brand/30">
                       <div className="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                       
                       <div className="flex justify-between items-start mb-4 relative z-10">
                         <div className="flex items-center gap-3 text-white font-bold text-lg">
-                          <div className={`p-2 rounded-lg ${inv.type === 'RISK' ? 'bg-rose-500/10 text-rose-400' : 'bg-brand/10 text-brand'}`}>
-                            <Icon className="w-5 h-5" />
-                          </div>
+                          <Icon className="w-5 h-5 text-foreground-muted" />
                           {inv.title}
                         </div>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${
-                          inv.priorityTier === 'CRITICAL' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'
-                        }`}>
+                        <Badge variant={inv.priorityTier === 'CRITICAL' ? 'danger' : 'warning'}>
                           {inv.priorityTier} PRIORITY
-                        </span>
+                        </Badge>
                       </div>
                       
-                      <p className="text-[#A1A1AA] text-[15px] leading-relaxed mb-6 flex-1 relative z-10">{inv.description}</p>
+                      <p className="text-foreground-muted text-[15px] leading-relaxed mb-6 flex-1 relative z-10">{inv.description}</p>
                       
                       {inv.actionTrigger && (
                         <div className="relative z-10 mb-4">
@@ -591,9 +596,11 @@ export default function DashboardClient({
                             inv.actionTrigger.toLowerCase().includes("attendance") ? "/attendance" :
                             inv.actionTrigger.toLowerCase().includes("forecast") ? "/forecast" :
                             "/planner"
-                          } className="inline-flex items-center gap-2 text-[13px] font-bold text-brand bg-brand/10 hover:bg-brand/20 px-4 py-2 rounded-full transition-colors w-max group/btn">
-                            {inv.actionTrigger.toLowerCase().includes("backlog") ? "View Next Steps" : "Explore Options"}
-                            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                          }>
+                            <Button variant="ghost" size="sm" className="group/btn">
+                              {inv.actionTrigger.toLowerCase().includes("backlog") ? "View Next Steps" : "Explore Options"}
+                              <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                            </Button>
                           </Link>
                         </div>
                       )}

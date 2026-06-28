@@ -96,8 +96,8 @@ export function UnifiedAuthForm() {
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col justify-center px-6 sm:px-8">
-      <div className="mb-8 text-center sm:text-left">
-        <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+      <div className="mb-10 text-center sm:text-left">
+        <h2 className="text-4xl font-bold tracking-tighter text-white/90">
           {mode === "login" && "Welcome back"}
           {mode === "register" && "Create an account"}
           {mode === "magic_link" && "Sign in with a link"}
@@ -113,10 +113,10 @@ export function UnifiedAuthForm() {
 
       <div className="relative my-8">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border/40"></div>
+          <div className="w-full border-t border-white/[0.08]"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-background px-4 text-muted-foreground uppercase tracking-wider text-xs font-medium">Or continue with</span>
+          <span className="bg-[#0a0a0c] px-4 text-white/40 uppercase tracking-widest text-[10px] font-bold">Or continue with</span>
         </div>
       </div>
 
@@ -135,11 +135,11 @@ export function UnifiedAuthForm() {
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
                   <input
                     type="text"
                     {...register("name")}
-                    className="premium-input !pl-12"
+                    className="w-full h-12 pl-12 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white font-medium placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.06] transition-all outline-none"
                     placeholder="John Doe"
                   />
                 </div>
@@ -151,11 +151,11 @@ export function UnifiedAuthForm() {
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
                 <input
                   type="email"
                   {...register("email")}
-                  className="premium-input !pl-12"
+                  className="w-full h-12 pl-12 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white font-medium placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.06] transition-all outline-none"
                   placeholder="name@example.com"
                 />
               </div>
@@ -181,11 +181,11 @@ export function UnifiedAuthForm() {
                   )}
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
                   <input
                     type="password"
                     {...register("password")}
-                    className="premium-input !pl-12"
+                    className="w-full h-12 pl-12 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white font-medium placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.06] transition-all outline-none"
                     placeholder="••••••••"
                   />
                 </div>
@@ -198,7 +198,7 @@ export function UnifiedAuthForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="inline-flex w-full items-center justify-center rounded-xl bg-[#007AFF] bg-gradient-to-b from-[#007AFF] to-[#0062CC] shadow-[0_1px_2px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.2)] px-4 py-2.5 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 focus:ring-offset-[#0a0a0c] disabled:opacity-50 disabled:pointer-events-none transition-all"
+              className="group inline-flex w-full items-center justify-center rounded-full bg-white text-black py-4 text-[15px] font-bold hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-95 transition-all duration-300 ease-out disabled:opacity-50 disabled:pointer-events-none mt-4"
             >
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -206,19 +206,19 @@ export function UnifiedAuthForm() {
               {mode === "login" && "Sign In"}
               {mode === "register" && "Create Account"}
               {mode === "magic_link" && "Send Magic Link"}
-              {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+              {!isLoading && <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />}
             </button>
           </form>
         </motion.div>
       </AnimatePresence>
 
-      <div className="mt-8 text-center text-sm text-muted-foreground">
+      <div className="mt-8 text-center text-sm text-white/50">
         {mode === "login" ? (
           <p>
             Don't have an account?{" "}
             <button
               onClick={() => switchMode("register")}
-              className="font-medium text-primary hover:underline hover:underline-offset-4"
+              className="font-bold text-white hover:text-brand transition-colors"
             >
               Sign up
             </button>
@@ -228,7 +228,7 @@ export function UnifiedAuthForm() {
             Already have an account?{" "}
             <button
               onClick={() => switchMode("login")}
-              className="font-medium text-primary hover:underline hover:underline-offset-4"
+              className="font-bold text-white hover:text-brand transition-colors"
             >
               Sign in
             </button>

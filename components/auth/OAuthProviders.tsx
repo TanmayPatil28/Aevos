@@ -59,7 +59,7 @@ export function OAuthProviders() {
         <button
           onClick={() => handleOAuthLogin('google')}
           disabled={!!loadingProvider}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white/90 shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm font-bold text-white/90 shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all hover:bg-white/[0.08] hover:border-white/[0.15] hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
         >
           {loadingProvider === 'google' ? (
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -72,7 +72,7 @@ export function OAuthProviders() {
         <button
           onClick={() => handleOAuthLogin('github')}
           disabled={!!loadingProvider}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white/90 shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm font-bold text-white/90 shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all hover:bg-white/[0.08] hover:border-white/[0.15] hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
         >
           {loadingProvider === 'github' ? (
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -85,7 +85,7 @@ export function OAuthProviders() {
         <button
           onClick={() => handleOAuthLogin('apple')}
           disabled={!!loadingProvider}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white/90 shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm font-bold text-white/90 shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all hover:bg-white/[0.08] hover:border-white/[0.15] hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
         >
           {loadingProvider === 'apple' ? (
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />

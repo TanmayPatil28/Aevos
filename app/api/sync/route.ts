@@ -20,7 +20,8 @@ export async function POST(request: Request) {
 
     console.log(`[API Sync] Processing ${actions.length} sync actions for user ${userId}...`);
 
-    await prisma.$transaction(async (tx) => {
+    const tx = prisma;
+    {
       for (const action of actions) {
         const { type, payload } = action;
 
@@ -138,7 +139,7 @@ export async function POST(request: Request) {
           }
         }
       }
-    });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
