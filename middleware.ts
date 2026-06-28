@@ -41,7 +41,8 @@ export async function middleware(request: NextRequest) {
                          !request.nextUrl.pathname.startsWith('/api/chat') &&
                          !request.nextUrl.pathname.startsWith('/api/jarvis') &&
                          !request.nextUrl.pathname.startsWith('/api/career') &&
-                         !request.nextUrl.pathname.startsWith('/api/internships')
+                         !request.nextUrl.pathname.startsWith('/api/internships') &&
+                         !request.nextUrl.pathname.startsWith('/api/voice')
   
   if (!user && (isDashboard || isProtectedApi)) {
     // no user, potentially respond by redirecting the user to the login page

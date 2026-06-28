@@ -9,6 +9,7 @@ import {
   DeepDivePills,
   AcademicDashboardMockup
 } from "@/components/LandingInteractives";
+import { WaitlistForm } from "@/components/ui/WaitlistForm";
 
 function HeroSection() {
   return (
@@ -20,6 +21,9 @@ function HeroSection() {
         <p className="text-3xl md:text-5xl text-[#86868B] font-medium tracking-tight">
           Mind-blowing intelligence. Head-turning results.
         </p>
+        <div id="waitlist" className="mt-12 flex justify-center w-full">
+          <WaitlistForm />
+        </div>
       </div>
 
       <div className="relative z-10 w-full max-w-[1600px] px-6">
@@ -175,8 +179,8 @@ function LocalNav() {
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
         <AevosWordmark className="text-[17px] text-white" />
         <div className="flex items-center gap-5">
-          <Link href="/auth" className="bg-white text-black px-6 py-2 rounded-full text-sm font-semibold hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-            Get Started
+          <Link href="#waitlist" className="bg-white text-black px-6 py-2 rounded-full text-sm font-semibold hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+            Join Waitlist
           </Link>
         </div>
       </div>

@@ -28,7 +28,9 @@ export const metadata: Metadata = {
   keywords: ["Aevos", "Human Intelligence", "Infrastructure", "Operating System"],
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: '/favicon.png', type: 'image/png' }
+    ],
     shortcut: "/favicon.png",
     apple: "/favicon.png",
   },
@@ -56,6 +58,7 @@ const ContextualIslandController = dynamic(() => import("@/components/dynamic-is
 import { BackgroundSyncWorker } from "@/components/providers/BackgroundSyncWorker";
 import { LenisProvider } from "@/components/providers/LenisProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { FeedbackButton } from "@/components/ui/FeedbackButton";
 
 export default function RootLayout({
   children,
@@ -115,6 +118,7 @@ export default function RootLayout({
           <BunkCalculatorController />
           <InterventionAlertBridge />
           {process.env.NODE_ENV === "development" && <IslandTestControls />}
+          <FeedbackButton />
         </ThemeProvider>
       </body>
     </html>

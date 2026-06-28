@@ -390,3 +390,19 @@ model ATKTRule {
   @@map("atkt_rules")
 }
 
+model Feedback {
+  id        String   @id @default(cuid())
+  rating    Int
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("feedback")
+}
+
+model Waitlist {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("waitlist")
+}
