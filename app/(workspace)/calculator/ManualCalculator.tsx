@@ -10,7 +10,7 @@ import { useUSMStore } from "@/stores/usmStore";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import WorkspaceContent from "@/components/layout/WorkspaceContent";
 import WorkspaceSection from "@/components/layout/WorkspaceSection";
-import Card from "@/components/ui/card";
+import Card from "@/components/ui/Card";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import CalculationBreakdown from "@/components/CalculationBreakdown";

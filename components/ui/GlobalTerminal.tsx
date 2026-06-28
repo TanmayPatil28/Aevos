@@ -338,8 +338,8 @@ export default function GlobalTerminal() {
         handleCommand(customEvent.detail);
       }
     };
-    window.addEventListener("gradeflow-run-cmd", onRunCmd);
-    return () => window.removeEventListener("gradeflow-run-cmd", onRunCmd);
+    window.addEventListener("aevos-run-cmd", onRunCmd);
+    return () => window.removeEventListener("aevos-run-cmd", onRunCmd);
   }, [handleCommand]);
 
   // Cyber typing SFX
@@ -363,8 +363,8 @@ export default function GlobalTerminal() {
       } catch(e) {}
     };
 
-    window.addEventListener("gradeflow-typing-sfx", playTick);
-    return () => window.removeEventListener("gradeflow-typing-sfx", playTick);
+    window.addEventListener("aevos-typing-sfx", playTick);
+    return () => window.removeEventListener("aevos-typing-sfx", playTick);
   }, []);
 
   // ─── Key Handling ─────────────────────────────────────────────────────────
@@ -573,7 +573,7 @@ export default function GlobalTerminal() {
                   style={{ color: activeTitleColor }}
                 >
                   <TerminalSquare size={12} />
-                  GRADEFLOW // {isSandbox ? "SANDBOX OVERRIDE" : TERMINAL_THEMES[currentTheme].label.toUpperCase()}
+                  AEVOS // {isSandbox ? "SANDBOX OVERRIDE" : TERMINAL_THEMES[currentTheme].label.toUpperCase()}
                   <GripHorizontal size={12} className="ml-2 opacity-30" />
                 </div>
 
@@ -640,7 +640,7 @@ export default function GlobalTerminal() {
                             components={{
                               code({ node, inline, className, children, ...props }: any) {
                                 const match = /language-(\w+)/.exec(className || "");
-                                const isCmd = match && match[1] === "gradeflow-cmd";
+                                const isCmd = match && match[1] === "aevos-cmd";
                                 
                                   if (!inline && isCmd) {
                                     const cmdStr = String(children).trim();
@@ -656,7 +656,7 @@ export default function GlobalTerminal() {
                                         <button 
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            window.dispatchEvent(new CustomEvent('gradeflow-run-cmd', { detail: cmdStr }));
+                                            window.dispatchEvent(new CustomEvent('aevos-run-cmd', { detail: cmdStr }));
                                           }} 
                                           className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-xl text-[13px] font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] relative overflow-hidden z-20 pointer-events-auto"
                                         >

@@ -36,7 +36,7 @@ export default function OnboardingPage() {
 
   // Load from local storage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("gradeflow_onboarding_draft");
+    const saved = localStorage.getItem("aevos_onboarding_draft");
     if (saved) {
       try {
         setFormData(JSON.parse(saved));
@@ -48,7 +48,7 @@ export default function OnboardingPage() {
 
   // Save to local storage on change
   useEffect(() => {
-    localStorage.setItem("gradeflow_onboarding_draft", JSON.stringify(formData));
+    localStorage.setItem("aevos_onboarding_draft", JSON.stringify(formData));
   }, [formData]);
 
   const firstName = formData.fullName.split(" ")[0] || "there";
@@ -65,7 +65,7 @@ export default function OnboardingPage() {
       ...formData,
       isOnboarded: true,
     });
-    localStorage.removeItem("gradeflow_onboarding_draft");
+    localStorage.removeItem("aevos_onboarding_draft");
     setStep(3); // Go to finish step
     
     try {

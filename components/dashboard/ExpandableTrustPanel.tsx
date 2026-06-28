@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp, ShieldCheck, ShieldAlert, Calculator, FileText, Anchor } from "lucide-react";
 import { ExplanationTree } from "@/lib/academic-intelligence/types";
-import Card from "@/components/ui/card";
+import Card from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
 
 interface ExpandableTrustPanelProps {

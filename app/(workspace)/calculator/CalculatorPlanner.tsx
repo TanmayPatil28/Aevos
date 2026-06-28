@@ -6,7 +6,7 @@ import { calculateRequiredGPA, getDifficultyLevel } from "@/lib/presets";
 import { useUniversity } from "@/components/providers/UniversityProvider";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import { Plus, ChevronUp, ChevronDown } from "lucide-react";
-import Card from "@/components/ui/card";
+import Card from "@/components/ui/Card";
 import { AppleFeatureExplorer } from "@/components/ui/apple-feature-explorer";
 
 import CareerHubModule from "@/components/planner/CareerHubModule";

@@ -13,7 +13,7 @@ import CalculationBreakdown from "@/components/CalculationBreakdown";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import WorkspaceContent from "@/components/layout/WorkspaceContent";
 import WorkspaceSection from "@/components/layout/WorkspaceSection";
-import Card from "@/components/ui/card";
+import Card from "@/components/ui/Card";
 import { getPresetById, getGradeScale, calculateSGPA, convertLetterGradeToGradePoint } from "@/lib/presets";
 import { motion, AnimatePresence } from "framer-motion";
 import * as Select from '@radix-ui/react-select';

@@ -30,7 +30,7 @@ import { cn } from "@/lib/cn";
 
 import { PageHero } from "@/components/ui/PageHero";
 import { DynamicRoadmapModal } from "./components/DynamicRoadmapModal";
-import Card from "@/components/ui/card";
+import Card from "@/components/ui/Card";
 import { MagneticWrapper } from "@/components/ui/MagneticWrapper";
 import CareerOSHeader from "@/components/placement/CareerOSHeader";
 import { SegmentedControl } from "@/components/ui/segmented-control";
