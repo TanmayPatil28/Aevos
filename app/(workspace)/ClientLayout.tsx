@@ -11,8 +11,14 @@ import JarvisResumeModal from "@/components/ai/JarvisResumeModal";
 import JarvisCommandCenter from "@/components/JarvisCommandCenter";
 import { useUIStore } from "@/stores/uiStore";
 import { cn } from "@/lib/cn";
-
 import { Sidebar } from "@/components/ui/sidebar";
+import { DynamicIsland } from "@/components/ui/dynamic-island";
+import dynamic from "next/dynamic";
+const SmartTimetableController = dynamic(() => import("@/components/dynamic-island/SmartTimetableController"), { ssr: false });
+const BunkCalculatorController = dynamic(() => import("@/components/dynamic-island/BunkCalculatorController"), { ssr: false });
+const InterventionAlertBridge = dynamic(() => import("@/components/dynamic-island/InterventionAlertBridge"), { ssr: false });
+import IslandTestControls from "@/components/dynamic-island/IslandTestControls";
+const ContextualIslandController = dynamic(() => import("@/components/dynamic-island/ContextualIslandController"), { ssr: false });
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const { isJarvisCommandCenterOpen, closeJarvisCommandCenter, toggleJarvisCommandCenter } = useUIStore();
@@ -60,6 +66,12 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
         {/* Global AI Action Console */}
         <GlobalTerminal />
+        <DynamicIsland />
+        <ContextualIslandController />
+        <SmartTimetableController />
+        <BunkCalculatorController />
+        <InterventionAlertBridge />
+        {process.env.NODE_ENV === "development" && <IslandTestControls />}
       </div>
     </Sidebar>
   );

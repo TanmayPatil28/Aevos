@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
-import { DynamicIsland } from "@/components/ui/dynamic-island";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-const SmartTimetableController = dynamic(() => import("@/components/dynamic-island/SmartTimetableController"), { ssr: false });
-const BunkCalculatorController = dynamic(() => import("@/components/dynamic-island/BunkCalculatorController"), { ssr: false });
-const InterventionAlertBridge = dynamic(() => import("@/components/dynamic-island/InterventionAlertBridge"), { ssr: false });
 
 import NextTopLoader from "nextjs-toploader";
 import dynamic from "next/dynamic";
@@ -52,8 +48,6 @@ import { UniversityProvider } from "@/components/providers/UniversityProvider";
 import { AcademicHydrationBoundary } from "@/components/providers/AcademicHydrationBoundary";
 const DiagnosticOverlay = dynamic(() => import("@/components/layout/DiagnosticOverlay"), { ssr: false });
 const BackgroundEffects = dynamic(() => import("@/components/BackgroundEffects"), { ssr: false });
-import IslandTestControls from "@/components/dynamic-island/IslandTestControls";
-const ContextualIslandController = dynamic(() => import("@/components/dynamic-island/ContextualIslandController"), { ssr: false });
 import { BackgroundSyncWorker } from "@/components/providers/BackgroundSyncWorker";
 import { LenisProvider } from "@/components/providers/LenisProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -90,7 +84,6 @@ export default function RootLayout({
                     <AcademicHydrationBoundary>
                       <LenisProvider>
                         <BackgroundSyncWorker />
-                        <DynamicIsland />
                         <div className="flex w-full min-h-screen">
                           <main id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col w-full min-h-screen">
                             {children}
@@ -110,11 +103,6 @@ export default function RootLayout({
               className: 'dynamic-pill-toast'
             }}
           />
-          <ContextualIslandController />
-          <SmartTimetableController />
-          <BunkCalculatorController />
-          <InterventionAlertBridge />
-          {process.env.NODE_ENV === "development" && <IslandTestControls />}
           <FeedbackButton />
         </ThemeProvider>
       </body>
