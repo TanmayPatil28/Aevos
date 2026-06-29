@@ -29,6 +29,7 @@ export default function ManualCalculator() {
   const store = useUSMStore();
   const preset = getPresetById(store.presetId || "sppu") || getPresetById("sppu")!;
   const isOnline = useNetworkState();
+  const isPanelOpen = store.workspaceUi.activePanel !== "NONE";
   
   const [usePercentage, setUsePercentage] = useState(false);
   const [subjects, setSubjects] = useState<Subject[]>([
@@ -357,52 +358,54 @@ export default function ManualCalculator() {
           <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-24">
 
             {/* LEFT PANE: Typography */}
-            <div className="flex-1 min-w-[320px] max-w-2xl flex flex-col gap-12 relative z-10 lg:sticky lg:top-28 h-fit w-full">
-              <div className="w-full flex flex-col gap-12 relative z-10 px-2 lg:px-6">
+            {!isPanelOpen && (
+              <div className="flex-1 min-w-[320px] max-w-2xl flex flex-col gap-12 relative z-10 lg:sticky lg:top-28 h-fit w-full">
+                <div className="w-full flex flex-col gap-12 relative z-10 px-2 lg:px-6">
 
-                <motion.div 
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="flex flex-col gap-5"
-                >
-                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] text-white leading-[1.1]">
-                    <motion.span 
-                      className="text-transparent bg-clip-text inline-block"
-                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
-                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                    >Calculate your trajectory.</motion.span><br />
-                    Complete Sandbox.
-                  </h3>
-                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
-                    <strong className="text-[#f5f5f7]">A completely isolated environment.</strong> Enter your subjects manually and observe how grade boundaries and credit weights impact your academic standing.
-                  </p>
-                </motion.div>
+                  <motion.div 
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="flex flex-col gap-5"
+                  >
+                    <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] text-white leading-[1.1]">
+                      <motion.span 
+                        className="text-transparent bg-clip-text inline-block"
+                        style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
+                        animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                      >Calculate your trajectory.</motion.span><br />
+                      Complete Sandbox.
+                    </h3>
+                    <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                      <strong className="text-[#f5f5f7]">A completely isolated environment.</strong> Enter your subjects manually and observe how grade boundaries and credit weights impact your academic standing.
+                    </p>
+                  </motion.div>
 
-                <motion.div 
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
-                  className="flex flex-col gap-5"
-                >
-                  <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
-                    <motion.span 
-                      className="text-transparent bg-clip-text inline-block"
-                      style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
-                      animate={{ backgroundPosition: ["0% center", "200% center"] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                    >Statutory Accuracy.</motion.span>
-                  </h3>
-                  <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
-                    Aevos silently translates percentage marks into valid statutory grade points automatically if you select the Percent mode, ensuring every calculation mirrors the exact university formula.
-                  </p>
-                </motion.div>
-                
+                  <motion.div 
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
+                    className="flex flex-col gap-5"
+                  >
+                    <h3 className="text-[2rem] md:text-[2.5rem] font-semibold tracking-[-0.04em] leading-[1.1]">
+                      <motion.span 
+                        className="text-transparent bg-clip-text inline-block"
+                        style={{ backgroundImage: "linear-gradient(to right, #A4C639, #c8e66e, #ffffff, #c8e66e, #A4C639)", backgroundSize: "200% auto" }}
+                        animate={{ backgroundPosition: ["0% center", "200% center"] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                      >Statutory Accuracy.</motion.span>
+                    </h3>
+                    <p className="text-[#86868b] text-xl md:text-[22px] font-medium leading-[1.4] tracking-tight">
+                      Aevos silently translates percentage marks into valid statutory grade points automatically if you select the Percent mode, ensuring every calculation mirrors the exact university formula.
+                    </p>
+                  </motion.div>
+                  
+                </div>
               </div>
-            </div>
+            )}
 
             {/* RIGHT PANE: Statutory Matrix */}
             <div className="flex-[2] min-w-[320px] relative z-10 w-full">
@@ -428,31 +431,33 @@ export default function ManualCalculator() {
           {/* =======================================
               ROW 3: PREDICTOR SHORTCUT BANNER
               ======================================= */}
-          <div className="mt-12 relative z-10 w-full">
-            <Card variant="accent" padding="xl" className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-br from-surface to-surface-raised w-full group">
-              <div className="flex flex-col text-center md:text-left">
-                <span className="text-[12px] leading-[16px] text-brand font-semibold uppercase tracking-wider">Intelligent Projection</span>
-                <h4 className="text-base md:text-xl leading-[24px] font-semibold text-foreground mt-2">Need precise internal marks?</h4>
-                <p className="text-sm md:text-base leading-[24px] text-foreground-muted mt-2 max-w-lg">
-                  Use the intelligent Contextual Predictor to calculate exactly what scores you need in Test 1, Test 2, and Assignments to secure your target grade.
-                </p>
-              </div>
+          {!isPanelOpen && (
+            <div className="mt-12 relative z-10 w-full">
+              <Card variant="accent" padding="xl" className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-br from-surface to-surface-raised w-full group">
+                <div className="flex flex-col text-center md:text-left">
+                  <span className="text-[12px] leading-[16px] text-brand font-semibold uppercase tracking-wider">Intelligent Projection</span>
+                  <h4 className="text-base md:text-xl leading-[24px] font-semibold text-foreground mt-2">Need precise internal marks?</h4>
+                  <p className="text-sm md:text-base leading-[24px] text-foreground-muted mt-2 max-w-lg">
+                    Use the intelligent Contextual Predictor to calculate exactly what scores you need in Test 1, Test 2, and Assignments to secure your target grade.
+                  </p>
+                </div>
 
-              <div className="shrink-0 mt-4 md:mt-0">
-                <Button 
-                  variant="primary" 
-                  size="lg"
-                  onClick={() => {
-                    const activeCourses = useUSMStore.getState().courses || [];
-                    useUSMStore.getState().openPanel("PREDICTOR", activeCourses[0]?.id || "");
-                  }}
-                  className="whitespace-nowrap flex items-center gap-2"
-                >
-                  Open Predictor <ArrowRight size={18} />
-                </Button>
-              </div>
-            </Card>
-          </div>
+                <div className="shrink-0 mt-4 md:mt-0">
+                  <Button 
+                    variant="primary" 
+                    size="lg"
+                    onClick={() => {
+                      const activeCourses = useUSMStore.getState().courses || [];
+                      useUSMStore.getState().openPanel("PREDICTOR", activeCourses[0]?.id || "");
+                    }}
+                    className="whitespace-nowrap flex items-center gap-2"
+                  >
+                    Open Predictor <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
 
         </WorkspaceSection>
       </WorkspaceContent>
