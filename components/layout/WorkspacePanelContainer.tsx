@@ -38,8 +38,8 @@ export default function WorkspacePanelContainer() {
             right: "max(20px, calc(50vw - 800px + 20px))"
           }}
         >
-          {/* Glass Shell */}
-          <div className="absolute inset-0 bg-surface-raised/95 lg:bg-surface-raised/85 backdrop-blur-[40px] rounded-t-[32px] lg:rounded-[24px] border border-white/[0.05] shadow-[0_-20px_100px_rgba(0,0,0,0.5)] lg:shadow-[-20px_0_100px_rgba(0,0,0,0.5)] pointer-events-none" />
+          {/* Solid Shell to match Statutory Matrix */}
+          <div className="absolute inset-0 bg-surface-raised rounded-t-[32px] lg:rounded-[24px] border border-white/[0.05] shadow-[0_-20px_100px_rgba(0,0,0,0.5)] lg:shadow-[-20px_0_100px_rgba(0,0,0,0.5)] pointer-events-none" />
           
           {/* Header */}
           <div className="relative z-10 flex items-center justify-between p-4 border-b border-white/20">
