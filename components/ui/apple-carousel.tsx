@@ -185,7 +185,7 @@ export function AppleCarousel({
             </div>
 
             {/* Center Dots (Immediately next to tabs) */}
-            <div className="flex items-center shrink-0 snap-start pointer-events-auto">
+            <div className="hidden md:flex items-center shrink-0 snap-start pointer-events-auto">
               <AnimatePresence>
               {!hideCenterControls && !activeFeatureId && slides.length > 1 && (
                 <motion.div
