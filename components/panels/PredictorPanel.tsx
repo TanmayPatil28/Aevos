@@ -305,80 +305,100 @@ export default function PredictorPanel() {
     <div className="flex flex-col h-full bg-transparent text-foreground font-sans overflow-y-auto overflow-x-hidden scrollbar-hide">
       <div className="flex flex-col gap-5">
         
-        {/* ─── Section 1: Course Info ─── */}
-        <div className="mb-2 mt-2">
-          <h2 className="text-[16px] font-semibold text-white line-clamp-1 pr-2">
-            {selectedCourse?.name || "No Course Selected"}
-            {selectedCourse?.credits ? ` (${selectedCourse.credits}Cr)` : ""}
-          </h2>
-        </div>
-
-        {/* ─── Section 2: Config Row ─── */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <PillSelect
-            options={[{value: 'theory', label: 'Theory'}, {value: 'practical', label: 'Practical'}]}
-            value={format}
-            onChange={(val) => setFormat(val as CourseFormat)}
-            compact
-          />
-          <PillSelect
-            options={[{value: '0', label: 'No Exam'}, {value: '50', label: 'ESE 50'}, {value: '100', label: 'ESE 100'}]}
-            value={endSemMarks.toString()}
-            onChange={(val) => setEndSemMarks(parseInt(val) as EndSemMarks)}
-            compact
-          />
-          {format === 'practical' && (
-            <PillSelect
-              options={[
-                {value: '25', label: 'Int 25'}, {value: '50', label: 'Int 50'}, 
-                {value: '75', label: 'Int 75'}, {value: '100', label: 'Int 100'}, {value: '150', label: 'Int 150'}
-              ]}
-              value={internalMax.toString()}
-              onChange={(val) => setInternalMax(parseInt(val) as InternalMaxMarks)}
-              compact
-            />
-          )}
-
-          {/* Dot toggles */}
-          <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.04] p-0.5 rounded-lg ml-auto sm:ml-0">
-            <DotToggle label="Curve" active={relativeMode} onToggle={() => setRelativeMode(!relativeMode)} variant="warning" />
+        {/* ─── Redesigned Header: macOS-style Inspector Toolbar ─── */}
+        <div className="flex flex-col gap-4 bg-white/[0.02] border border-white/[0.05] rounded-[20px] p-4 shadow-sm">
+          
+          {/* Section 1: Course Info */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10 shrink-0">
+              <Target size={14} className="text-brand/80" />
+            </div>
+            <h2 className="text-sm font-bold text-white line-clamp-1 flex-1 tracking-tight">
+              {selectedCourse?.name || "No Course Selected"}
+            </h2>
+            {selectedCourse?.credits && (
+              <span className="shrink-0 text-[10px] font-black uppercase tracking-wider bg-white/5 text-foreground-muted px-2.5 py-1 rounded-md">
+                {selectedCourse.credits} CR
+              </span>
+            )}
           </div>
-        </div>
 
-        {/* ─── Curve Slider (conditional) ─── */}
-        <AnimatePresence>
-          {relativeMode && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="flex items-center gap-3 px-1 pb-1">
-                <span className="text-[10px] font-semibold text-warning shrink-0">Avg {expectedAvg}%</span>
-                <input 
-                  type="range" min={30} max={90} step={5} 
-                  value={expectedAvg} onChange={(e) => setExpectedAvg(parseInt(e.target.value))} 
-                  className="flex-1 accent-warning cursor-ew-resize h-1 rounded-full outline-none appearance-none bg-white/5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-warning [&::-webkit-slider-thumb]:rounded-full"
+          <div className="h-[1px] w-full bg-white/[0.04]" />
+
+          {/* Section 2: Config Row */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <PillSelect
+                options={[{value: 'theory', label: 'Theory'}, {value: 'practical', label: 'Practical'}]}
+                value={format}
+                onChange={(val) => setFormat(val as CourseFormat)}
+                compact
+              />
+              <PillSelect
+                options={[{value: '0', label: 'No Exam'}, {value: '50', label: 'ESE 50'}, {value: '100', label: 'ESE 100'}]}
+                value={endSemMarks.toString()}
+                onChange={(val) => setEndSemMarks(parseInt(val) as EndSemMarks)}
+                compact
+              />
+              {format === 'practical' && (
+                <PillSelect
+                  options={[
+                    {value: '25', label: 'Int 25'}, {value: '50', label: 'Int 50'}, 
+                    {value: '75', label: 'Int 75'}, {value: '100', label: 'Int 100'}, {value: '150', label: 'Int 150'}
+                  ]}
+                  value={internalMax.toString()}
+                  onChange={(val) => setInternalMax(parseInt(val) as InternalMaxMarks)}
+                  compact
                 />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-1 bg-[#1c1c1e]/50 border border-white/[0.04] p-0.5 rounded-lg">
+              <DotToggle label="Curve" active={relativeMode} onToggle={() => setRelativeMode(!relativeMode)} variant="warning" />
+            </div>
+          </div>
 
-        {/* ─── Section 3: Score Inputs ─── */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {schemeInfo.components.map(comp => (
-            <InlineInput
-              key={comp.id}
-              label={comp.label}
-              value={scores[comp.id] || ''}
-              setValue={(v) => handleScoreChange(comp.id, v)}
-              max={comp.max}
-            />
-          ))}
-          <div className="ml-auto text-[11px] font-bold text-foreground-muted tabular-nums">
-            {internals.scoredBase.toFixed(0)}<span className="text-white/20">/{internals.maxBase}</span>
+          {/* ─── Curve Slider (conditional) ─── */}
+          <AnimatePresence>
+            {relativeMode && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center gap-3 px-1 pt-1 pb-2">
+                  <span className="text-[10px] font-bold text-warning shrink-0 uppercase tracking-widest">Target Avg {expectedAvg}%</span>
+                  <input 
+                    type="range" min={30} max={90} step={5} 
+                    value={expectedAvg} onChange={(e) => setExpectedAvg(parseInt(e.target.value))} 
+                    className="flex-1 accent-warning cursor-ew-resize h-1 rounded-full outline-none appearance-none bg-white/5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-warning [&::-webkit-slider-thumb]:rounded-full"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Section 3: Interactive Dashboard-Style Score Chips */}
+          <div className="flex flex-col gap-2.5 mt-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-black uppercase tracking-widest text-foreground-muted/40">Internal Assessment</span>
+              <div className="text-[11px] font-bold text-foreground-muted tabular-nums bg-white/[0.03] px-2 py-0.5 rounded-md border border-white/[0.05]">
+                {internals.scoredBase.toFixed(0)}<span className="text-white/20">/{internals.maxBase}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 flex-wrap">
+              {schemeInfo.components.map(comp => (
+                <DashboardInputChip
+                  key={comp.id}
+                  label={comp.label}
+                  value={scores[comp.id] || ''}
+                  setValue={(v) => handleScoreChange(comp.id, v)}
+                  max={comp.max}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -608,7 +628,7 @@ function DotToggle({ label, active, onToggle, variant = "brand" }: {
   );
 }
 
-function InlineInput({ label, value, setValue, max }: {
+function DashboardInputChip({ label, value, setValue, max }: {
   label: string;
   value: string;
   setValue: (v: string) => void;
@@ -625,14 +645,18 @@ function InlineInput({ label, value, setValue, max }: {
   };
 
   return (
-    <div className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white/[0.03] border border-white/[0.08] focus-within:border-white/20 focus-within:bg-white/[0.08] transition-all">
-      <span className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider shrink-0">{label}</span>
-      <input
-        type="number" inputMode="decimal" step="0.5"
-        value={value} onChange={handleChange} placeholder="0"
-        className="bg-transparent border-none outline-none w-7 text-center text-[11px] font-bold text-foreground tabular-nums placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-      />
-      <span className="text-[9px] text-white/20 font-bold -ml-1">/{max}</span>
+    <div className="relative group flex flex-col gap-1.5 w-[82px]">
+      <div className="flex items-center justify-between px-1">
+        <span className="text-[9px] font-bold text-foreground-muted uppercase tracking-wider truncate">{label}</span>
+      </div>
+      <div className="flex items-center h-10 px-2.5 rounded-xl bg-[#0a0a0a]/50 border border-white/[0.08] group-focus-within:border-brand/40 group-focus-within:bg-brand/5 transition-all shadow-inner">
+        <input
+          type="number" inputMode="decimal" step="0.5"
+          value={value} onChange={handleChange} placeholder="0"
+          className="bg-transparent border-none outline-none w-full text-left text-[13px] font-bold text-white tabular-nums placeholder:text-white/10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <span className="text-[10px] text-white/20 font-bold shrink-0">/{max}</span>
+      </div>
     </div>
   );
 }
