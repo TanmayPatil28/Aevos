@@ -6,6 +6,7 @@ import { Layers, Edit3 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { AppleCarousel } from "@/components/ui/apple-carousel";
 import { FloatingPill } from "@/components/ui/floating-pill";
+import { useUSMStore } from "@/stores/usmStore";
 
 const ActiveSimulator = dynamic(() => import("./ActiveSimulator"), { 
   ssr: false,
@@ -28,6 +29,8 @@ export default function UnifiedCalculatorPage() {
   const [mode, setMode] = useState<"simulator" | "manual" | "planner" | "forecast">("simulator");
   const [isPillExpanded, setIsPillExpanded] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const activePanel = useUSMStore(state => state.workspaceUi.activePanel);
+  const isPanelOpen = activePanel !== "NONE";
   const { scrollY } = useScroll();
   
   // Transform background element on scroll
@@ -88,31 +91,82 @@ export default function UnifiedCalculatorPage() {
 
       {/* Premium Apple Carousel Section at Very Top */}
       <div className="relative z-50 pt-16 pb-8 max-w-[1600px] mx-auto flex flex-col gap-6">
-        <div className="w-full">
-          <div className="w-[100vw] relative left-1/2 -translate-x-1/2">
-            <AppleCarousel 
-              slides={carouselSlides} 
-              leftControls={
-                <FloatingPill 
-                  id={mode}
-                  activeId={mode}
-                  onActiveChange={(id) => {
-                    const strId = String(id);
-                    if (strId === "simulator" || strId === "manual" || strId === "planner" || strId === "forecast") {
-                      setMode(strId as any);
-                    }
-                  }}
-                  isExpanded={isPillExpanded}
-                  onExpandChange={setIsPillExpanded}
-                  items={[
-                    { id: "simulator", label: "Current Semester" },
-                    { id: "manual", label: "Custom Scenario" },
-                    { id: "planner", label: "Goal Planner" },
-                    { id: "forecast", label: "Future Trajectory" }
-                  ]}
-                  expandable={false}
-                />
-              }
+        
+        {/* Desktop View */}
+        <div className="hidden lg:block w-full">
+          {!isPanelOpen ? (
+            <div className="w-[100vw] relative left-1/2 -translate-x-1/2">
+              <AppleCarousel 
+                slides={carouselSlides} 
+                leftControls={
+                  <FloatingPill 
+                    id={mode}
+                    activeId={mode}
+                    onActiveChange={(id) => {
+                      const strId = String(id);
+                      if (strId === "simulator" || strId === "manual" || strId === "planner" || strId === "forecast") {
+                        setMode(strId as any);
+                      }
+                    }}
+                    isExpanded={isPillExpanded}
+                    onExpandChange={setIsPillExpanded}
+                    items={[
+                      { id: "simulator", label: "Current Semester" },
+                      { id: "manual", label: "Custom Scenario" },
+                      { id: "planner", label: "Goal Planner" },
+                      { id: "forecast", label: "Future Trajectory" }
+                    ]}
+                    expandable={false}
+                  />
+                }
+              />
+            </div>
+          ) : (
+            <div className="w-full flex items-center px-4 md:px-12">
+              <FloatingPill 
+                id={mode}
+                activeId={mode}
+                onActiveChange={(id) => {
+                  const strId = String(id);
+                  if (strId === "simulator" || strId === "manual" || strId === "planner" || strId === "forecast") {
+                    setMode(strId as any);
+                  }
+                }}
+                isExpanded={isPillExpanded}
+                onExpandChange={setIsPillExpanded}
+                items={[
+                  { id: "simulator", label: "Current Semester" },
+                  { id: "manual", label: "Custom Scenario" },
+                  { id: "planner", label: "Goal Planner" },
+                  { id: "forecast", label: "Future Trajectory" }
+                ]}
+                expandable={false}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Mobile View */}
+        <div className="block lg:hidden w-full px-6">
+          <div className="flex w-full overflow-x-auto pb-4 custom-scrollbar">
+            <FloatingPill 
+              id={mode}
+              activeId={mode}
+              onActiveChange={(id) => {
+                const strId = String(id);
+                if (strId === "simulator" || strId === "manual" || strId === "planner" || strId === "forecast") {
+                  setMode(strId as any);
+                }
+              }}
+              isExpanded={isPillExpanded}
+              onExpandChange={setIsPillExpanded}
+              items={[
+                { id: "simulator", label: "Current Semester" },
+                { id: "manual", label: "Custom Scenario" },
+                { id: "planner", label: "Goal Planner" },
+                { id: "forecast", label: "Future Trajectory" }
+              ]}
+              expandable={false}
             />
           </div>
         </div>
