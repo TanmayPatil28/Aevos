@@ -87,7 +87,7 @@ export default function UnifiedCalculatorPage() {
       </motion.div>
 
       {/* Premium Apple Carousel Section at Very Top */}
-      <div className="relative z-50 pt-16 pb-8 max-w-[1400px] mx-auto flex flex-col gap-6">
+      <div className="relative z-50 pt-16 pb-8 max-w-[1600px] mx-auto flex flex-col gap-6">
         <div className="w-full">
           <div className="w-[100vw] relative left-1/2 -translate-x-1/2">
             <AppleCarousel 
@@ -119,7 +119,7 @@ export default function UnifiedCalculatorPage() {
       </div>
 
       {/* Desktop Content Area */}
-      <div className="relative z-10 w-full px-6 md:px-12 max-w-[1400px] mx-auto mt-4">
+      <div className="relative z-10 w-full px-6 md:px-12 max-w-[1600px] mx-auto mt-4">
         <AnimatePresence mode="wait">
           <motion.div
             key={mode}

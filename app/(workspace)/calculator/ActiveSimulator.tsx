@@ -188,10 +188,7 @@ export default function CalculatorPage() {
 
   return (
     <>
-      <WorkspaceContent className={clsx(
-        "relative z-10 transition-all duration-300",
-        store.workspaceUi.activePanel !== "NONE" ? "lg:pr-[420px]" : ""
-      )}>
+      <WorkspaceContent className="relative z-10 transition-all duration-300">
 
         {/* =======================================
             TWO-COLUMN DYNAMIC FLOW LAYOUT
@@ -522,7 +519,7 @@ export default function CalculatorPage() {
             </AnimatePresence>
 
             {/* RIGHT PANE: Statutory Matrix */}
-            <motion.div layout transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }} className="flex-[2] min-w-[320px] relative z-10 w-full">
+            <motion.div layout transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }} className={clsx("min-w-[320px] relative z-10 w-full", store.workspaceUi.activePanel === "NONE" && "flex-[2]")}>
             {/* RIGHT: Statutory Matrix */}
             <div className="w-full relative z-10">
               <motion.div
