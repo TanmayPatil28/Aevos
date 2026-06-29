@@ -649,11 +649,11 @@ function DashboardInputChip({ label, value, setValue, max }: {
       <div className="flex items-center justify-between px-1">
         <span className="text-[9px] font-bold text-foreground-muted uppercase tracking-wider truncate">{label}</span>
       </div>
-      <div className="flex items-center justify-end h-10 px-2.5 rounded-xl bg-[#0a0a0a]/50 border border-white/[0.08] group-focus-within:border-brand/40 group-focus-within:bg-brand/5 transition-all shadow-inner">
+      <div className="flex items-center justify-center h-10 px-2.5 rounded-xl bg-[#0a0a0a]/50 border border-white/[0.08] group-focus-within:border-brand/40 group-focus-within:bg-brand/5 transition-all shadow-inner">
         <input
           type="number" inputMode="decimal" step="0.5"
           value={value} onChange={handleChange} placeholder="0"
-          className="bg-transparent border-none outline-none w-full text-right text-[13px] font-bold text-white tabular-nums placeholder:text-white/10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="bg-transparent border-none outline-none w-7 text-right text-[13px] font-bold text-white tabular-nums placeholder:text-white/10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
         <span className="text-[10px] text-white/20 font-bold shrink-0 ml-0.5">/{max}</span>
       </div>
