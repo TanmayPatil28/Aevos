@@ -405,9 +405,18 @@ export default function CalculatorPage() {
           <div className="flex flex-wrap gap-8 lg:gap-12 items-start mt-12">
 
             {/* LEFT PANE: Typography */}
-            <div className="flex-1 min-w-[320px] max-w-2xl flex flex-col gap-8 relative z-10 lg:sticky lg:top-28 h-fit w-full">
-              {/* LEFT: Apple-Style Guide Typography */}
-              <div className="w-full flex flex-col gap-8 relative z-10 px-2 lg:px-6">
+            <AnimatePresence mode="popLayout">
+              {store.workspaceUi.activePanel === "NONE" && (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, filter: 'blur(10px)', x: -20 }}
+                  animate={{ opacity: 1, filter: 'blur(0px)', x: 0 }}
+                  exit={{ opacity: 0, filter: 'blur(10px)', x: -20 }}
+                  transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                  className="flex-1 min-w-[320px] max-w-2xl flex flex-col gap-8 z-10 lg:sticky lg:top-28 h-fit w-full"
+                >
+                  {/* LEFT: Apple-Style Guide Typography */}
+                  <div className="w-full flex flex-col gap-8 relative z-10 px-2 lg:px-6">
 
                 <motion.div 
                   initial={{ opacity: 0, y: 30 }}
@@ -508,10 +517,12 @@ export default function CalculatorPage() {
 
               </div>
 
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* RIGHT PANE: Statutory Matrix */}
-            <div className="flex-[2] min-w-[320px] relative z-10 w-full">
+            <motion.div layout transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }} className="flex-[2] min-w-[320px] relative z-10 w-full">
             {/* RIGHT: Statutory Matrix */}
             <div className="w-full relative z-10">
               <motion.div
@@ -527,7 +538,7 @@ export default function CalculatorPage() {
 
               </motion.div>
             </div>
-            </div>
+            </motion.div>
 
           </div>
 
