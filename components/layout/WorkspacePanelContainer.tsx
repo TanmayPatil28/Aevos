@@ -39,7 +39,7 @@ export default function WorkspacePanelContainer() {
           }}
         >
           {/* Glass Shell */}
-          <div className="absolute inset-0 bg-[#0a0a0a]/90 lg:bg-[#0a0a0a]/80 backdrop-blur-[40px] rounded-t-[32px] lg:rounded-[24px] border border-white/[0.05] shadow-[0_-20px_100px_rgba(0,0,0,0.5)] lg:shadow-[-20px_0_100px_rgba(0,0,0,0.5)] pointer-events-none" />
+          <div className="absolute inset-0 bg-surface-raised/95 lg:bg-surface-raised/85 backdrop-blur-[40px] rounded-t-[32px] lg:rounded-[24px] border border-white/[0.05] shadow-[0_-20px_100px_rgba(0,0,0,0.5)] lg:shadow-[-20px_0_100px_rgba(0,0,0,0.5)] pointer-events-none" />
           
           {/* Header */}
           <div className="relative z-10 flex items-center justify-between p-4 border-b border-white/20">
