@@ -233,7 +233,7 @@ export default function CalculatorPage() {
                   </div>
                 </Card>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 relative z-20">
+                <div className={`grid grid-cols-1 sm:grid-cols-2 ${store.workspaceUi.activePanel !== "NONE" ? '2xl:grid-cols-3 lg:grid-cols-2' : 'lg:grid-cols-3'} gap-4 relative z-20`}>
                   <AnimatePresence mode="popLayout">
                     {simulatedCourses.length === 0 ? (
                       <motion.div
@@ -340,7 +340,7 @@ export default function CalculatorPage() {
             </div>
 
             {/* RIGHT PANE: Numbers Summary */}
-            <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10">
+            <div className="w-fit max-w-[280px] shrink-0 flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10">
               {/* No backgrounds, borders, or padding on the main container */}
               
               <div className="flex flex-col">
@@ -519,7 +519,7 @@ export default function CalculatorPage() {
             </AnimatePresence>
 
             {/* RIGHT PANE: Statutory Matrix */}
-            <motion.div layout transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }} className={clsx("min-w-[320px] relative z-10 w-full", store.workspaceUi.activePanel === "NONE" && "flex-[2]")}>
+            <motion.div layout transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }} className={clsx("min-w-[320px] relative z-10 w-full", store.workspaceUi.activePanel === "NONE" ? "flex-[2]" : "flex-1")}>
             {/* RIGHT: Statutory Matrix */}
             <div className="w-full relative z-10">
               <motion.div
