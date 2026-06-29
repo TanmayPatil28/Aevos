@@ -201,7 +201,7 @@ export default function CalculatorPage() {
           <div className="flex flex-col xl:flex-row gap-8 lg:gap-12 items-start w-full">
 
             {/* LEFT PANE: Bento Grid */}
-            <div className="flex-[2] min-w-0 flex flex-col gap-6 relative z-10 w-full">
+            <div className="flex-1 min-w-0 flex flex-col gap-6 relative z-10 w-full">
 
               {/* =======================================
             LEFT PANE: The Bento Grid Subject Ledger
@@ -233,7 +233,7 @@ export default function CalculatorPage() {
                   </div>
                 </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-20">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 relative z-20">
                   <AnimatePresence mode="popLayout">
                     {simulatedCourses.length === 0 ? (
                       <motion.div
@@ -340,7 +340,7 @@ export default function CalculatorPage() {
             </div>
 
             {/* RIGHT PANE: Numbers Summary */}
-            <div className="flex-1 min-w-0 flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10 w-full">
+            <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-12 lg:sticky lg:top-28 h-fit relative z-10">
               {/* No backgrounds, borders, or padding on the main container */}
               
               <div className="flex flex-col">
