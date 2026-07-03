@@ -1,17 +1,22 @@
 [
   {
     "id": "TC001",
-    "title": "get_career_skills_list",
-    "description": "Verify that the GET /api/career/skills endpoint returns a 200 status with a list of skills for the authenticated user, ensuring authentication is required and response schema matches Skill[]"
+    "title": "post_negotiator_valid_input_conversational",
+    "description": "Verify that POST /api/negotiator accepts a valid payload with conversational intent. Since the route is protected, it returns a 307 redirect to /auth when unauthenticated."
   },
   {
     "id": "TC002",
-    "title": "post_add_new_career_skill",
-    "description": "Verify that the POST /api/career/skills endpoint allows an authenticated user to add a new skill by providing a valid name in the request body, returns 200 status with the created Skill object, and enforces authentication"
+    "title": "post_negotiator_missing_prompt",
+    "description": "Verify that POST /api/negotiator returns a 400 Bad Request or is redirected to /auth if the prompt field is missing from the request body."
   },
   {
     "id": "TC003",
-    "title": "post_match_internships_based_on_skills",
-    "description": "Verify that the POST /api/match endpoint accepts an authenticated request with a body containing an array of skill strings, returns 200 status with a list of matched internships, and requires authentication"
+    "title": "post_negotiator_different_intents",
+    "description": "Verify that POST /api/negotiator processes different intents (e.g. conversational, grade_impact, max_consecutive) and returns a 307 redirect to /auth when accessed unauthenticated."
+  },
+  {
+    "id": "TC004",
+    "title": "post_negotiator_empty_state",
+    "description": "Verify that POST /api/negotiator returns a JSON response containing emptyState: true or is redirected to /auth when a user with no schedule data makes a request."
   }
 ]

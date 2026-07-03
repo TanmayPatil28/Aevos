@@ -1,3 +1,6 @@
+import { sanitizeAdherenceNeutralText } from "../../lib/time-liquidity/sanitizer";
+import { solveTimeConstraints } from "../../lib/engines/constraintSolver";
+
 const colors = {
   reset: "\x1b[0m",
   bright: "\x1b[1m",
@@ -93,6 +96,45 @@ export function runAttendanceTests(): boolean {
   const result2Attend8 = calculateBunkImpact(28, 40, 0, 8, 75);
   assert("After attending 8 classes, percentage is 75.0%", result2Attend8.percentage === 75.0);
   assert("Safe after 8 recovery classes", result2Attend8.isSafe);
+
+  section("Adherence Neutral Text Sanitizer (Hyphenated Protection)");
+
+  assert("Does not sanitize hyphenated bunk-bed", sanitizeAdherenceNeutralText("This is a bunk-bed.") === "This is a bunk-bed.");
+  assert("Does not sanitize hyphenated skip-level", sanitizeAdherenceNeutralText("We had a skip-level meeting.") === "We had a skip-level meeting.");
+  assert("Does not sanitize hyphenated level-skip", sanitizeAdherenceNeutralText("Avoid level-skip scenario.") === "Avoid level-skip scenario.");
+  assert("Sanitizes stand-alone bunked correctly", sanitizeAdherenceNeutralText("I bunked the class.") === "I reallocated the class.");
+  assert("Sanitizes stand-alone skipped correctly", sanitizeAdherenceNeutralText("I skipped the meeting.") === "I reallocated the meeting.");
+  assert("Sanitizes capitalized Bunk correctly", sanitizeAdherenceNeutralText("Bunk this session.") === "Reallocate this session.");
+  assert("Sanitizes Time Liquidity to Attendance Optimizer", sanitizeAdherenceNeutralText("Time Liquidity is good.") === "Attendance Optimizer is good.");
+  assert("Sanitizes portfolio to schedule", sanitizeAdherenceNeutralText("Check my portfolio.") === "Check my schedule.");
+  assert("Sanitizes Reallocation Credits to Safe Skips", sanitizeAdherenceNeutralText("Use your Reallocation Credits.") === "Use your Safe Skips.");
+  assert("Sanitizes risk exposure to risk level", sanitizeAdherenceNeutralText("Reduce risk exposure.") === "Reduce risk level.");
+
+  section("Constraint Solver Intent Logic (grade_impact & max_consecutive)");
+
+  const mockSchedule = [
+    { id: "c1", courseCode: "CS101", title: "CS Theory", type: "Theory" as const, dayOfWeek: "Monday", startTime: "09:00", endTime: "10:00", isMandatory: false, penaltyWeight: 1.5 },
+    { id: "c2", courseCode: "CS102", title: "CS Tutorial", type: "Theory" as const, dayOfWeek: "Monday", startTime: "10:00", endTime: "11:00", isMandatory: false, penaltyWeight: 1.0 },
+    { id: "c3", courseCode: "CS103", title: "CS Lab", type: "Theory" as const, dayOfWeek: "Tuesday", startTime: "14:00", endTime: "15:00", isMandatory: false, penaltyWeight: 2.0 }
+  ];
+
+  // Test grade_impact: should prefer to skip lower penalty class c2 over c1
+  const stateGrade = {
+    schedule: mockSchedule,
+    availableSafeBunks: 1.0,
+    currentRuinRisk: 10.0
+  };
+  const solvedGrade = solveTimeConstraints(stateGrade, [{ type: 'grade_impact' }]);
+  assert("grade_impact prefers c2 (penalty 1.0) over c1 (penalty 1.5)", solvedGrade.classesToSkip.includes("c2") && !solvedGrade.classesToSkip.includes("c1"));
+
+  // Test max_consecutive: should prefer to skip c1 & c2 (back-to-back on Monday) over c3 (on Tuesday)
+  const stateConsecutive = {
+    schedule: mockSchedule,
+    availableSafeBunks: 2.5,
+    currentRuinRisk: 10.0
+  };
+  const solvedConsecutive = solveTimeConstraints(stateConsecutive, [{ type: 'max_consecutive' }]);
+  assert("max_consecutive prioritizes back-to-back classes c1 and c2", solvedConsecutive.classesToSkip.includes("c1") && solvedConsecutive.classesToSkip.includes("c2"));
 
   console.log(`----------------------------------------------------------------`);
   console.log(`Attendance Tests Results: ${passedTests}/${totalTests} Passed.`);

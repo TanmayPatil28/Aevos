@@ -40,5 +40,9 @@ dev.db
 
 external_keys_backup.env
 
-testsprite_tests\tmp\config.json
+testsprite_tests/tmp/config.json
 local-packages/
+
+# Agent and Test temporary logs
+.agents/
+testsprite_tests/tmp/

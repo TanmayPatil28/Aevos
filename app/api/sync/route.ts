@@ -36,6 +36,27 @@ export async function POST(request: Request) {
 
             if (Array.isArray(payload.courses)) {
               const uniqueCourses = Array.from(new Map(payload.courses.map((c: any) => [c.code, c])).values());
+              const incomingCodes = uniqueCourses.map((c: any) => c.code).filter(Boolean);
+
+              // 1. Delete enrollments not present in the current payload
+              const existingEnrollments = await tx.enrollment.findMany({
+                where: { userId },
+                include: { course: true }
+              });
+
+              for (const ue of existingEnrollments) {
+                if (!incomingCodes.includes(ue.course.code)) {
+                  // Delete dependent logs and then the enrollment
+                  try {
+                    await tx.attendanceLog.deleteMany({ where: { enrollmentId: ue.id } });
+                    await tx.enrollment.delete({ where: { id: ue.id } });
+                  } catch (e) {
+                    console.error("[API Sync] Failed to delete old enrollment", e);
+                  }
+                }
+              }
+
+              // 2. Upsert incoming courses
               for (const c of uniqueCourses as any[]) {
                 if (!c.code) continue;
                 let course = await tx.course.findUnique({ where: { code: c.code } });
@@ -74,23 +95,22 @@ export async function POST(request: Request) {
             }
 
             if (Array.isArray(payload.semesterHistory)) {
-              const incomingSemesters = payload.semesterHistory.map((s: any) => s.semester?.toString());
-              if (incomingSemesters.length > 0) {
-                await tx.calculation.deleteMany({
-                  where: { userId, semester: { in: incomingSemesters } }
+              // We replace all calculations since the payload is the source of truth
+              await tx.calculation.deleteMany({
+                where: { userId }
+              });
+              
+              for (const sem of payload.semesterHistory) {
+                await tx.calculation.create({
+                  data: {
+                    userId,
+                    semester: sem.semester?.toString() || "1",
+                    sgpa: sem.sgpa || 0,
+                    cgpa: sem.sgpa || 0,
+                    total_credits: sem.credits || 0,
+                    subjects: [],
+                  }
                 });
-                for (const sem of payload.semesterHistory) {
-                  await tx.calculation.create({
-                    data: {
-                      userId,
-                      semester: sem.semester?.toString() || "1",
-                      sgpa: sem.sgpa || 0,
-                      cgpa: sem.sgpa || 0,
-                      total_credits: sem.credits || 0,
-                      subjects: [],
-                    }
-                  });
-                }
               }
             }
             break;
