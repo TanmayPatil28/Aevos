@@ -26,6 +26,7 @@ export interface AcademicState {
   batchYear?: number;
   semesterStartDate?: string;
   semesterEndDate?: string;
+  studentBatch?: string;
 }
 
 export interface CourseState {
@@ -743,12 +744,15 @@ export const useUSMStore = create<USMStoreState>()(
 
       setSemesterHistory: (history) => {
         set({ semesterHistory: history });
+        get().queueSyncAction("SEMESTER_UPDATE", { semesterHistory: history });
       },
 
       addSemesterEntry: (entry) => {
-        set((state) => ({
-          semesterHistory: [...state.semesterHistory, entry],
-        }));
+        set((state) => {
+          const newHistory = [...state.semesterHistory, entry];
+          get().queueSyncAction("SEMESTER_UPDATE", { semesterHistory: newHistory });
+          return { semesterHistory: newHistory };
+        });
       },
 
       setCareer: (careerUpdates) => {

@@ -15,7 +15,7 @@ export default function IslandTestControls() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-4 left-4 z-[9999] px-4 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 backdrop-blur-xl flex items-center gap-2 text-sm font-bold shadow-lg transition-all ${isOpen ? 'opacity-0 pointer-events-none scale-90' : 'opacity-100 scale-100'}`}
+        className={`fixed bottom-4 right-4 z-[9999] px-4 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 backdrop-blur-xl flex items-center gap-2 text-sm font-bold shadow-lg transition-all ${isOpen ? 'opacity-0 pointer-events-none scale-90' : 'opacity-100 scale-100'}`}
       >
         <Settings size={16} /> Controls
       </button>
@@ -26,7 +26,7 @@ export default function IslandTestControls() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-4 left-4 z-[10000] bg-black/80 backdrop-blur-2xl border border-white/20 p-4 rounded-xl flex flex-col gap-2 text-xs font-mono max-h-[85vh] w-[280px] overflow-y-auto shadow-2xl"
+            className="fixed bottom-4 right-4 z-[10000] bg-black/80 backdrop-blur-2xl border border-white/20 p-4 rounded-xl flex flex-col gap-2 text-xs font-mono max-h-[85vh] w-[280px] overflow-y-auto shadow-2xl"
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-white/50 font-bold uppercase tracking-widest">Island Controls</span>
@@ -40,27 +40,41 @@ export default function IslandTestControls() {
 
       <button 
         onClick={() => {
-          const now = new Date();
-          const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
-          const currentStartTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-          const currentEndTime = `${nextHour.getHours().toString().padStart(2, '0')}:${nextHour.getMinutes().toString().padStart(2, '0')}`;
-          
-          useUSMStore.getState().setCourses([{
-            id: 'c1', code: 'CS101', name: 'Data Structures', semester: 1, credits: 4, cieMarks: 0, attendanceTotal: 40, attendanceBunked: 12
-          }]);
-          
-          const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          const today = days[now.getDay()] as keyof ReturnType<typeof useUSMStore.getState>['timetable'];
+          useUSMStore.getState().setCourses([
+            { id: 'c1', code: 'CS101', name: 'Data Structures', semester: 1, credits: 4, cieMarks: 0, attendanceTotal: 40, attendanceBunked: 12 },
+            { id: 'c2', code: 'CS102', name: 'Algorithms', semester: 1, credits: 4, cieMarks: 0, attendanceTotal: 40, attendanceBunked: 9 },
+            { id: 'c3', code: 'EE405', name: 'Signals Lab', semester: 1, credits: 4, cieMarks: 0, attendanceTotal: 40, attendanceBunked: 2 },
+            { id: 'c4', code: 'CS103', name: 'Operating Systems', semester: 1, credits: 4, cieMarks: 0, attendanceTotal: 40, attendanceBunked: 0 }
+          ]);
           
           useUSMStore.getState().setTimetable({
-            [today]: [{ id: 't1', courseId: 'c1', type: 'LECTURE', startTime: currentStartTime, endTime: currentEndTime, room: 'Lab 2' }]
+            monday: [
+              { id: 't1', courseId: 'c1', type: 'LECTURE', startTime: '09:00', endTime: '11:00', room: 'Lab 2' },
+              { id: 't2', courseId: 'c2', type: 'LECTURE', startTime: '13:00', endTime: '14:00', room: 'A-201' }
+            ],
+            tuesday: [
+              { id: 't3', courseId: 'c3', type: 'LAB', startTime: '10:00', endTime: '13:00', room: 'Hardware Lab' },
+              { id: 't4', courseId: 'c4', type: 'LECTURE', startTime: '15:00', endTime: '17:00', room: 'A-204' }
+            ],
+            wednesday: [
+              { id: 't5', courseId: 'c1', type: 'LECTURE', startTime: '09:00', endTime: '10:00', room: 'Lab 2' },
+              { id: 't6', courseId: 'c2', type: 'LECTURE', startTime: '13:00', endTime: '15:00', room: 'A-201' }
+            ],
+            thursday: [
+              { id: 't7', courseId: 'c4', type: 'LECTURE', startTime: '10:00', endTime: '12:00', room: 'A-204' }
+            ],
+            friday: [
+              { id: 't8', courseId: 'c1', type: 'LECTURE', startTime: '10:00', endTime: '11:00', room: 'Lab 2' }
+            ],
+            saturday: [],
+            sunday: []
           });
           
           showAlert({
             id: `alert-tt-${Date.now()}`,
             type: 'success',
             title: 'Timetable Synced',
-            message: 'Live classes have been successfully fetched.',
+            message: 'Full dense academic schedule injected.',
             duration: 3500,
           });
         }}

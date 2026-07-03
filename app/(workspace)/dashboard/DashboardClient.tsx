@@ -255,8 +255,8 @@ export default function DashboardClient({
   // GSAP Cinematic Curtain Reveal
   useGSAP(() => {
     const tl = gsap.timeline();
-    gsap.set(".curtain-content", { opacity: 0, filter: "blur(10px)", scale: 0.98 });
-    gsap.set(".gsap-dashboard-card", { opacity: 0, y: 50 });
+    gsap.set(".curtain-content", { opacity: 1, filter: "blur(0px)", scale: 1 });
+    gsap.set(".gsap-dashboard-card", { opacity: 1, y: 0 });
     
     tl.to(".curtain-content", {
       opacity: 1, filter: "blur(0px)", scale: 1, duration: 1.2, ease: "power3.out", stagger: 0.2
@@ -373,7 +373,7 @@ export default function DashboardClient({
   const setMode = store.setWorkspaceMode;
 
   return (
-    <div className="w-full relative min-h-screen bg-background overflow-x-hidden selection:bg-brand/30 selection:text-white pb-32 font-sans scrollbar-hide">
+    <div className="w-full relative min-h-screen bg-[var(--aevos-background)] text-[var(--aevos-text-primary)] aevos-texture overflow-x-hidden selection:bg-brand/30 selection:text-white pb-32 font-sans scrollbar-hide">
       
       {/* Background Ambient Glows */}
       <motion.div 

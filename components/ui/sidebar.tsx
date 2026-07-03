@@ -22,7 +22,9 @@ import {
   Settings,
   Cpu,
   X,
-  LogOut
+  LogOut,
+  FileText,
+  Inbox
 } from 'lucide-react';
 import { SettingsModal } from "@/components/ui/SettingsModal";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -38,11 +40,14 @@ const categories = [
   },
   {
     id: "survival",
-    name: "Academics",
+    name: "Time Liquidity",
     icon: ShieldHalf,
     color: "text-red-500",
-    href: "/attendance",
-    items: []
+    href: "/time-liquidity",
+    items: [
+      { id: "assignments", name: "Assignments", icon: FileText, href: "/assignments", color: "text-red-500" },
+      { id: "backlogs", name: "Debt Triage", icon: Inbox, href: "/backlogs", color: "text-red-500" }
+    ]
   },
   {
     id: "career",
@@ -314,11 +319,25 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
 
   const isActive = isExpanded || isHovered;
 
+  const isFullscreenApp = pathname === "/assignments" || pathname === "/backlogs" || pathname === "/backlog";
+
+  if (isFullscreenApp) {
+    return (
+      <div className="flex w-full h-screen bg-background relative overflow-hidden">
+        <div className="flex-1 w-full h-screen flex flex-col bg-background md:pb-0">
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex w-full min-h-screen bg-background relative overflow-x-hidden">
 
-        <div
+        <motion.div
+          animate={{ x: isActive ? 0 : -60 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="fixed top-0 left-0 h-screen w-20 z-50 hidden md:flex items-center cursor-pointer"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
@@ -374,9 +393,9 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
               ))}
             </AnimatePresence>
           </motion.div>
-        </div>
+        </motion.div>
 
-        <div className="flex-1 w-full min-h-screen bg-background md:pl-6 pb-28 md:pb-0">
+        <div className="flex-1 w-full min-h-screen bg-background pb-28 md:pb-0">
           {children}
         </div>
       </div>
@@ -386,7 +405,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
         {[
           { id: "home", name: "Home", icon: Home, href: "/dashboard" },
           { id: "predictors", name: "Predictor", icon: Orbit, href: "/calculator" },
-          { id: "survival", name: "Academics", icon: ShieldHalf, href: "/attendance" },
+          { id: "survival", name: "Academics", icon: ShieldHalf, href: "/time-liquidity" },
           { id: "career", name: "Careers", icon: Layers, href: "/placement" },
           { id: "settings", name: "Settings", icon: Settings, href: "#settings" }
         ].map((item) => {

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   GraduationCap, 
   Target, Award, BookOpen, Sparkles, 
-  ArrowUpRight, History, Zap, Briefcase
+  ArrowUpRight, History, Zap, Briefcase, Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUSMStore } from '@/stores/usmStore';
 import { cn } from '@/lib/cn';
+import { toast } from 'sonner';
 
 const MotionCard = motion(Card);
 
@@ -138,6 +139,24 @@ export default function FullAcademicTimeline() {
     return skillValue + baseValue;
   }, [semesterSkills, currentSemesterCourses]);
 
+  const handleResetSemester = () => {
+    if (!selectedSem) return;
+    if (confirm(`Are you sure you want to completely reset all data for Semester ${String(selectedSem).padStart(2, '0')}? This will delete all courses and grades for this semester.`)) {
+      const newCourses = store.courses.filter(c => c.semester !== selectedSem);
+      const newHistory = store.semesterHistory.filter(h => h.semester !== selectedSem);
+      
+      store.setCourses(newCourses);
+      store.setSemesterHistory(newHistory);
+      
+      toast.success(`Semester ${selectedSem} data has been reset.`);
+      
+      // Auto-select a different semester if this one is now gone
+      if (newHistory.length === 0 && newCourses.length === 0) {
+        setSelectedSem(null);
+      }
+    }
+  };
+
   if (!mounted) return null;
 
   if (dynamicSemesters.length === 0) {
@@ -231,9 +250,20 @@ export default function FullAcademicTimeline() {
                   <GraduationCap size={14} className="text-foreground-muted" />
                   <span className="text-[10px] font-bold text-foreground-muted uppercase tracking-widest">Academic Profile</span>
                 </div>
-                <h2 className="text-[20px] font-black text-foreground tracking-tight">
-                  {dynamicSemesters.find(s => s.id === selectedSem)?.title}
-                </h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-[20px] font-black text-foreground tracking-tight">
+                    {dynamicSemesters.find(s => s.id === selectedSem)?.title}
+                  </h2>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-7 w-7 text-foreground-muted hover:text-red-400 hover:bg-red-500/10 transition-colors" 
+                    onClick={handleResetSemester} 
+                    title="Reset Semester Data"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
               
               <div className="flex flex-col items-end text-right">

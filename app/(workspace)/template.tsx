@@ -18,7 +18,7 @@ export default function WorkspaceTemplate({ children }: { children: React.ReactN
         mass: 0.8,
       }}
       style={{ willChange: "transform, opacity" }}
-      className="w-full h-full"
+      className="w-full h-full flex-1 flex flex-col"
     >
       {children}
     </motion.div>

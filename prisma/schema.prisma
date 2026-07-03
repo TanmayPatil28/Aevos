@@ -65,6 +65,7 @@ model User {
   careerProfile     CareerProfile?
   dynamicRoadmaps   DynamicRoadmap[]
   backlogRecords    BacklogRecord[]
+  physicsProfile    UserPhysicsProfile?
 
   @@index([activeSnapshotId])
   @@map("users")
@@ -403,6 +404,17 @@ model Waitlist {
   id        String   @id @default(cuid())
   email     String   @unique
   createdAt DateTime @default(now()) @map("created_at")
-
   @@map("waitlist")
+}
+
+model UserPhysicsProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique @map("user_id")
+  circadianRhythm   String   @default("neutral")
+  baselineFatigue   Float    @default(0.0)
+  sleepDebt         Float    @default(0.0)
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_physics_profiles")
 }

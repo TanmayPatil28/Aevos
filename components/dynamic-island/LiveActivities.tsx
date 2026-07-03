@@ -620,7 +620,7 @@ export function ExpandedActivity({ activity }: { activity: LiveActivity }) {
                   dragElastic={0.2}
                   className="w-10 h-2 bg-[#FF3B30] rounded-full shadow-[0_0_15px_rgba(255,59,48,0.6)] cursor-grab active:cursor-grabbing"
                   whileTap={{ scaleY: 0.8, scaleX: 1.2, borderRadius: "8px" }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 28 }}
                 />
               </div>
             </div>

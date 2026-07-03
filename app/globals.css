@@ -2,6 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Core Backgrounds */
+    --aevos-background: #131314;
+    --aevos-canvas: #0f0f10;
+    
+    /* Surfaces */
+    --aevos-surface: #151515;
+    --aevos-surface-dim: #131314;
+    --aevos-surface-bright: #39393a;
+    --aevos-surface-container-lowest: #0e0e0f;
+    --aevos-surface-container-low: #1c1b1c;
+    --aevos-surface-container: #201f20;
+    --aevos-surface-container-high: #2a2a2b;
+    --aevos-surface-container-highest: #353436;
+    --aevos-surface-variant: #353436;
+    --aevos-surface-raised: #1e1e1e;
+    --aevos-surface-overlay: #242424;
+    --aevos-surface-tint: #b1d446;
+    
+    /* Text / On-Surface */
+    --aevos-on-surface: #e5e2e3;
+    --aevos-on-surface-variant: #c5c9b1;
+    --aevos-on-background: #e5e2e3;
+    --aevos-text-primary: #f5f5f7;
+    --aevos-text-secondary: #828282;
+    --aevos-text-tertiary: #5f5f5f;
+    
+    /* Inverse */
+    --aevos-inverse-surface: #e5e2e3;
+    --aevos-inverse-on-surface: #313031;
+    --aevos-inverse-primary: #506600;
+
+    /* Outlines */
+    --aevos-outline: #8f937d;
+    --aevos-outline-variant: #454937;
+    
+    /* Primary (Android Green) */
+    --aevos-primary: #bfe353;
+    --aevos-on-primary: #283500;
+    --aevos-primary-container: #a4c639;
+    --aevos-on-primary-container: #3e5000;
+    --aevos-primary-fixed: #ccf05f;
+    --aevos-primary-fixed-dim: #b1d446;
+    --aevos-on-primary-fixed: #161e00;
+    --aevos-on-primary-fixed-variant: #3c4d00;
+    
+    /* Secondary */
+    --aevos-secondary: #c7c6c6;
+    --aevos-on-secondary: #2f3131;
+    --aevos-secondary-container: #464747;
+    --aevos-on-secondary-container: #b5b5b5;
+    --aevos-secondary-fixed: #e3e2e2;
+    --aevos-secondary-fixed-dim: #c7c6c6;
+    --aevos-on-secondary-fixed: #1b1c1c;
+    --aevos-on-secondary-fixed-variant: #464747;
+    
+    /* Tertiary */
+    --aevos-tertiary: #d6d5d4;
+    --aevos-on-tertiary: #303031;
+    --aevos-tertiary-container: #bab9b9;
+    --aevos-on-tertiary-container: #494a4a;
+    --aevos-tertiary-fixed: #e4e2e2;
+    --aevos-tertiary-fixed-dim: #c7c6c6;
+    --aevos-on-tertiary-fixed: #1b1c1c;
+    --aevos-on-tertiary-fixed-variant: #464747;
+    
+    /* Error / Status */
+    --aevos-error: #ffb4ab;
+    --aevos-on-error: #690005;
+    --aevos-error-container: #93000a;
+    --aevos-on-error-container: #ffdad6;
+    
+    --aevos-status-success: #8abd9e;
+    --aevos-status-warning: #cca77b;
+    --aevos-status-critical: #FF5252;
+    --aevos-status-info: #91b4df;
+    
+    /* Brands */
+    --aevos-apple-blue: #0071E3;
+  }
+}
+
+@layer utilities {
+  .aevos-chamfer {
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  .aevos-glass {
+    background-color: rgba(21, 21, 21, 0.85); /* aevos-surface with opacity */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .aevos-glass-overlay {
+    background-color: rgba(36, 36, 36, 0.85); /* aevos-surface-overlay with opacity */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Timetable specific tints */
+  .aevos-tint-lecture {
+    background-color: rgba(145, 180, 223, 0.06); /* status-info tint */
+  }
+  .aevos-tint-lab {
+    background-color: rgba(204, 167, 123, 0.06); /* status-warning tint */
+  }
+  .aevos-tint-tutorial {
+    background-color: rgba(138, 189, 158, 0.06); /* status-success tint */
+  }
+  .aevos-tint-safeskip {
+    background-color: rgba(164, 198, 57, 0.08); /* primary-container tint */
+  }
+}
+
 @font-face {
   font-family: 'SF Pro Display';
   src: url('/fonts/SFProDisplay-Semibold.otf') format('opentype');
@@ -310,4 +427,20 @@ body::-webkit-scrollbar {
 html, body {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
+}
+
+/* Glassmorphic/Panel effects (Pro-Tool) */
+.glass-panel {
+  background: rgba(21, 21, 21, 0.7); /* surface with opacity */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05); /* subtle borders */
+}
+
+/* Grid lines for calendar (Pro-Tool) */
+.calendar-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 14.28% 40px; /* 7 columns, fixed row height */
 }

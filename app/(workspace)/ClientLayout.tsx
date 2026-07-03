@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import WorkspaceCanvas from "@/components/layout/WorkspaceCanvas";
 import WorkspaceAtmosphere from "@/components/layout/WorkspaceAtmosphere";
 import WorkspacePanelContainer from "@/components/layout/WorkspacePanelContainer";
@@ -22,6 +23,11 @@ const ContextualIslandController = dynamic(() => import("@/components/dynamic-is
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const { isJarvisCommandCenterOpen, closeJarvisCommandCenter, toggleJarvisCommandCenter } = useUIStore();
+  const pathname = usePathname();
+  const isTimeLiquidity = pathname === "/time-liquidity";
+  const isAssignments = pathname === "/assignments";
+  const isBacklogs = pathname === "/backlogs" || pathname === "/backlog";
+  const isFullscreenApp = isAssignments || isBacklogs;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,7 +43,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
   return (
     <Sidebar>
-      <div className="min-h-[100dvh] bg-[#000000] relative">
+      <div className={cn("bg-[#000000] relative flex flex-col w-full", (isFullscreenApp || isTimeLiquidity) ? "h-[100dvh]" : "min-h-[100dvh]")}>
         <JarvisNervousSystem />
         <JarvisResumeModal />
         <WorkspaceAtmosphere />
@@ -66,7 +72,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
         {/* Global AI Action Console */}
         <GlobalTerminal />
-        <DynamicIsland />
+        {!isFullscreenApp && <DynamicIsland />}
         <ContextualIslandController />
         <SmartTimetableController />
         <BunkCalculatorController />

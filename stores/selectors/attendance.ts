@@ -23,6 +23,8 @@ export interface DerivedAttendanceStatus {
   overallRisk: "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY";
   aggregatePercentage: number;
   survivalScore: "STABLE" | "RISKY" | "CRITICAL" | "ACADEMIC EMERGENCY";
+  ruinProbability: number;
+  timeCushionHours: number;
   courses: DerivedAttendanceCourseRisk[];
   worstCourseId: string | null;
 }
@@ -142,10 +144,17 @@ export const selectAttendanceRisk = createSelector((state: USMStoreState): Deriv
     survivalScore = "RISKY";
   }
 
+  const ruinProbability = parseFloat((100 - aggregatePercentage).toFixed(1));
+  const timeCushionHours = totalConductedSum > 0 
+    ? courses.reduce((sum, c) => sum + (c.safeBunks * 1.5), 0)
+    : 0;
+
   return {
     overallRisk,
     aggregatePercentage: parseFloat(aggregatePercentage.toFixed(1)),
     survivalScore,
+    ruinProbability,
+    timeCushionHours,
     courses,
     worstCourseId
   };

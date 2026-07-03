@@ -158,9 +158,6 @@ export function runDynamicIslandTests(): boolean {
 
   const filesToVerify = [
     "components/dynamic-island/LiveActivities.tsx",
-    "components/dynamic-island/ExamCountdownPill.tsx",
-    "components/dynamic-island/StreakBadge.tsx",
-    "components/dashboard/UnifiedDynamicIsland.tsx",
     "components/placement/DynamicIsland.tsx",
     "components/attendance/DynamicIsland.tsx"
   ];

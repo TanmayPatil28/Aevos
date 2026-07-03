@@ -5,7 +5,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import NextTopLoader from "nextjs-toploader";
 import dynamic from "next/dynamic";
 const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: false });
-import { Inter } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { SupabaseAuthProvider } from "@/lib/auth/AuthProvider";
 import SkipToContent from "@/components/ui/SkipToContent";
@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta-sans", display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -60,7 +61,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scrollbar-hide" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans bg-background text-foreground scrollbar-hide selection:bg-primary-container selection:text-on-primary-container`}>
+      <body className={`${inter.variable} ${plusJakartaSans.variable} font-sans bg-background text-foreground scrollbar-hide selection:bg-primary-container selection:text-on-primary-container`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
           <BackgroundEffects />
@@ -84,8 +85,8 @@ export default function RootLayout({
                     <AcademicHydrationBoundary>
                       <LenisProvider>
                         <BackgroundSyncWorker />
-                        <div className="flex w-full min-h-screen">
-                          <main id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col w-full min-h-screen">
+                        <div className="flex w-full min-h-[100dvh]">
+                          <main id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col w-full">
                             {children}
                           </main>
                         </div>

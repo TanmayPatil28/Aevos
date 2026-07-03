@@ -12,6 +12,8 @@
     "test:unit": "npx tsx scripts/test-unit.ts",
     "test:stability": "npx tsx scripts/test-data-stability.ts",
     "test:schemas": "npx tsx scripts/test-db-schemas.ts",
+    "test:benchmark": "npx tsx scripts/test-benchmark-audit.ts",
+    "test:phase3": "npx tsx scripts/test-phase3.ts",
     "screenshot": "node screenshot.js"
   },
   "dependencies": {
@@ -105,6 +107,7 @@
     "postcss": "^8",
     "sharp": "^0.35.2",
     "supabase": "^2.105.0",
+    "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

@@ -11,58 +11,55 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["SF Pro Display", "SF Pro Icons", "var(--font-inter)", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "SF Pro Display", "SF Pro Icons", "var(--font-inter)", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        display: ["SF Pro Display", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       colors: {
-        background: "var(--bg-canvas)",
-        surface: "var(--bg-surface)",
-        "surface-raised": "var(--bg-surface-raised)",
-        "surface-overlay": "var(--bg-surface-overlay)",
+        background: "var(--aevos-background)",
+        surface: "var(--aevos-surface)",
+        "surface-raised": "var(--aevos-surface-raised)",
+        "surface-overlay": "var(--aevos-surface-overlay)",
         
-        foreground: "var(--text-primary)",
-        "foreground-muted": "var(--text-secondary)",
-        "foreground-tertiary": "var(--text-tertiary)",
+        foreground: "var(--aevos-text-primary)",
+        "foreground-muted": "var(--aevos-text-secondary)",
+        "foreground-tertiary": "var(--aevos-text-tertiary)",
         
-        border: "var(--border-subtle)",
-        "border-strong": "var(--border-base)",
-        "border-focus": "var(--border-focus)",
-        "link-brand": "var(--link-brand)",
+        border: "var(--aevos-outline)",
+        "border-strong": "var(--aevos-outline-variant)",
+        "border-focus": "var(--aevos-on-surface)",
         
         brand: {
-          DEFAULT: "var(--brand-primary)",
-          subtle: "var(--brand-primary-subtle)",
-          secondary: "var(--brand-secondary)",
-          "secondary-subtle": "var(--brand-secondary-subtle)",
-          tertiary: "var(--brand-tertiary)",
-          "tertiary-subtle": "var(--brand-tertiary-subtle)",
+          DEFAULT: "var(--aevos-primary)",
+          subtle: "var(--aevos-primary-fixed-dim)",
+          secondary: "var(--aevos-secondary)",
+          "secondary-subtle": "var(--aevos-secondary-fixed-dim)",
+          tertiary: "var(--aevos-tertiary)",
+          "tertiary-subtle": "var(--aevos-tertiary-fixed-dim)",
         },
         
         status: {
-          success: "var(--status-success)",
-          "success-subtle": "var(--status-success-subtle)",
-          warning: "var(--status-warning)",
-          "warning-subtle": "var(--status-warning-subtle)",
-          critical: "var(--status-critical)",
-          "critical-subtle": "var(--status-critical-subtle)",
-          info: "var(--status-info)",
+          success: "var(--aevos-status-success)",
+          warning: "var(--aevos-status-warning)",
+          critical: "var(--aevos-status-critical)",
+          info: "var(--aevos-status-info)",
         },
 
         // Legacy mappings to prevent total breakage during Phase 2 transition
         primary: {
-          DEFAULT: "var(--brand-primary)",
+          DEFAULT: "var(--aevos-primary)",
         },
         secondary: {
-          DEFAULT: "var(--brand-secondary)",
+          DEFAULT: "var(--aevos-secondary)",
         },
         error: {
-          DEFAULT: "var(--status-critical)",
+          DEFAULT: "var(--aevos-status-critical)",
         },
         success: {
-          DEFAULT: "var(--status-success)",
+          DEFAULT: "var(--aevos-status-success)",
         },
         warning: {
-          DEFAULT: "var(--status-warning)",
+          DEFAULT: "var(--aevos-status-warning)",
         },
       },
       borderRadius: {
@@ -122,6 +119,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [tailwindcssAnimate, require("@tailwindcss/typography")],
+  plugins: [tailwindcssAnimate, require("@tailwindcss/typography"), require("tailwind-scrollbar")],
 };
 export default config;
