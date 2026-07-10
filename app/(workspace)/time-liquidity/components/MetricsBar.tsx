@@ -27,7 +27,7 @@ export function MetricsBar({
   isCurrentlyEmpty
 }: MetricsBarProps) {
   return (
-    <div className="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 items-start xl:items-center px-6 py-4 bg-[var(--aevos-canvas)] border-b border-white/[0.05] shrink-0 gap-y-6 z-30">
+    <div className="w-full flex flex-col xl:grid xl:grid-cols-4 items-start xl:items-center px-4 md:px-6 py-3 md:py-4 bg-[var(--aevos-canvas)] border-b border-white/[0.05] shrink-0 gap-y-4 md:gap-y-6 z-30">
       
       {/* Col 1: Batch Controls */}
       <div className="flex flex-col gap-2 shrink-0 h-full justify-center">
@@ -65,7 +65,7 @@ export function MetricsBar({
         </div>
 
         {activeBatchView !== "ALL" && (
-          <label className="flex items-center gap-2 text-[11px] font-medium text-[var(--aevos-text-secondary)] cursor-pointer hover:text-[var(--aevos-text-primary)] transition-colors ml-[50px]">
+          <label className="flex items-center gap-2 text-[11px] font-medium text-[var(--aevos-text-secondary)] cursor-pointer hover:text-[var(--aevos-text-primary)] transition-colors ml-0 xl:ml-[50px] mt-1 xl:mt-0">
             <input
               type="checkbox"
               checked={dimInsteadOfHide}
@@ -77,7 +77,8 @@ export function MetricsBar({
         )}
       </div>
 
-      {/* Col 2: Detention Risk */}
+      <div className="w-full flex flex-row items-start justify-between gap-2 xl:contents">
+        {/* Col 2: Detention Risk */}
       <Tooltip
         content={
           <div className="flex flex-col gap-1.5 font-sans">
@@ -94,9 +95,9 @@ export function MetricsBar({
         <div className="flex flex-col justify-center bg-transparent relative cursor-help xl:pl-6 xl:border-l border-white/[0.05] h-full group">
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="text-[10px] font-sans text-[var(--aevos-text-secondary)] uppercase tracking-widest mb-1">Detention Risk</div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-baseline gap-1">
-              <span className={`text-4xl font-light ${
+          <div className="flex items-center gap-1.5 md:gap-3">
+            <div className="flex items-baseline gap-0.5 md:gap-1">
+              <span className={`text-2xl md:text-4xl font-light ${
                 isCurrentlyEmpty ? 'text-[var(--aevos-text-tertiary)]' : 
                 metrics.ruinProbability > 20 ? 'text-[var(--aevos-status-critical)]' : 
                 metrics.ruinProbability > 10 ? 'text-[var(--aevos-status-warning)]' : 
@@ -104,9 +105,9 @@ export function MetricsBar({
               }`}>
                 {isCurrentlyEmpty ? "-" : metrics.ruinProbability}
               </span>
-              <span className="text-lg font-light text-[var(--aevos-text-tertiary)]">%</span>
+              <span className="text-sm md:text-lg font-light text-[var(--aevos-text-tertiary)]">%</span>
             </div>
-            <div className="flex flex-col">
+            <div className="hidden md:flex flex-col">
               {!isCurrentlyEmpty && (
                 <div className={`text-[9px] font-medium ${
                     metrics.ruinProbability > 20 ? 'text-[var(--aevos-status-critical)]' :
@@ -142,13 +143,13 @@ export function MetricsBar({
         <div className="flex flex-col justify-center bg-transparent relative h-full cursor-help xl:pl-6 xl:border-l border-white/[0.05] group">
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="text-[10px] font-sans text-[var(--aevos-text-secondary)] uppercase tracking-widest mb-1">Freed Hours</div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-light text-[var(--aevos-text-primary)]">{isCurrentlyEmpty ? "-" : (metrics.strategicSkips * 1.5).toFixed(1)}</span>
-              <span className="text-lg font-light text-[var(--aevos-text-tertiary)]">h</span>
+          <div className="flex items-center gap-1.5 md:gap-3">
+            <div className="flex items-baseline gap-0.5 md:gap-1">
+              <span className="text-2xl md:text-4xl font-light text-[var(--aevos-text-primary)]">{isCurrentlyEmpty ? "-" : (metrics.strategicSkips * 1.5).toFixed(1)}</span>
+              <span className="text-sm md:text-lg font-light text-[var(--aevos-text-tertiary)]">h</span>
             </div>
             {!isCurrentlyEmpty && (
-              <div className="flex flex-col">
+              <div className="hidden md:flex flex-col">
                 <div className="text-[9px] text-[var(--aevos-text-tertiary)]">
                   → Time you could reclaim.
                 </div>
@@ -182,9 +183,9 @@ export function MetricsBar({
         <div className="flex flex-col justify-center bg-transparent relative h-full cursor-help xl:pl-6 xl:border-l border-white/[0.05] group">
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="text-[10px] font-sans text-[var(--aevos-text-secondary)] uppercase tracking-widest mb-1">Safe Skips</div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-baseline gap-1">
-              <span className={`text-4xl font-light ${
+          <div className="flex items-center gap-1.5 md:gap-3">
+            <div className="flex items-baseline gap-0.5 md:gap-1">
+              <span className={`text-2xl md:text-4xl font-light ${
                 isCurrentlyEmpty ? 'text-[var(--aevos-text-tertiary)]' : 
                 metrics.strategicSkips === 0 ? 'text-[var(--aevos-status-critical)]' : 
                 metrics.strategicSkips <= 2 ? 'text-[var(--aevos-status-warning)]' : 
@@ -194,7 +195,7 @@ export function MetricsBar({
               </span>
             </div>
             {!isCurrentlyEmpty && (
-              <div className="flex flex-col">
+              <div className="hidden md:flex flex-col">
                 <div className={`text-[9px] font-medium ${
                     metrics.strategicSkips === 0 ? 'text-[var(--aevos-status-critical)]' :
                     metrics.strategicSkips <= 2 ? 'text-[var(--aevos-status-warning)]' : 
@@ -212,6 +213,7 @@ export function MetricsBar({
         </div>
       </Tooltip>
 
+      </div>
     </div>
   );
 }

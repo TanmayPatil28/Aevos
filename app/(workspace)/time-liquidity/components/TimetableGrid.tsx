@@ -61,8 +61,8 @@ export function TimetableGrid({
   }
 
   return (
-    <div data-lenis-prevent="true" className="flex-1 min-h-0 overflow-y-auto overflow-x-auto relative z-0 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20 bg-[var(--aevos-canvas)] backdrop-blur-xl flex flex-col">
-      <div className="flex flex-col w-full min-w-[800px]">
+    <div data-lenis-prevent="true" className="flex-1 min-h-0 overflow-y-auto overflow-x-auto relative z-0 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20 bg-[var(--aevos-canvas)] backdrop-blur-xl flex flex-col -webkit-overflow-scrolling-touch">
+      <div className="flex flex-col w-full min-w-[1800px] md:min-w-[1000px]">
         <table className="w-full text-left border-separate border-spacing-0 table-fixed">
           <thead className="relative z-50">
             <tr>

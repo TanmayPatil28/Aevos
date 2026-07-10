@@ -98,7 +98,7 @@ export function ChatPanel({
   };
 
   return (
-    <div className={`border-white/[0.05] flex flex-col aevos-glass overflow-hidden transition-all duration-300 shrink-0 ${isChatOpen ? 'w-[30%] min-w-[320px] max-w-[400px] border-r' : 'w-0 border-r-0'}`}>
+    <div className={`border-white/[0.05] flex flex-col aevos-glass overflow-hidden transition-all duration-300 shrink-0 z-50 ${isChatOpen ? 'absolute inset-0 w-full h-full md:relative md:w-[30%] md:min-w-[320px] md:max-w-[400px] border-r opacity-100 pointer-events-auto' : 'absolute md:relative w-0 border-r-0 opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto'}`}>
       <div className={`flex flex-col h-full w-full min-w-[320px] transition-opacity duration-300 ${isChatOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         
         {/* Header */}
@@ -333,7 +333,7 @@ export function ChatPanel({
         </div>
 
         {/* Input Area */}
-        <div className="px-4 pb-4 pt-2 bg-gradient-to-t from-[var(--aevos-surface)]/95 to-transparent shrink-0">
+        <div className="px-4 pb-24 md:pb-4 pt-2 bg-gradient-to-t from-[var(--aevos-surface)]/95 to-transparent shrink-0">
           <div className="relative">
             {messages.length === 1 && (
               <div className="flex gap-2 overflow-x-auto mb-3 scrollbar-hide">

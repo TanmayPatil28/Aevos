@@ -8,7 +8,7 @@ import * as z from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { OAuthProviders } from "./OAuthProviders";
-import { Loader2, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Loader2, Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 type AuthMode = "login" | "register" | "magic_link";
 
@@ -24,6 +24,7 @@ export function UnifiedAuthForm() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -183,11 +184,18 @@ export function UnifiedAuthForm() {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     {...register("password")}
-                    className="w-full h-12 pl-12 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white font-medium placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.06] transition-all outline-none"
+                    className="w-full h-12 pl-12 pr-12 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white font-medium placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.06] transition-all outline-none"
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="text-[0.8rem] font-medium text-destructive mt-1">{errors.password.message}</p>

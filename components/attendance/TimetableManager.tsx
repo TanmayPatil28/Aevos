@@ -475,9 +475,35 @@ export default function TimetableManager({ onClose }: { onClose?: () => void }) 
               ) : (
                 <div className="flex-1 flex flex-col md:flex-row gap-6 border-t border-white/[0.06] pt-6 overflow-hidden min-h-0">
                   
-                  {/* LEFT PANE: Days List */}
+                  {/* MOBILE: Horizontal Days List */}
+                  <div className="md:hidden w-full flex overflow-x-auto gap-2 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+                    {DAYS_OF_WEEK.map(day => {
+                      const count = getFilteredEntries(day).length;
+                      const isActive = selectedDay === day;
+                      return (
+                        <button
+                          key={`mobile-${day}`}
+                          onClick={() => setSelectedDay(day)}
+                          className={`shrink-0 relative px-5 py-2.5 rounded-full transition-colors duration-200 outline-none snap-center flex items-center gap-2 ${
+                            isActive 
+                              ? "bg-white text-black font-bold shadow-md" 
+                              : "bg-white/[0.05] text-white/60 hover:bg-white/[0.1] hover:text-white"
+                          }`}
+                        >
+                          <span className="text-[10px] uppercase tracking-widest">{day.substring(0, 3)}</span>
+                          {count > 0 && (
+                            <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${isActive ? "bg-black/10" : "bg-white/10"}`}>
+                              {count}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* DESKTOP: Vertical Days List */}
                   <div 
-                    className="w-full md:w-[220px] shrink-0 space-y-1 outline-none focus-visible:ring-2 focus-visible:ring-white/20 bg-background p-2 rounded-3xl shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)] border-t border-black/60 border-b border-white/5"
+                    className="hidden md:block w-[220px] shrink-0 space-y-1 outline-none focus-visible:ring-2 focus-visible:ring-white/20 bg-background p-2 rounded-3xl shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)] border-t border-black/60 border-b border-white/5"
                     onKeyDown={(e) => {
                       const currentIndex = DAYS_OF_WEEK.indexOf(selectedDay);
                       if (e.key === "ArrowDown") {

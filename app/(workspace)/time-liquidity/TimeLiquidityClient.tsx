@@ -458,8 +458,8 @@ Click the **Guide** button in the top right to learn more about the optimization
 
       <main className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden relative">
         {/* TOP HEADER */}
-        <header className="h-14 border-b border-white/[0.05] bg-[var(--aevos-surface-dim)]/90 backdrop-blur flex items-center justify-between px-6 shrink-0 relative z-40">
-          <div className="flex flex-col space-y-1 w-[40%]">
+        <header className="h-14 border-b border-white/[0.05] bg-[var(--aevos-surface-dim)]/90 backdrop-blur flex items-center justify-between px-4 md:px-6 shrink-0 relative z-30">
+          <div className="flex flex-col space-y-1 w-auto md:w-[40%]">
             {!isChatOpen && (
               <button
                 onClick={() => setIsChatOpen(true)}
@@ -471,7 +471,7 @@ Click the **Guide** button in the top right to learn more about the optimization
             )}
           </div>
           <div className="flex-1 max-w-lg mx-4 hidden md:block"></div>
-          <div className="flex items-center justify-end w-[35%] space-x-3 shrink-0">
+          <div className="flex items-center justify-end w-auto md:w-[35%] space-x-2 md:space-x-3 shrink-0">
             <Tooltip
               content={
                 <div className="flex flex-col gap-2 p-1">
@@ -555,7 +555,11 @@ Click the **Guide** button in the top right to learn more about the optimization
         }}
       />
       {showTimetableManager && (
-        <TimetableManager onClose={() => setShowTimetableManager(false)} />
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+          <div className="w-full max-w-7xl h-[90vh] md:h-[85vh]">
+            <TimetableManager onClose={() => setShowTimetableManager(false)} />
+          </div>
+        </div>
       )}
     </div>
   );
