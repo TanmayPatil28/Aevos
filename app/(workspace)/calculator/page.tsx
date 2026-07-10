@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -32,7 +32,6 @@ import { useUSMStore } from "@/stores/usmStore";
 import { resolveActiveAcademicContext } from "@/stores/selectors/academic";
 import { getPresetById, getGradeScale, convertLetterGradeToGradePoint } from "@/lib/presets";
 import { VolatilityEngine } from "@/lib/academic-intelligence/engines/volatility/VolatilityEngine";
-import { eligibilityEngine } from "@/lib/career/eligibilityEngine";
 
 // Chamfer micro-texture style for premium visual panels
 const chamferStyle = {
@@ -52,6 +51,28 @@ interface SimulatedCourse {
   attendanceTotal: number;
   attendanceBunked: number;
 }
+
+// Stable TableVirtuoso component overrides (defined outside render to prevent re-creation)
+const VirtuosoTable = (props: React.HTMLAttributes<HTMLTableElement>) => (
+  <table {...props} className="w-full text-left border-collapse font-sans" />
+);
+const VirtuosoTableHead = (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+  <thead {...props} className="bg-[#151515] border-b border-white/[0.08] text-white/40 sticky top-0 z-30 font-display" />
+);
+const VirtuosoTableRow = (props: React.HTMLAttributes<HTMLTableRowElement>) => (
+  <tr {...props} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors" />
+);
+const VirtuosoTableBody = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
+  (props, ref) => <tbody {...props} ref={ref} className="bg-[#151515]" />
+);
+VirtuosoTableBody.displayName = "VirtuosoTableBody";
+
+const virtuosoComponents = {
+  Table: VirtuosoTable,
+  TableHead: VirtuosoTableHead,
+  TableRow: VirtuosoTableRow,
+  TableBody: VirtuosoTableBody,
+};
 
 // Radical UI portal select dropdown
 function GradeDropdown({ 
@@ -767,12 +788,7 @@ export default function UnifiedCommandCenterPage() {
             <TableVirtuoso
               style={{ height: "100%", minHeight: 350 }}
               data={simulatedCourses}
-              components={{
-                Table: (props) => <table {...props} className="w-full text-left border-collapse font-sans" />,
-                TableHead: (props) => <thead {...props} className="bg-[#151515] border-b border-white/[0.08] text-white/40 sticky top-0 z-30 font-display" />,
-                TableRow: (props) => <tr {...props} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors" />,
-                TableBody: React.forwardRef((props, ref) => <tbody {...props} ref={ref} className="bg-[#151515]" />),
-              }}
+              components={virtuosoComponents}
               fixedHeaderContent={() => (
                 <tr>
                   <th className="p-3 pl-5 text-[11px] font-bold uppercase tracking-wider text-left">Course</th>
