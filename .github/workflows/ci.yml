@@ -1,4 +1,4 @@
-name: GradeFlow CI
+name: Aevos CI
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: GradeFlow Deploy
+name: Aevos Deploy
 
 on:
   push:
@@ -27,6 +27,6 @@ jobs:
 
       - name: Deploy to Vercel (Simulated)
         run: |
-          echo "Deploying GradeFlow OS to production environment..."
+          echo "Deploying Aevos to production environment..."
           echo "Simulating Vercel build and deployment..."
           echo "Deployment successful!"
