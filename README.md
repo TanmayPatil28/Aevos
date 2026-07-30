@@ -21,22 +21,36 @@
   <a href="https://github.com/TanmayPatil28/Aevos/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/TanmayPatil28/Aevos?style=flat-square&color=18181B" /></a>
 </p>
 
-<p>
-  <img src="https://img.shields.io/badge/Next.js_14-18181B?style=flat-square&logo=next.js" />
-  <img src="https://img.shields.io/badge/React_18-18181B?style=flat-square&logo=react&logoColor=61DAFB" />
-  <img src="https://img.shields.io/badge/TypeScript_5.9-18181B?style=flat-square&logo=typescript&logoColor=3178C6" />
-  <img src="https://img.shields.io/badge/Prisma_7-18181B?style=flat-square&logo=prisma&logoColor=white" />
-  <img src="https://img.shields.io/badge/Supabase-18181B?style=flat-square&logo=supabase&logoColor=3FCF8E" />
-  <img src="https://img.shields.io/badge/PostgreSQL-18181B?style=flat-square&logo=postgresql&logoColor=4169E1" />
-  <img src="https://img.shields.io/badge/pgvector-18181B?style=flat-square&logo=postgresql&logoColor=4169E1" />
-  <img src="https://img.shields.io/badge/Gemini_2.5-18181B?style=flat-square&logo=google&logoColor=4285F4" />
-  <img src="https://img.shields.io/badge/DeepSeek_R1-18181B?style=flat-square&logo=deepseek&logoColor=white" />
-  <img src="https://img.shields.io/badge/Zustand_5-18181B?style=flat-square" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-18181B?style=flat-square&logo=tailwindcss&logoColor=06B6D4" />
-  <img src="https://img.shields.io/badge/Framer_Motion-18181B?style=flat-square&logo=framer&logoColor=0055FF" />
-  <img src="https://img.shields.io/badge/Zod_4-18181B?style=flat-square" />
-  <img src="https://img.shields.io/badge/Vercel-18181B?style=flat-square&logo=vercel&logoColor=white" />
-</p>
+<table align="center" style="border: none; background-color: transparent;">
+  <tr>
+    <td align="center" width="25%">
+      <b>🧠 AI & Engine</b><br><br>
+      <img src="https://img.shields.io/badge/Gemini_2.5-18181B?style=for-the-badge&logo=google&logoColor=4285F4" /><br>
+      <img src="https://img.shields.io/badge/DeepSeek_R1-18181B?style=for-the-badge&logo=deepseek&logoColor=white" /><br>
+      <img src="https://img.shields.io/badge/pgvector-18181B?style=for-the-badge&logo=postgresql&logoColor=4169E1" />
+    </td>
+    <td align="center" width="25%">
+      <b>🏗️ Frontend</b><br><br>
+      <img src="https://img.shields.io/badge/Next.js_14-18181B?style=for-the-badge&logo=next.js" /><br>
+      <img src="https://img.shields.io/badge/React_18-18181B?style=for-the-badge&logo=react&logoColor=61DAFB" /><br>
+      <img src="https://img.shields.io/badge/Tailwind_CSS-18181B?style=for-the-badge&logo=tailwindcss&logoColor=06B6D4" /><br>
+      <img src="https://img.shields.io/badge/Framer_Motion-18181B?style=for-the-badge&logo=framer&logoColor=0055FF" />
+    </td>
+    <td align="center" width="25%">
+      <b>💾 Data & State</b><br><br>
+      <img src="https://img.shields.io/badge/Supabase-18181B?style=for-the-badge&logo=supabase&logoColor=3FCF8E" /><br>
+      <img src="https://img.shields.io/badge/PostgreSQL-18181B?style=for-the-badge&logo=postgresql&logoColor=4169E1" /><br>
+      <img src="https://img.shields.io/badge/Prisma_7-18181B?style=for-the-badge&logo=prisma&logoColor=white" /><br>
+      <img src="https://img.shields.io/badge/Zustand_5-18181B?style=for-the-badge" />
+    </td>
+    <td align="center" width="25%">
+      <b>🛠️ Infrastructure</b><br><br>
+      <img src="https://img.shields.io/badge/TypeScript_5.9-18181B?style=for-the-badge&logo=typescript&logoColor=3178C6" /><br>
+      <img src="https://img.shields.io/badge/Vercel-18181B?style=for-the-badge&logo=vercel&logoColor=white" /><br>
+      <img src="https://img.shields.io/badge/Zod_4-18181B?style=for-the-badge" />
+    </td>
+  </tr>
+</table>
 
 
 </div>
