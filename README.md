@@ -13,33 +13,31 @@
 <br />
 
 <p>
-  <a href="https://github.com/TanmayPatil28/Aevos/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/TanmayPatil28/Aevos/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI&color=2ea043" /></a>
-  <a href="https://aevos-gamma.vercel.app"><img alt="Demo" src="https://img.shields.io/badge/Live_Demo-aevos--gamma.vercel.app-black?style=for-the-badge&logo=vercel" /></a>
-  <a href="https://github.com/TanmayPatil28/Aevos/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/TanmayPatil28/Aevos?style=for-the-badge&color=6366f1" /></a>
+  <a href="https://github.com/TanmayPatil28/Aevos/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/TanmayPatil28/Aevos/ci.yml?branch=main&style=flat-square&logo=github&label=CI" /></a>
+  <a href="https://aevos-gamma.vercel.app"><img alt="Demo" src="https://img.shields.io/badge/Live_Demo-aevos--gamma.vercel.app-18181B?style=flat-square&logo=vercel" /></a>
+  <a href="https://github.com/TanmayPatil28/Aevos/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/TanmayPatil28/Aevos?style=flat-square&logo=github&color=18181B" /></a>
+  <a href="https://github.com/TanmayPatil28/Aevos/issues"><img alt="Issues" src="https://img.shields.io/github/issues/TanmayPatil28/Aevos?style=flat-square&logo=github&color=18181B" /></a>
+  <a href="https://github.com/TanmayPatil28/Aevos/pulls"><img alt="PRs" src="https://img.shields.io/github/issues-pr/TanmayPatil28/Aevos?style=flat-square&logo=github&color=18181B" /></a>
+  <a href="https://github.com/TanmayPatil28/Aevos/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/TanmayPatil28/Aevos?style=flat-square&color=18181B" /></a>
 </p>
 
 <p>
-  <a href="https://github.com/TanmayPatil28/Aevos/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/TanmayPatil28/Aevos?style=for-the-badge&logo=github&color=f59e0b" /></a>
-  <a href="https://github.com/TanmayPatil28/Aevos/issues"><img alt="Issues" src="https://img.shields.io/github/issues/TanmayPatil28/Aevos?style=for-the-badge&logo=github&color=ef4444" /></a>
-  <a href="https://github.com/TanmayPatil28/Aevos/pulls"><img alt="PRs" src="https://img.shields.io/github/issues-pr/TanmayPatil28/Aevos?style=for-the-badge&logo=github&color=8b5cf6" /></a>
+  <img src="https://img.shields.io/badge/Next.js_14-18181B?style=flat-square&logo=next.js" />
+  <img src="https://img.shields.io/badge/React_18-18181B?style=flat-square&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/TypeScript_5.9-18181B?style=flat-square&logo=typescript&logoColor=3178C6" />
+  <img src="https://img.shields.io/badge/Prisma_7-18181B?style=flat-square&logo=prisma&logoColor=white" />
+  <img src="https://img.shields.io/badge/Supabase-18181B?style=flat-square&logo=supabase&logoColor=3FCF8E" />
+  <img src="https://img.shields.io/badge/PostgreSQL-18181B?style=flat-square&logo=postgresql&logoColor=4169E1" />
+  <img src="https://img.shields.io/badge/pgvector-18181B?style=flat-square&logo=postgresql&logoColor=4169E1" />
+  <img src="https://img.shields.io/badge/Gemini_2.5-18181B?style=flat-square&logo=google&logoColor=4285F4" />
+  <img src="https://img.shields.io/badge/DeepSeek_R1-18181B?style=flat-square&logo=deepseek&logoColor=white" />
+  <img src="https://img.shields.io/badge/Zustand_5-18181B?style=flat-square" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-18181B?style=flat-square&logo=tailwindcss&logoColor=06B6D4" />
+  <img src="https://img.shields.io/badge/Framer_Motion-18181B?style=flat-square&logo=framer&logoColor=0055FF" />
+  <img src="https://img.shields.io/badge/Zod_4-18181B?style=flat-square" />
+  <img src="https://img.shields.io/badge/Vercel-18181B?style=flat-square&logo=vercel&logoColor=white" />
 </p>
 
-<p>
-  <img src="https://img.shields.io/badge/Next.js_14-black?style=flat-square&logo=next.js" />
-  <img src="https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/TypeScript_5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/Prisma_7-2D3748?style=flat-square&logo=prisma&logoColor=white" />
-  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white" />
-  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white" />
-  <img src="https://img.shields.io/badge/pgvector-4169E1?style=flat-square&logo=postgresql&logoColor=white" />
-  <img src="https://img.shields.io/badge/Gemini_2.5-4285F4?style=flat-square&logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/DeepSeek_R1-FF6B35?style=flat-square" />
-  <img src="https://img.shields.io/badge/Zustand_5-443E38?style=flat-square" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
-  <img src="https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white" />
-  <img src="https://img.shields.io/badge/Zod_4-3E67B1?style=flat-square" />
-  <img src="https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white" />
-</p>
 
 </div>
 
