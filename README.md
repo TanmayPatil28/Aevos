@@ -2,7 +2,7 @@
 
 <br />
 
-<img src="docs/assets/aevos-banner.png" alt="Aevos Banner" width="100%" />
+<img src="./docs/assets/aevos-banner.png" alt="Aevos Banner" width="100%" />
 
 <br />
 <br />
